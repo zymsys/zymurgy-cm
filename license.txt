@@ -1,0 +1,119 @@
+License Agreement
+Zymurgy:CM (the "Software")
+
+"You" means the person or company identified below, who is being licensed
+to use the "Software" identified in the title of this License Agreement.
+"We" and "us" means Zymurgy Systems Inc., an Ontario corporation.
+
+Limited Nonexclusive License
+
+You acknowledge that you are acquiring only a limited nonexclusive license
+to use the Software (the "License"). We remain the owner of all right,
+title, and interest in the Software and in any copies of it.
+
+The License permits you to install the Software on more than one web
+server provided that you hold a valid license key for each domain name for
+which the software is installed.
+
+You may make a reasonable number of backup copies of the Software solely
+for backup purposes.
+
+You agree not to make nor to permit the making of copies of the Software
+(including its documentation) except as authorized by this License
+Agreement or otherwise authorized in writing by us.
+
+You agree not to engage in nor to permit the decompilation, disassembly,
+or other reverse engineering of the Software.
+
+Limited Warranty
+
+We warrant to you that, for a period of 90 days after delivery of this
+copy of the Software to you:
+
+1. the Software will perform in accordance with the included electronic
+documentation distributed with it by us, and
+
+2. to the best of our knowledge your use of the Software in accordance
+with its electronic documentation will not, in and of itself, infringe any
+third party's copyright, patent, or other intellectual property right.
+
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE FOREGOING LIMITED WARRANTY
+IS IN LIEU OF ALL OTHER WARRANTIES OR CONDITIONS, EXPRESS OR IMPLIED, AND
+WE DISCLAIM ANY AND ALL IMPLIED WARRANTIES OR CONDITIONS, INCLUDING ANY
+IMPLIED WARRANTY OF TITLE, OF NONINFRINGEMENT, OF MERCHANT ABILITY, OR OF
+FITNESS FOR A PARTICULAR PURPOSE, REGARDLESS WHETHER WE KNOW OR HAVE
+REASON TO KNOW OF YOUR PARTICULAR NEEDS.
+
+No employee, agent, dealer, or distributor of ours is authorized to modify
+this limited warranty, nor to make any additional warranties.
+
+No action for any breach of the above limited warranty may be commenced
+more than one (1) year following the expiration date of the warranty.
+
+If implied warranties may not be disclaimed under applicable law, then ANY
+IMPLIED WARRANTIES ARE LIMITED IN DURATION TO 90 DAYS AFTER DELIVERY OF
+THIS COPY OF THE SOFTWARE TO YOU.
+
+Some provinces do not allow limitations on how long an implied warranty
+lasts, so the above limitation may not apply to you.
+
+This warranty gives you specific legal rights, and you may also have other
+rights which vary from province to province.
+
+No Incidental or Consequential Damages
+
+Independent of the foregoing provisions, IN NO EVENT WILL WE BE LIABLE TO
+YOU FOR ANY INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES ARISING FROM OR CONNECTED WITH THIS AGREEMENT OR YOUR USE OF THE
+SOFTWARE, regardless whether we know or have reason to know of the
+possibility of such damages.
+
+Some provinces do not allow exclusion or limitation of incidental or
+consequential damages, so the above limitation or exclusion may not apply
+to you.
+
+Your Indemnity to Us
+
+Independent of the foregoing provisions, you agree to defend and indemnify
+us against, and hold us harmless from, any and all claims, damages,
+losses, and expenses of any kind arising from or connected with the
+operation of your business.
+
+Privacy
+
+You agree that for purposes which include software update notifications
+and license enforcement the Software may communicate with us, and may
+execute code originating from our servers.  You agree that we may log
+these transactions and collect data on your use of the Software.
+
+Termination
+
+If you materially breach this License Agreement, we may terminate your
+right to use the Software by notice to you.
+
+You agree that, upon termination of the License, you will either return to
+us or destroy all copies of the Software in your possession.
+
+Entire Agreement, etc.
+
+This written License Agreement is the exclusive agreement between you and
+us concerning the Software and supersedes any and all prior oral or
+written agreements, negotiations, or other dealings between us concerning
+the Software.
+
+This License Agreement may be modified only by a writing signed by you and
+us.
+
+In the event of litigation between you and us concerning the Software, the
+prevailing party in the litigation and the prevailing party in any
+ancillary disputes (e.g., discovery disputes) will be entitled to recover
+attorneys' fees and expenses from the other party.
+
+This License Agreement will be governed by the law of the Province of
+Ontario applicable to contracts executed and performed entirely in, and by
+residents of, that province.
+
+This License Agreement is effective upon your installation of the Software
+(provided that your acquisition of a copy of the Software was from us or
+our representative); you agree that we need not sign this License
+Agreement in order for it to take effect.

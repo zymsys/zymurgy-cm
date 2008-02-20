@@ -1,0 +1,19 @@
+a.nav {
+	color: #FFFFFF;
+	text-decoration:none;
+	line-height: 25px;
+	font-size: 15px;
+}
+a.nav:hover {
+	color:#00FFFF;
+	border-top-width: thin;
+	border-right-width: thin;
+	border-bottom-width: thin;
+	border-left-width: thin;
+	border-top-style: solid;
+	border-bottom-style: solid;
+	border-top-color: #FFFFFF;
+	border-right-color: #FFFFFF;
+	border-bottom-color: #FFFFFF;
+	border-left-color: #FFFFFF;
+}
