@@ -545,11 +545,9 @@ class Zymurgy
 	static function JSInnerHtml($id,$html)
 	{
 		echo "<script type=\"text/JavaScript\">
-		<!--
 		var Zymurgy_InnerHTML = document.getElementById('".addslashes($id)."');
 		Zymurgy_InnerHTML.innerHTML = '".addslashes($html)."';
-		//-->
-		</script></head><body><noscript>Javascript is required to view this page.</noscript></body></html>";
+		</script>";
 		flush();
 	}
 	
@@ -1033,6 +1031,8 @@ if ((array_key_exists('FixSlashes',Zymurgy::$config)) && (Zymurgy::$config['FixS
 
 if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
 	include_once(Zymurgy::$root."/zymurgy/custom/render.php");
+if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
+	include_once(Zymurgy::$root."/caseo/custom/render.php");
 require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 
 if (empty(Zymurgy::$config['database']))
