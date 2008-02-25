@@ -57,51 +57,67 @@ if ($minheight >= $work['h']) $minheight = $initheight = $work['h'];*/
 
 if ($_SERVER['REQUEST_METHOD']=='POST')
 {
-	require_once('include/Thumb.php');
-	
-	$selected = array(
-		'x'=>$_POST['cropX'],
-		'y'=>$_POST['cropY'],
-		'w'=>$_POST['cropWidth'],
-		'h'=>$_POST['cropHeight']);
-		
-	//echo "[{$selected['x']},{$selected['y']},{$selected['w']},{$selected['h']}]<br>";
-	//echo "raw [{$raw['w']},{$raw['h']}]<br>";
-	
-	//Math time...  Take 640x480 work image coordinates and figure out coordinates on full sized image.
-	$xfactor = $raw['w'] / $work['w'];
-	$yfactor = $raw['h'] / $work['h'];
-	
-	//echo "factors: $xfactor $yfactor<br>";
-	
-	$x = $selected['x'] * $xfactor;
-	$y = $selected['y'] * $yfactor;
-	$w = $selected['w'] * $xfactor;
-	$h = $selected['h'] * $yfactor;
-	
-	//echo "Selected [x:$x,y:$y,w:$w,h:$h]<br>";
-	if (!$fixedar)
+	if ($_POST['action']=='clear')
 	{
-		$maxwidth = $width;
-		$maxheight = $height;
-		if ($w>$width)
+		//Remove cached image files
+		$path = "$ZymurgyRoot/UserFiles/DataGrid/$ds";
+		@unlink("$path/{$id}aspectcropDark.jpg");
+		@unlink("$path/{$id}aspectcropNormal.jpg");
+		@unlink("$path/{$id}raw.jpg");
+		$thumbs = glob("$path/{$id}thumb*");
+		foreach($thumbs as $thumb)
 		{
-			//Fit for max width
-			$r = $maxwidth/$w;
-			$width = $maxwidth;
-			$height = floor($r * $h);
+			@unlink($thumb);
 		}
-		if ($height>$maxheight)
-		{
-			//Height still doesn't fit so adjust again.
-			$r = $maxheight/$height;
-			$height = $maxheight;
-			$width = floor($r * $width);
-		}
-		//echo "Adjusted dest w/h: $width/$height<br>";
 	}
-	$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg";
-	Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.jpg",$thumbpath);
+	else 
+	{
+		require_once('include/Thumb.php');
+		
+		$selected = array(
+			'x'=>$_POST['cropX'],
+			'y'=>$_POST['cropY'],
+			'w'=>$_POST['cropWidth'],
+			'h'=>$_POST['cropHeight']);
+			
+		//echo "[{$selected['x']},{$selected['y']},{$selected['w']},{$selected['h']}]<br>";
+		//echo "raw [{$raw['w']},{$raw['h']}]<br>";
+		
+		//Math time...  Take 640x480 work image coordinates and figure out coordinates on full sized image.
+		$xfactor = $raw['w'] / $work['w'];
+		$yfactor = $raw['h'] / $work['h'];
+		
+		//echo "factors: $xfactor $yfactor<br>";
+		
+		$x = $selected['x'] * $xfactor;
+		$y = $selected['y'] * $yfactor;
+		$w = $selected['w'] * $xfactor;
+		$h = $selected['h'] * $yfactor;
+		
+		//echo "Selected [x:$x,y:$y,w:$w,h:$h]<br>";
+		if (!$fixedar)
+		{
+			$maxwidth = $width;
+			$maxheight = $height;
+			if ($w>$width)
+			{
+				//Fit for max width
+				$r = $maxwidth/$w;
+				$width = $maxwidth;
+				$height = floor($r * $h);
+			}
+			if ($height>$maxheight)
+			{
+				//Height still doesn't fit so adjust again.
+				$r = $maxheight/$height;
+				$height = $maxheight;
+				$width = floor($r * $width);
+			}
+			//echo "Adjusted dest w/h: $width/$height<br>";
+		}
+		$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg";
+		Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.jpg",$thumbpath);
+	}
 ?>
 <script type="text/JavaScript">
 <!--
@@ -293,6 +309,10 @@ img#imgCropped {
  			<form name="frmCrop" method="POST" action="<?=$_SERVER['REQUEST_URI']?>">
  				<input
  					type="hidden"
+ 					name="action"
+ 					value="crop">
+ 				<input
+ 					type="hidden"
  					name="cropX"
  					value="10">
  				<input
@@ -321,6 +341,11 @@ img#imgCropped {
  					name="cmdSubmit"
  					value="Save Image"
  					onClick="submitForm();">
+ 				<input
+ 					type="button"
+ 					name="cmdClear"
+ 					value="Clear Image"
+ 					onClick="clearImage();">
   			</form>
   			<div id="debug"></div>
  		</div>

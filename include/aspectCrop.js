@@ -79,3 +79,9 @@ function submitForm() {
 	document.frmCrop.submit();
 }
 
+function clearImage() {
+	if (confirm("Are you sure you want to clear this image from the server?")==true) {
+		document.frmCrop.action.value = 'clear';
+		document.frmCrop.submit();
+	}
+}
