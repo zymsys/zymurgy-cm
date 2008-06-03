@@ -120,7 +120,7 @@ else
     if (array_key_exists('w',$_GET))
     	$safefn = $thumbName;
     else
-    	$safefn = "uploads/$safefn";
+    	$safefn = "$root/zymurgy/uploads/$safefn";
     if (!file_exists($safefn))
     {
     	//Maybe this is a thumb...

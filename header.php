@@ -131,7 +131,7 @@ body {
 	text-align: right;
 }
 .ZymurgyNavigation .ZymurgyMenu a, .ZymurgyNavigation .ZymurgyMenu a:link,.ZymurgyNavigation .ZymurgyMenu a:visited,.ZymurgyNavigation .ZymurgyMenu a:active {
-	color: #000000;
+	color: <?= (array_key_exists('navcolor',Zymurgy::$config)) ? Zymurgy::$config['navcolor'] : '#000000' ?>;
 	text-decoration: none;
 	line-height: 2;
 }

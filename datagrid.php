@@ -686,15 +686,23 @@ class DataGrid
 		//Create thumb entry for the image type
 		$ep = explode('.',$type);
 		$this->columns[$n]->editortype = $ep[0];
-		if ($ep[0] == 'image')
+		switch($ep[0])
 		{
-			array_shift($ep); //Remove type
-			$targetsize = str_replace('.','x',implode('.',$ep));
-			//$targetsize = "{$ep[1]}x{$ep[2]}";
-			if (array_key_exists($datacolumn,$this->thumbs))
-				$this->thumbs[$datacolumn][] = $targetsize;
-			else
-				$this->thumbs[$datacolumn] = array($targetsize);
+			case 'image':
+				array_shift($ep); //Remove type
+				$targetsize = str_replace('.','x',implode('.',$ep));
+				//$targetsize = "{$ep[1]}x{$ep[2]}";
+				if (array_key_exists($datacolumn,$this->thumbs))
+					$this->thumbs[$datacolumn][] = $targetsize;
+				else
+					$this->thumbs[$datacolumn] = array($targetsize);
+				break;
+			case 'lookup':
+				if (!array_key_exists($table,$this->lookups)) 
+				{
+					$this->lookups[$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
+				}
+				break;
 		}
 	}
 
@@ -788,11 +796,7 @@ class DataGrid
 
 	function AddLookup($datacolumn,$caption,$table,$idcolumn,$valcolumn,$ordercolumn='')
 	{
-		if (!array_key_exists($table,$this->lookups)) 
-		{
-			$this->lookups[$table] = new DataGridLookup($table,$idcolumn,$valcolumn,$ordercolumn);
-		}
-		$this->AddEditor($datacolumn,$caption,"lookup.$table");
+		$this->AddEditor($datacolumn,$caption,"lookup.$table.$idcolumn.$valcolumn.$ordercolumn");
 	}
 	
 	function BuildSelfReference($getvars,$removevars=array())
@@ -1201,6 +1205,7 @@ class DataGrid
 		}
 	}
 	
+
 	function RenderGrid($page,$count)
 	{
 		global $hasdumpeddatagridcss;
@@ -1232,7 +1237,10 @@ class DataGrid
 			}
 		}
 		if (count($this->buttons)>0)
+		{
 			echo "<td></td>"; //Empty header for link buttons
+			$colcount++;
+		}
 		echo "</tr>\r\n";
 		$alternate = false;
 		foreach ($this->DataSet->rows as $row)
@@ -1293,14 +1301,12 @@ class DataGrid
 		if ($pagecount > 1)
 		{
 			echo "<tr><td align=\"left\">$prev&nbsp;</td>";
-			echo "<td align=\"middle\"><font color=\"white\">Go to Page</font> $jump</td>";
+			echo "<td align=\"middle\" style=\"text-align: center;\"><font color=\"white\">Go to Page</font> $jump</td>";
 			echo "<td align=\"right\">&nbsp;$next</td></tr>";
 		}
 		if ($this->insertlabel <> '')
-			echo "<tr><td colspan='3' align='middle'><a href='".$this->BuildSelfReference(array('action'=>'insert'))."'><font color=\"white\">{$this->insertlabel}</font></a></td></tr>";
+			echo "<tr><td colspan=\"3\" align=\"middle\" style=\"text-align: center;\"><a href='".$this->BuildSelfReference(array('action'=>'insert'))."'><font color=\"white\">{$this->insertlabel}</font></a></td></tr>";
 		echo "</table></td>";
-		if (count($this->buttons)>0)
-			echo "<td></td>";
 		echo "</tr>\r\n";
 		echo "</table>\r\n";
 	}

@@ -2,6 +2,8 @@
 // Custom field definitions may only be set by a webmaster
 $adminlevel = 2;
 
+ob_start();
+
 $t = 0 + $_GET['t'];
 
 require_once('cmo.php');

@@ -85,7 +85,6 @@ $tables = array(
   PRIMARY KEY  (`id`),
   UNIQUE KEY `email_3` (`email`),
   KEY `email` (`email`,`password`),
-  KEY `email_2` (`email`),
   KEY `regtime` (`regtime`),
   KEY `lastauth` (`lastauth`),
   KEY `authkey` (`authkey`),

@@ -2,6 +2,8 @@
 // Custom Table definitions may only be set by the webmaster
 $adminlevel = 2;
 
+ob_start();
+
 require_once('cmo.php');
 include 'datagrid.php';
 include 'customlib.php';

@@ -121,6 +121,7 @@ class InputWidget
 				break;
 			case "drop":
 			case "radio":
+				$ep = explode('.',$type,2); //Otherwise arrays which contain a . will cause it to barf.
 				$ritems = $this->HackedUnserialize($ep[1]);
 				$display = $ritems[$display];
 				break;

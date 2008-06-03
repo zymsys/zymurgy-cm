@@ -329,14 +329,9 @@ function Validate$name(me) {
 	
 	function SendEmail()
 	{
-		$to = $this->GetConfigValue('Email Form Results To Address');
-		if ($to == '')
-			return;
-
 		//Load PHPMailer class
 		$mail = Zymurgy::GetPHPMailer();
-		//$mail = new PHPMailer();
-
+		$to = $this->GetConfigValue('Email Form Results To Address');
 		$values = $this->GetValues();
 		//Build body lines
 		$body = array();
@@ -351,19 +346,22 @@ function Validate$name(me) {
 		$values["\n"] = '';
 		$from = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results From Address'));
 		$subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results Subject'));
-		list($mail->FromName, $mail->From) = $this->AddressElements($from);
-		$mail->Subject = $subject;
-		$mail->AddAddress($to);
-		//Look for attachments
-		//echo "<pre>"; print_r($_FILES); echo "</pre><hr />";
-		foreach ($_FILES as $file=>$fileinfo)
+		if ($to != '')
 		{
-			$mail->AddAttachment($fileinfo['tmp_name'],$fileinfo['name']);
+			list($mail->FromName, $mail->From) = $this->AddressElements($from);
+			$mail->Subject = $subject;
+			$mail->AddAddress($to);
+			//Look for attachments
+			//echo "<pre>"; print_r($_FILES); echo "</pre><hr />";
+			foreach ($_FILES as $file=>$fileinfo)
+			{
+				$mail->AddAttachment($fileinfo['tmp_name'],$fileinfo['name']);
+			}
+			$mail->Body = implode("\n",$body);
+			if (!$mail->Send())
+				echo " There has been a problem sending email to [$to]. ";
+			//mail($to,$subject,implode("\n",$body),"From: $from\nX-WebmailSrc: $ip");
 		}
-		$mail->Body = implode("\n",$body);
-		if (!$mail->Send())
-			echo " There has been a problem sending email to [$to]. ";
-		//mail($to,$subject,implode("\n",$body),"From: $from\nX-WebmailSrc: $ip");
 		$tofield = $this->GetConfigValue('Confirmation Email Address Field');
 		if ($tofield!='')
 		{
@@ -375,13 +373,12 @@ function Validate$name(me) {
 			$body = $this->GetConfigValue('Confirmation Email Contents');
 			$mail->Subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Confirmation Email Subject'));
 			$mail->AltBody = strip_tags($body);
-			$mail->Body = $body;
+			$mail->Body = str_replace(array_keys($subvalues),$subvalues,$body);
 			$mail->ClearAddresses();
 			$mail->ClearAttachments();
 			$mail->AddAddress($to);
 			if (!$mail->Send())
 				echo " There has been a problem sending email to [$to]. ";
-			//mail($to,$subject,$body,"From: $from\nX-WebmailSrc: $ip");
 		}
 	}
 	
