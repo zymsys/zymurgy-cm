@@ -183,7 +183,7 @@ div.ZymurgyBreadcrumbs
 		<a href="headtext.php" class="nav">Search Engines</a><br>
 		<? 
 		// Show custom table items
-		$sql = "select * from customtable where detailfor=0";
+		$sql = "select * from customtable where detailfor=0 order by disporder";
 		$ri = mysql_query($sql) or die("Can't load custom table items ($sql): ".mysql_error());
 		while (($row = mysql_fetch_array($ri))!==false)
 		{

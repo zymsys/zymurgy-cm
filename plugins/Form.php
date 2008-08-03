@@ -6,11 +6,16 @@ class Form extends PluginBase
 	var $XmlValues; //Poke form data into this to pre-populate the form
 	var $SaveID; //Poke id number to save to existing slot instead of insert
 	var $InputDataLoaded = false;
+	var $member = false;
 	
 	function Form()
 	{
 		$this->ValidationErrors = array();
 		$this->InputRows = array();
+		if (Zymurgy::memberauthenticate())
+		{
+			$this->member = Zymurgy::$member;
+		}
 		parent::PluginBase();
 	}
 	
@@ -72,8 +77,10 @@ class Form extends PluginBase
   `useragent` varchar(80) NOT NULL default '',
   `export` int(11),
   `formvalues` text NOT NULL,
+  `member` bigint,
   PRIMARY KEY  (`id`),
   KEY export (export),
+  KEY member (member),
   KEY `instance` (`instance`,`submittime`)
 )");
 		Zymurgy::$db->query("CREATE TABLE `forminput` (
@@ -131,36 +138,40 @@ class Form extends PluginBase
 	
 	function Upgrade()
 	{
-		switch($this->dbrelease)
+		$diemsg = "Unable to upgrade Form plugin: ";
+		if ($this->dbrelease < 2)
 		{
-			case(1):
-				//Upgrade to r2 - capture/export support
-				//Need export table to track exports and when they happened and for who.
-				//Need to be able to re-download any exports we want.
-				//Need to be able to flush data from any export we want from the server side.
-				//Capture table needs to link to which export that capture belongs to.
-				//Null export info in capture means it's fresh.
-				$diemsg = "Unable to upgrade Form plugin: ";
-				Zymurgy::$db->query("alter table formcapture add export int") or die($diemsg.Zymurgy::$db->error());
-				Zymurgy::$db->query("alter table formcapture add index(export)") or die($diemsg.Zymurgy::$db->error());
-				Zymurgy::$db->query("CREATE TABLE `formexport` (
-					  `id` int(11) NOT NULL auto_increment,
-					  `exptime` datetime default NULL,
-					  `expuser` int(11) default NULL,
-					  `instance` int(11) default NULL,
-					  PRIMARY KEY  (`id`),
-					  KEY `exptime` (`exptime`),
-					  KEY `instance` (`instance`)
-					)");
-				Zymurgy::$db->query("alter table formcapture change `values` formvalues text NOT NULL");
-				break;
+			//Upgrade to r2 - capture/export support
+			//Need export table to track exports and when they happened and for who.
+			//Need to be able to re-download any exports we want.
+			//Need to be able to flush data from any export we want from the server side.
+			//Capture table needs to link to which export that capture belongs to.
+			//Null export info in capture means it's fresh.
+			Zymurgy::$db->query("alter table formcapture add export int") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table formcapture add index(export)") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("CREATE TABLE `formexport` (
+				  `id` int(11) NOT NULL auto_increment,
+				  `exptime` datetime default NULL,
+				  `expuser` int(11) default NULL,
+				  `instance` int(11) default NULL,
+				  PRIMARY KEY  (`id`),
+				  KEY `exptime` (`exptime`),
+				  KEY `instance` (`instance`)
+				)");
+			Zymurgy::$db->query("alter table formcapture change `values` formvalues text NOT NULL");
+		}
+		if ($this->dbrelease < 3)
+		{
+			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
+			Zymurgy::$db->query("alter table formcapture add member bigint") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table formcapture add index(member)") or die($diemsg.Zymurgy::$db->error());
 		}
 		$this->CompleteUpgrade();		
 	}
 	
 	function GetRelease()
 	{
-		return 2; //Added capture/export capabilities to db.
+		return 3; //Added capture/export capabilities to db.
 	}
 
 	function LoadInputData()
@@ -341,6 +352,10 @@ function Validate$name(me) {
 			$body[] = $header.': '.$value;
 			$subvalues['{'.$header.'}']=$value;
 		}
+		if ($this->member !== false)
+		{
+			$body[] = "Submitted by member #{$this->member['id']}: {$this->member['email']}";
+		}
 		//Also substitute newline characters for blank to avoid attacks on our email headers
 		$values["\r"] = '';
 		$values["\n"] = '';
@@ -410,9 +425,10 @@ function Validate$name(me) {
 		}
 		else 
 		{
-			$sql = "insert into formcapture (instance,submittime,ip,useragent,formvalues) values ({$this->iid},now(),
+			$sql = "insert into formcapture (instance,submittime,ip,useragent,formvalues,member) values ({$this->iid},now(),
 				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
-				Zymurgy::$db->escape_string($xml)."')";
+				Zymurgy::$db->escape_string($xml)."',".
+				($this->member === false ? 'NULL' : $this->member['id']).")";
 		}
 		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
 	}
@@ -572,7 +588,10 @@ function Validate$name(me) {
 		global $zauth;
 
 		//Get form's headers which will include headers from previous runs, even those no longer in use so that exports line up.
-		$headers = array();
+		$sql = "select count(*) from formcapture where member is not null and instance={$this->iid}";
+		$ri = Zymurgy::$db->query($sql) or die("Can't check member records ($sql): ".Zymurgy::$db->error());
+		$membercount = Zymurgy::$db->result($ri,0,0);
+		$headers = $membercount ? array('Member ID','Member Email') : array();
 		$sql = "select * from formheader where instance={$this->iid}";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to get export headers ($sql): ".Zymurgy::$db->error());
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -581,7 +600,7 @@ function Validate$name(me) {
 		}
 		Zymurgy::$db->free_result($ri);
 		//Now get actual data for this export
-		$sql = "select * from formcapture where (instance={$this->iid}) and export=$expid";
+		$sql = "select formcapture.id,formcapture.formvalues,formcapture.member,member.email from formcapture left join member on (formcapture.member=member.id) where (instance={$this->iid}) and export=$expid";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
 		$exported = array();
 		$rows = array();
@@ -601,12 +620,16 @@ function Validate$name(me) {
 					$headers[] = $key;
 				}
 			}
+			if ($membercount)
+			{
+				$xrow = array_merge(array('Member ID'=>$row['member'],'Member Email'=>$row['email']),$xrow);
+			}
 			$rows[] = $xrow;
-			/*echo "<pre>";
-			print_r($xindex);
-			print_r($xvals);
-			echo "</pre>";*/
+			echo "<pre>";
+			print_r($xrow);
+			echo "</pre>";
 		}
+		//exit;
 		//Now actually dump the data
 		ob_clean();
 		header("Content-Type: application/vnd.ms-excel");

@@ -236,19 +236,18 @@ class DataSetRow
 			$alist = array();
 			foreach ($values as $cname=>$val)
 			{
-				//echo "update[$tname,$values,$cname,$val]<br>";
-				$clist[] = $cname;
+				$clist[] = "`$cname`";
 				if (!key_exists("$tname.$cname",$this->DataSet->columns))
 					$this->DataSet->AddColumn($cname,true); //Auto create missing columns
 				if ($this->DataSet->columns["$tname.$cname"]->quoted)
 				{
 					$vlist[] = "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[] = "$cname='".Zymurgy::$db->escape_string($val)."'";
+					$alist[] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
 				}
 				else 
 				{
 					$vlist[] = $val;
-					$alist[] = "$cname=$val";
+					$alist[] = "`$cname`=$val";
 				}
 			}
 			if ($this->edittype == 'UPDATE')

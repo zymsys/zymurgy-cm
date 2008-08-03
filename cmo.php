@@ -388,6 +388,7 @@ if (!class_exists('Zymurgy'))
 			$pi->dbrelease = $row['release'];
 			$pi->extra = $extra;
 			$pi->InstanceName = $instance;
+			//echo "[".$pi->GetRelease().",{$pi->dbrelease}]"; exit;
 			if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 			if ($row !== false)
 			{

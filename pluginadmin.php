@@ -25,7 +25,7 @@ if (($pid > 0) && ($iid > 0))
 	$pi->pid = $pid;
 	$pi->iid = $iid;
 	$pi->InstanceName = $_GET['name'];
-	$pi->dbrelease = $row['release'];
+	$pi->dbrelease = $plugin['release'];
 	if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 	$pi->GetDefaultConfig();
 	Zymurgy::LoadPluginConfig($pi);
