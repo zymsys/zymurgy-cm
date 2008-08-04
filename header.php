@@ -83,6 +83,7 @@ var loader = new YAHOO.util.YUILoader({
 													lazyload: true });
 			oMenu.render();            
 		});
+		YAHOO.util.Dom.setStyle('zcmnavContentNav','display','block');
 		resizenav();
 		if (window.yuiLoaded)
 		{
@@ -93,11 +94,7 @@ var loader = new YAHOO.util.YUILoader({
 loader.insert();
 function resizenav() {
 	var ht = YAHOO.util.Dom.getViewportHeight();
-	var el = YAHOO.util.Dom.get('zcmnavContent');
-	var htstyle = (ht-100)+'px';
-	el.style.height = htstyle;
-	//YAHOO.util.Dom.setStyle(el,'height',ht-100);
-	ht++;
+	YAHOO.util.Dom.setStyle('zcmnavContent','height',(ht-100)+'px');
 }
 </script>
 <style type="text/css">
@@ -169,13 +166,18 @@ div.ZymurgyBreadcrumbs
 #zcmnavContent {
 	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 	width: 138px;
-	height: 600px;
+}
+#zcmnavContentNav {
+	display:none;
 }
 .yui-skin-sam #zcmnavContent .yuimenu ul {
 	padding: 0px 0px;
 }
 .yui-skin-sam #zcmnavContent .yuimenu .bd {
 	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+}
+.yui-skin-sam #zcmnavContent .yuimenuitem-selected {
+	background-color: <?= (array_key_exists('navselected',Zymurgy::$config)) ? Zymurgy::$config['navselected'] : '#B3D4FF' ?>;
 }
 .yuimenuitem {
 	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
@@ -260,7 +262,7 @@ function renderZCMNav($parent)
 	<div class="ZymurgyLoginName">
 		<?= $zauth->authinfo['fullname'] ?>
 	</div>
-	<div class="bd" style="border-style: none">
+	<div id="zcmnavContentNav" class="bd" style="border-style: none">
     	<ul class="first-of-type" style="padding: 0px">
     		<? renderZCMNav(0); ?>
         	<!--li class="yuimenuitem first-of-type"><a class="yuimenuitemlabel" href="#content" style="text-align:right">Content</a>
