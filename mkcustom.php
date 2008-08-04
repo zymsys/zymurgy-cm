@@ -84,6 +84,10 @@ function GetOptions()
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
 					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
 				break;
+			case('enum'):
+				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"droplist\" checked>Drop List ".
+					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				break;
 			default:
 				$opts = "Unknown type: $type";
 				break;
@@ -98,18 +102,124 @@ function GetOptions()
 	echo "</table><input type=\"submit\" value=\"Get Code\"></form>";
 }
 
+/**
+ * Shamelessly taken from http://www.php.net/manual/en/function.split.php, used here to parse enum lists.
+ * Create a 2D array from a CSV string
+ *
+ * @param mixed $data 2D array
+ * @param string $delimiter Field delimiter
+ * @param string $enclosure Field enclosure
+ * @param string $newline Line seperator
+ * @return
+ */
+function parsecsv($data, $delimiter = ',', $enclosure = '"', $newline = "\n"){
+    $pos = $last_pos = -1;
+    $end = strlen($data);
+    $row = 0;
+    $quote_open = false;
+    $trim_quote = false;
+
+    $return = array();
+
+    // Create a continuous loop
+    for ($i = -1;; ++$i){
+        ++$pos;
+        // Get the positions
+        $comma_pos = strpos($data, $delimiter, $pos);
+        $quote_pos = strpos($data, $enclosure, $pos);
+        $newline_pos = strpos($data, $newline, $pos);
+
+        // Which one comes first?
+        $pos = min(($comma_pos === false) ? $end : $comma_pos, ($quote_pos === false) ? $end : $quote_pos, ($newline_pos === false) ? $end : $newline_pos);
+
+        // Cache it
+        $char = (isset($data[$pos])) ? $data[$pos] : null;
+        $done = ($pos == $end);
+
+        // It it a special character?
+        if ($done || $char == $delimiter || $char == $newline){
+
+            // Ignore it as we're still in a quote
+            if ($quote_open && !$done){
+                continue;
+            }
+
+            $length = $pos - ++$last_pos;
+
+            // Is the last thing a quote?
+            if ($trim_quote){
+                // Well then get rid of it
+                --$length;
+            }
+
+            // Get all the contents of this column
+            $return[$row][] = ($length > 0) ? str_replace($enclosure . $enclosure, $enclosure, substr($data, $last_pos, $length)) : '';
+
+            // And we're done
+            if ($done){
+                break;
+            }
+
+            // Save the last position
+            $last_pos = $pos;
+
+            // Next row?
+            if ($char == $newline){
+                ++$row;
+            }
+
+            $trim_quote = false;
+        }
+        // Our quote?
+        else if ($char == $enclosure){
+
+            // Toggle it
+            if ($quote_open == false){
+                // It's an opening quote
+                $quote_open = true;
+                $trim_quote = false;
+
+                // Trim this opening quote?
+                if ($last_pos + 1 == $pos){
+                    ++$last_pos;
+                }
+
+            }
+            else {
+                // It's a closing quote
+                $quote_open = false;
+
+                // Trim the last quote?
+                $trim_quote = true;
+            }
+
+        }
+
+    }
+
+    return $return;
+}
+
 function ParseType($t)
 {
-	$typeinfo = explode('(',$t);
+	$typeinfo = explode('(',$t,2);
+	$type = $typeinfo[0];
 	if (count($typeinfo)>1)
 	{
-		$tp = explode(')',$typeinfo[1]);
-		$length = $tp[0];
+		if ($type=='enum')
+		{
+			$typedata = parsecsv(substr($typeinfo[1],0,-1),',',"'");
+			$typedata = $typedata[0];
+		}
+		else 
+		{
+			$tp = explode(')',$typeinfo[1]);
+			$typedata = $tp[0];
+		}
 	}
 	else 
-		$length = 0;
-	$type = $typeinfo[0];
-	return array($type,$length);
+		$typedata = 0;
+	return array($type,$typedata);
 }
 
 function ShowCode()
@@ -188,6 +298,19 @@ function ShowCode()
 						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
 						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array('0'=>'No','1'=>'Yes'));";
 					}
+					break;
+				case('enum'):
+					$enumarray = array();
+					foreach($length as $enumvalue)
+					{
+						$enumarray[] = "'$enumvalue'=>'$enumvalue'";
+					}
+					switch ($opts)
+					{
+						case('droplist'): $dg[] = "\$dg->AddDropListEditorLookup('$fld','$name',array(".implode(',',$enumarray)."));"; break;
+						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array(".implode(',',$enumarray)."));"; break;
+					}
+					break;
 					break;
 			}
 		}

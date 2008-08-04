@@ -60,6 +60,31 @@ if (mysql_num_rows($ri)==0)
 	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
 }
 
+//Make sure we start with the default navigation structure
+$sql = "select count(*) from zcmnav";
+$ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
+if (mysql_result(0)==0)
+{
+	$sql = "INSERT INTO `zcmnav` VALUES 
+		(1,1,0,'Content','Sub-Menu',''),
+		(3,3,0,'Admin','Sub-Menu',''),
+		(4,4,0,'Webmaster','Sub-Menu',''),
+		(5,5,0,'Profile','URL','profile.php'),
+		(6,6,0,'Help','URL','help.php'),
+		(7,7,0,'Logout','URL','logout.php'),
+		(8,8,1,'Simple Content','URL','sitetext.php'),
+		(9,9,1,'SEO','URL','headtext.php'),
+		(10,10,3,'User Management','URL','usermng.php'),
+		(11,11,3,'User Activity','URL','useractivity.php'),
+		(12,12,3,'Help Editor','URL','helpeditor.php'),
+		(13,13,4,'Navigation','URL','navigation.php'),
+		(14,14,4,'Master Config','URL','configconfig.php'),
+		(15,15,4,'Plugin Management','URL','plugin.php'),
+		(16,16,4,'Custom Tables','URL','customtable.php'),
+		(17,17,4,'Custom Code','URL','mkcustom.php');";
+	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
+}
+
 //Run random column type updates
 mysql_query("alter table sitetext change body body longtext");
 mysql_query("alter table sitetext change plainbody plainbody longtext");

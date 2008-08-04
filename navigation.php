@@ -1,18 +1,50 @@
 <?
 /**
- * Needs plugin support, similar to custom table support.
- * Needs breadcrumbs
  * Should disable changing type from subnav to anything else.
  */
 $adminlevel = 2;
+
+require_once('cmo.php');
+
+function navparents($nid)
+{
+	$r = array();
+	do
+	{
+		$nav = Zymurgy::$db->get("select * from zcmnav where id=$nid");
+		$r[$nav['id']] = $nav['navname'];
+		$nid = $nav['parent'];
+	}
+	while ($nid > 0);
+	return $r;
+}
+
+function navcrumbs($nid)
+{
+	global $crumbs;
+
+	$parents = navparents($nid);
+	$tids = array_keys($parents);
+	while (count($parents) > 0)
+	{
+		$tid = array_pop($tids);
+		$crumb = array_pop($parents).' Sub-Menu';
+		$crumbs["navigation.php?p=$tid"] = htmlspecialchars($crumb);
+	}	
+}
+
+$detailfor = array_key_exists('p',$_GET) ? (0 + $_GET['p']) : 0;
+$crumbs = array("navigation.php"=>"Navigation");
+if ($detailfor > 0)
+{
+	navcrumbs($detailfor);
+}
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
-	$breadcrumbTrail = "<a href=\"navigation.php\">Navigation</a> &gt; " .
-		"<a href=\"stcategory.php\">Categories</a> &gt; Edit";
-}
-else 
-{
-	$breadcrumbTrail = "<a href=\"navigation.php\">Navigation</a> &gt; Categories";
+	$ek = 0 + $_GET['editkey'];
+	$nav = Zymurgy::$db->get("select * from zcmnav where id=$ek");
+	$navname = $tbl['navname'];
+	$crumbs[''] = "Edit $navname";
 }
 
 include 'header.php';
@@ -24,10 +56,13 @@ if (array_key_exists('action',$_GET) || array_key_exists('editkey',$_GET))
 <script type="text/javascript">
 var lasturl = '';
 var lastct = 0;
+var lastpi = 0;
 var urlContent;
 var ctContent;
+var piContent;
 var smContent = 'n/a';
 var ctOpts = [];
+var piOpts = [];
 
 function loadCtOpts() {
 	var n = 0;
@@ -43,27 +78,70 @@ mysql_free_result($ri);
 ?>
 }
 
+function loadPiOpts() {
+	var n = 0;
+<?
+$sql = "select id,title from plugin";
+$ri = mysql_query($sql) or die("Can't load plugin items ($sql): ".mysql_error());
+while (($row = mysql_fetch_array($ri))!==false)
+{
+	echo "\tpiOpts[n++] = {id: {$row['id']}, name: \"".
+		addslashes($row['title'])."\"};\r\n";
+}
+mysql_free_result($ri);
+?>
+}
+
 function setUrlContent() {
 	urlContent = "<input id=\"zcmnav.navto\" type=\"text\" value=\""+
 	lasturl.replace(/\"/g,'\\"')+
 	"\" name=\"zcmnav.navto\" maxlength=\"200\" size=\"80\" onchange=\"updateContent()\">";
 }
 
-function setCtContent() {
-	ctContent = "<select id=\"zcmnav.navto\" name=\"zcmnav.navto\" onchange=\"updateCtOpt()\">";
-	for (var i = 0; i < ctOpts.length; i++) {
-		ctContent += "<option value=\"" + ctOpts[i].id + "\"";
-		if (lastct == ctOpts[i].id) {
-			ctContent += " selected";
+function setDropListContent(onchange,opts,last) {
+	var dlHtml = "<select id=\"zcmnav.navto\" name=\"zcmnav.navto\" onchange=\""+onchange+"()\">";
+	dlHtml += "<option value=\"0\">Choose...</option>";
+	for (var i = 0; i < opts.length; i++) {
+		dlHtml += "<option value=\"" + opts[i].id + "\"";
+		if (last == opts[i].id) {
+			dlHtml += " selected";
 		}
-		ctContent += ">" + ctOpts[i].name + "</option>";
+		dlHtml += ">" + opts[i].name + "</option>";
 	}
-	ctContent += "</select>";
+	dlHtml += "</select>";
+	return dlHtml;
+}
+
+function setCtContent() {
+	ctContent = setDropListContent('updateCtOpt',ctOpts,lastct);
+}
+
+function setPiContent() {
+	piContent = setDropListContent('updatePiOpt',piOpts,lastpi);
+}
+
+function setNavNameIfBlank(newname,opts) {
+	var el = document.getElementById('zcmnav.navname');
+	if (el.value=='') {
+		for (var n = 0; n < opts.length; n++) {
+			if (opts[n].id==newname) {
+				el.value = opts[n].name;
+				break;
+			}
+		}
+	}
 }
 
 function updateCtOpt() {
 	var elCtOpt = document.getElementById('zcmnav.navto');
 	lastct = elCtOpt.value;
+	setNavNameIfBlank(lastct,ctOpts);
+}
+
+function updatePiOpt() {
+	var el = document.getElementById('zcmnav.navto');
+	lastpi = el.value;
+	setNavNameIfBlank(lastpi,piOpts);
 }
 
 function updateContent() {
@@ -71,46 +149,73 @@ function updateContent() {
 	lasturl = elUrl.value;
 }
 
-setUrlContent();
 loadCtOpts();
-setCtContent();
+loadPiOpts();
 
 function setDestination(content) {
 	var elDest = document.getElementById('cell-zcmnav.navto');
 	elDest.innerHTML = content;
 }
+function updateNoSubMenuChange() {
+	var elNavType = document.getElementById('zcmnav.navtype');
+	if (elNavType.value=='Sub-Menu')
+	{
+		YAHOO.util.Dom.setStyle('noSubMenuChange','display','block');
+	} else {
+		YAHOO.util.Dom.setStyle('noSubMenuChange','display','none');
+	}
+}
 function yuiLoaded() {
 	YAHOO.util.Event.onDOMReady(function() {
-		var elUrlRadio = document.getElementById('zcmnav.navtype-URL');
-		var elCtRadio = document.getElementById('zcmnav.navtype-Custom Table');
-		var elSmRadio = document.getElementById('zcmnav.navtype-Sub-Menu');
+		var elNavType = document.getElementById('zcmnav.navtype');
 		var elNavTo = document.getElementById('zcmnav.navto');
-		if (!elUrlRadio.checked && !elCtRadio.checked && !elSmRadio.checked) {
-			elUrlRadio.checked = true;
+		var elNavTypeCell = document.getElementById('cell-zcmnav.navtype');
+		var newdiv = document.createElement('div');
+		newdiv.setAttribute('id','noSubMenuChange');
+		newdiv.innerHTML="Sub-Menu's cannot be changed to another type.";
+		elNavTypeCell.appendChild(newdiv);
+		updateNoSubMenuChange();
+		switch(elNavType.value) {
+			case 'URL':
+				lasturl = elNavTo.value;
+				setUrlContent();
+				setDestination(urlContent);
+				break;
+			case 'Custom Table':
+				lastct = elNavTo.value;
+				setCtContent();
+				setDestination(ctContent);
+				break;
+			case 'Plugin':
+				lastpi = elNavTo.value;
+				setPiContent();
+				setDestination(piContent);
+				break;
+			case 'Sub-Menu':
+			default:
+				setDestination(smContent);
+				elNavType.disabled = true;
+				break;
 		}
-		if (elUrlRadio.checked) {
-			lasturl = elNavTo.value;
-			setUrlContent();
-			setDestination(urlContent);
-		}
-		if (elCtRadio.checked) {
-			lastct = elNavTo.value;
-			setCtContent();
-			setDestination(ctContent);
-		}
-		if (elSmRadio.checked) {
-			setDestination(smContent);
-		}
-		YAHOO.util.Event.addListener("zcmnav.navtype-URL", "click", function() {
-			setUrlContent();
-			setDestination(urlContent);
-		}); 
-		YAHOO.util.Event.addListener("zcmnav.navtype-Custom Table", "click", function() {
-			setCtContent();
-			setDestination(ctContent);
-		}); 
-		YAHOO.util.Event.addListener("zcmnav.navtype-Sub-Menu", "click", function() {
-			setDestination(smContent);
+		YAHOO.util.Event.addListener("zcmnav.navtype", "change", function() {
+			switch(elNavType.value) {
+				case 'URL':
+					setUrlContent();
+					setDestination(urlContent);
+					break;
+				case 'Custom Table':
+					setCtContent();
+					setDestination(ctContent);
+					break;
+				case 'Plugin':
+					setPiContent();
+					setDestination(piContent);
+					break;
+				case 'Sub-Menu':
+				default:
+					setDestination(smContent);
+					break;
+			}
 		}); 
 	});
 }
@@ -147,7 +252,10 @@ $dg->AddColumn('Navigation Name','navname');
 $dg->AddColumn('Type','navtype');
 $dg->AddColumn('','id','<a href="navigation.php?p={0}">Sub-navigation</a>');
 $dg->AddInput('navname','Navigation Name:',60,60);
-$dg->AddRadioEditor('navtype','Navtype',array('URL'=>'URL','Custom Table'=>'Custom Table','Sub-Menu'=>'Sub-Menu'));
+$dg->AddDropListEditor('navtype','Navtype',array('URL'=>'URL',
+	'Custom Table'=>'Custom Table',
+	'Plugin'=>'Plugin',
+	'Sub-Menu'=>'Sub-Menu'));
 $dg->AddInput('navto','Destination:',200,80);
 $dg->AddUpDownColumn('disporder');
 $dg->AddEditColumn();

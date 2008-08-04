@@ -98,7 +98,7 @@ function gettable($t)
 	return $tbl;
 }
 
-$sql = "select * from customfield where tableid=$t order by customedit";
+$sql = "select * from customfield where tableid=$t order by disporder";
 $ri = Zymurgy::$db->query($sql) or die("Unable to get table fields ($sql): ".Zymurgy::$db->error());
 $cols = array();
 $capts = array();

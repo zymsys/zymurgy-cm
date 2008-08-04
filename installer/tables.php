@@ -155,6 +155,16 @@ $tables = array(
 	'helpindexphrase'=>"CREATE TABLE `helpindexphrase` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `phrase` varchar(200) default NULL,
-  UNIQUE KEY `id` (`id`))"
+  UNIQUE KEY `id` (`id`))",
+	'zcmnav'=>"CREATE TABLE `zcmnav` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `disporder` bigint(20) default NULL,
+  `parent` bigint(20) default '0',
+  `navname` varchar(60) default NULL,
+  `navtype` enum('URL','Custom Table','Plugin','Sub-Menu') default NULL,
+  `navto` varchar(200) default NULL,
+  UNIQUE KEY `id` (`id`),
+  KEY `disporder` (`disporder`),
+  KEY `parent` (`parent`))"
 	);
 ?>

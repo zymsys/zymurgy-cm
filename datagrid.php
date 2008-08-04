@@ -1184,7 +1184,7 @@ class DataGrid
 			{
 				if (isset($c->editcaption))
 				{
-					echo "<tr><td align=right>{$c->editcaption}</td><td>";
+					echo "<tr><td align=right>{$c->editcaption}</td><td id=\"cell-{$c->datacolumn}\">";
 					$widget = new InputWidget();
 					$widget->fckeditorpath = $this->fckeditorpath;
 					$widget->UsePennies = $this->UsePennies;
@@ -1258,6 +1258,8 @@ class DataGrid
 					$widget->lookups = $this->lookups;
 					$widget->UsePennies = $this->UsePennies;
 					$display = $widget->Display($c->editor,$c->template,$row->values[$c->datacolumn],$row->values[$this->DataSet->masterkey]);
+					if (isset($this->OnBeforeRenderCell))
+						$display = call_user_func($this->OnBeforeRenderCell,$c->datacolumn,$row->values,$display);
 					echo "<td>$display</td>";
 				}
 			}

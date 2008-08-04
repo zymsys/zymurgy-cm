@@ -283,11 +283,11 @@ passThroughFormSubmit = false;
 			case "input":
 			case "numeric":
 			case "float":
-				echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" name=\"".
+				echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
 			case "password":
-				echo "<input type=\"password\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" name=\"".
+				echo "<input type=\"password\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
 			/*case "colour":
@@ -296,12 +296,12 @@ passThroughFormSubmit = false;
 					"$name\" value=\"$value\" />";
 				break;*/
 			case "checkbox":
-				echo "<input type=\"checkbox\" name=\"$name\"";
+				echo "<input type=\"checkbox\" id=\"$name\" name=\"$name\"";
 				if (($ep[1]=='checked') || ($value!='')) echo " checked=\"checked\"";
 				echo " />";
 				break;
 			case "textarea":
-				echo "<textarea name=\"".
+				echo "<textarea id=\"$name\" name=\"".
 					"$name\" rows=\"{$ep[2]}\" cols=\"{$ep[1]}\">$value</textarea>";
 				break;
 			case "money":
@@ -309,7 +309,7 @@ passThroughFormSubmit = false;
 				if ($this->UsePennies)
 					$m = $m / 100;
 				$m = '$'.number_format($m,2,'.',',');
-				echo "<input type=\"text\" name=\"$name\" value=\"$m\" />";
+				echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 				break;
 			case "inputspec":
 				require_once("$ZymurgyRoot/zymurgy/include/inputspec.php");
@@ -323,7 +323,7 @@ passThroughFormSubmit = false;
 				$radioarray = $this->HackedUnserialize(implode('.',$rp));
 				foreach($radioarray as $rkey=>$rcaption)
 				{
-					echo "<label><input type=\"radio\" name=\"$name\" value=\"$rkey\"";
+					echo "<label><input type=\"radio\" id=\"$name-$rkey\" name=\"$name\" value=\"$rkey\"";
 					if ($value == $rkey) echo " checked";
 					echo " />$rcaption</label><br>\r\n";
 				}
@@ -332,7 +332,7 @@ passThroughFormSubmit = false;
 				$rp = $ep;
 				array_shift($rp);
 				$radioarray = $this->HackedUnserialize(implode('.',$rp));
-				echo "<select name=\"$name\">\r\n";
+				echo "<select id=\"$name\" name=\"$name\">\r\n";
 				foreach($radioarray as $rkey=>$rcaption)
 				{
 					echo "<option value=\"$rkey\"";
@@ -388,10 +388,10 @@ passThroughFormSubmit = false;
 					$thumbs[] = "<a onclick=\"aspectcrop_popup('sitetext.body','$targetsize','{$_GET['editkey']}','sitetext.body')\">".
 						"<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a> ";
 				}
-				echo "<input type=\"file\" name=\"$name\" /> ".implode($thumbs);
+				echo "<input type=\"file\" id=\"$name\" name=\"$name\" /> ".implode($thumbs);
 				break;
 			case "attachment":
-				echo "<input type=\"file\" name=\"$name\" />";
+				echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
 				break;
 			case "yuihtml":
 				Zymurgy::YUI("assets/skins/sam/skin.css");

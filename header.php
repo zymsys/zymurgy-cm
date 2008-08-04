@@ -70,15 +70,34 @@ ob_start();
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
-<link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.4.1/build/treeview/assets/skins/sam/treeview.css">
-<script language="javascript" type="text/javascript" src="http://yui.yahooapis.com/2.4.1/build/yahoo/yahoo-min.js"></script>
-<script language="javascript" type="text/javascript" src="http://yui.yahooapis.com/2.4.1/build/event/event-min.js"></script>
-<script language="javascript" type="text/javascript" src="http://yui.yahooapis.com/2.4.1/build/treeview/treeview-min.js"></script>
-<script language="javascript" type="text/javascript">
-function onSearch_Click()
-{
-	var searchPhrases = txtSearch.value.replace(/ /g,"+");
-	window.location.href = "search.php?q=" + searchPhrases;	
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yuiloader/yuiloader-beta-min.js"></script>
+<script type="text/javascript">
+var loader = new YAHOO.util.YUILoader({
+    require: ["event","menu"],
+    loadOptional: true,
+    onSuccess: function() {
+		YAHOO.util.Event.onContentReady("zcmnavContent", function () {
+			var oMenu = new YAHOO.widget.Menu("zcmnavContent", { 
+													position: "static", 
+													hidedelay:  750, 
+													lazyload: true });
+			oMenu.render();            
+		});
+		resizenav();
+		if (window.yuiLoaded)
+		{
+			yuiLoaded();
+		}
+    }
+});
+loader.insert();
+function resizenav() {
+	var ht = YAHOO.util.Dom.getViewportHeight();
+	var el = YAHOO.util.Dom.get('zcmnavContent');
+	var htstyle = (ht-100)+'px';
+	el.style.height = htstyle;
+	//YAHOO.util.Dom.setStyle(el,'height',ht-100);
+	ht++;
 }
 </script>
 <style type="text/css">
@@ -122,7 +141,7 @@ body {
 	margin-right: 3px;
 	height: 100%;
 }
-.ZymurgyNavigation .ZymurgyLoginName {
+.ZymurgyLoginName {
 	font-weight: bold;
 	text-align: center;
 	margin-bottom:10px;
@@ -138,16 +157,28 @@ body {
 .ZymurgyNavigation .ZymurgyMenu a:hover {
 	text-decoration: overline underline;
 }
-
 div.ZymurgyBreadcrumbs
 {
 	border-bottom: 1px solid #666698;
 	padding: 3px;
 }
-
 .ZymurgyClientArea {
 	margin: 10px;
 	overflow: auto;
+}
+#zcmnavContent {
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+	width: 138px;
+	height: 600px;
+}
+.yui-skin-sam #zcmnavContent .yuimenu ul {
+	padding: 0px 0px;
+}
+.yui-skin-sam #zcmnavContent .yuimenu .bd {
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+}
+.yuimenuitem {
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 }
 -->
 </style>
@@ -159,7 +190,7 @@ div.ZymurgyBreadcrumbs
 -->
 </style>
 </head>
-<body>
+<body id="zcmbody" class="yui-skin-sam" onresize="resizenav()">
 <div class="ZymurgyHeader">
 	<div class="ZymurgyVendor">
 		<? if ((isset(Zymurgy::$config['vendorlogo'])) && (Zymurgy::$config['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".Zymurgy::$config['vendorlink']."\"><img border=\"0\" src=\"".Zymurgy::$config['vendorlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['vendorname'])."\"></a>"; ?>
@@ -171,7 +202,119 @@ div.ZymurgyBreadcrumbs
 		<? if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://".Zymurgy::$config['sitehome']."/\"><img border=\"0\" src=\"".Zymurgy::$config['clientlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['defaulttitle'])."\"></a>"; ?>
 	</div>
 </div>
-<div class="ZymurgyNavigation">
+<?
+function renderZCMNav($parent)
+{
+	global $donefirstzcmnav;
+	
+	$sql = "select * from zcmnav where parent=$parent order by disporder";
+	$ri = Zymurgy::$db->run($sql);
+	$navs = array();
+	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+	{
+		$navs[] = $row;
+	}
+	mysql_free_result($ri);
+	if (count($navs)==0) return;
+	foreach($navs as $nav)
+	{
+		echo "<li class=\"yuimenuitem";
+		if (!isset($donefirstzcmnav))
+		{
+			$donefirstzcmnav = true;
+			echo " first-of-type";
+		}
+		echo "\"><a class=\"yuimenuitemlabel\" href=\"";
+		switch ($nav['navtype'])
+		{
+			case 'Sub-Menu':
+				$href = "#zcmnav{$nav['id']}";
+				break;
+			case 'Custom Table':
+				$href = "customedit.php?t={$nav['navto']}";
+				break;
+			case 'Plugin':
+				$href = "pluginadmin.php?pid={$nav['navto']}";
+				break;
+			case 'URL':
+				$href = $nav['navto'];
+				break;
+		}
+		echo $href."\"";
+		if ($parent==0)
+		{
+			echo " style=\"text-align:right\"";
+		}
+		echo ">{$nav['navname']}</a>";
+		if ($nav['navtype']=='Sub-Menu')
+		{
+			echo "<div id=\"".substr($href,1)."\" class=\"yuimenu\"><div class=\"bd\"><ul>";
+			renderZCMNav($nav['id']);
+			echo "</ul></div></div>";
+		}
+		echo "</li>";
+	}
+}
+?>
+<div id="zcmnavContent" class="yuimenu" style="float:left; margin-right: 5px">
+	<div class="ZymurgyLoginName">
+		<?= $zauth->authinfo['fullname'] ?>
+	</div>
+	<div class="bd" style="border-style: none">
+    	<ul class="first-of-type" style="padding: 0px">
+    		<? renderZCMNav(0); ?>
+        	<!--li class="yuimenuitem first-of-type"><a class="yuimenuitemlabel" href="#content" style="text-align:right">Content</a>
+            	<div id="content" class="yuimenu">
+                	<div class="bd">
+                    	<ul>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="sitetext.php">Simple Content</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="headtext.php">SEO</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="#plugins" style="text-align:right">Plugins</a>
+            	<div id="plugins" class="yuimenu">
+                	<div class="bd">
+                    	<ul>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="pluginadmin.php?pid=1">Forms</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="pluginadmin.php?pid=3">Galleries</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="#admin" style="text-align:right">Admin</a>
+            	<div id="admin" class="yuimenu">
+                	<div class="bd">
+                    	<ul>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="usermng.php">User Management</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="useractivity.php">User Activity</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="helpeditor.php">Help Editor</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="#webmaster" style="text-align:right">Webmaster</a>
+            	<div id="webmaster" class="yuimenu">
+                	<div class="bd">
+                    	<ul>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="navigation.php">Navigation</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="configconfig.php">Master Config</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="plugin.php">Plugin Management</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="customtable.php">Custom Tables</a></li>
+                            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="mkcustom.php">Custom Code</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="profile.php" style="text-align:right">Profile</a></li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="help.php" style="text-align:right">Help</a></li>
+            <li class="yuimenuitem"><a class="yuimenuitemlabel" href="logout.php" style="text-align:right">Logout</a></li-->
+        </ul>
+    </div>
+</div>
+
+<div class="ZymurgyNavigation" style="display:none">
 	<div class="ZymurgyLoginName">
 		<?= $zauth->authinfo['fullname'] ?>
 	</div>
