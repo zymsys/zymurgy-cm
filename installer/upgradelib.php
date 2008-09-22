@@ -48,8 +48,11 @@ function RenameOldTables()
 			'helpindexphrase'=>'zcm_helpindexphrase');
 		foreach ($map as $oldname=>$newname)
 		{
-			$sql = "rename table $oldname to $newname";
-			mysql_query($sql) or die("Can't rename table ($sql): ".mysql_error());
+			if (array_key_exists($oldname,$etables))
+			{
+				$sql = "rename table $oldname to $newname";
+				mysql_query($sql) or die("Can't rename table ($sql): ".mysql_error());
+			}
 		}
 	}
 }
