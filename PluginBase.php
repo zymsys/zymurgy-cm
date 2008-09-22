@@ -19,7 +19,7 @@ class PluginBase
 	function CompleteUpgrade()
 	{
 		$this->dbrelease = $this->GetRelease();
-		Zymurgy::$db->query("update plugin set `release`={$this->dbrelease} where id={$this->pid}");
+		Zymurgy::$db->query("update zcm_plugin set `release`={$this->dbrelease} where id={$this->pid}");
 	}
 	
 	function GetTitle()
@@ -42,7 +42,7 @@ class PluginBase
 	 */
 	function RemoveInstance()
 	{
-		$sql = "delete from pluginconfig where plugin={$this->pid} and instance={$this->iid}";
+		$sql = "delete from zcm_pluginconfig where plugin={$this->pid} and instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die ("Unable to remove plugin configuration ($sql): ".Zymurgy::$db->error());
 	}
 	

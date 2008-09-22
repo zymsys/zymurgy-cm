@@ -2,7 +2,7 @@
 // Categories may only be edited by the administrator
 $adminlevel = 2;
 
-$_GET['sortcolumn']='stcategory.name';
+$_GET['sortcolumn']='zcm_stcategory.name';
 
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
@@ -20,12 +20,12 @@ include 'datagrid.php';
 //The values array contains tablename.columnname keys with values from the row to be deleted.
 function OnDelete($values)
 {
-	$sql = "update sitetext set category=0 where category={$_GET['deletekey']}";
+	$sql = "update zcm_sitetext set category=0 where category={$_GET['deletekey']}";
 	Zymurgy::$db->query($sql) or die("Unable to reset category id's ($sql): ".Zymurgy::$db->error());
 	return true; //Return false to override delete.
 }
 
-$ds = new DataSet('stcategory','id');
+$ds = new DataSet('zcm_stcategory','id');
 $ds->AddColumns('id','name');
 $ds->OnDelete = 'OnDelete';
 $ds->AddDataFilter('id',0,'<>');

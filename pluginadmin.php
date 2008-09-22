@@ -12,7 +12,7 @@ require_once('datagrid.php');
 
 if (($pid > 0) && ($iid > 0))
 { // We have both a plugin and an instance, load its config and render it.
-	$sql = "select name,title,`release` from plugin where id=$pid";
+	$sql = "select name,title,`release` from zcm_plugin where id=$pid";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Error loading plugin info: ".Zymurgy::$db->error()."<br>$sql");
 	$plugin=Zymurgy::$db->fetch_array($ri);
@@ -34,7 +34,7 @@ if (($pid > 0) && ($iid > 0))
 }
 else 
 {
-	$sql = "select id,name from plugininstance where (`private`=0) and (plugin=$pid)";
+	$sql = "select id,name from zcm_plugininstance where (`private`=0) and (plugin=$pid)";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Error loading instance info: ".Zymurgy::$db->error()."<br>$sql");
 	if (Zymurgy::$db->num_rows($ri)==0)

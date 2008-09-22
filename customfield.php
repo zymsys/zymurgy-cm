@@ -29,7 +29,7 @@ function OnDelete($values)
 {
 	global $t;
 	$tbl = gettable($t);
-	$sql = "alter table `{$tbl['tname']}` drop `{$values['customfield.cname']}`";
+	$sql = "alter table `{$tbl['tname']}` drop `{$values['zcm_customfield.cname']}`";
 	mysql_query($sql) or die("Unabel to remove column ($sql): ".mysql_error());
 	return true; //Return false to override delete.
 }
@@ -37,33 +37,33 @@ function OnDelete($values)
 //The values array contains tablename.columnname keys with the proposed new values for the updated row.
 function OnBeforeUpdate($values)
 {
-	$okname = okname($values['customfield.cname']);
+	$okname = okname($values['zcm_customfield.cname']);
 	if ($okname!==true)
 	{
 		return $okname;
 	}
 	global $t;
 	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['customfield.inputspec']);
-	$sql = "select * from customfield where id={$values['customfield.id']}";
+	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
+	$sql = "select * from zcm_customfield where id={$values['zcm_customfield.id']}";
 	$ri = mysql_query($sql) or die("Unable to get old field info ($sql): ".mysql_error());
 	$old = mysql_fetch_array($ri) or die ("No such field ($sql)");
-	if (($old['cname']!=$values['customfield.cname']) || ($old['inputspec']!=$values['customfield.inputspec']))
+	if (($old['cname']!=$values['zcm_customfield.cname']) || ($old['inputspec']!=$values['zcm_customfield.inputspec']))
 	{
 		//Column name or type has changed, update the db.
-		$sql = "alter table `{$tbl['tname']}` change `{$old['cname']}` `{$values['customfield.cname']}` $sqltype";
+		$sql = "alter table `{$tbl['tname']}` change `{$old['cname']}` `{$values['zcm_customfield.cname']}` $sqltype";
 		mysql_query($sql) or die("Unable to change field ($sql): ".mysql_error());
 	}
-	if ($old['indexed']!=$values['customfield.indexed'])
+	if ($old['indexed']!=$values['zcm_customfield.indexed'])
 	{
 		//Add or remove an index
-		if ($values['customfield.indexed']=='Y')
+		if ($values['zcm_customfield.indexed']=='Y')
 		{
-			$sql = "alter table `{$tbl['tname']}` add index(`{$values['customfield.cname']}`)";
+			$sql = "alter table `{$tbl['tname']}` add index(`{$values['zcm_customfield.cname']}`)";
 		}
 		else 
 		{
-			$sql = "alter table `{$tbl['tname']}` drop index(`{$values['customfield.cname']}`)";
+			$sql = "alter table `{$tbl['tname']}` drop index(`{$values['zcm_customfield.cname']}`)";
 		}
 		mysql_query($sql) or die("Can't change index ($sql): ".mysql_error());
 	}
@@ -73,24 +73,24 @@ function OnBeforeUpdate($values)
 //The values array contains tablename.columnname keys with the proposed new values for the new row.
 function OnBeforeInsert($values)
 {
-	$okname = okname($values['customfield.cname']);
+	$okname = okname($values['zcm_customfield.cname']);
 	if ($okname!==true)
 	{
 		return $okname;
 	}
 	global $t;
 	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['customfield.inputspec']);
-	$sql = "alter table `{$tbl['tname']}` add `{$values['customfield.cname']}` $sqltype";
+	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
+	$sql = "alter table `{$tbl['tname']}` add `{$values['zcm_customfield.cname']}` $sqltype";
 	mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
-	if ($values['customfield.indexed']=='Y')
+	if ($values['zcm_customfield.indexed']=='Y')
 	{
-		$sql = "alter table `{$tbl['tname']}` add index(`{$values['customfield.cname']}`)";
+		$sql = "alter table `{$tbl['tname']}` add index(`{$values['zcm_customfield.cname']}`)";
 	}
 	return $values; // Change values you want to alter before the insert occurs.
 }
 
-$ds = new DataSet('customfield','id');
+$ds = new DataSet('zcm_customfield','id');
 $ds->AddColumns('id','disporder','tableid','cname','inputspec','caption','indexed','gridheader');
 $ds->AddDataFilter('tableid',$t);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';

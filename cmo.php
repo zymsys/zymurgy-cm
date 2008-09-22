@@ -39,7 +39,7 @@ if (!class_exists('Zymurgy'))
 		static $build = 1987;
 		
 		/**
-		 * Member info available if the user is logged in.
+		 * member info available if the user is logged in.
 		 *
 		 * @var array
 		 */
@@ -175,7 +175,7 @@ if (!class_exists('Zymurgy'))
 			{
 				die("Unable to create new site text.  Tag names must be 35 characters or less.");
 			}
-			$sql = "select body,id,inputspec from sitetext where tag='".Zymurgy::$db->escape_string($tag)."'";
+			$sql = "select body,id,inputspec from zcm_sitetext where tag='".Zymurgy::$db->escape_string($tag)."'";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 				die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
@@ -183,9 +183,9 @@ if (!class_exists('Zymurgy'))
 			{
 				//Create new sitetext entry
 				$body = 'Please edit the general content called <b>"'.$tag.'"</b> in Zymurgy:CM.';
-				Zymurgy::$db->query("insert into sitetext (tag,inputspec,body) values ('".Zymurgy::$db->escape_string($tag)."','".
+				Zymurgy::$db->query("insert into zcm_sitetext (tag,inputspec,body) values ('".Zymurgy::$db->escape_string($tag)."','".
 					Zymurgy::$db->escape_string($type)."','".Zymurgy::$db->escape_string($body)."')");
-				Zymurgy::$db->query("insert into textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
+				Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
 				$t = $body;
 			}
 			else
@@ -204,7 +204,7 @@ if (!class_exists('Zymurgy'))
 					{
 						//Size isn't yet supported.  Add it to the list.
 						$whl[] = $requestedSize;
-						Zymurgy::$db->query("update sitetext set inputspec='image.".implode(',',$whl)."' where id={$row['id']}");
+						Zymurgy::$db->query("update zcm_sitetext set inputspec='image.".implode(',',$whl)."' where id={$row['id']}");
 					}
 					//Make sure we have the requested thumb.
 					$requestedSize = str_replace('.','x',$requestedSize);
@@ -219,7 +219,7 @@ if (!class_exists('Zymurgy'))
 				}
 				else if ($type!=$row['inputspec'])
 				{
-					Zymurgy::$db->query("update sitetext set inputspec='".Zymurgy::$db->escape_string($type)."' where id={$row['id']}");
+					Zymurgy::$db->query("update zcm_sitetext set inputspec='".Zymurgy::$db->escape_string($type)."' where id={$row['id']}");
 				}
 				$widget = new InputWidget();
 				
@@ -255,14 +255,14 @@ if (!class_exists('Zymurgy'))
 					$t = "<span id=\"ST$tag\" onClick=\"cmsContentClick('$jstag'$extra)\" onMouseOver=\"cmsHighlightContent('$jstag')\" onMouseOut=\"cmsRestoreContent('$jstag')\">$t</span>";*/
 				}
 				//Ok, the site text exists, but is it linked to this document?
-				$sql = "select metaid from textpage where sitetextid={$row['id']} and metaid=".Zymurgy::$pageid;
+				$sql = "select metaid from zcm_textpage where sitetextid={$row['id']} and metaid=".Zymurgy::$pageid;
 				$lri = Zymurgy::$db->query($sql);
 				if (!$lri)
 					die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
 				if (Zymurgy::$db->num_rows($lri)==0)
 				{
 					//Nope, add the link.
-					Zymurgy::$db->query("insert into textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",{$row['id']})");
+					Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",{$row['id']})");
 				}
 				Zymurgy::$db->free_result($lri);
 			}
@@ -280,16 +280,16 @@ if (!class_exists('Zymurgy'))
 			$s = Zymurgy::$db->escape_string($_SERVER['PHP_SELF']);
 			if (($s=='') || ($s=='/'))
 				$s = '/index.php';
-			$ri = Zymurgy::$db->query("select id,title,keywords,description from meta where document='$s'");
+			$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
 			if (($row = Zymurgy::$db->fetch_array($ri))===false)
 			{
-				$ri = Zymurgy::$db->query("insert into meta (document,title,description,keywords,mtime) values ('$s','".
+				$ri = Zymurgy::$db->query("insert into zcm_meta (document,title,description,keywords,mtime) values ('$s','".
 					Zymurgy::$db->escape_string(Zymurgy::$config['defaulttitle'])."','".
 					Zymurgy::$db->escape_string(Zymurgy::$config['defaultdescription'])."','".
 					Zymurgy::$db->escape_string(Zymurgy::$config['defaultkeywords'])."',".time().")");
 				if (!$ri)
 					return "<!-- SQL Error: ".Zymurgy::$db->error()." -->\r\n";
-				$ri = Zymurgy::$db->query("select id,title,keywords,description from meta where document='$s'");
+				$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
 				$row = Zymurgy::$db->fetch_array($ri);
 			}
 			Zymurgy::$title = $row['title'];
@@ -321,7 +321,7 @@ if (!class_exists('Zymurgy'))
 			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
 			
 			$sm = new Zymurgy_SiteMap(Zymurgy::$config['sitehome']);
-			$ri = Zymurgy::$db->query("select * from meta");
+			$ri = Zymurgy::$db->query("select * from zcm_meta");
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
 				$sm->AddUrl($row['document'],$row['mtime'],$row['changefreq'],($row['priority']/10));
@@ -332,7 +332,7 @@ if (!class_exists('Zymurgy'))
 		static function LoadPluginConfig(&$pi)
 		{
 			$iid = 0 + $pi->iid;
-			$sql = "select `key`,`value` from pluginconfig where (plugin={$pi->pid}) and (instance=$iid)";
+			$sql = "select `key`,`value` from zcm_pluginconfig where (plugin={$pi->pid}) and (instance=$iid)";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 			{
@@ -374,8 +374,8 @@ if (!class_exists('Zymurgy'))
 			$pi->config = $pi->GetDefaultConfig();
 			//Now load the config from the database.  First we have to figure out our instance.  If this is
 			//a new instance then create it and populate it with default values.
-			$sql = "select plugin.id as pid, plugininstance.id as pii,`release` from plugin left join plugininstance on (plugin.id=plugininstance.plugin) where (plugin.name='".
-				Zymurgy::$db->escape_string($plugin)."') and (plugininstance.name='".
+			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii,`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) where (zcm_plugin.name='".
+				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
@@ -397,7 +397,7 @@ if (!class_exists('Zymurgy'))
 			else 
 			{
 				//New instance...  Load 'er up!
-				$sql = "select id,enabled from plugin where name='".
+				$sql = "select id,enabled from zcm_plugin where name='".
 					Zymurgy::$db->escape_string($plugin)."'";
 				$ri = Zymurgy::$db->query($sql);
 				if (!$ri)
@@ -412,7 +412,7 @@ if (!class_exists('Zymurgy'))
 				if ($row['enabled']==0)
 					die ("The plugin [$plugin] is not enabled.");
 				$pi->pid = $row['id'];
-				$ri = Zymurgy::$db->query("insert into plugininstance (plugin,name,`private`) values ({$pi->pid},'".
+				$ri = Zymurgy::$db->query("insert into zcm_plugininstance (plugin,name,`private`) values ({$pi->pid},'".
 					Zymurgy::$db->escape_string($instance)."',$private)");
 				$iid = Zymurgy::$db->insert_id();
 				Zymurgy::LoadPluginConfig($pi); //Load default config for new instance
@@ -421,7 +421,7 @@ if (!class_exists('Zymurgy'))
 				{
 					$key = $cv->key;
 					$value = $cv->value;
-					$sql = "insert into pluginconfig (plugin,instance,`key`,value) values ({$pi->pid},$pi->iid,'".
+					$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ({$pi->pid},$pi->iid,'".
 						Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
 					//echo "$sql<br>";
 					Zymurgy::$db->query($sql) or die("Can't create plugin config ($sql): ".Zymurgy::$db->error());
@@ -435,7 +435,6 @@ if (!class_exists('Zymurgy'))
 			$pi = Zymurgy::mkplugin($plugin,$instance,$extra,0);
 			if (!is_object($pi))
 			{
-				//echo "<pre>"; print_r($pi); echo "</pre>";
 				die("Unable to create plugin: $plugin");
 			}
 			return $pi->Render();
@@ -473,7 +472,7 @@ if (!class_exists('Zymurgy'))
 			if (array_key_exists('ZymurgyAuth',$_COOKIE))
 			{
 				$authkey = $_COOKIE['ZymurgyAuth'];
-				$sql = "select * from member where authkey='".Zymurgy::$db->escape_string($authkey)."'"; 
+				$sql = "select * from zcm_member where authkey='".Zymurgy::$db->escape_string($authkey)."'"; 
 				$ri = Zymurgy::$db->query($sql) or die("Unable to authenticate ($sql): ".Zymurgy::$db->error());
 				if (($row = Zymurgy::$db->fetch_array($ri))!==false)
 				{
@@ -502,7 +501,7 @@ if (!class_exists('Zymurgy'))
 		{
 			if (Zymurgy::memberauthenticate())
 			{
-				$sql = "select name from groups,membergroup where (membergroup.memberid=".Zymurgy::$member['id'].") and (membergroup.groupid=groups.id)";
+				$sql = "select name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
 				$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
 				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 				{
@@ -530,7 +529,7 @@ if (!class_exists('Zymurgy'))
 				$mid = 0 + Zymurgy::$member['id'];
 			else 
 				$mid = 0;
-			$sql = "insert into memberaudit (member, audittime, remoteip, realip, audit) values ($mid,".
+			$sql = "insert into zcm_memberaudit (member, audittime, remoteip, realip, audit) values ($mid,".
 				"now(),'$ip','".Zymurgy::$db->escape_string($realip)."','".Zymurgy::$db->escape_string($activity)."')";
 			Zymurgy::$db->query($sql) or die("Unable to log activity ($sql): ".Zymurgy::$db->error());
 		}
@@ -568,7 +567,9 @@ if (!class_exists('Zymurgy'))
 			{
 				die("Please define \$ZymurgyConfig['MemberLoginPage'] before using membership functions.");
 			}
-			if (Zymurgy::memberauthenticate() && Zymurgy::memberauthorize($groupname))
+			$matuh8 = Zymurgy::memberauthenticate();
+			$matuhz = Zymurgy::memberauthorize($groupname);
+			if ($matuh8 && $matuhz)
 			{
 				Zymurgy::memberaudit("Opened page {$_SERVER['REQUEST_URI']}");
 			}
@@ -581,14 +582,14 @@ if (!class_exists('Zymurgy'))
 		
 		static function memberdologin($userid, $password)
 		{
-			$sql = "select * from member where email='".Zymurgy::$db->escape_string($userid).
+			$sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
 				"' and password='".Zymurgy::$db->escape_string($password)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
 			if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 			{
 				//Set up the authkey and last auth
 				$authkey = md5(uniqid(rand(),true));
-				$sql = "update member set lastauth=now(), authkey='$authkey' where id={$row['id']}";
+				$sql = "update zcm_member set lastauth=now(), authkey='$authkey' where id={$row['id']}";
 				Zymurgy::$db->query($sql) or die("Unable to set auth info ($sql): ".Zymurgy::$db->error());
 				//Set authkey session cookie
 				$_COOKIE['ZymurgyAuth'] = $authkey;
@@ -598,6 +599,7 @@ if (!class_exists('Zymurgy'))
 			//-->
 			</script>";
 				Zymurgy::memberaudit("Successful login for [$userid]");
+				//echo "Alright, logged in with $authkey, now fuck off.<pre>"; print_r($_COOKIE); exit;
 				return true;
 			}
 			else 
@@ -612,7 +614,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::memberauthenticate();
 			if (is_array(Zymurgy::$member))
 			{
-				$sql = "update member set authkey=null where id=".Zymurgy::$member['id'];
+				$sql = "update zcm_member set authkey=null where id=".Zymurgy::$member['id'];
 				Zymurgy::$db->query($sql) or die("Unable to logout ($sql): ".Zymurgy::$db->error());
 				setcookie('ZymurgyAuth');
 			}
@@ -687,7 +689,7 @@ if (!class_exists('Zymurgy'))
 				if (!$authed)
 				{
 					//New registration
-					$sql = "insert into member(email,password,regtime) values ('".
+					$sql = "insert into zcm_member(email,password,regtime) values ('".
 						Zymurgy::$db->escape_string($userid)."','".
 						Zymurgy::$db->escape_string($password)."',now())";
 					$ri = Zymurgy::$db->query($sql);
@@ -714,7 +716,7 @@ if (!class_exists('Zymurgy'))
 							$iid = Zymurgy::$db->insert_id();
 							if ($iid)
 							{
-								$sql = "update member set formdata=$iid where id=".Zymurgy::$member['id'];
+								$sql = "update zcm_member set formdata=$iid where id=".Zymurgy::$member['id'];
 								Zymurgy::$db->query($sql) or die("Can't set form data ($sql): ".Zymurgy::$db->error());
 							}
 							Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=new');
@@ -731,7 +733,7 @@ if (!class_exists('Zymurgy'))
 					if (Zymurgy::$member['email']!==$userid)
 					{
 						//Is the new user id already in use?
-						$sql = "update member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
+						$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
 						$ri = Zymurgy::$db->query($sql);
 						if (!$ri)
 						{
@@ -742,19 +744,19 @@ if (!class_exists('Zymurgy'))
 							}
 							else 
 							{
-								die("Unable to update member ($sql): ".Zymurgy::$db->error());
+								die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 							}
 						}
 					}
 					//Has password changed?
 					if (!empty($password))
 					{
-						$sql = "update member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
-						Zymurgy::$db->query($sql) or die("Unable to update member ($sql): ".Zymurgy::$db->error());
+						$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
+						Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 					}
 					//Update other user info (XML)
 					$sql = "update formcapture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
-					Zymurgy::$db->query($sql) or die("Unable to update member ($sql): ".Zymurgy::$db->error());
+					Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 					Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 				}
 			}
@@ -808,7 +810,7 @@ if (!class_exists('Zymurgy'))
 								$e[] = 'Password is a required field.';
 							if (count($e)==0)
 							{
-								$sql = "insert into member(email,password,regtime) values ('".
+								$sql = "insert into zcm_member(email,password,regtime) values ('".
 									Zymurgy::$db->escape_string($email)."','".
 									Zymurgy::$db->escape_string($pass)."',now())";
 								$ri = Zymurgy::$db->query($sql);
@@ -820,7 +822,7 @@ if (!class_exists('Zymurgy'))
 									}
 									else 
 									{
-										die("Unable to create member ($sql): ".Zymurgy::$db->error());
+										die("Unable to create zcm_member ($sql): ".Zymurgy::$db->error());
 									}
 								}
 								else 
@@ -860,7 +862,7 @@ if (!class_exists('Zymurgy'))
 							if (array_key_exists('Fieldemail',$_POST))
 							{
 								//Try to update the email address
-								$sql = "update member set email='".Zymurgy::$db->escape_string($_POST['Fieldemail']).
+								$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($_POST['Fieldemail']).
 									"' where id=".Zymurgy::$member['id'];
 								$ri = Zymurgy::$db->query($sql);
 								if (!$ri)
@@ -884,7 +886,7 @@ if (!class_exists('Zymurgy'))
 									if (count($pi->ValidationErrors)==0)
 									{
 										//All good...  Update the password.
-										$sql = "update member set password='".Zymurgy::$db->escape_string($_POST['Fieldpass']).
+										$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($_POST['Fieldpass']).
 											"' where id=".Zymurgy::$member['id'];
 										Zymurgy::$db->query($sql) or die("Unable to update password ($sql): ".Zymurgy::$db->error());
 									}
@@ -892,7 +894,7 @@ if (!class_exists('Zymurgy'))
 								//If validation errors try to return record to it's old email.  Password should only set if all is well.
 								if (count($pi->ValidationErrors)>0)
 								{
-									$sql = "update member set email='".Zymurgy::$db->escape_string(Zymurgy::$member['email']).
+									$sql = "update zcm_member set email='".Zymurgy::$db->escape_string(Zymurgy::$member['email']).
 										"' where id=".Zymurgy::$member['id'];
 									Zymurgy::$db->query($sql) or die("Unable to restore email ($sql): ".Zymurgy::$db->error());
 								}
@@ -903,7 +905,7 @@ if (!class_exists('Zymurgy'))
 								$formid = Zymurgy::$db->insert_id();
 								if ($formid)
 								{
-									$sql = "update member set formdata=$formid where id=".Zymurgy::$member['id'];
+									$sql = "update zcm_member set formdata=$formid where id=".Zymurgy::$member['id'];
 									Zymurgy::$db->query($sql) or die("Can't set form data ($sql): ".Zymurgy::$db->error());
 								}
 								//return implode("\r\n",$r);
@@ -951,7 +953,7 @@ if (!class_exists('Zymurgy'))
 						memberpage();
 						$pi = mkplugin('Form',Zymurgy::$config['MembershipInfoForm']);
 						$pi->LoadInputData();
-						if ($member['formdata'])
+						if ($zcm_member['formdata'])
 						{
 							$sql = "select formvalues from formcapture where id=".Zymurgy::$member['formdata'];
 							$ri = Zymurgy::$db->query($sql) or die("Unable to load form data ($sql): ".Zymurgy::$db->error());
@@ -1049,7 +1051,7 @@ if (!class_exists('Zymurgy'))
 	Zymurgy::$db = new Zymurgy_DB();
 	
 	Zymurgy::$userconfig = array();
-	$ri = Zymurgy::$db->query("select * from config order by disporder");
+	$ri = Zymurgy::$db->query("select * from zcm_config order by disporder");
 	if ($ri)
 	{
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)

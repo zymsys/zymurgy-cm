@@ -7,7 +7,7 @@ if (isset($_POST['userid']))
 	$userid = $_POST['userid'];
 	$passwd = $_POST['passwd'];
 	
-	$sql = "select * from passwd where username='".
+	$sql = "select * from zcm_passwd where username='".
 		Zymurgy::$db->escape_string($userid)."' and password='".
 		Zymurgy::$db->escape_string($passwd)."'";
 	$ri = Zymurgy::$db->query($sql);

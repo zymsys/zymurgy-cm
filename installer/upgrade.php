@@ -26,6 +26,8 @@ $newcustomtable = array(
 
 include('upgradelib.php');
 
+RenameOldTables();
+CreateMissingTables();
 CheckColumns('sitetext',$newsitetext);
 CheckColumns('passwd',$newpasswd);
 CheckColumns('plugininstance',$newplugininstance);

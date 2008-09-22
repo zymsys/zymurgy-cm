@@ -90,7 +90,7 @@ include 'datagrid.php';
 
 function gettable($t)
 {
-	$sql = "select * from customtable where id=$t";
+	$sql = "select * from zcm_customtable where id=$t";
 	$ri = Zymurgy::$db->query($sql) or die("Can't get table ($sql): ".Zymurgy::$db->error());
 	$tbl = Zymurgy::$db->fetch_array($ri);
 	if (!is_array($tbl)) 
@@ -98,7 +98,7 @@ function gettable($t)
 	return $tbl;
 }
 
-$sql = "select * from customfield where tableid=$t order by disporder";
+$sql = "select * from zcm_customfield where tableid=$t order by disporder";
 $ri = Zymurgy::$db->query($sql) or die("Unable to get table fields ($sql): ".Zymurgy::$db->error());
 $cols = array();
 $capts = array();
@@ -155,7 +155,7 @@ foreach($ingrid as $col=>$header)
 		$dg->AddColumn($header,$col);
 	}
 }
-$sql = "select * from customtable where detailfor=$t";
+$sql = "select * from zcm_customtable where detailfor=$t";
 $ri = Zymurgy::$db->query($sql) or die("Unable to get detail tables ($sql): ".Zymurgy::$db->error());
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {

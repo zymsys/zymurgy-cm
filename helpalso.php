@@ -14,7 +14,7 @@ if (array_key_exists('action',$_GET))
 			if ($_SERVER['REQUEST_METHOD']=='GET')
 			{
 				echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\">New Reference: <select name=\"seealso\">\r\n";
-				$ri = Zymurgy::$db->query("select id,title from help where id<>$h");
+				$ri = Zymurgy::$db->query("select id,title from zcm_help where id<>$h");
 				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 				{
 					echo "<option value=\"{$row['id']}\">".htmlspecialchars($row['title'])."</option>";
@@ -27,12 +27,12 @@ if (array_key_exists('action',$_GET))
 			{
 				//Must be a post
 				$a = 0 + $_POST['seealso'];
-				Zymurgy::$db->query("insert into helpalso (help,seealso) values ($h,$a)");
+				Zymurgy::$db->query("insert into zcm_helpalso (help,seealso) values ($h,$a)");
 			}
 			break;
 		case 'delete':
 			$k = $_GET['deletekey'];
-			Zymurgy::$db->query("delete from helpalso where (help=$h) and (seealso=$k)");
+			Zymurgy::$db->query("delete from zcm_helpalso where (help=$h) and (seealso=$k)");
 			break;
 	}
 }
@@ -54,7 +54,7 @@ if (array_key_exists('action',$_GET))
 -->
 </style>
 <?php
-$ri = Zymurgy::$db->query("select help.id, seealso, help.title from help join helpalso on help.id=helpalso.seealso where helpalso.help=$h");
+$ri = Zymurgy::$db->query("select zcm_help.id, seealso, zcm_help.title from zcm_help join zcm_helpalso on zcm_help.id=zcm_helpalso.seealso where zcm_helpalso.help=$h");
 echo "<table cellspacing=\"0\" cellpadding=\"3\" rules=\"cols\" bordercolor=\"#999999\" border=\"1\" class=\"DataGrid\">";
 if (Zymurgy::$db->num_rows($ri) > 0)
 {

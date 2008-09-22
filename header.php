@@ -182,6 +182,12 @@ div.ZymurgyBreadcrumbs
 .yuimenuitem {
 	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 }
+#DraftTool {
+	background-color: #CCCCCC;
+	width: 90%;
+	border: thin solid #333333;	
+	padding: 5px;
+}
 -->
 </style>
 <style type"text/css" media="print">
@@ -209,7 +215,7 @@ function renderZCMNav($parent)
 {
 	global $donefirstzcmnav;
 	
-	$sql = "select * from zcmnav where parent=$parent order by disporder";
+	$sql = "select * from zcm_nav where parent=$parent order by disporder";
 	$ri = Zymurgy::$db->run($sql);
 	$navs = array();
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)

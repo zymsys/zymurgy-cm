@@ -3,7 +3,7 @@ $breadcrumbTrail = "<a href=\"headtext.php\">Search Engines</a> &gt; Page Text";
 
 include('header.php');
 $page = 0 + $_GET['page'];
-$sql = "select id,tag from sitetext,textpage where (metaid=$page) and (sitetextid=id)";
+$sql = "select id,tag from zcm_sitetext,zcm_textpage where (metaid=$page) and (sitetextid=id)";
 $ri = Zymurgy::$db->query($sql);
 $count = Zymurgy::$db->num_rows($ri);
 switch ($count)

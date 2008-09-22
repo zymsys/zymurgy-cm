@@ -10,7 +10,7 @@
 			$this->phrase = $phrase;
 		}
 		
-		function addHelp($helpid)
+		function addhelp($helpid)
 		{
 			$this->helpid[] = $helpid;
 		}
@@ -72,7 +72,7 @@
 				`title`,
 				`body`
 			FROM
-				help
+				zcm_help
 			WHERE
 				authlevel <= " . intval($zauth->authinfo["admin"]) . "
 			ORDER BY
@@ -100,7 +100,7 @@
 				`title`,
 				`body`
 			FROM
-				help
+				zcm_help
 			WHERE
 				id = " . intval($id) . "
 			AND
@@ -129,7 +129,7 @@
 				`authlevel`,
 				`title`
 			FROM
-				help
+				zcm_help
 			WHERE
 				authlevel <= " . intval($zauth->authinfo["admin"]) . "
 			ORDER BY
@@ -177,9 +177,9 @@
 				`title`,
 				`seealso`
 			FROM
-				helpalso ha
+				zcm_helpalso ha
 			INNER JOIN
-				help h
+				zcm_help h
 			ON
 				h.id = ha.seealso
 			WHERE
@@ -254,7 +254,7 @@
 	function getSearchResults()
 	{
 		$out = array();
-		$ri = Zymurgy::$db->query("SELECT id, title FROM help WHERE MATCH (title,plain) AGAINST (\"{$_GET['q']}\")");
+		$ri = Zymurgy::$db->query("SELECT id, title FROM zcm_help WHERE MATCH (title,plain) AGAINST (\"{$_GET['q']}\")");
 		if (Zymurgy::$db->num_rows($ri) > 0)
 		{
 			$out[] = "<p>The following help topics match your search:</p>";
@@ -272,7 +272,7 @@
 	
 	function getIndex()
 	{
-		$sql = "select helpindex.help,helpindexphrase.phrase from helpindex join helpindexphrase on helpindex.phrase = helpindexphrase.id order by helpindexphrase.phrase";
+		$sql = "select zcm_helpindex.zcm_help,zcm_helpindexphrase.phrase from zcm_helpindex join zcm_helpindexphrase on zcm_helpindex.phrase = zcm_helpindexphrase.id order by zcm_helpindexphrase.phrase";
 		$ri = Zymurgy::$db->run($sql);
 		$index = array(); //Array of first letters
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -288,7 +288,7 @@
 			}
 			else 
 			{ //Add a new help reference to an existing phrase
-				$index[$first][$row['phrase']]->addHelp($row['help']);
+				$index[$first][$row['phrase']]->addhelp($row['help']);
 			}
 		}
 		$out = array(); //Output buffer to build our full index string
@@ -359,13 +359,13 @@
 	// echo(print_r($topics));
 ?>
 
-<div id="treeHelpTopics" style="float: left; clear: left; width: 200px; margin-right: 20px; height: 400px; overflow: auto;">	
+<div id="treehelpTopics" style="float: left; clear: left; width: 200px; margin-right: 20px; height: 400px; overflow: auto;">	
 </div>
 
 <script language="javascript" type="text/javascript">
 	function initializeTopics()
 	{
-		var tree = new YAHOO.widget.TreeView("treeHelpTopics");
+		var tree = new YAHOO.widget.TreeView("treehelpTopics");
 		var node0 = tree.getRoot();
 		var tmpNode;
 		
@@ -389,10 +389,10 @@
 	
 	function sizeTree()
 	{
-		var pos = YAHOO.util.Dom.getXY('treeHelpTopics');
+		var pos = YAHOO.util.Dom.getXY('treehelpTopics');
 		var height = YAHOO.util.Dom.getViewportHeight();
 		var top = pos[1];
-		YAHOO.util.Dom.setStyle('treeHelpTopics', 'height', (height-top-15)+'px'); 
+		YAHOO.util.Dom.setStyle('treehelpTopics', 'height', (height-top-15)+'px'); 
 	}
 	
 	YAHOO.util.Event.addListener(

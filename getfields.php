@@ -5,8 +5,8 @@
 
 	$tname = array_key_exists('tname',$_GET) ? $_GET['tname'] : 'broken';
 	
-	$sql = "select cname from customfield inner join customtable on customfield.tableid = " .
-		"customtable.id where customtable.tname = '" . $tname . "' order by customfield.disporder";
+	$sql = "select cname from zcm_customfield inner join zcm_customtable on zcm_customfield.tableid = " .
+		"zcm_customtable.id where zcm_customtable.tname = '" . $tname . "' order by zcm_customfield.disporder";
 	
 	// echo($sql);
 	

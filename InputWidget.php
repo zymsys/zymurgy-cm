@@ -65,6 +65,7 @@ class InputWidget
 				return mktime(0,0,0,$dp[1],$dp[2],$dp[0]);
 				break;
 			case "unixdatetime":
+			case "datetime":
 				//'%Y-%m-%d [%I:%M %p]'
 				$pp = explode(" ",$_POST[$postname]);
 				$dp = explode("-",$pp[0]);
@@ -80,7 +81,11 @@ class InputWidget
 					if ($tp[0]==12) 
 						$tp[0] = 0;
 				}
-				return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
+				$tm = mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
+				if ($ep[0]=='unixdatetime')
+					return $tm;
+				else 
+					return strftime('%Y-%m-%d %H:%M:%S',$tm);
 				break;
 			default:
 				if (array_key_exists($postname,$_POST))
@@ -104,6 +109,9 @@ class InputWidget
 				break;
 			case "unixdatetime":
 				$display = date("Y-m-d [g:i A]",$display);
+				break;
+			case "datetime":
+				$display = date("Y-m-d [g:i A]",strtotime($display));
 				break;
 			case "money":
 				$display = '$'.number_format($this->UsePennies ? ($display / 100) : $display,2,'.',',');
@@ -358,8 +366,12 @@ passThroughFormSubmit = false;
 		                 'value'       => strftime('%Y-%m-%d', $date)));
 				break;
 			case "unixdatetime":
+			case "datetime":
 				require_once("$ZymurgyRoot/zymurgy/jscalendar/calendar.php");
-				$date = $value;
+				if ($ep[0]=='unixdatetime')
+					$date = $value;
+				else
+					$date = strtotime($value);
 				if ($date == 0) $date=time();
 				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
 				$cal->load_files();

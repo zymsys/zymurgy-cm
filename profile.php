@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	else 
 	{
 		$showform = false;
-		$sql = "update passwd set ";
+		$sql = "update zcm_passwd set ";
 		if ($_POST['pass1']!='')
 			$sql .= "password='".Zymurgy::$db->escape_string($_POST['pass1'])."', ";
 		$sql .= "email='".Zymurgy::$db->escape_string($_POST['email'])."', ".

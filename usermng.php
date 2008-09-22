@@ -22,17 +22,17 @@ function OnDelete($values)
 {
 	global $zauth;
 	
-	if ($values['passwd.admin'] > $zauth->authinfo['admin'])
+	if ($values['zcm_passwd.admin'] > $zauth->authinfo['admin'])
 	{
 		abortmsg("You aren't allowed to delete a more privileged administrative account.<p>");
 		return false; //Override delete
 	}
-	if ($values['passwd.id'] == 1)
+	if ($values['zcm_passwd.id'] == 1)
 	{
 		abortmsg("The first user cannot be deleted but may be edited.<p>");
 		return false; //Override delete
 	}
-	if ($values['passwd.username'] == $zauth->authinfo['userid'])
+	if ($values['zcm_passwd.username'] == $zauth->authinfo['userid'])
 	{
 		abortmsg("You aren't allowed to delete your own account.<p>");
 		return false; //Override delete
@@ -41,9 +41,9 @@ function OnDelete($values)
 
 function OnPreRenderEdit($values)
 {
-	if (!empty($values['passwd.password']))
+	if (!empty($values['zcm_passwd.password']))
 	{
-		$values['passwd.password'] = '     ';
+		$values['zcm_passwd.password'] = '     ';
 	}
 	return $values;
 }
@@ -53,21 +53,21 @@ function OnBeforeUpdate($values)
 	global $ds;
 	global $zauth;
 	
-	if ($values['passwd.admin'] > $zauth->authinfo['admin'])
+	if ($values['zcm_passwd.admin'] > $zauth->authinfo['admin'])
 	{
-		$values['passwd.admin'] = $zauth->authinfo['admin']; //Can't elevate above own priv level
+		$values['zcm_passwd.admin'] = $zauth->authinfo['admin']; //Can't elevate above own priv level
 	}	
-	if ($values['passwd.id'] == 1)
+	if ($values['zcm_passwd.id'] == 1)
 	{
-		$values['passwd.admin'] = 2; //First user is always admin, no matter what.
+		$values['zcm_passwd.admin'] = 2; //First user is always admin, no matter what.
 	}
-	if ($values['passwd.password']=='     ')
+	if ($values['zcm_passwd.password']=='     ')
 	{
 		//Password wasn't updated, set back to default value
-		//echo "<pre>"; print_r($ds->rows[0]->originalvalues['passwd.password']); echo "</pre>"; exit;
+		//echo "<pre>"; print_r($ds->rows[0]->originalvalues['zcm_passwd.password']); echo "</pre>"; exit;
 		$ovalues = array_values($ds->rows);
 		//echo "<pre>"; print_r($ovalues); echo "</pre>"; exit;
-		$values['passwd.password'] = $ovalues[0]->originalvalues['passwd.password'];
+		$values['zcm_passwd.password'] = $ovalues[0]->originalvalues['zcm_passwd.password'];
 	}
 	return $values;
 }
@@ -77,7 +77,7 @@ if (array_key_exists('abort',$_GET))
 	echo "<p>".$_GET['abort']."</p>";
 }
 
-$ds = new DataSet('passwd','id');
+$ds = new DataSet('zcm_passwd','id');
 $ds->AddColumn('id',false);
 $ds->AddColumn('username',true);
 $ds->AddColumn('password',true);
@@ -89,6 +89,7 @@ $ds->OnPreRenderEdit = "OnPreRenderEdit";
 $ds->OnBeforeUpdate = "OnBeforeUpdate";
 
 $dg = new DataGrid($ds);
+$dg->SaveDrafts = false; //Not with password data included.
 $dg->AddColumn('Login Name','username');
 $dg->AddColumn('EMail','email','<a href="mailto:{0}">{0}</a>');
 $dg->AddColumn('Full Name','fullname');
@@ -112,7 +113,7 @@ if (array_key_exists('editkey',$_GET))
 	if ($k!=1)
 	{
 		//We're not editing the first user, so maybe we should show it.  Do we have better or equal auth?
-		$theirauth = Zymurgy::$db->get("select admin from passwd where id=$k");
+		$theirauth = Zymurgy::$db->get("select admin from zcm_passwd where id=$k");
 		echo "[$theirauth]";
 		if ($theirauth <= $zauth->authinfo['admin'])
 		{

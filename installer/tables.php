@@ -1,6 +1,6 @@
 <?
 $tables = array(
-		'passwd'=>"CREATE TABLE `passwd` (
+		'zcm_passwd'=>"CREATE TABLE `passwd` (
   `id` int(11) NOT NULL auto_increment,
   `username` varchar(20) NOT NULL default '',
   `password` varchar(20) NOT NULL default '',
@@ -10,7 +10,7 @@ $tables = array(
   `eula` tinyint(4) default '0',
   PRIMARY KEY  (`id`),
   KEY `userpass` (`username`,`password`))",
-		'meta'=>"CREATE TABLE `meta` (
+		'zcm_meta'=>"CREATE TABLE `meta` (
   `id` int(11) NOT NULL auto_increment,
   `document` varchar(80) NOT NULL default '',
   `description` text NOT NULL,
@@ -21,7 +21,7 @@ $tables = array(
   `priority` tinyint(4) default '5',
   PRIMARY KEY  (`id`),
   KEY `document` (`document`))",
-		'sitetext'=>"CREATE TABLE `sitetext` (
+		'zcm_sitetext'=>"CREATE TABLE `sitetext` (
   `id` int(11) NOT NULL auto_increment,
   `tag` varchar(35) NOT NULL default '',
   `body` longtext NOT NULL,
@@ -31,25 +31,25 @@ $tables = array(
   PRIMARY KEY  (`id`),
   KEY `tag` (`tag`),
   KEY `category` (`category`))",
-		'stcategory'=>"CREATE TABLE `stcategory` (
+		'zcm_stcategory'=>"CREATE TABLE `stcategory` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `name` varchar(60) default NULL,
   UNIQUE KEY `id` (`id`),
   KEY `name` (`name`))",
-  		'textpage'=>"CREATE TABLE `textpage` (
+  		'zcm_textpage'=>"CREATE TABLE `textpage` (
   `metaid` int(11) NOT NULL default '0',
   `sitetextid` int(11) NOT NULL default '0',
   PRIMARY KEY  (`metaid`,`sitetextid`),
   KEY `metaid` (`metaid`),
   KEY `sitetextid` (`sitetextid`))",
-		'config'=>"CREATE TABLE `config` (
+		'zcm_config'=>"CREATE TABLE `config` (
   `id` int(11) NOT NULL auto_increment,
   `name` varchar(40) NOT NULL default '',
   `value` varchar(100) NOT NULL default '',
   `disporder` int(11) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `disporder` (`disporder`))",
-		'plugin'=>"CREATE TABLE `plugin` (
+		'zcm_plugin'=>"CREATE TABLE `plugin` (
   `id` int(11) NOT NULL auto_increment,
   `release` int(11) NOT NULL default '0',
   `title` varchar(50) NOT NULL default '',
@@ -59,13 +59,13 @@ $tables = array(
   PRIMARY KEY  (`id`),
   KEY `enabled` (`enabled`),
   KEY `source` (`name`))",
-		'pluginconfig'=>"CREATE TABLE `pluginconfig` (
+		'zcm_pluginconfig'=>"CREATE TABLE `pluginconfig` (
   `plugin` int(11) NOT NULL default '0',
   `instance` int(11) NOT NULL default '0',
   `key` varchar(50) NOT NULL default '',
   `value` text NOT NULL,
   PRIMARY KEY  (`plugin`,`instance`,`key`))",
-		'plugininstance'=>"CREATE TABLE `plugininstance` (
+		'zcm_plugininstance'=>"CREATE TABLE `plugininstance` (
   `id` int(11) NOT NULL auto_increment,
   `plugin` int(11) NOT NULL default '0',
   `name` varchar(50) NOT NULL default '',
@@ -73,7 +73,7 @@ $tables = array(
   PRIMARY KEY  (`id`),
   KEY `plugin` (`plugin`),
   KEY `private` (`private`))",
-		'member'=>"CREATE TABLE `member` (
+		'zcm_member'=>"CREATE TABLE `member` (
   `id` int(11) NOT NULL auto_increment,
   `email` varchar(80) default NULL,
   `password` varchar(32) default NULL,
@@ -89,7 +89,7 @@ $tables = array(
   KEY `lastauth` (`lastauth`),
   KEY `authkey` (`authkey`),
   KEY `orgunit` (`orgunit`))",
-		'memberaudit'=>"CREATE TABLE `memberaudit` (
+		'zcm_memberaudit'=>"CREATE TABLE `memberaudit` (
   `id` int(11) NOT NULL auto_increment,
   `member` int(11) default NULL,
   `audittime` datetime default NULL,
@@ -100,17 +100,17 @@ $tables = array(
   KEY `member` (`member`,`audittime`),
   KEY `remoteip` (`remoteip`),
   KEY `realip` (`realip`))",
-		'membergroup'=>"CREATE TABLE `membergroup` (
+		'zcm_membergroup'=>"CREATE TABLE `membergroup` (
   `memberid` int(11) NOT NULL default '0',
   `groupid` int(11) NOT NULL default '0',
   PRIMARY KEY  (`memberid`,`groupid`),
   KEY `memberid` (`memberid`),
   KEY `groupid` (`groupid`))",
-		'groups'=>"CREATE TABLE `groups` (
+		'zcm_groups'=>"CREATE TABLE `groups` (
   `id` int(11) NOT NULL auto_increment,
   `name` varchar(50) default NULL,
   PRIMARY KEY  (`id`))",
-		'customtable'=>"CREATE TABLE `customtable` (
+		'zcm_customtable'=>"CREATE TABLE `customtable` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
   `tname` varchar(30) default NULL,
@@ -121,7 +121,7 @@ $tables = array(
   UNIQUE KEY `id` (`id`),
   KEY `detailfor` (`detailfor`),
   KEY `disporder` (`disporder`))",
-		'customfield'=>"CREATE TABLE `customfield` (
+		'zcm_customfield'=>"CREATE TABLE `customfield` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
   `tableid` bigint(20) default NULL,
@@ -132,7 +132,7 @@ $tables = array(
   `gridheader` varchar(30) default NULL,
   UNIQUE KEY `id` (`id`),
   KEY `disporder` (`disporder`))",
-		'help'=>"CREATE TABLE `help` (
+		'zcm_help'=>"CREATE TABLE `help` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `parent` bigint(20) default NULL,
   `disporder` bigint(20) default NULL,
@@ -144,19 +144,19 @@ $tables = array(
   KEY `authlevel` (`authlevel`),
   KEY `title` (`title`),
   FULLTEXT KEY `title_2` (`title`,`plain`))",
-	'helpalso'=>"CREATE TABLE `helpalso` (
+	'zcm_helpalso'=>"CREATE TABLE `helpalso` (
   `help` bigint(20) NOT NULL default '0',
   `seealso` bigint(20) NOT NULL default '0',
   PRIMARY KEY  (`help`,`seealso`))",
-	'helpindex'=>"CREATE TABLE `helpindex` (
+	'zcm_helpindex'=>"CREATE TABLE `helpindex` (
   `phrase` bigint(20) NOT NULL default '0',
   `help` bigint(20) NOT NULL default '0',
   PRIMARY KEY  (`phrase`,`help`))",
-	'helpindexphrase'=>"CREATE TABLE `helpindexphrase` (
+	'zcm_helpindexphrase'=>"CREATE TABLE `helpindexphrase` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `phrase` varchar(200) default NULL,
   UNIQUE KEY `id` (`id`))",
-	'zcmnav'=>"CREATE TABLE `zcmnav` (
+	'zcm_nav'=>"CREATE TABLE `zcmnav` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
   `parent` bigint(20) default '0',

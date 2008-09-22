@@ -20,7 +20,7 @@ else
 include('header.php');
 include('datagrid.php');
 
-$ds = new DataSet('meta','id');
+$ds = new DataSet('zcm_meta','id');
 $ds->AddColumn('id',false);
 $ds->AddColumn('document',true);
 $ds->AddColumn('description',true);

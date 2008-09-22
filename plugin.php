@@ -30,7 +30,7 @@ while (($entry = readdir($di)) !== false)
 	}
 }
 closedir($di);
-$ri = Zymurgy::$db->query('select * from plugin');
+$ri = Zymurgy::$db->query('select * from zcm_plugin');
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {
 	if (array_key_exists($row['name'],$plugins))
@@ -78,7 +78,7 @@ function ExecuteRemove($source)
 {
 	global $plugins;
 	
-	$ri = Zymurgy::$db->query("select * from plugin where name='$source'");
+	$ri = Zymurgy::$db->query("select * from zcm_plugin where name='$source'");
 	$row = Zymurgy::$db->fetch_array($ri);
 	$id = $row['id'];
 	$uninstallsql = explode(';',$row['uninstallsql']);
@@ -86,9 +86,9 @@ function ExecuteRemove($source)
 	{
 		Zymurgy::$db->query($query);
 	}
-	Zymurgy::$db->query("delete from pluginconfig where plugin=$id");
-	Zymurgy::$db->query("delete from plugininstance where plugin=$id");
-	Zymurgy::$db->query("delete from plugin where id=$id");
+	Zymurgy::$db->query("delete from zcm_pluginconfig where plugin=$id");
+	Zymurgy::$db->query("delete from zcm_plugininstance where plugin=$id");
+	Zymurgy::$db->query("delete from zcm_plugin where id=$id");
 	unset($plugins[$source]);
 	header('Location: plugin.php');
 	exit;
@@ -102,7 +102,7 @@ function  ExecuteAdd($source)
 	$factory = "{$source}Factory";
 	$plugin = $factory();
 	//Add plugin to the plugin table
-	Zymurgy::$db->query("insert into plugin(title,name,uninstallsql,enabled) values ('".
+	Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled) values ('".
 		Zymurgy::$db->escape_string($plugin->GetTitle())."','".
 		Zymurgy::$db->escape_string($source)."','".
 		Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1)");
@@ -113,7 +113,7 @@ function  ExecuteAdd($source)
 	{
 		$key = $cv->key;
 		$value = $cv->value;
-		$sql = "insert into pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
+		$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
 			Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
 		$ri = Zymurgy::$db->query($sql);
 		if (!$ri)
@@ -141,7 +141,7 @@ TakeAction();
 CreatePluginActions();
 DisplayActions();
 
-$ds = new DataSet('plugin','id');
+$ds = new DataSet('zcm_plugin','id');
 $ds->AddColumns('id','title','name','enabled');
 $dg = new DataGrid($ds);
 $dg->AddColumn('Plugin Name','title');

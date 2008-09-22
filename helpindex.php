@@ -10,7 +10,7 @@ if (array_key_exists('action',$_GET))
 	{
 		case 'edit':
 			$k = $_GET['editkey'];
-			$ri = Zymurgy::$db->query("select helpindexphrase.phrase, helpindex.phrase as pid from helpindex join helpindexphrase on helpindex.phrase=helpindexphrase.id where helpindex.help=$h and helpindex.phrase=$k");
+			$ri = Zymurgy::$db->query("select zcm_helpindexphrase.phrase, zcm_helpindex.phrase as pid from zcm_helpindex join zcm_helpindexphrase on zcm_helpindex.phrase=zcm_helpindexphrase.id where zcm_helpindex.help=$h and zcm_helpindex.phrase=$k");
 			$edit = Zymurgy::$db->fetch_array($ri);
 			//Intentionally falling through to 'insert' block to complete the job.
 		case 'insert':
@@ -31,24 +31,24 @@ if (array_key_exists('action',$_GET))
 			{
 				//Must be a post
 				$phrase = Zymurgy::$db->escape_string($_POST['phrase']);
-				$ri = Zymurgy::$db->query("select * from helpindexphrase where phrase like '$phrase'") or die("Can't search phrase ($sql): ".Zymurgy::$db->error());
+				$ri = Zymurgy::$db->query("select * from zcm_helpindexphrase where phrase like '$phrase'") or die("Can't search phrase ($sql): ".Zymurgy::$db->error());
 				$entry = Zymurgy::$db->fetch_array($ri);
 				if ($entry===false)
 				{
-					Zymurgy::$db->query("insert into helpindexphrase (phrase) values ('$phrase')") or die("Can't add phrase ($sql): ".Zymurgy::$db->error());
+					Zymurgy::$db->query("insert into zcm_helpindexphrase (phrase) values ('$phrase')") or die("Can't add phrase ($sql): ".Zymurgy::$db->error());
 					$entry = array('id'=>Zymurgy::$db->insert_id());
 				}
 				if (isset($edit))
 				{
 					//Remove the old reference before adding the new one.
-					Zymurgy::$db->query("delete from helpindex where help=$h and phrase={$edit['pid']}");
+					Zymurgy::$db->query("delete from zcm_helpindex where help=$h and phrase={$edit['pid']}");
 				}
-				Zymurgy::$db->query("insert into helpindex (help,phrase) values ($h,{$entry['id']})") or die("Can't add index ($sql): ".Zymurgy::$db->error());
+				Zymurgy::$db->query("insert into zcm_helpindex (help,phrase) values ($h,{$entry['id']})") or die("Can't add index ($sql): ".Zymurgy::$db->error());
 			}
 			break;
 		case 'delete':
 			$k = $_GET['deletekey'];
-			Zymurgy::$db->query("delete from helpindex where (help=$h) and (phrase=$k)");
+			Zymurgy::$db->query("delete from zcm_helpindex where (help=$h) and (phrase=$k)");
 			break;
 	}
 }
@@ -70,7 +70,7 @@ if (array_key_exists('action',$_GET))
 -->
 </style>
 <?php
-$ri = Zymurgy::$db->query("select helpindexphrase.phrase, helpindex.phrase as pid from helpindex join helpindexphrase on helpindex.phrase=helpindexphrase.id where helpindex.help=$h order by helpindexphrase.phrase");
+$ri = Zymurgy::$db->query("select zcm_helpindexphrase.phrase, zcm_helpindex.phrase as pid from zcm_helpindex join zcm_helpindexphrase on zcm_helpindex.phrase=zcm_helpindexphrase.id where zcm_helpindex.help=$h order by zcm_helpindexphrase.phrase");
 $numColumns = 3;
 echo "<table cellspacing=\"0\" cellpadding=\"3\" rules=\"cols\" bordercolor=\"#999999\" border=\"1\" class=\"DataGrid\">";
 if (Zymurgy::$db->num_rows($ri) > 0)
@@ -91,7 +91,6 @@ if (Zymurgy::$db->num_rows($ri) > 0)
 			<td><a href=\"helpindex.php?h=$h&action=edit&editkey={$row['pid']}\">Edit</a></td></tr>\r\n";
 	}
 }
-//echo "<tr class=\"DataGridHeader\"><td colspan='3' align='middle'><a href='helpindex.php?h=$h&action=insert'><font color=\"white\">Add a new Entry</font></a></td></tr>";
 echo "<tr class=\"DataGridHeader\"><td colspan='{$numColumns}' align='middle'><a href='helpindex.php?h=$h&action=insert'><font color=\"white\">Add a new Entry</font></a></td></tr>";
 echo "</table>"; 
 include('footer.php');

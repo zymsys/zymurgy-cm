@@ -15,7 +15,7 @@ include('header.php');
 include('datagrid.php');
 if ($zauth->authinfo['admin']<2) return;
 
-$ds = new DataSet('config','id');
+$ds = new DataSet('zcm_config','id');
 $ds->AddColumn('id',false);
 $ds->AddColumn('name',true);
 $ds->AddColumn('value',true);

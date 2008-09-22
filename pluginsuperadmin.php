@@ -6,7 +6,7 @@ $adminlevel = 2;
 require_once('header.php');
 require_once('datagrid.php');
 
-$sql = "select name,title,`release` from plugin where id=$pid";
+$sql = "select name,title,`release` from zcm_plugin where id=$pid";
 $ri = Zymurgy::$db->query($sql);
 if (!$ri) die("Error loading plugin info: ".Zymurgy::$db->error()."<br>$sql");
 $plugin=Zymurgy::$db->fetch_array($ri);

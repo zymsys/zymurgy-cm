@@ -25,7 +25,7 @@ function tableparents($tid)
 	$r = array();
 	do
 	{
-		$tbl = Zymurgy::$db->get("select * from customtable where id=$tid");
+		$tbl = Zymurgy::$db->get("select * from zcm_customtable where id=$tid");
 		$r[$tbl['id']] = empty($tbl['navname']) ? $tbl['tname'] : $tbl['navname'];
 		$tid = $tbl['detailfor'];
 	}
@@ -66,7 +66,7 @@ function okname($name)
 
 function gettable($t)
 {
-	$sql = "select * from customtable where id=$t";
+	$sql = "select * from zcm_customtable where id=$t";
 	$ri = mysql_query($sql) or die("Can't get table ($sql): ".mysql_error());
 	$tbl = mysql_fetch_array($ri);
 	if (!is_array($tbl)) 

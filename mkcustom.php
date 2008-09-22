@@ -27,7 +27,8 @@ $noshow = array('id','disporder');
 function GetTable()
 {
 	$builtin = array('passwd','meta','sitetext','textpage','config','plugin','pluginconfig','plugininstance',
-		'member','memberaudit','membergroup','groups','stcategory','help','helpalso','helpindexphrase','helpindex','customtable','customfield');
+		'member','memberaudit','membergroup','groups','stcategory','help','helpalso','helpindexphrase',
+		'helpindex','customtable','zcm_customfield','zcmnav');
 	echo "Select the table you want to generate custom code for:<br><br>";
 	$sql = "show tables";
 	$ri = Zymurgy::$db->query($sql);
@@ -87,6 +88,9 @@ function GetOptions()
 			case('enum'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"droplist\" checked>Drop List ".
 					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				break;
+			case('datetime'):
+				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date";
 				break;
 			default:
 				$opts = "Unknown type: $type";
@@ -290,6 +294,12 @@ function ShowCode()
 						case('lookup'): $dg[] = "\$dg->AddLookup('$fld','$name','lookuptable','id','name','disporder');"; break;
 						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
 						default: $dg[] = "\$dg->AddUnixDateEditor('$fld','$name');"; break;
+					}
+					break;
+				case('datetime'):
+					switch($opts)
+					{
+						default: $dg[] = "\$dg->AddEditor('$fld','$name','datetime');"; break;
 					}
 					break;
 				case('smallint'):

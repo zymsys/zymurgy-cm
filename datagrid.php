@@ -341,6 +341,12 @@ class DataSetFilter
 class DataSet
 {
 	var $masterkey;
+	
+	/**
+	 * Array of tables used by this dataset
+	 *
+	 * @var array
+	 */
 	var $tables;
 	var $columns;
 	var $rows;
@@ -537,6 +543,11 @@ class DataGridColumn
 
 class DataGrid
 {
+	/**
+	 * Represents the data to be consumed by the grid
+	 *
+	 * @var DataSet
+	 */
 	var $DataSet;
 	var $name;
 	var $rowsperpage;
@@ -552,6 +563,7 @@ class DataGrid
 	var $fckeditorpath;
 	var $fckeditorcss;
 	var $UsePennies = false;
+	var $SaveDrafts = true;
 	var $CurrentEditRow = false;
 	var $thumbs = array();
 	var $pretext = array();
@@ -1151,6 +1163,28 @@ class DataGrid
 					$start = ($page-1) * $this->rowsperpage;
 					$this->DataSet->Clear();
 				}
+				if ($this->SaveDrafts)
+				{
+					//Save "keeper" draft for commited changes.
+					$json = array();
+					foreach ($this->columns as $c)
+					{
+						$key = str_replace('"','\"',$c->datacolumn);
+						$value = str_replace('"','\"',$dsr->values[$c->datacolumn]);
+						$json[$key] = "\"$key\":\"$value\"";
+					}
+					ksort($json);
+					/*foreach($dsr->values as $key=>$value)
+					{
+						$key = str_replace('"','\"',$key);
+						$value = str_replace('"','\"',$value);
+						$json[] = "\"$key\":\"$value\"";
+					}*/
+					$sql = "insert into zcm_draft (saved,form,keeper,json) values (now(),'".
+						Zymurgy::$db->escape_string($this->DataSet->masterkey).'-'.$dsr->values[$this->DataSet->masterkey]."',1,'".
+						Zymurgy::$db->escape_string('{'.implode(',',$json).'}')."')";
+					Zymurgy::$db->query($sql) or die("Can't save draft ($sql): ".Zymurgy::$db->error());
+				}
 				if ($id !== false)
 				{
 					if (!isset($this->customSaveLocation))
@@ -1174,7 +1208,24 @@ class DataGrid
 				echo "</p>";
 			}
 			echo implode($this->pretext); //Useful to initialize certain javascript widgets.
-			echo "<form name=\"datagridform\" method=\"post\" enctype=\"multipart/form-data\" action=\"{$_SERVER['REQUEST_URI']}\">\r\n";
+			$formid = $this->DataSet->masterkey.'-'.$dsr->values[$this->DataSet->masterkey];
+			if ($this->SaveDrafts)
+			{
+				//Count fckeditors so we can get our initial state after they have rendered.
+				$fckcount = 0;
+				foreach ($this->columns as $c)
+				{
+					list($editor,$junk) = explode('.',$c->editor,2);
+					if ($editor=='html')
+					{
+						$fckcount++;
+					}
+				}
+				echo "<script src=\"http://yui.yahooapis.com/2.5.2/build/yuiloader/yuiloader-beta-min.js\"></script>\r\n";
+				echo "<script src=\"/zymurgy/include/autosave.js\"></script>\r\n";
+				echo "<script>InitializeAutoSave('$formid',$fckcount);</script>\r\n";
+			}
+			echo "<form id=\"$formid\" name=\"datagridform\" method=\"post\" enctype=\"multipart/form-data\" action=\"{$_SERVER['REQUEST_URI']}\">\r\n";
 			echo "<table>\r\n";
 			$donecalcs = false;
 			$fck = array();

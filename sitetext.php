@@ -1,14 +1,14 @@
 <?
 function OnBeforeUpdate($dsr)
 {
-	$dsr['sitetext.plainbody'] = strip_tags($dsr['sitetext.body']);
+	$dsr['zcm_sitetext.plainbody'] = strip_tags($dsr['zcm_sitetext.body']);
 	return $dsr;
 }
 
 function OnUpdate($dsr)
 {
 	//Load list of related pages
-	$sql = "select metaid from textpage where sitetextid={$dsr['sitetext.id']}";
+	$sql = "select metaid from zcm_textpage where sitetextid={$dsr['zcm_sitetext.id']}";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Unable to set update time using ($sql): ".Zymurgy::$db->error());
 	$updated = array();
@@ -33,7 +33,7 @@ function showcategories()
 {
 	global $c,$zauth;
 	
-	$sql = "select * from stcategory where id>0 order by name";
+	$sql = "select * from zcm_stcategory where id>0 order by name";
 	$ri = Zymurgy::$db->query($sql) or die("Unable to load site text categories ($sql): ".Zymurgy::$db->error());
 	$cats = array(0=>'Uncategorized Content',-1=>'All Content');
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -105,7 +105,7 @@ if (!array_key_exists('editkey',$_GET))
 	showcategories();
 	echo "</form><br />";
 }
-$ds = new DataSet('sitetext','id');
+$ds = new DataSet('zcm_sitetext','id');
 $ds->AddColumns('id','tag','category','body','plainbody','inputspec');
 $ds->OnUpdate = "OnUpdate";
 $ds->OnBeforeUpdate = "OnBeforeUpdate";
@@ -136,7 +136,7 @@ $dg->AddEditColumn();
 if ($zauth->authinfo['admin']>=2)
 {
 	$dg->AddInput('tag','Text Block Name:',35,35);
-	$dg->AddLookup('category','Category','stcategory','id','name','name');
+	$dg->AddLookup('category','Category','zcm_stcategory','id','name','name');
 	$dg->AddDeleteColumn();
 } else {
 }
@@ -144,7 +144,7 @@ $dg->insertlabel = '';
 if (array_key_exists('editkey',$_GET))
 {
 	$id = 0 + $_GET['editkey'];
-	$sql = "select id,inputspec from sitetext where id=$id";
+	$sql = "select id,inputspec from zcm_sitetext where id=$id";
 	$ri = Zymurgy::$db->query($sql);
 	$row = Zymurgy::$db->fetch_array($ri);
 	$inputspec = $row['inputspec'];

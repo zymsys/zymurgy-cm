@@ -10,16 +10,16 @@ $pid = 0+$_GET['plugin'];
 function OnDelete($values)
 {
 	//print_r($values); exit;
-	$sql = "select name from plugin where id={$values['plugininstance.plugin']}";
+	$sql = "select name from zcm_plugin where id={$values['zcm_plugininstance.plugin']}";
 	$ri = Zymurgy::$db->query($sql) or die("Unable to find plugin name ($sql): ".Zymurgy::$db->error());
 	$pname = Zymurgy::$db->result($ri,0,0);
-	if ($pname=='') die ("Couldn't find plugin {$values['plugininstance.plugin']}.");
-	$pi = mkplugin($pname,$values['plugininstance.name']);
+	if ($pname=='') die ("Couldn't find plugin {$values['zcm_plugininstance.plugin']}.");
+	$pi = mkplugin($pname,$values['zcm_plugininstance.name']);
 	$pi->RemoveInstance();
 	return true;
 }
 
-$ds = new DataSet('plugininstance','id');
+$ds = new DataSet('zcm_plugininstance','id');
 $ds->AddColumns('id','plugin','name');
 $ds->AddDataFilter('plugin',$pid);
 $ds->OnDelete = 'OnDelete';

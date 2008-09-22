@@ -7,14 +7,53 @@ while (($row = mysql_fetch_array($ri,MYSQL_NUM))!==false)
 	$etables[$row[0]] = $row[0];
 }
 
-foreach($tables as $tname=>$sql)
+function CreateMissingTables()
 {
-	if (!array_key_exists($tname,$etables))
+	global $etables,$tables;
+	foreach($tables as $tname=>$sql)
 	{
-		mysql_query($sql) or die("Unable to create $tname ($sql): ".mysql_error());
+		if (!array_key_exists($tname,$etables))
+		{
+			mysql_query($sql) or die("Unable to create $tname ($sql): ".mysql_error());
+		}
 	}
 }
 
+function RenameOldTables()
+{
+	global $etables,$tables;
+	
+	/* If we don't have zcm_passwd and we're trying to upgrade, we probably need to rename all the old tables. */
+	if (!array_key_exists('zcm_passwd',$etables))
+	{
+		$map = array(
+			'passwd'=>'zcm_passwd',
+			'meta'=>'zcm_meta',
+			'sitetext'=>'zcm_sitetext',
+			'stcategory'=>'zcm_stcategory',
+			'textpage'=>'zcm_textpage',
+			'config'=>'zcm_config',
+			'plugin'=>'zcm_plugin',
+			'pluginconfig'=>'zcm_pluginconfig',
+			'plugininstance'=>'zcm_plugininstance',
+			'member'=>'zcm_member',
+			'memberaudit'=>'zcm_memberaudit',
+			'membergroup'=>'zcm_membergroup',
+			'groups'=>'zcm_groups',
+			'customtable'=>'zcm_customtable',
+			'customfield'=>'zcm_customfield',
+			'help'=>'zcm_help',
+			'helpalso'=>'zcm_helpalso',
+			'helpindex'=>'zcm_helpindex',
+			'helpindexphrase'=>'zcm_helpindexphrase',
+			'nav'=>'zcm_nav');
+		foreach ($map as $oldname=>$newname)
+		{
+			$sql = "rename table $oldname to $newname";
+			mysql_query($sql) or die("Can't rename table ($sql): ".mysql_error());
+		}
+	}
+}
 /**
  * Rename keys of a named plugin
  *

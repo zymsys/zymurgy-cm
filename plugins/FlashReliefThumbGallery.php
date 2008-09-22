@@ -15,7 +15,7 @@ class FlashReliefThumbGallery extends PluginBase
 	
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE `frgalleryimage` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_fr_galleryimage` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `instance` int(11) default NULL,
 		  `image` varchar(60) default NULL,
@@ -29,32 +29,33 @@ class FlashReliefThumbGallery extends PluginBase
 	
 	function GetRelease()
 	{
-		return 2; //Added link to frgalleryimage table
+		return 3; //Renamed table to zcm_fr_galleryimage; rename corresponding files as well.
+		//return 2; //Added link to zcm_fr_galleryimage table
 	}
 	
 	function Upgrade()
 	{
 		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
-		$newfrgalleryimage = array('link'=>'alter table frgalleryimage add link varchar(200)');
-		CheckColumns('frgalleryimage',$newfrgalleryimage);
+		$newfrgalleryimage = array('link'=>'alter table zcm_fr_galleryimage add link varchar(200)');
+		CheckColumns('zcm_fr_galleryimage',$newfrgalleryimage);
 		$this->CompleteUpgrade();
 	}
 
 	function GetUninstallSQL()
 	{
-		return "drop table frgalleryimage";
+		return "drop table zcm_fr_galleryimage";
 	}
 	
 	function RemoveInstance()
 	{
-		$sql = "select id from frgalleryimage where instance={$this->iid}";
+		$sql = "select id from zcm_fr_galleryimage where instance={$this->iid}";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to remove gallery images ($sql): ".Zymurgy::$db->error());
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			DataGrid::DeleteThumbs('frgalleryimage.image',$row['id']);
+			DataGrid::DeleteThumbs('zcm_fr_galleryimage.image',$row['id']);
 		}
 		Zymurgy::$db->free_result($ri);
-		$sql = "delete from frgalleryimage where instance={$this->iid}";
+		$sql = "delete from zcm_fr_galleryimage where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove gallery images ($sql): ".Zymurgy::$db->error());
 		parent::RemoveInstance();
 	}
@@ -109,10 +110,10 @@ class FlashReliefThumbGallery extends PluginBase
 		$usegimage = ($this->GetConfigValue('Generate Gallery Image')=='true');
 		if ($usegimage && (array_key_exists('gimage',$_GET)))
 		{
-			$sql = "update frgalleryimage set gimage=0 where instance=".$this->iid;
+			$sql = "update zcm_fr_galleryimage set gimage=0 where instance=".$this->iid;
 			Zymurgy::$db->query($sql) or die("Can't reset gallery image ($sql): ".Zymurgy::$db->error());
 			$gimage = 0 + $_GET['gimage'];
-			$sql = "update frgalleryimage set gimage=1 where id=$gimage";
+			$sql = "update zcm_fr_galleryimage set gimage=1 where id=$gimage";
 			Zymurgy::$db->query($sql) or die("Can't set gallery image ($sql): ".Zymurgy::$db->error());
 			header("Location: pluginadmin.php?pid={$this->pid}&iid={$this->iid}");
 			return;
@@ -125,7 +126,7 @@ class FlashReliefThumbGallery extends PluginBase
 				echo "<p>Gallery Image: $gi</p>";
 			}
 		}
-		$ds = new DataSet('frgalleryimage','id');
+		$ds = new DataSet('zcm_fr_galleryimage','id');
 		$ds->AddColumns('id','instance','image','caption','link','disporder');
 		$ds->AddDataFilter('instance',$this->iid);
 		$dg = new DataGrid($ds);
@@ -137,7 +138,7 @@ class FlashReliefThumbGallery extends PluginBase
 		$dg->AddInput('link','Link:',200,60);
 		if ($usegimage)
 			$dg->AddButton('Set Gallery Image',"pluginadmin.php?pid={$this->pid}&iid={$this->iid}&gimage={0}");
-		$dg->AddColumn('','id',"<a href=\"javascript:void()\" onclick=\"aspectcrop_popup('frgalleryimage.image','".$this->GetConfigValue('Main Image Area Width').'x'.$this->GetConfigValue('Main Image Area Height')."',{0},'frgalleryimage.image',true)\">Adjust Image</a>");
+		$dg->AddColumn('','id',"<a href=\"javascript:void()\" onclick=\"aspectcrop_popup('zcm_fr_galleryimage.image','".$this->GetConfigValue('Main Image Area Width').'x'.$this->GetConfigValue('Main Image Area Height')."',{0},'zcm_fr_galleryimage.image',true)\">Adjust Image</a>");
 		$dg->AddUpDownColumn('disporder');
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
@@ -215,11 +216,11 @@ class FlashReliefThumbGallery extends PluginBase
         $xml[] = "<backgroundAlpha>100</backgroundAlpha>
               <autoPlay>".$this->GetConfigValue('Seconds per Image')."</autoPlay>";
 	    $xml [] = "</setup>";
-		$sql = "select id,caption,link from frgalleryimage where instance={$this->iid} order by disporder";
+		$sql = "select id,caption,link from zcm_fr_galleryimage where instance={$this->iid} order by disporder";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to load images ($sql): ".Zymurgy::$db->error());
 		if (!$ri)
 			die("Unable to read gallery images ($sql): ".Zymurgy::$db->error());
-		$imgpath = "DataGrid/frgalleryimage.image";
+		$imgpath = "DataGrid/zcm_fr_galleryimage.image";
 		chdir("$ZymurgyRoot/UserFiles");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
@@ -262,7 +263,7 @@ class FlashReliefThumbGallery extends PluginBase
 	{
 		global $ZymurgyRoot;
 		
-		$sql = "select id from frgalleryimage where (instance={$this->iid}) and (gimage=1)";
+		$sql = "select id from zcm_fr_galleryimage where (instance={$this->iid}) and (gimage=1)";
 		$ri = Zymurgy::$db->query($sql);
 		if (!$ri)
 			die("Can't load default gallery image ($sql): ".Zymurgy::$db->error());
@@ -275,11 +276,11 @@ class FlashReliefThumbGallery extends PluginBase
 		$h = $this->GetConfigValue('Gallery Image Height');
 		//echo "[$ZymurgyRoot/UserFiles]"; return;
 		chdir("$ZymurgyRoot/UserFiles");
-		$thumb = "DataGrid/frgalleryimage.image/{$id}thumb{$w}x{$h}.jpg";
+		$thumb = "DataGrid/zcm_fr_galleryimage.image/{$id}thumb{$w}x{$h}.jpg";
 		if (!file_exists($thumb))
 		{
 			require_once('../zymurgy/include/Thumb.php');
-			$raw = "DataGrid/frgalleryimage.image/{$id}raw.jpg";
+			$raw = "DataGrid/zcm_fr_galleryimage.image/{$id}raw.jpg";
 			Thumb::MakeFixedThumb($w,$h,$raw,$thumb);
 		}
 		return "<img width=\"$w\" height=\"$h\" src=\"/UserFiles/$thumb\" />";

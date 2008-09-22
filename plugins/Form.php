@@ -26,18 +26,18 @@ class Form extends PluginBase
 	
 	function GetUninstallSQL()
 	{
-		return 'drop table formcapture; drop table forminput; drop table forminputtype';
+		return 'drop table zcm_form_capture; drop table zcm_form_input; drop table zcm_form_inputtype';
 	}
 	
 	function RemoveInstance()
 	{
-		$sql = "delete from forminput where instance={$this->iid}";
+		$sql = "delete from zcm_form_input where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove form fields ($sql): ".Zymurgy::$db->error());
-		$sql = "delete from formcapture where instance={$this->iid}";
+		$sql = "delete from zcm_form_capture where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove form captures ($sql): ".Zymurgy::$db->error());
-		$sql = "delete from formexport where instance={$this->iid}";
+		$sql = "delete from zcm_form_export where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove form exports ($sql): ".Zymurgy::$db->error());
-		$sql = "delete from formheader where instance={$this->iid}";
+		$sql = "delete from zcm_form_header where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove form headers ($sql): ".Zymurgy::$db->error());
 		parent::RemoveInstance();
 	}
@@ -69,7 +69,7 @@ class Form extends PluginBase
 	
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE `formcapture` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_capture` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `instance` int(11) NOT NULL default '0',
   `submittime` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -83,7 +83,7 @@ class Form extends PluginBase
   KEY member (member),
   KEY `instance` (`instance`,`submittime`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `forminput` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_input` (
   `id` int(11) NOT NULL auto_increment,
   `instance` int(11) NOT NULL default '0',
   `inputtype` int(11) NOT NULL default '0',
@@ -97,14 +97,14 @@ class Form extends PluginBase
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`,`disporder`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `forminputtype` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_inputtype` (
   `id` int(11) NOT NULL auto_increment,
   `takesxtra` smallint(6) NOT NULL default '0',
   `name` varchar(60) NOT NULL default '',
   `specifier` text NOT NULL,
   PRIMARY KEY  (`id`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `formexport` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_export` (
   `id` int(11) NOT NULL auto_increment,
   `exptime` datetime default NULL,
   `expuser` int(11) default NULL,
@@ -113,14 +113,14 @@ class Form extends PluginBase
   KEY `exptime` (`exptime`),
   KEY `instance` (`instance`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `formheader` (
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_header` (
   `id` int(11) NOT NULL auto_increment,
   `instance` int(11) default NULL,
   `header` varchar(60) default NULL,
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`)
 )");
-		Zymurgy::$db->query("INSERT INTO `forminputtype` VALUES 
+		Zymurgy::$db->query("INSERT INTO `zcm_form_inputtype` VALUES 
 			(1,0,'Short Text (30 characters)','input.30.30'),
 			(2,0,'Medium Text (60 characters)','input.30.60'),
 			(3,0,'Long Text (100 characters)','input.50.100'),
@@ -147,9 +147,9 @@ class Form extends PluginBase
 			//Need to be able to flush data from any export we want from the server side.
 			//Capture table needs to link to which export that capture belongs to.
 			//Null export info in capture means it's fresh.
-			Zymurgy::$db->query("alter table formcapture add export int") or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("alter table formcapture add index(export)") or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("CREATE TABLE `formexport` (
+			Zymurgy::$db->query("alter table zcm_form_capture add export int") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table zcm_form_capture add index(export)") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("CREATE TABLE `zcm_form_export` (
 				  `id` int(11) NOT NULL auto_increment,
 				  `exptime` datetime default NULL,
 				  `expuser` int(11) default NULL,
@@ -158,25 +158,41 @@ class Form extends PluginBase
 				  KEY `exptime` (`exptime`),
 				  KEY `instance` (`instance`)
 				)");
-			Zymurgy::$db->query("alter table formcapture change `values` formvalues text NOT NULL");
+			Zymurgy::$db->query("alter table zcm_form_capture change `values` formvalues text NOT NULL");
 		}
 		if ($this->dbrelease < 3)
 		{
 			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
-			Zymurgy::$db->query("alter table formcapture add member bigint") or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("alter table formcapture add index(member)") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table zcm_form_capture add member bigint") or die($diemsg.Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table zcm_form_capture add index(member)") or die($diemsg.Zymurgy::$db->error());
+		}
+		if ($this->dbrelease < 4)
+		{
+			//Upgrade to r4 - Renamed tables.
+			$map = array(
+				'formcapture' => 'zcm_form_capture',
+				'formexport' => 'zcm_form_export',
+				'formheader' => 'zcm_form_header',
+				'forminput' => 'zcm_form_input',
+				'forminputtype' => 'zcm_form_inputtype');
+			foreach ($map as $oldname=>$newname)
+			{
+				$sql = "rename table $oldname to $newname";
+				mysql_query($sql) or die("Can't rename table ($sql): ".mysql_error());
+			}
 		}
 		$this->CompleteUpgrade();		
 	}
 	
 	function GetRelease()
 	{
-		return 3; //Added capture/export capabilities to db.
+		return 4; //Added capture/export capabilities to db.
+		//return 3; //Added capture/export capabilities to db.
 	}
 
 	function LoadInputData()
 	{
-		$sql = "select *,forminput.id as fid from forminput,forminputtype where (instance={$this->iid}) and (forminput.inputtype=forminputtype.id) order by disporder";
+		$sql = "select *,zcm_form_input.id as fid from zcm_form_input,zcm_form_inputtype where (instance={$this->iid}) and (zcm_form_input.inputtype=zcm_form_inputtype.id) order by disporder";
 		$ri = Zymurgy::$db->query($sql);
 		if (!$ri)
 		{
@@ -419,13 +435,13 @@ function Validate$name(me) {
 			$ip = $_SERVER['REMOTE_ADDR'];
 		if ($this->SaveID)
 		{
-			$sql = "update formcapture set submittime=now(), ip='{$_SERVER['REMOTE_ADDR']}', useragent='".
+			$sql = "update zcm_form_capture set submittime=now(), ip='{$_SERVER['REMOTE_ADDR']}', useragent='".
 				Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."', formvalues='".
 				Zymurgy::$db->escape_string($xml)."' where id=".$this->SaveID;
 		}
 		else 
 		{
-			$sql = "insert into formcapture (instance,submittime,ip,useragent,formvalues,member) values ({$this->iid},now(),
+			$sql = "insert into zcm_form_capture (instance,submittime,ip,useragent,formvalues,member) values ({$this->iid},now(),
 				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
 				Zymurgy::$db->escape_string($xml)."',".
 				($this->member === false ? 'NULL' : $this->member['id']).")";
@@ -501,7 +517,7 @@ function Validate$name(me) {
 	
 	function RenderSuperAdmin()
 	{
-		$ds = new DataSet('forminputtype','id');
+		$ds = new DataSet('zcm_form_inputtype','id');
 		$ds->AddColumns('id','takesxtra','name','specifier');
 		$dg = new DataGrid($ds);
 		$dg->AddColumn('Name','name');
@@ -575,10 +591,10 @@ function Validate$name(me) {
 	function RenderAdminPrepDownload()
 	{
 		global $zauth;
-		$csql = "insert into formexport (exptime,expuser,instance) values (now(),".$zauth->authinfo['id'].",{$this->iid})";
+		$csql = "insert into zcm_form_export (exptime,expuser,instance) values (now(),".$zauth->authinfo['id'].",{$this->iid})";
 		Zymurgy::$db->query($csql) or die ("Unable to create export ($csql): ".Zymurgy::$db->error());
 		$expid = Zymurgy::$db->insert_id();
-		$sql = "update formcapture set export=$expid where export is null";
+		$sql = "update zcm_form_capture set export=$expid where export is null";
 		Zymurgy::$db->query($sql) or die("Unable to mark fields as exported ($sql): ".Zymurgy::$db->error());
 		return $expid;
 	}
@@ -588,11 +604,11 @@ function Validate$name(me) {
 		global $zauth;
 
 		//Get form's headers which will include headers from previous runs, even those no longer in use so that exports line up.
-		$sql = "select count(*) from formcapture where member is not null and instance={$this->iid}";
+		$sql = "select count(*) from zcm_form_capture where member is not null and instance={$this->iid}";
 		$ri = Zymurgy::$db->query($sql) or die("Can't check member records ($sql): ".Zymurgy::$db->error());
 		$membercount = Zymurgy::$db->result($ri,0,0);
 		$headers = $membercount ? array('Member ID','Member Email') : array();
-		$sql = "select * from formheader where instance={$this->iid}";
+		$sql = "select * from zcm_form_header where instance={$this->iid}";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to get export headers ($sql): ".Zymurgy::$db->error());
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
@@ -600,7 +616,7 @@ function Validate$name(me) {
 		}
 		Zymurgy::$db->free_result($ri);
 		//Now get actual data for this export
-		$sql = "select formcapture.id,formcapture.formvalues,formcapture.member,member.email from formcapture left join member on (formcapture.member=member.id) where (instance={$this->iid}) and export=$expid";
+		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,member.email from zcm_form_capture left join member on (zcm_form_capture.member=member.id) where (instance={$this->iid}) and export=$expid";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
 		$exported = array();
 		$rows = array();
@@ -615,7 +631,7 @@ function Validate$name(me) {
 			{
 				if (!in_array($key,$headers))
 				{
-					$sql = "insert into formheader (instance,header) values ({$this->iid},'".Zymurgy::$db->escape_string($key)."')";
+					$sql = "insert into zcm_form_header (instance,header) values ({$this->iid},'".Zymurgy::$db->escape_string($key)."')";
 					Zymurgy::$db->query($sql) or die ("Unable to create new header [$key] ($sql): ".Zymurgy::$db->error());
 					$headers[] = $key;
 				}
@@ -762,7 +778,7 @@ function DownloadExport(pid,iid,name) {
 	
 	function RenderAdminExport()
 	{
-		$sql = "select count(*) from formcapture where export is null";
+		$sql = "select count(*) from zcm_form_capture where export is null";
 		$ri = Zymurgy::$db->query($sql);
 		$newcaps = Zymurgy::$db->result($ri,0,0);
 		if ($newcaps>0)
@@ -772,7 +788,7 @@ function DownloadExport(pid,iid,name) {
 				"')\">$newcaps new record(s) ready to download.</a><br />\r\n";*/
 			echo "<a href=\"pluginadmin.php?ras=doexport&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">$newcaps new record(s) ready to download.</a><br />\r\n";
 		}
-		$ds = new DataSet('formexport','id');
+		$ds = new DataSet('zcm_form_export','id');
 		$ds->AddColumns('id','exptime','expuser','instance');
 		$ds->AddDataFilter('instance',$this->iid);
 		
@@ -787,7 +803,7 @@ function DownloadExport(pid,iid,name) {
 	
 	function RenderAdminFields()
 	{
-		$ds = new DataSet('forminput','id');
+		$ds = new DataSet('zcm_form_input','id');
 		$ds->AddColumns('id','instance','inputtype','caption','header','disporder','defaultvalue','isrequired','validator','validatormsg');
 		$ds->AddDataFilter('instance',$this->iid);
 		$dg = new DataGrid($ds);
@@ -795,7 +811,7 @@ function DownloadExport(pid,iid,name) {
 		$dg->AddColumn('Input Type','inputtype');
 		$dg->AddColumn('Required','isrequired');
 		$dg->AddInput('caption','Form Caption:',4096,40);
-		$dg->AddLookup('inputtype','Input Type:','forminputtype','id','name');
+		$dg->AddLookup('inputtype','Input Type:','zcm_form_inputtype','id','name');
 		$dg->AddInput('header','Export Table Header:',40,20);
 		$dg->AddInput('defaultvalue','Default Value:',1024,40);
 		$dg->AddRadioEditor('isrequired','Required?',array(0=>'No',1=>'Yes'));

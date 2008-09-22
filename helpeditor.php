@@ -22,9 +22,9 @@ include 'datagrid.php';
 function OnDelete($values)
 {
 	//Remote See Also references to this help page
-	Zymurgy::$db->query("delete from helpalso where seealso={$values['help.id']}");
+	Zymurgy::$db->query("delete from zcm_helpalso where seealso={$values['zcm_help.id']}");
 	//Get a list of phrases from the index which point to this page
-	$ri = Zymurgy::$db->query("select distinct(phrase) from helpindex where help={$values['help.id']}");
+	$ri = Zymurgy::$db->query("select distinct(phrase) from zcm_helpindex where help={$values['zcm_help.id']}");
 	$phrases = array();
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
@@ -32,12 +32,12 @@ function OnDelete($values)
 	}
 	Zymurgy::$db->free_result($ri);
 	//Remove phrase references to this help page
-	Zymurgy::$db->query("delete from helpindex where help={$values['help.id']}");
+	Zymurgy::$db->query("delete from zcm_helpindex where help={$values['zcm_help.id']}");
 	//Search for orphaned phrases
 	if (count($phrases)>0)
 	{
-		$sql = "select helpindex.phrase, helpindexphrase.id from helpindexphrase left join helpindex on helpindexphrase.id=helpindex.phrase 
-			where helpindexphrase.id in (".implode(',',$phrases).") group by helpindex.phrase";
+		$sql = "select zcm_helpindex.phrase, zcm_helpindexphrase.id from zcm_helpindexphrase left join zcm_helpindex on zcm_helpindexphrase.id=zcm_helpindex.phrase 
+			where zcm_helpindexphrase.id in (".implode(',',$phrases).") group by zcm_helpindex.phrase";
 		$ri = Zymurgy::$db->query($sql) or die("Can't search orphaned phrases ($sql): ".Zymurgy::$db->error());
 		$orhpans = array();
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -52,7 +52,7 @@ function OnDelete($values)
 		{
 			//Now remove phrases which are no longer referenced.  Yes this introduces a race condition where a phrase could be added for another page which
 			//makes it no longer an orphan in the same instant we would have orphaned it, but I'll live with the odds.
-			Zymurgy::$db->query("delete from helpindexphrase where id in (".implode(',',$orhpans).")");
+			Zymurgy::$db->query("delete from zcm_helpindexphrase where id in (".implode(',',$orhpans).")");
 		}
 	}
 	return true; //Return false to override delete.
@@ -61,11 +61,11 @@ function OnDelete($values)
 //The values array contains tablename.columnname keys with the proposed new values for the updated row.
 function OnBeforeUpdate($values)
 {
-	$values['help.plain'] = strip_tags($values['help.body']); //Used for full text index
+	$values['zcm_help.plain'] = strip_tags($values['zcm_help.body']); //Used for full text index
 	return $values; // Change values you want to alter before the update occurs.
 }
 
-$ds = new DataSet('help','id');
+$ds = new DataSet('zcm_help','id');
 $ds->AddColumns('id','parent','disporder','authlevel','title','body','plain');
 $ds->OnDelete = 'OnDelete';
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';

@@ -11,7 +11,7 @@ function navparents($nid)
 	$r = array();
 	do
 	{
-		$nav = Zymurgy::$db->get("select * from zcmnav where id=$nid");
+		$nav = Zymurgy::$db->get("select * from zcm_nav where id=$nid");
 		$r[$nav['id']] = $nav['navname'];
 		$nid = $nav['parent'];
 	}
@@ -42,7 +42,7 @@ if ($detailfor > 0)
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
 	$ek = 0 + $_GET['editkey'];
-	$nav = Zymurgy::$db->get("select * from zcmnav where id=$ek");
+	$nav = Zymurgy::$db->get("select * from zcm_nav where id=$ek");
 	$navname = $tbl['navname'];
 	$crumbs[''] = "Edit $navname";
 }
@@ -93,13 +93,13 @@ mysql_free_result($ri);
 }
 
 function setUrlContent() {
-	urlContent = "<input id=\"zcmnav.navto\" type=\"text\" value=\""+
+	urlContent = "<input id=\"zcm_nav.navto\" type=\"text\" value=\""+
 	lasturl.replace(/\"/g,'\\"')+
-	"\" name=\"zcmnav.navto\" maxlength=\"200\" size=\"80\" onchange=\"updateContent()\">";
+	"\" name=\"zcm_nav.navto\" maxlength=\"200\" size=\"80\" onchange=\"updateContent()\">";
 }
 
 function setDropListContent(onchange,opts,last) {
-	var dlHtml = "<select id=\"zcmnav.navto\" name=\"zcmnav.navto\" onchange=\""+onchange+"()\">";
+	var dlHtml = "<select id=\"zcm_nav.navto\" name=\"zcm_nav.navto\" onchange=\""+onchange+"()\">";
 	dlHtml += "<option value=\"0\">Choose...</option>";
 	for (var i = 0; i < opts.length; i++) {
 		dlHtml += "<option value=\"" + opts[i].id + "\"";
@@ -121,7 +121,7 @@ function setPiContent() {
 }
 
 function setNavNameIfBlank(newname,opts) {
-	var el = document.getElementById('zcmnav.navname');
+	var el = document.getElementById('zcm_nav.navname');
 	if (el.value=='') {
 		for (var n = 0; n < opts.length; n++) {
 			if (opts[n].id==newname) {
@@ -133,19 +133,19 @@ function setNavNameIfBlank(newname,opts) {
 }
 
 function updateCtOpt() {
-	var elCtOpt = document.getElementById('zcmnav.navto');
+	var elCtOpt = document.getElementById('zcm_nav.navto');
 	lastct = elCtOpt.value;
 	setNavNameIfBlank(lastct,ctOpts);
 }
 
 function updatePiOpt() {
-	var el = document.getElementById('zcmnav.navto');
+	var el = document.getElementById('zcm_nav.navto');
 	lastpi = el.value;
 	setNavNameIfBlank(lastpi,piOpts);
 }
 
 function updateContent() {
-	var elUrl = document.getElementById('zcmnav.navto');
+	var elUrl = document.getElementById('zcm_nav.navto');
 	lasturl = elUrl.value;
 }
 
@@ -153,11 +153,11 @@ loadCtOpts();
 loadPiOpts();
 
 function setDestination(content) {
-	var elDest = document.getElementById('cell-zcmnav.navto');
+	var elDest = document.getElementById('cell-zcm_nav.navto');
 	elDest.innerHTML = content;
 }
 function updateNoSubMenuChange() {
-	var elNavType = document.getElementById('zcmnav.navtype');
+	var elNavType = document.getElementById('zcm_nav.navtype');
 	if (elNavType.value=='Sub-Menu')
 	{
 		YAHOO.util.Dom.setStyle('noSubMenuChange','display','block');
@@ -167,9 +167,9 @@ function updateNoSubMenuChange() {
 }
 function yuiLoaded() {
 	YAHOO.util.Event.onDOMReady(function() {
-		var elNavType = document.getElementById('zcmnav.navtype');
-		var elNavTo = document.getElementById('zcmnav.navto');
-		var elNavTypeCell = document.getElementById('cell-zcmnav.navtype');
+		var elNavType = document.getElementById('zcm_nav.navtype');
+		var elNavTo = document.getElementById('zcm_nav.navto');
+		var elNavTypeCell = document.getElementById('cell-zcm_nav.navtype');
 		var newdiv = document.createElement('div');
 		newdiv.setAttribute('id','noSubMenuChange');
 		newdiv.innerHTML="Sub-Menu's cannot be changed to another type.";
@@ -197,7 +197,7 @@ function yuiLoaded() {
 				elNavType.disabled = true;
 				break;
 		}
-		YAHOO.util.Event.addListener("zcmnav.navtype", "change", function() {
+		YAHOO.util.Event.addListener("zcm_nav.navtype", "change", function() {
 			switch(elNavType.value) {
 				case 'URL':
 					setUrlContent();
@@ -227,11 +227,11 @@ $p = array_key_exists('p',$_GET) ? 0 + $_GET['p'] : 0;
 
 function OnBeforeRenderCell($column,$values,$display)
 {
-	if ($column=='zcmnav.id')
+	if ($column=='zcm_nav.id')
 	{
-		if ($values['zcmnav.navtype']=='Sub-Menu')
+		if ($values['zcm_nav.navtype']=='Sub-Menu')
 		{
-			return "<a href=\"navigation.php?p={$values['zcmnav.id']}\">Sub-Menu Items</a>";
+			return "<a href=\"navigation.php?p={$values['zcm_nav.id']}\">Sub-Menu Items</a>";
 		}
 		else 
 		{
@@ -241,7 +241,7 @@ function OnBeforeRenderCell($column,$values,$display)
 	return $display;
 }
 
-$ds = new DataSet('zcmnav','id');
+$ds = new DataSet('zcm_nav','id');
 $ds->AddColumns('id','disporder','parent','navname','navtype','navto');
 $ds->AddDataFilter('parent',$p);
 
