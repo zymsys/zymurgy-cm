@@ -28,10 +28,10 @@ include('upgradelib.php');
 
 RenameOldTables();
 CreateMissingTables();
-CheckColumns('sitetext',$newsitetext);
-CheckColumns('passwd',$newpasswd);
-CheckColumns('plugininstance',$newplugininstance);
-CheckColumns('customtable',$newcustomtable);
+CheckColumns('zcm_sitetext',$newsitetext);
+CheckColumns('zcm_passwd',$newpasswd);
+CheckColumns('zcm_plugininstance',$newplugininstance);
+CheckColumns('zcm_customtable',$newcustomtable);
 
 RenamePluginKeys('Form',array(
 	'Results Email From'=>'Email Form Results To Address',
@@ -40,34 +40,34 @@ RenamePluginKeys('Form',array(
 ));
 
 //Check if faulty uncategorized content category exists and fix it.
-$sql = "select id from stcategory where name='Uncategorized Content'";
+$sql = "select id from zcm_stcategory where name='Uncategorized Content'";
 $ri = mysql_query($sql) or die("Unable to find category ($sql): ".mysql_error());
 $id = 0 + mysql_result($ri,0,0);
 if ($id > 0)
 {
-	$sql = "update sitetext set category=0 where category=$id";
+	$sql = "update zcm_sitetext set category=0 where category=$id";
 	mysql_query($sql) or die("Unable to correct default category ($sql): ".mysql_error());
-	$sql = "update stcategory set id=0 where id=$id";
+	$sql = "update zcm_stcategory set id=0 where id=$id";
 	mysql_query($sql) or die("Unable to reset default category id ($sql): ".mysql_error());
 }
 //Make sure category 0 exists for uncategorized content
-$sql = "select * from stcategory where id=0";
+$sql = "select * from zcm_stcategory where id=0";
 $ri = mysql_query($sql) or die("Unable to load default category ($sql): ".mysql_error());
 if (mysql_num_rows($ri)==0)
 {
-	$sql = "insert into stcategory (id,name) values (0,'Uncategorized Content')";
+	$sql = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
 	mysql_query($sql) or die("Unable to create default categor ($sql): ".mysql_error());
 	$notzero = mysql_insert_id();
-	$sql = "update stcategory set id=0 where id=$notzero";
+	$sql = "update zcm_stcategory set id=0 where id=$notzero";
 	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
 }
 
 //Make sure we start with the default navigation structure
-$sql = "select count(*) from zcmnav";
+$sql = "select count(*) from zcm_nav";
 $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
 if (mysql_result(0)==0)
 {
-	$sql = "INSERT INTO `zcmnav` VALUES 
+	$sql = "INSERT INTO `zcm_nav` VALUES 
 		(1,1,0,'Content','Sub-Menu',''),
 		(3,3,0,'Admin','Sub-Menu',''),
 		(4,4,0,'Webmaster','Sub-Menu',''),
@@ -88,8 +88,8 @@ if (mysql_result(0)==0)
 }
 
 //Run random column type updates
-mysql_query("alter table sitetext change body body longtext");
-mysql_query("alter table sitetext change plainbody plainbody longtext");
+mysql_query("alter table zcm_sitetext change body body longtext");
+mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
 
 header('Location: ../login.php');
 ?>

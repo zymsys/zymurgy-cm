@@ -45,8 +45,7 @@ function RenameOldTables()
 			'help'=>'zcm_help',
 			'helpalso'=>'zcm_helpalso',
 			'helpindex'=>'zcm_helpindex',
-			'helpindexphrase'=>'zcm_helpindexphrase',
-			'nav'=>'zcm_nav');
+			'helpindexphrase'=>'zcm_helpindexphrase');
 		foreach ($map as $oldname=>$newname)
 		{
 			$sql = "rename table $oldname to $newname";
@@ -62,7 +61,7 @@ function RenameOldTables()
  */
 function RenamePluginKeys($plugin,$keynames)
 {
-	$sql = "select id from plugin where name='".
+	$sql = "select id from zcm_plugin where name='".
 		mysql_escape_string($plugin)."'";
 	$ri = mysql_query($sql) or die("Can't get plugin ID ($sql): ".mysql_error());
 	if (mysql_num_rows($ri)>0)
@@ -72,7 +71,7 @@ function RenamePluginKeys($plugin,$keynames)
 		if ($pid === false) return; //Plugin not installed.  No problem, don't do anything.
 		foreach($keynames as $oldname=>$newname)
 		{
-			$sql = "update pluginconfig set `key`='".
+			$sql = "update zcm_pluginconfig set `key`='".
 				mysql_escape_string($newname)."' where `key`='".
 				mysql_escape_string($oldname)."' and plugin=$pid";
 			mysql_query($sql) or die("Unable to rename key ($sql): ".mysql_error());
