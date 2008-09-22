@@ -165,6 +165,15 @@ $tables = array(
   `navto` varchar(200) default NULL,
   UNIQUE KEY `id` (`id`),
   KEY `disporder` (`disporder`),
-  KEY `parent` (`parent`))"
+  KEY `parent` (`parent`))",
+	'zcm_draft'=>"CREATE TABLE `zcm_draft` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `saved` datetime default NULL,
+  `form` varchar(80) default NULL,
+  `json` longtext,
+  `keeper` tinyint(4) default '0',
+  UNIQUE KEY `id` (`id`),
+  KEY `form` (`form`),
+  KEY `saved` (`saved`))"
 	);
 ?>
