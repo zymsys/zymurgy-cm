@@ -67,7 +67,7 @@ var piOpts = [];
 function loadCtOpts() {
 	var n = 0;
 <?
-$sql = "select * from customtable where detailfor=0 and trim(navname)<>'' order by disporder";
+$sql = "select * from zcm_customtable where detailfor=0 and trim(navname)<>'' order by disporder";
 $ri = mysql_query($sql) or die("Can't load custom table items ($sql): ".mysql_error());
 while (($row = mysql_fetch_array($ri))!==false)
 {
@@ -81,7 +81,7 @@ mysql_free_result($ri);
 function loadPiOpts() {
 	var n = 0;
 <?
-$sql = "select id,title from plugin";
+$sql = "select id,title from zcm_plugin";
 $ri = mysql_query($sql) or die("Can't load plugin items ($sql): ".mysql_error());
 while (($row = mysql_fetch_array($ri))!==false)
 {

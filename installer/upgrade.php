@@ -65,7 +65,8 @@ if (mysql_num_rows($ri)==0)
 //Make sure we start with the default navigation structure
 $sql = "select count(*) from zcm_nav";
 $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
-if (mysql_result(0)==0)
+$count = mysql_result($ri,0,0);
+if ($count==0)
 {
 	$sql = "INSERT INTO `zcm_nav` VALUES 
 		(1,1,0,'Content','Sub-Menu',''),

@@ -216,7 +216,7 @@ $dg->AddColumn('Table','tname');
 $dg->AddColumn('Display Order?','hasdisporder');
 $dg->AddUpDownColumn('disporder');
 $dg->AddColumn('Fields','id','<a href="customfield.php?t={0}">Fields</a>');
-$dg->AddColumn('Detail Tables','id','<a href="zcm_customtable.php?d={0}">Detail Tables</a>');
+$dg->AddColumn('Detail Tables','id','<a href="customtable.php?d={0}">Detail Tables</a>');
 $dg->AddInput('tname','Table Name:',30,30);
 $dg->AddInput('navname','Link Name:',30,30);
 $dg->AddInput('selfref','Self Reference:',30,30);
