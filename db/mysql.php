@@ -18,7 +18,14 @@ class Zymurgy_DB
 		//echo "<div>[$sql]</div>";
 		return mysql_query($sql,$this->link);
 	}
-	
+
+	/**
+	 * Run query and give an error message if there's a problem.  Returns a result identifier resource.
+	 *
+	 * @param string $sql
+	 * @param string $errormsg
+	 * @return resource
+	 */
 	function run($sql, $errormsg = 'Unable to run query')
 	{
 		$ri = $this->query($sql) or die ("$errormsg ($sql): ".$this->error());
