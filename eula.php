@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 {
 	if (array_key_exists('agree',$_POST))
 	{
-		$sql = "update passwd set eula=1 where id={$zauth->authinfo['id']}";
+		$sql = "update zcm_passwd set eula=1 where id={$zauth->authinfo['id']}";
 		Zymurgy::$db->query($sql) or die("Unable to set EULA status ($sql): ".Zymurgy::$db->error());
 		$zp[5] = 1;
 		$_SESSION['AUTH']['extra']=implode(',',$zp);

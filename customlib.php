@@ -113,7 +113,7 @@ function inputspec2sqltype($inputspec)
 			break;
 		case "textarea":
 		case "html":
-			return 'text';
+			return 'longtext';
 			break;
 		case "colour":
 		case "color":

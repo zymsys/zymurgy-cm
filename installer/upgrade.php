@@ -42,13 +42,16 @@ RenamePluginKeys('Form',array(
 //Check if faulty uncategorized content category exists and fix it.
 $sql = "select id from zcm_stcategory where name='Uncategorized Content'";
 $ri = mysql_query($sql) or die("Unable to find category ($sql): ".mysql_error());
-$id = 0 + mysql_result($ri,0,0);
-if ($id > 0)
+if (mysql_num_rows($ri)>0)
 {
-	$sql = "update zcm_sitetext set category=0 where category=$id";
-	mysql_query($sql) or die("Unable to correct default category ($sql): ".mysql_error());
-	$sql = "update zcm_stcategory set id=0 where id=$id";
-	mysql_query($sql) or die("Unable to reset default category id ($sql): ".mysql_error());
+	$id = 0 + mysql_result($ri,0,0);
+	if ($id > 0)
+	{
+		$sql = "update zcm_sitetext set category=0 where category=$id";
+		mysql_query($sql) or die("Unable to correct default category ($sql): ".mysql_error());
+		$sql = "update zcm_stcategory set id=0 where id=$id";
+		mysql_query($sql) or die("Unable to reset default category id ($sql): ".mysql_error());
+	}
 }
 //Make sure category 0 exists for uncategorized content
 $sql = "select * from zcm_stcategory where id=0";

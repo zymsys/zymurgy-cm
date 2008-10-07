@@ -3,7 +3,7 @@
 
 	include 'cmo.php';
 
-	$sql = "select tname from customtable order by tname";
+	$sql = "select tname from zcm_customtable order by tname";
 	
 	$rsTopic = Zymurgy::$db->run($sql);
 

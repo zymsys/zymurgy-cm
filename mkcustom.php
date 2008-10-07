@@ -26,9 +26,6 @@ $noshow = array('id','disporder');
 
 function GetTable()
 {
-	$builtin = array('passwd','meta','sitetext','textpage','config','plugin','pluginconfig','plugininstance',
-		'member','memberaudit','membergroup','groups','stcategory','help','helpalso','helpindexphrase',
-		'helpindex','customtable','zcm_customfield','zcmnav');
 	echo "Select the table you want to generate custom code for:<br><br>";
 	$sql = "show tables";
 	$ri = Zymurgy::$db->query($sql);
@@ -36,8 +33,9 @@ function GetTable()
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
 		$table = $row[0];
+		if (substr($table,0,4) == 'zcm_') continue;
 		if (substr($table,0,4) == 'kfm_') continue;
-		if (!in_array($table,$builtin)) $tables[] = $table;
+		$tables[] = $table;
 	}
 	foreach($tables as $table)
 	{
