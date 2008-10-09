@@ -87,6 +87,11 @@ class InputWidget
 				else 
 					return strftime('%Y-%m-%d %H:%M:%S',$tm);
 				break;
+			case "time":
+				$t = strtotime($_POST[$postname]);
+				return date('H:i:s',$t);
+				break;
+			case "date": //%Y-%m-%d, untouched.
 			default:
 				if (array_key_exists($postname,$_POST))
 				{
@@ -112,6 +117,9 @@ class InputWidget
 				break;
 			case "datetime":
 				$display = date("Y-m-d [g:i A]",strtotime($display));
+				break;
+			case "time": //Convert 24hr clock to hh:mm am/pm
+				$display = date("g:i a",strtotime($display));
 				break;
 			case "money":
 				$display = '$'.number_format($this->UsePennies ? ($display / 100) : $display,2,'.',',');
@@ -349,9 +357,22 @@ passThroughFormSubmit = false;
 				}
 				echo "</select>\r\n";
 				break;
+			case "time":
+				$value = date("g:i a",strtotime($value));
+				echo "<input type=\"text\" size=\"8\" maxlength=\"8\" id=\"$name\" name=\"".
+					"$name\" value=\"$value\" /> <i>hh:mm am/pm</i>";
+				break;
 			case "unixdate":
+			case "date":
 				require_once("$ZymurgyRoot/zymurgy/jscalendar/calendar.php");
-				$date = $value;
+				if ($ep[0] == "unixdate")
+				{
+					$date = $value;
+				}
+				else 
+				{
+					$date = strtotime($value);
+				}
 				if ($date == 0) $date=time();
 				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
 				$cal->load_files();

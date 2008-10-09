@@ -88,7 +88,13 @@ function GetOptions()
 					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
 				break;
 			case('datetime'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date";
+				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date/Time";
+				break;
+			case('date'):
+				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"date\" checked>MySQL Date";
+				break;
+			case('time'):
+				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"time\" checked>MySQL Time";
 				break;
 			default:
 				$opts = "Unknown type: $type";
@@ -298,6 +304,18 @@ function ShowCode()
 					switch($opts)
 					{
 						default: $dg[] = "\$dg->AddEditor('$fld','$name','datetime');"; break;
+					}
+					break;
+				case('date'):
+					switch($opts)
+					{
+						default: $dg[] = "\$dg->AddEditor('$fld','$name','date');"; break;
+					}
+					break;
+				case('time'):
+					switch($opts)
+					{
+						default: $dg[] = "\$dg->AddEditor('$fld','$name','time');"; break;
 					}
 					break;
 				case('smallint'):
