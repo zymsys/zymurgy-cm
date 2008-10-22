@@ -147,8 +147,8 @@ class Form extends PluginBase
 			//Need to be able to flush data from any export we want from the server side.
 			//Capture table needs to link to which export that capture belongs to.
 			//Null export info in capture means it's fresh.
-			Zymurgy::$db->query("alter table zcm_form_capture add export int") or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("alter table zcm_form_capture add index(export)") or die($diemsg.Zymurgy::$db->error());
+			@Zymurgy::$db->query("alter table zcm_form_capture add export int");// or die($diemsg.Zymurgy::$db->error());
+			@Zymurgy::$db->query("alter table zcm_form_capture add index(export)");// or die($diemsg.Zymurgy::$db->error());
 			Zymurgy::$db->query("CREATE TABLE `zcm_form_export` (
 				  `id` int(11) NOT NULL auto_increment,
 				  `exptime` datetime default NULL,
@@ -163,8 +163,8 @@ class Form extends PluginBase
 		if ($this->dbrelease < 3)
 		{
 			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
-			Zymurgy::$db->query("alter table zcm_form_capture add member bigint") or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("alter table zcm_form_capture add index(member)") or die($diemsg.Zymurgy::$db->error());
+			@Zymurgy::$db->query("alter table zcm_form_capture add member bigint");// or die($diemsg.Zymurgy::$db->error());
+			@Zymurgy::$db->query("alter table zcm_form_capture add index(member)");// or die($diemsg.Zymurgy::$db->error());
 		}
 		if ($this->dbrelease < 4)
 		{
@@ -178,7 +178,7 @@ class Form extends PluginBase
 			foreach ($map as $oldname=>$newname)
 			{
 				$sql = "rename table $oldname to $newname";
-				mysql_query($sql) or die("Can't rename table ($sql): ".mysql_error());
+				@mysql_query($sql);// or die("Can't rename table ($sql): ".mysql_error());
 			}
 		}
 		$this->CompleteUpgrade();		
@@ -332,6 +332,10 @@ function Validate$name(me) {
                         else
                                 $key = $row['header'];
                         $values[$key] = $_POST['Field'.$row['fid']];
+		}
+		if (is_array($this->extra))
+		{
+			$values = array_merge($this->extra,$values);
 		}
 		return $values;
 	}

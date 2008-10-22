@@ -71,7 +71,7 @@ function showsearch()
 
 if (array_key_exists('editkey',$_GET))
 {
-	$breadcrumbTrail = "<a href=\"sitetext.php\">General Content</a> &gt; Edit";
+	$breadcrumbTrail = "<a href=\"sitetext.php\">Simple Content</a> &gt; Edit";
 }
 else 
 {

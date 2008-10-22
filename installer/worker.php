@@ -5,13 +5,13 @@ function CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterE
 {
 	global $tables;
 	
-	$tables['ipasswd'] = "insert into passwd (username,password,fullname,email,admin) values ('".
+	$tables['ipasswd'] = "insert into zcm_passwd (username,password,fullname,email,admin) values ('".
 		mysql_escape_string($webmasterLogin)."','".
 		mysql_escape_string($webmasterPassword)."','".
 		mysql_escape_string($webmasterName)."','".
 		mysql_escape_string($webmasterEmail)."'".
 		",2)";
-	$tables['istcategory'] = "insert into stcategory (id,name) values (0,'Uncategorized Content')";
+	$tables['istcategory'] = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
 
 	foreach($tables as $sql)
 	{

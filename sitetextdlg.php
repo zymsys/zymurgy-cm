@@ -3,7 +3,7 @@ include('header.php');
 ob_clean();
 include('datagrid.php');
 $st = $_GET['st'];
-$ri = Zymurgy::$db->query("select id,body,inputspec from sitetext where tag='".Zymurgy::$db->escape_string($_GET['st'])."'");
+$ri = Zymurgy::$db->query("select id,body,inputspec from zcm_sitetext where tag='".Zymurgy::$db->escape_string($_GET['st'])."'");
 $row = Zymurgy::$db->fetch_array($ri);
 $_GET['editkey'] = $row['id']; //Fake out InputWidget
 $inputspec = $row['inputspec'];
@@ -34,7 +34,7 @@ if (array_key_exists('action',$_GET))
 function OnUpdate($dsr)
 {
 	//Load list of related pages
-	$sql = "select metaid from textpage where sitetextid={$dsr['sitetext.id']}";
+	$sql = "select metaid from zcm_textpage where sitetextid={$dsr['zcm_sitetext.id']}";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Unable to set update time using ($sql): ".Zymurgy::$db->error());
 	$updated = array();
@@ -55,7 +55,7 @@ function OnUpdate($dsr)
 	}
 }
 
-$ds = new DataSet('sitetext','id');
+$ds = new DataSet('zcm_sitetext','id');
 $ds->AddColumn('id',false);
 $ds->AddColumn('tag',true);
 $ds->AddColumn('body',true);
@@ -69,7 +69,7 @@ $dg->insertlabel = '';
 if (array_key_exists('editkey',$_GET))
 {
 	$id = 0 + $_GET['editkey'];
-	$sql = "select id,inputspec from sitetext where id=$id";
+	$sql = "select id,inputspec from zcm_sitetext where id=$id";
 	$ri = Zymurgy::$db->query($sql);
 	$row = Zymurgy::$db->fetch_array($ri);
 	$inputspec = $row['inputspec'];
