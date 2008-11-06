@@ -50,7 +50,7 @@ class Zymurgy_SiteMap
 	var $DefaultFrequency; // One of always hourly daily weekly monthly yearly or never; defaults to monthly.
 	var $urls;
 	
-	function SiteMap($DefaultHome,$DefaultPriority = 0.5,$DefaultFrequency='monthly')
+	function Zymurgy_SiteMap($DefaultHome,$DefaultPriority = 0.5,$DefaultFrequency='monthly')
 	{
 		$this->DefaultHome = $DefaultHome;
 		$this->DefaultPriority = $DefaultPriority;
@@ -71,7 +71,7 @@ class Zymurgy_SiteMap
 		foreach($this->urls as $loc=>$url)
 		{
 			echo "<url>\r\n".
-				"<loc>$loc</loc>\r\n".
+				"<loc>http://{$this->DefaultHome}/$loc</loc>\r\n".
 				"<lastmod>{$url->lastmod}</lastmod>\r\n".
 				"<changefreq>{$url->changefreq}</changefreq>\r\n".
 				"<priority>{$url->priority}</priority>\r\n".

@@ -319,7 +319,7 @@ if (!class_exists('Zymurgy'))
 		static function sitemap()
 		{
 			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
-			
+
 			$sm = new Zymurgy_SiteMap(Zymurgy::$config['sitehome']);
 			$ri = Zymurgy::$db->query("select * from zcm_meta");
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
