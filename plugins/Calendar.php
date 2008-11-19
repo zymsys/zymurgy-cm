@@ -36,6 +36,60 @@ class Calendar extends PluginBase
 		
 	function GetDefaultConfig()
 	{
+		$r = array();
+		
+		$this->BuildConfig(
+			$r,
+			'Allow Multi-day Events',
+			'no',
+			'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
+			0);
+		$this->BuildConfig(
+			$r,
+			'Events have Location',
+			'no',
+			'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
+			0);
+		$this->BuildConfig(
+			$r,
+			'Date Format',
+			'F  jS, Y',
+			'input.30.30',
+			0);
+		$this->BuildConfig(
+			$r,
+			'Date Tag',
+			'h2',
+			'input.50.50',
+			0);
+		$this->BuildConfig(
+			$r,
+			'Title Tag',
+			'h3',
+			'input.50.50',
+			0);
+		$this->BuildConfig(
+			$r,
+			'Location Tag',
+			'em',
+			'input.50.50',
+			0);
+		$this->BuildConfig(
+			$r,
+			'Description Tag',
+			'p',
+			'input.50.50',
+			0);
+		$this->BuildConfig(
+			$r,
+			'Event Separator',
+			'',
+			'textarea.60.5',
+			0);
+		
+		return $r;
+		
+		/*
 		return array(
 			'Allow Multi-day Events'=>'no',
 			'Events have Location'=>'no',
@@ -46,10 +100,12 @@ class Calendar extends PluginBase
 			'Description Tag'=>'p',
 			'Event Separator'=>''
 		);
+		*/
 	}
 	
 	function GetConfigItemTypes()
 	{
+		/*
 		//Data types are in the format:
 		//Implemented:
 		//Not Implemented:
@@ -72,6 +128,8 @@ class Calendar extends PluginBase
 			'Description Tag'=>'input.50.50',
 			'Event Separator'=>'textarea.60.5'
 		);
+		*/
+		return;
 	}
 	
 	function Initialize()

@@ -1,4 +1,6 @@
 <?
+ini_set('display_errors', 1);
+
 if (!class_exists('PluginBase'))
 {
 	require_once('../cms.php');
@@ -288,6 +290,9 @@ class FlashReliefThumbGallery extends PluginBase
 	
 	function Render()
 	{
+		// echo($this->extra);
+		// die();
+		
 		$r='';
 		switch($this->extra)
 		{
@@ -297,12 +302,165 @@ class FlashReliefThumbGallery extends PluginBase
 			case 'js':
 				$r = $this->RenderJS();
 				break;
+			case 'picasabutton':
+				$r = $this->RenderPicasaButton();
+				break;
+			case 'picasa':
+				$r = isset($_POST["process"])
+					? $this->UploadFromPicasa()
+					: $this->RenderPicasaUploader();
+					
+				break;
+				
 			default:
 				$r = $this->RenderHTML();
 				break;
 		}
 		return $r;
 	}
+	
+	function RenderPicasaButton()
+	{
+		$guid = $this->uuid();
+		
+		$xml = "";
+		
+		$xml .= "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+		$xml .= "<buttons format=\"1\" version=\"3\">";
+		$xml .= "<button id=\"zymurgy/{".$guid."}\" type=\"dynamic\">";
+		$xml .= "<icon name=\"{".$guid."}/Icon\" src=\"pbz\"/>";
+		$xml .= "<label>Zymurgy:CM</label>";
+		$xml .= "<tooltip>Upload the selected images to a Zymurgy:CM Flash Relief image gallery.</tooltip>";
+    	$xml .= "<action verb=\"hybrid\">";
+      	$xml .= "<param name=\"url\" value=\"http://".$_SERVER['HTTP_HOST']."/zymurgy/plugins/FlashReliefThumbGallery.php?DocType=picasa\"/>";
+    	$xml .= "</action>";
+		$xml .= "</button>";
+		$xml .= "</buttons>";
+		
+		$zip = new ZipArchive();
+		$filename = "../../temp/{".$guid."}.pbz";
+		
+		if($zip->open($filename, ZIPARCHIVE::CREATE)!==TRUE)
+		{
+			exit("Cannot open <$filename>\n");
+		}
+		
+		$zip->addFromString(
+			"{".$guid."}.pbf",
+			$xml);
+		$zip->addFile(
+			"../../images/icon.psd",
+			"{".$guid."}.psd");
+		
+		require_once("../header.php");
+		echo("<a href=\"picasa://importbutton/?url=http://".$_SERVER['HTTP_HOST']."/temp/{".$guid."}.pbz\">Click here to install the uploader button for Google Picasa</a>");
+		include("../footer.php");
+		
+		return "";
+	}
+	
+	function RenderPicasaUploader()
+	{
+		require_once("../include/xmlHandler.php");	
+		
+		$pluginSQL = "SELECT `id` FROM zcm_plugin WHERE name = 'FlashReliefThumbGallery'";
+		$pid = Zymurgy::$db->get($pluginSQL) or die("Cannot retrieve plugin information");
+				
+		$instanceSQL = "SELECT `id`, `name` FROM zcm_plugininstance WHERE plugin = '".
+			$pid.
+			"' ORDER BY `name`";
+		$instanceRI = Zymurgy::$db->query($instanceSQL) or die("Cannot retrieve list of instances");
+		
+		// require_once("../header.php");
+		
+		echo("<html><head><title>Picasa Upload Tool for Zymurgy:CM</title></head><body>");
+		echo("<form name=\"f\" method=\"POST\" action=\"FlashReliefThumbGallery.php\">");
+		echo("<input type=\"hidden\" name=\"process\" value=\"true\">");
+		echo("<input type=\"hidden\" name=\"DocType\" value=\"picasa\">");
+		echo("<p>Instance: <select name=\"cmbInstance\">");
+		
+		while (($instanceRow = mysql_fetch_array($instanceRI))!==false)
+		{
+			echo("<option value=\"".$instanceRow["id"]."\">".$instanceRow["name"]."</option>");
+		}		
+		
+		echo("</select></p>");
+		echo("<p><b>Selected Images</b></p><p>");
+		
+		$xh = new xmlHandler();
+		$nodeNames = array("PHOTO:THUMBNAIL", "PHOTO:IMGSRC", "TITLE");
+		$xh->setElementNames($nodeNames);
+		$xh->setStartTag("ITEM");
+		$xh->setVarsDefault();
+		$xh->setXmlParser();
+		$xh->setXmlData(stripslashes($_POST['rss']));
+		$pData = $xh->xmlParse();
+		$br = 0;
+	
+		foreach($pData as $e) {
+			echo "<img src='".$e['photo:thumbnail']."?size=120'>\r\n";
+			$large = $e['photo:imgsrc'];		
+			echo "<input type=hidden name='".$large."'>\r\n";
+		}
+
+		echo("</p>");
+		
+		echo("<p>");
+		echo("<input type=\"submit\" value=\"Publish\">&nbsp;");
+		echo("<input type=\"button\" value=\"Cancel\" onclick=\"location.href='minibrowser:close'\">");
+		echo("</p>");
+		
+		echo("</form></body></html>");
+
+		// include("../footer.php");
+	}
+	
+	function UploadFromPicasa()
+	{
+		$instanceID = $_POST["cmbInstance"];		
+		
+		// echo $instanceID;
+		// die;
+	
+		$dispOrderSQL = "SELECT MAX(`disporder`) FROM zcm_fr_galleryimage WHERE `instance` = '$instanceID'";
+		$dispOrder = Zymurgy::$db->get($dispOrderSQL) or die("Could not get highest disporder for instance.");
+		
+		foreach($_FILES as $key => $file)
+		{
+			$tmpfile = $file['tmp_name'];		
+			$dispOrder++;
+			
+			$insertSQL = "INSERT INTO zcm_fr_galleryimage ( instance, image, link, ".
+			"caption, disporder ) VALUES ( '$instanceID', '".$file['type']."', '', '".$file["name"]."', '$dispOrder')";
+			
+			Zymurgy::$db->query($insertSQL) or die("Could not insert record for image.");
+			
+			$idSQL = "SELECT id FROM zcm_fr_galleryimage WHERE instance = '$instanceID' ".
+				"AND disporder = '$dispOrder'";
+			$id = Zymurgy::$db->get($idSQL) or die("Could not get ID of new image record.");
+			
+			$localfn = "../../UserFiles/DataGrid/zcm_fr_galleryimage.image/".$id."raw.jpg";
+			
+			if(move_uploaded_file($tmpfile, $localfn))
+			{
+				// chmod($localfn, 0644);
+			}
+		}
+		
+		// echo("http://".$_SERVER['SERVER_NAME']."/zymurgy/login.php");
+	}
+	
+  	function uuid() 
+  	{
+    	$chars = md5(uniqid(rand()));
+    	$uuid  = substr($chars,0,8) . '-';
+    	$uuid .= substr($chars,8,4) . '-';
+    	$uuid .= substr($chars,12,4) . '-';
+    	$uuid .= substr($chars,16,4) . '-';
+    	$uuid .= substr($chars,20,12);    
+
+    	return $uuid;
+  	}
 }
 
 function FlashReliefThumbGalleryFactory()
@@ -310,16 +468,42 @@ function FlashReliefThumbGalleryFactory()
 	return new FlashReliefThumbGallery();
 }
 
-if (array_key_exists('GalleryInstance',$_GET))
+if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasabutton')
+{
+	header("Content-type: text/html");	
+		
+	echo plugin('FlashReliefThumbGallery',0,'picasabutton');
+}
+else if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasa')
+{
+	header("Content-type: text/html");	
+		
+	echo plugin('FlashReliefThumbGallery', 0, 'picasa');
+}
+else if(array_key_exists('DocType', $_POST) && $_POST["DocType"] == 'picasa')
+{
+	header("Content-type: text/html");	
+		
+	echo plugin('FlashReliefThumbGallery', 0, 'picasa');
+}
+else if (array_key_exists('GalleryInstance',$_GET))
 {
 	$doctype = $_GET['DocType'];
+	
+	// print_r($_GET);
+	// echo("<br>".$_GET['DocType']."<br>".$doctype);
+	// die;
+	
 	if ($doctype=='js')
-		header("Content-type: text/javascript");
+	{
+		header("Content-type: text/javascript");		
+	}
 	else 
 	{
 		header("Content-type: text/xml");
 		$doctype = 'xml';
 	}
+	
 	echo plugin('FlashReliefThumbGallery',$_GET['GalleryInstance'],$doctype);
 }
 ?>

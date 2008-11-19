@@ -83,15 +83,21 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 }
 else 
 {
+	//print_r($config);
+	// die();
+	
 	//Render data entry form.
 	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\">";
 	echo "<table>";
 	foreach ($config as $cv)
 	{
-		if ($zauth->authinfo['admin'] < $cv->authlevel)
-			continue; //We don't have auth for this config item.
+		// ZK: authlevel no longer returned
+		// if ($zauth->authinfo['admin'] < $cv->authlevel)
+		// 	continue; //We don't have auth for this config item.
+		
 		$key = $cv->key;
 		$value = $cv->value;
+		
 		echo "<tr><td align=\"right\">$key:</td><td>";
 		//echo "[{$cv->inputspec}]";
 		$widget->Render($cv->inputspec,str_replace(' ','_',$key),$value);

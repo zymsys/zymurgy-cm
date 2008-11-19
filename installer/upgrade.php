@@ -1,4 +1,6 @@
 <?
+ini_set('display_errors', 1);
+
 require_once('../config/config.php');
 include('tables.php');
 mysql_connect($ZymurgyConfig['mysqlhost'],$ZymurgyConfig['mysqluser'],$ZymurgyConfig['mysqlpass']);
@@ -59,7 +61,7 @@ $ri = mysql_query($sql) or die("Unable to load default category ($sql): ".mysql_
 if (mysql_num_rows($ri)==0)
 {
 	$sql = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
-	mysql_query($sql) or die("Unable to create default categor ($sql): ".mysql_error());
+	mysql_query($sql) or die("Unable to create default category ($sql): ".mysql_error());
 	$notzero = mysql_insert_id();
 	$sql = "update zcm_stcategory set id=0 where id=$notzero";
 	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
@@ -95,5 +97,107 @@ if ($count==0)
 mysql_query("alter table zcm_sitetext change body body longtext");
 mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
 
+// ----------
+// ZK: 2008.11.18
+//
+// Traverse the plugins folder and install any items in there.
+// All plugins are now installed automatically by the upgrader, and it's up to the 
+// web developer to remove unwanted items from the menu using the Navigation 
+// configuration system.
+// ----------
+
+require_once("../cmo.php");
+require_once('../PluginBase.php');
+
+$plugins = array();
+
+$di = opendir('../plugins');
+while (($entry = readdir($di)) !== false)
+{
+	if (!is_dir("../plugins/$entry") & strrpos("../plugins/$entry", ".php") > 0)
+	{
+		list($name,$extension) = explode('.',$entry);
+		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
+		require_once("../plugins/$entry");
+	}
+}
+closedir($di);
+	
+$ri = Zymurgy::$db->query('select * from zcm_plugin');
+while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+{
+	if (array_key_exists($row['name'],$plugins))
+	{
+		if ($row['enabled'] == 1)
+			$plugins[$row['name']] = 'E'; // (E)nabled
+		else 
+			$plugins[$row['name']] = 'D'; // (D)isabled
+	}
+	else 
+	{
+		$plugins[$row['name']] = 'R'; // (R)emoved
+	}
+}
+Zymurgy::$db->free_result($ri);
+
+foreach ($plugins as $source=>$state)
+{
+	switch($state)
+	{
+		case 'N': // (N)ew
+			ExecuteAdd($source);
+			break;
+	}
+}
+// ----------
+// END - Install plugins
+// ----------
+
 header('Location: ../login.php');
+
+	function  ExecuteAdd($source)
+	{
+		global $plugins;
+		
+		//Get an instance of the plugin class
+		$factory = "{$source}Factory";
+		$plugin = $factory();
+		//Add plugin to the plugin table
+		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled) values ('".
+			Zymurgy::$db->escape_string($plugin->GetTitle())."','".
+			Zymurgy::$db->escape_string($source)."','".
+			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1)");
+		$id = Zymurgy::$db->insert_id();
+		//	$id = 7;
+		//Add default configuration
+		$defconf = $plugin->GetDefaultConfig();
+		
+		//	print_r($defconf);
+		//	echo("<br><br><br>");
+		//	die();
+		
+		foreach ($defconf as $key=>$value)
+		{
+			//echo("cv: ");
+			//print_r($cv);
+			//echo("<br>");
+			
+			//$key = $cv->key;
+			//$value = $cv->value;
+			
+			// echo($key.": ".$value."<br>");
+			
+			$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
+				Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
+			$ri = Zymurgy::$db->query($sql);
+			if (!$ri)
+				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
+			
+			echo(htmlentities($sql)."<br>");
+		}
+		
+		// die();
+		
+		$plugin->Initialize();
+	}
 ?>

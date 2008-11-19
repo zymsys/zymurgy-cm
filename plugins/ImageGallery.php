@@ -26,46 +26,76 @@ class ImageGallery extends PluginBase
 
 	function GetDefaultConfig()
 	{
-		return array(
-			'Cells Across' => 3,
-			'Cells Down' => 3,
-			'Aspect Ratios' => 'Thumb Nail:200x150m',
-			'Click for Full Size' => 'Yes',
-			'Next Box Location (x,y)' => '',
-			'Previous Box Location (x,y)' => '',
-			'Next Box Contents' => '<a href="{0}">Next</a>',
-			'Previous Box Contents' => '<a href="{0}">Previous</a>',
-			'Thumb Box Contents'=> '<h2>{ATTR:TITLE}</h2><img class="ThumbImage" alt="{ATTR:ALT TEXT}" src="{IMAGE:THUMB NAIL}" /><br>{ATTR:CAPTION}',
-			'Full Box Contents'=> '<h2>{ATTR:TITLE}</h2><img class="FullImage" alt="{ATTR:ALT TEXT}" src="{IMAGE:FULL SIZE}" /><br>{ATTR:CAPTION}',
-			'Attributes'=>'Title,Caption,Alt Text');
-	}
-
-	function GetConfigItemTypes()
-	{
-		//Data types are in the format:
-		//Implemented:
-		//Not Implemented:
-//		"input.$size.$maxlength"
-//		"textarea.$width.$height"
-//		"html.$widthpx.$heightpx"
-//		"radio.".serialize($optionarray)
-//		"drop.".serialize($optionarray)
-//		"attachment"
-//		"money"
-//		"unixdate"
-//		"lookup.$table"
-		return array(
-			'Cells Across' => 'input.3.3',
-			'Cells Down' => 'input.3.3',
-			'Aspect Ratios' => 'input.60.4096',
-			'Click for Full Size' => 'radio.'.serialize(array('Yes'=>'Yes','No'=>'No')),
-			'Next Box Location (x,y)' => 'input.6.6',
-			'Previous Box Location (x,y)' => 'input.6.6',
-			'Next Box Contents' => 'input.50.4096',
-			'Previous Box Contents' => 'input.50.4096',
-			'Thumb Box Contents'=> 'html.600.400',
-			'Full Box Contents'=> 'html.600.400',
-			'Attributes'=>'input.60.4096');
+		$r = array();
+		
+		$this->BuildConfig(
+			$r,
+			'Cells Across', 
+			3, 
+			'input.3.3', 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Cells Down", 
+			3, 
+			"input.3.3", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Aspect Ratios", 
+			"Thumb Nail:200x150m", 
+			"input.60.4096", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Click for Full Size", 
+			"Yes", 
+			'radio.'.serialize(array('Yes'=>'Yes','No'=>'No')),
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Next Box Location (x,y)", 
+			"", 
+			"input.6.6", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Previous Box Location (x,y)", 
+			"", 
+			"input.6.6", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Next Box Contents", 
+			"<a href=\"{0}\">Next</a>", 
+			"input.50.4096", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Previous Box Contents", 
+			"<a href=\"{0}\">Next</a>", 
+			"input.50.4096", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Thumb Box Contents", 
+			"<h2>{ATTR:TITLE}</h2><img class=\"ThumbImage\" alt=\"{ATTR:ALT TEXT}\" src=\"{IMAGE:THUMB NAIL}\" /><br>{ATTR:CAPTION}", 
+			"html.600.400", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Full Box Contents", 
+			"<h2>{ATTR:TITLE}</h2><img class=\"FullImage\" alt=\"{ATTR:ALT TEXT}\" src=\"{IMAGE:FULL SIZE}\" /><br>{ATTR:CAPTION}", 
+			"html.600.400", 
+			0);
+		$this->BuildConfig(
+			$r, 
+			"Attributes", 
+			"Title,Caption,Alt Text", 
+			"input.60.4096", 
+			0);
+		
+		return $r;
 	}
 	
 	function Initialize()
@@ -83,6 +113,7 @@ class ImageGallery extends PluginBase
 			`id` INT NOT NULL AUTO_INCREMENT ,
 			`instance` INT NOT NULL ,
 			`disporder` INT NOT NULL ,
+			`image` VARCHAR(60)
 			PRIMARY KEY ( `id` )
 			)");
 	}
