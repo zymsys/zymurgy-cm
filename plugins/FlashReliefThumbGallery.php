@@ -1,5 +1,5 @@
 <?
-ini_set('display_errors', 1);
+//ini_set('display_errors', 1);
 
 if (!class_exists('PluginBase'))
 {
@@ -319,46 +319,6 @@ class FlashReliefThumbGallery extends PluginBase
 		return $r;
 	}
 	
-	function RenderPicasaButton()
-	{
-		$guid = $this->uuid();
-		
-		$xml = "";
-		
-		$xml .= "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-		$xml .= "<buttons format=\"1\" version=\"3\">";
-		$xml .= "<button id=\"zymurgy/{".$guid."}\" type=\"dynamic\">";
-		$xml .= "<icon name=\"{".$guid."}/Icon\" src=\"pbz\"/>";
-		$xml .= "<label>Zymurgy:CM</label>";
-		$xml .= "<tooltip>Upload the selected images to a Zymurgy:CM Flash Relief image gallery.</tooltip>";
-    	$xml .= "<action verb=\"hybrid\">";
-      	$xml .= "<param name=\"url\" value=\"http://".$_SERVER['HTTP_HOST']."/zymurgy/plugins/FlashReliefThumbGallery.php?DocType=picasa\"/>";
-    	$xml .= "</action>";
-		$xml .= "</button>";
-		$xml .= "</buttons>";
-		
-		$zip = new ZipArchive();
-		$filename = "../../temp/{".$guid."}.pbz";
-		
-		if($zip->open($filename, ZIPARCHIVE::CREATE)!==TRUE)
-		{
-			exit("Cannot open <$filename>\n");
-		}
-		
-		$zip->addFromString(
-			"{".$guid."}.pbf",
-			$xml);
-		$zip->addFile(
-			"../../images/icon.psd",
-			"{".$guid."}.psd");
-		
-		require_once("../header.php");
-		echo("<a href=\"picasa://importbutton/?url=http://".$_SERVER['HTTP_HOST']."/temp/{".$guid."}.pbz\">Click here to install the uploader button for Google Picasa</a>");
-		include("../footer.php");
-		
-		return "";
-	}
-	
 	function RenderPicasaUploader()
 	{
 		require_once("../include/xmlHandler.php");	
@@ -368,7 +328,7 @@ class FlashReliefThumbGallery extends PluginBase
 				
 		$instanceSQL = "SELECT `id`, `name` FROM zcm_plugininstance WHERE plugin = '".
 			$pid.
-			"' ORDER BY `name`";
+			"' AND `name` <> '0' ORDER BY `name`";
 		$instanceRI = Zymurgy::$db->query($instanceSQL) or die("Cannot retrieve list of instances");
 		
 		// require_once("../header.php");
@@ -423,7 +383,12 @@ class FlashReliefThumbGallery extends PluginBase
 		// die;
 	
 		$dispOrderSQL = "SELECT MAX(`disporder`) FROM zcm_fr_galleryimage WHERE `instance` = '$instanceID'";
-		$dispOrder = Zymurgy::$db->get($dispOrderSQL) or die("Could not get highest disporder for instance.");
+		$dispOrder = Zymurgy::$db->get($dispOrderSQL) or $dispOrder = 0;
+		
+		if($dispOrder == null)
+		{
+			$dispOrder = 0;
+		}
 		
 		foreach($_FILES as $key => $file)
 		{
@@ -449,18 +414,6 @@ class FlashReliefThumbGallery extends PluginBase
 		
 		// echo("http://".$_SERVER['SERVER_NAME']."/zymurgy/login.php");
 	}
-	
-  	function uuid() 
-  	{
-    	$chars = md5(uniqid(rand()));
-    	$uuid  = substr($chars,0,8) . '-';
-    	$uuid .= substr($chars,8,4) . '-';
-    	$uuid .= substr($chars,12,4) . '-';
-    	$uuid .= substr($chars,16,4) . '-';
-    	$uuid .= substr($chars,20,12);    
-
-    	return $uuid;
-  	}
 }
 
 function FlashReliefThumbGalleryFactory()
@@ -468,13 +421,7 @@ function FlashReliefThumbGalleryFactory()
 	return new FlashReliefThumbGallery();
 }
 
-if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasabutton')
-{
-	header("Content-type: text/html");	
-		
-	echo plugin('FlashReliefThumbGallery',0,'picasabutton');
-}
-else if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasa')
+if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasa')
 {
 	header("Content-type: text/html");	
 		

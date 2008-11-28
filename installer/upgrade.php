@@ -3,8 +3,14 @@ ini_set('display_errors', 1);
 
 require_once('../config/config.php');
 include('tables.php');
+
+echo("Connecting to database...");
+
 mysql_connect($ZymurgyConfig['mysqlhost'],$ZymurgyConfig['mysqluser'],$ZymurgyConfig['mysqlpass']);
 mysql_select_db($ZymurgyConfig['mysqldb']);
+
+echo("done.<br>");
+echo("Updating table definitions...");
 
 $newsitetext = array(
 	'inputspec'=>"ALTER TABLE `sitetext` ADD `inputspec` VARCHAR( 100 ) DEFAULT 'html.600.400' NOT NULL ;",
@@ -35,11 +41,17 @@ CheckColumns('zcm_passwd',$newpasswd);
 CheckColumns('zcm_plugininstance',$newplugininstance);
 CheckColumns('zcm_customtable',$newcustomtable);
 
+echo("done.<br>");
+echo("Renaming plugin configuration items...");
+
 RenamePluginKeys('Form',array(
 	'Results Email From'=>'Email Form Results To Address',
 	'Email From'=>'Email Form Results From Address',
 	'Email Subject'=>'Email Form Results Subject'
 ));
+
+echo("done.<br>");
+echo("Updating site text category information...");
 
 //Check if faulty uncategorized content category exists and fix it.
 $sql = "select id from zcm_stcategory where name='Uncategorized Content'";
@@ -67,6 +79,9 @@ if (mysql_num_rows($ri)==0)
 	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
 }
 
+echo("done.<br>");
+echo("Updating Zymurgy:CM navigation...");
+
 //Make sure we start with the default navigation structure
 $sql = "select count(*) from zcm_nav";
 $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
@@ -93,9 +108,14 @@ if ($count==0)
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 }
 
+echo("done.<br>");
+echo("Updating table definitions...");
+
 //Run random column type updates
 mysql_query("alter table zcm_sitetext change body body longtext");
 mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
+
+echo("done.<br>");
 
 // ----------
 // ZK: 2008.11.18
@@ -105,6 +125,8 @@ mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
 // web developer to remove unwanted items from the menu using the Navigation 
 // configuration system.
 // ----------
+
+echo("Installing plugins...<br>");
 
 require_once("../cmo.php");
 require_once('../PluginBase.php');
@@ -118,6 +140,9 @@ while (($entry = readdir($di)) !== false)
 	{
 		list($name,$extension) = explode('.',$entry);
 		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
+		
+		echo("-- Including $entry<br>");
+		
 		require_once("../plugins/$entry");
 	}
 }
@@ -145,10 +170,15 @@ foreach ($plugins as $source=>$state)
 	switch($state)
 	{
 		case 'N': // (N)ew
+			echo("-- Adding $source<br>");
+		
 			ExecuteAdd($source);
 			break;
 	}
 }
+
+echo("Done.<br>");
+
 // ----------
 // END - Install plugins
 // ----------
@@ -160,32 +190,38 @@ header('Location: ../login.php');
 		global $plugins;
 		
 		//Get an instance of the plugin class
+		echo("---- Getting instance of $source plugin<br>");
 		$factory = "{$source}Factory";
 		$plugin = $factory();
+		
 		//Add plugin to the plugin table
+		echo("---- Adding plugin definition to database<br>");
 		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled) values ('".
 			Zymurgy::$db->escape_string($plugin->GetTitle())."','".
 			Zymurgy::$db->escape_string($source)."','".
 			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1)");
 		$id = Zymurgy::$db->insert_id();
 		//	$id = 7;
+		
 		//Add default configuration
+		echo("---- Retrieving default plugin configuration<br>");
 		$defconf = $plugin->GetDefaultConfig();
 		
 		//	print_r($defconf);
 		//	echo("<br><br><br>");
 		//	die();
 		
-		foreach ($defconf as $key=>$value)
+		foreach ($defconf as $cv)
 		{
 			//echo("cv: ");
 			//print_r($cv);
 			//echo("<br>");
 			
-			//$key = $cv->key;
-			//$value = $cv->value;
+			$key = $cv->key;
+			$value = $cv->value;
 			
 			// echo($key.": ".$value."<br>");
+			echo("------ $key<br>");
 			
 			$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
 				Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
@@ -193,10 +229,12 @@ header('Location: ../login.php');
 			if (!$ri)
 				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
 			
-			echo(htmlentities($sql)."<br>");
+			// echo(htmlentities($sql)."<br>");
 		}
 		
 		// die();
+		
+		echo("Initializing plugin<br>");
 		
 		$plugin->Initialize();
 	}
