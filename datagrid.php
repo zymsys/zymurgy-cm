@@ -1221,7 +1221,9 @@ class DataGrid
 						$fckcount++;
 					}
 				}
-				echo "<script src=\"http://yui.yahooapis.com/2.5.2/build/yuiloader/yuiloader-beta-min.js\"></script>\r\n";
+				
+				echo Zymurgy::YUI("yuiloader/yuiloader-min.js");
+				
 				echo "<script src=\"/zymurgy/include/autosave.js\"></script>\r\n";
 				echo "<script>InitializeAutoSave('$formid',$fckcount);</script>\r\n";
 			}

@@ -70,7 +70,7 @@ ob_start();
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yuiloader/yuiloader-beta-min.js"></script>
+<? echo Zymurgy::YUI("yuiloader/yuiloader-min.js"); ?>
 <script type="text/javascript">
 var loader = new YAHOO.util.YUILoader({
     require: ["event","menu"],

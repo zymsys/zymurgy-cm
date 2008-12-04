@@ -203,8 +203,8 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 						container: this.dialog,
 						showhexcontrols: true,
 						images: {
-							PICKER_THUMB: "http://yui.yahooapis.com/2.4.0/build/colorpicker/assets/picker_thumb.png",
-							HUE_THUMB: "http://yui.yahooapis.com/2.4.0/build/colorpicker/assets/hue_thumb.png"
+							PICKER_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/picker_thumb.png",
+							HUE_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/hue_thumb.png"
 						}
 					});
 					this.picker.on("rgbChange", function(o) {

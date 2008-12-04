@@ -1,8 +1,10 @@
 <html>
 <head>
-<script src="http://yui.yahooapis.com/2.4.0/build/yahoo/yahoo-min.js"></script> 
-<script src="http://yui.yahooapis.com/2.4.0/build/dom/dom-min.js"></script> 
-<script src="http://yui.yahooapis.com/2.4.0/build/event/event-min.js" ></script> 
+<?
+	echo Zymurgy::YUI("yahoo/yahoo-min.js")."\n";
+	echo Zymurgy::YUI("dom/dom-min.js")."\n";
+	echo Zymurgy::YUI("event/event-min.js")."\n";
+?>
 <script src="inputspec.js"></script>
 <title>InputSpec Demo</title>
 </head>

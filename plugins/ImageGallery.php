@@ -194,7 +194,90 @@ class ImageGallery extends PluginBase
 	
 	function RenderHTML()
 	{
-		$html = "Content pending";
+		global $ZymurgyRoot;
+		
+		$html = "";
+		
+		$html .= Zymurgy::YUI("carousel/assets/skins/sam/carousel.css")."\n";
+		$html .= Zymurgy::YUI("yahoo/yahoo-dom-event.js")."\n";
+		$html .= Zymurgy::YUI("element/element-beta-min.js")."\n";
+		$html .= Zymurgy::YUI("carousel/carousel-beta-min.js")."\n";
+		
+		$html .= "<style>\n";
+		$html .= "#spotlight { border: 1px solid black; height: 480px; margin: 10px auto; padding: 1px; width: 640px; overflow: hidden; text-align: center; vertical-align: middle; }\n";
+		$html .= "#container { margin: 0 auto; }\n";
+		$html .= ".yui-carousel-element li { height: 75px; width: 75px; opacity: 0.6; }\n";
+		$html .= ".yui-carousel-element .yui-carousel-item-selected { opacity: 1; } \n";
+		$html .= ".yui-skin-sam .yui-carousel-nav ul li { margin: 0; }\n";
+		$html .= "</style>\n";
+		
+		$html .= "<div id=\"spotlight\"></div>\n";
+
+		$html .= "<div id=\"container\"><ol id=\"carousel\">\n";
+		
+		$sql = "select id,caption,link from zcm_galleryimage where instance={$this->iid} order by disporder";
+		$ri = Zymurgy::$db->query($sql) or die("Unable to load images ($sql): ".Zymurgy::$db->error());
+		if (!$ri)
+			die("Unable to read gallery images ($sql): ".Zymurgy::$db->error());
+			
+		$imgpath = "DataGrid/zcm_galleryimage.image";
+		//echo("$ZymurgyRoot/UserFiles");
+		// chdir("$ZymurgyRoot/UserFiles");
+		
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$html .= "<li>\n";
+			$html .= "<img src=\"".$ZymurgyRoot."/UserFiles/".$imgpath."/".$row['id']."raw.jpg\">\n";
+			$html .= "</li>\n";
+		}
+		
+		$html .= "</ol></div>\n";
+				
+		$html .= "<script>\n";
+		
+		$html .= "(function () {\n";
+		$html .= "var carousel;\n";
+                        
+		$html .= "function getImage(parent) {\n";
+		$html .= "var el = parent.firstChild;\n";
+                    
+		$html .= "while (el) {\n";
+		$html .= "if (el.nodeName.toUpperCase() == \"IMG\") {\n";
+		$html .= "return el.src.replace(/_s\\.jpg$/, \"_m.jpg\");\n";
+		$html .= "}\n";
+		$html .= "el = el.nextSibling;\n";
+		$html .= "}\n";
+            
+		$html .= "return \"\";\n";
+		$html .= "}\n";
+                
+		$html .= "YAHOO.util.Event.onDOMReady(function (ev) {\n";
+		$html .= "var el, item,\n";
+		$html .= "spotlight   = YAHOO.util.Dom.get(\"spotlight\"),\n";
+		$html .= "carousel    = new YAHOO.widget.Carousel(\"container\", { animation: { speed: 0.5 }, numVisible: 8, revealAmount: 20 } );\n";
+                
+		$html .= "carousel.render();\n";
+		$html .= "carousel.show();\n";
+		// $html .= "carousel.startAutoPlay();\n";
+                    
+		$html .= "item = carousel.getElementForItem(carousel.get(\"selectedItem\"));\n";
+		$html .= "if (item) {\n";
+		$html .= "spotlight.innerHTML = \"<img src=\\\"\" + getImage(item) + \"\\\">\";\n";
+		$html .= "}\n";
+                       
+		$html .= "carousel.on(\"itemSelected\", function (index) {\n";
+		$html .= "item = carousel.getElementForItem(index);\n";
+
+		$html .= "if (item) {\n";
+		$html .= "spotlight.innerHTML = \"<img src=\\\"\"+getImage(item)+\"\\\">\";\n";
+		$html .= "}\n";
+		$html .= "});\n";
+		$html .= "});\n";
+		$html .= "})();\n";
+  
+		$html .= "</script>\n";
+		
+		// $html = "Content pending";
 		
 		return $html;
 	}
@@ -298,6 +381,8 @@ class ImageGallery extends PluginBase
 	
 	function UploadFromPicasa()
 	{
+		$this->CreateUploadDirectory();
+		
 		$instanceID = $_POST["cmbInstance"];		
 		
 		// echo $instanceID;
@@ -334,6 +419,15 @@ class ImageGallery extends PluginBase
 		}
 		
 		// echo("http://".$_SERVER['SERVER_NAME']."/zymurgy/login.php");
+	}
+	
+	function CreateUploadDirectory()
+	{
+		global $ZymurgyRoot;
+		
+		@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
+		$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/zcm_galleryimage.image";
+		@mkdir($thumbdest);		
 	}
 }
 

@@ -57,7 +57,7 @@ if (!class_exists('Zymurgy'))
 			
 		/**
 		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
-		 * Adds "http://yui.yahooapis.com/2.4.1/build/" to the start of src to keep the YUI version consistant.  The version
+		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
 		 * number loaded by YUI will be updated in future releases.
 		 *
 		 * @param string $src
@@ -73,10 +73,21 @@ if (!class_exists('Zymurgy'))
 			switch($ext)
 			{
 				case 'js':
-					return "<script src=\"http://yui.yahooapis.com/2.4.1/build/$src\"></script>\r\n";
+					return "<script src=\"".Zymurgy::YUIBaseURL()."$src\"></script>\r\n";
 				case 'css':
-					return "<link rel=\"stylesheet\" type=\"text/css\" href=\"http://yui.yahooapis.com/2.4.1/build/$src\" />";
+					return "<link rel=\"stylesheet\" type=\"text/css\" href=\"".Zymurgy::YUIBaseURL()."$src\" />";
 			}
+		}
+		
+		/**
+		 * Defines the base URL for the YUI framework.
+		 *
+		 * @return The base URL for the YUI framework.
+		 */
+		
+		static function YUIBaseURL()
+		{
+			return "http://yui.yahooapis.com/2.6.0/build/";
 		}
 		
 		/**
