@@ -203,10 +203,11 @@ class ImageGallery extends PluginBase
 		$html .= Zymurgy::YUI("element/element-beta-min.js")."\n";
 		$html .= Zymurgy::YUI("carousel/carousel-beta-min.js")."\n";
 		
+		
 		$html .= "<style>\n";
-		$html .= "#spotlight { border: 1px solid black; height: 480px; margin: 10px auto; padding: 1px; width: 640px; overflow: hidden; text-align: center; vertical-align: middle; }\n";
+		$html .= "#spotlight { border: 1px solid black; margin: 10px auto; padding: 1px; width: ".$this->GetConfigValue("Image width")."px; height: ".$this->GetConfigValue("Image height")."px; overflow: hidden; text-align: center; vertical-align: middle; }\n";
 		$html .= "#container { margin: 0 auto; }\n";
-		$html .= ".yui-carousel-element li { height: 75px; width: 75px; opacity: 0.6; }\n";
+		$html .= ".yui-carousel-element li { height: ".$this->GetConfigValue('Thumbnail height')."px; width: ".$this->GetConfigValue('Thumbnail width')."px; opacity: 0.6; }\n";
 		$html .= ".yui-carousel-element .yui-carousel-item-selected { opacity: 1; } \n";
 		$html .= ".yui-skin-sam .yui-carousel-nav ul li { margin: 0; }\n";
 		$html .= "</style>\n";
@@ -227,7 +228,17 @@ class ImageGallery extends PluginBase
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$html .= "<li>\n";
-			$html .= "<img src=\"".$ZymurgyRoot."/UserFiles/".$imgpath."/".$row['id']."raw.jpg\">\n";
+			$html .= "<img src=\"".
+				$ZymurgyRoot.
+				"/UserFiles/".
+				$imgpath.
+				"/".
+				$row['id'].
+				"thumb".
+				$this->GetConfigValue('Thumbnail width').
+				"x".
+				$this->GetConfigValue('Thumbnail height').
+				".jpg\">\n";
 			$html .= "</li>\n";
 		}
 		
@@ -240,10 +251,18 @@ class ImageGallery extends PluginBase
                         
 		$html .= "function getImage(parent) {\n";
 		$html .= "var el = parent.firstChild;\n";
-                    
+                   
 		$html .= "while (el) {\n";
 		$html .= "if (el.nodeName.toUpperCase() == \"IMG\") {\n";
-		$html .= "return el.src.replace(/_s\\.jpg$/, \"_m.jpg\");\n";
+		$html .= "return el.src.replace(/".
+			$this->GetConfigValue('Thumbnail width').
+			"x".
+			$this->GetConfigValue('Thumbnail height').
+			"\\.jpg$/, \"".
+			$this->GetConfigValue('Image width').
+			"x".
+			$this->GetConfigValue('Image height').
+			".jpg\");\n";
 		$html .= "}\n";
 		$html .= "el = el.nextSibling;\n";
 		$html .= "}\n";
@@ -362,9 +381,9 @@ class ImageGallery extends PluginBase
 		$br = 0;
 	
 		foreach($pData as $e) {
-			echo "<img src='".$e['photo:thumbnail']."?size=120'>\r\n";
+			echo "<img src='".$e['photo:thumbnail']."?size=".$this->GetConfigValue('Thumbnail width')."'>\r\n";
 			$large = $e['photo:imgsrc'];		
-			echo "<input type=hidden name='".$large."'>\r\n";
+			echo "<input type=hidden name='".$large."?size=1280'>\r\n";
 		}
 
 		echo("</p>");
@@ -412,10 +431,27 @@ class ImageGallery extends PluginBase
 			
 			$localfn = "../../UserFiles/DataGrid/zcm_galleryimage.image/".$id."raw.jpg";
 			
-			if(move_uploaded_file($tmpfile, $localfn))
-			{
+			$targets = array();			
+
+			$targets[] = 
+				$this->GetConfigValue('Thumbnail width').
+				"x".
+				$this->GetConfigValue('Thumbnail height').
+				",".
+				$this->GetConfigValue('Image width').
+				"x".
+				$this->GetConfigValue('Image height');
+			
+			Zymurgy::MakeThumbs(
+				"zcm_galleryimage.image",
+				$id,
+				$targets,
+				$tmpfile);
+			
+			// if(move_uploaded_file($tmpfile, $localfn))
+			// {
 				// chmod($localfn, 0644);
-			}
+			// }
 		}
 		
 		// echo("http://".$_SERVER['SERVER_NAME']."/zymurgy/login.php");

@@ -989,6 +989,9 @@ class DataGrid
 	
 	function MakeThumbs($datacolumn,$id,$targets,$uploadpath = '')
 	{
+		Zymurgy::MakeThumbs($datacolumn, $id, $targets, $uploadpath);
+		
+		/*
 		global $ZymurgyRoot, $ZymurgyConfig;
 		
 		@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
@@ -1016,6 +1019,7 @@ class DataGrid
 		}
 		Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.jpg");
 		system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.jpg $thumbdest/{$id}aspectcropDark.jpg");
+		*/
 	}
 	
 	function RegenerateThumbs()
