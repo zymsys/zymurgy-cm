@@ -104,7 +104,17 @@ class Calendar extends PluginBase
 		);
 		*/
 	}
-	
+		
+	function GetCommandMenuItems()
+	{
+		$r = array();
+		
+		$this->BuildSettingsMenuItem($r);
+		$this->BuildDeleteMenuItem($r);		
+		
+		return $r;
+	}
+
 	function GetConfigItemTypes()
 	{
 		/*

@@ -91,6 +91,54 @@ class PluginBase
 		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
 	}
 	
+	function RenderCommandMenu()
+	{
+		global $zauth;
+		
+		$menuItems = $this->GetCommandMenuItems();
+		
+		// echo("menuItems: [ ");
+		// print_r($menuItems);
+		// echo(" ] ");
+		// die();
+		
+		if(sizeof($menuItems) > 0)
+		{
+			echo("<br><br><table class=\"DataGrid\">");
+			echo("<tr class=\"DataGridHeader\"><td>Commands</td></tr>");
+
+			for($commandIndex = 0; $commandIndex < sizeof($menuItems); $commandIndex++)
+			{
+				$menuItem = $menuItems[$commandIndex];
+				
+				if($menuItem->authlevel <= $zauth->authinfo['admin'])
+				{
+					$rowClass = $commandIndex % 2 == 0 ? "DataGridRow" : "DataGridRowAlternate";
+					$url = str_replace(
+						"{pid}",
+						$this->pid,
+						$menuItem->url);
+					$url = str_replace(
+						"{iid}",
+						$this->iid,
+						 $url);
+					$url = str_replace(
+						"{name}",
+						urlencode($this->InstanceName),
+						$url);
+					$text = str_replace(
+						"{pluginName}",
+						str_replace("Plugin", "", $this->GetTitle()),
+						$menuItem->text);
+						
+					echo("<tr class=\"{$rowClass}\"><td><a href=\"{$url}\">{$text}</a></td></tr>");				
+				}				
+			}
+			
+			echo("</table>");
+		}
+	}
+	
 	function AdminMenuText()
 	{
 		return '';
@@ -116,6 +164,37 @@ class PluginBase
 		else 
 			return $default;
 	}
+	
+	function GetCommandMenuItems()
+	{
+		die("GetCommandMenuItems must be implemented by plugins.");
+	}
+	
+	function BuildMenuItem(&$array, $text, $url, $authlevel = 0)
+	{
+		$array[] = new PluginMenuItem(
+			$text,
+			$url,
+			$authlevel);
+	}
+	
+	function BuildSettingsMenuItem(&$r)
+	{
+		$this->BuildMenuItem(
+			$r,
+			"Edit settings",
+			"pluginconfig.php?plugin={pid}&amp;instance={iid}",
+			0);
+	}	
+		
+	function BuildDeleteMenuItem(&$r)
+	{
+		$this->BuildMenuItem(
+			$r,
+			"Delete this {pluginName}",
+			"plugininstance.php?plugin={pid}&deletekey={iid}",
+			0);
+	}	
 }
 
 class PluginConfig
@@ -130,6 +209,20 @@ class PluginConfig
 		$this->key = $key;
 		$this->value = $value;
 		$this->inputspec = $inputspec;
+		$this->authlevel = $authlevel;
+	}
+}
+
+class PluginMenuItem
+{
+	var $text;
+	var $url;
+	var $authlevel;
+	
+	function PluginMenuItem($text, $url, $authlevel = 0)
+	{
+		$this->text = $text;
+		$this->url = $url;
 		$this->authlevel = $authlevel;
 	}
 }

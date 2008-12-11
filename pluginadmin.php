@@ -30,7 +30,10 @@ if (($pid > 0) && ($iid > 0))
 	$pi->GetDefaultConfig();
 	Zymurgy::LoadPluginConfig($pi);
 	$pi->RenderAdmin();
-	echo "<p><a href=\"pluginconfig.php?plugin=$pid&instance=$iid\">Configuration Options</a></p>";
+	
+	$pi->RenderCommandMenu();
+		
+	// echo "<p><a href=\"pluginconfig.php?plugin=$pid&instance=$iid\">Configuration Options</a></p>";
 }
 else 
 {

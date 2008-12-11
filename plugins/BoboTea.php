@@ -15,7 +15,17 @@ class BoboTea extends PluginBase
 	{
 		return array();
 	}
-	
+			
+	function GetCommandMenuItems()
+	{
+		$r = array();
+		
+		$this->BuildSettingsMenuItem($r);
+		$this->BuildDeleteMenuItem($r);		
+		
+		return $r;
+	}
+
 	function GetConfigItemTypes()
 	{
 		//Data types are in the format:

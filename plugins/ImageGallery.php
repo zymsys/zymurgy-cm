@@ -101,6 +101,16 @@ class ImageGallery extends PluginBase
 		return $r;
 	}
 	
+	function GetCommandMenuItems()
+	{
+		$r = array();
+		
+		$this->BuildSettingsMenuItem($r);
+		$this->BuildDeleteMenuItem($r);		
+		
+		return $r;
+	}
+	
 	function AdminMenuText()
 	{
 		return "Galleries";

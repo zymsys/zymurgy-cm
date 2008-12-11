@@ -66,7 +66,32 @@ class Form extends PluginBase
 		$this->BuildConfig($r,'Confirmation Email Contents','','html.500.300');
 		return $r;
 	}
-	
+			
+	function GetCommandMenuItems()
+	{
+		$r = array();
+		
+		$this->BuildMenuItem(
+			$r,
+			"View form details",
+			"pluginadmin.php?pid={pid}&iid={iid}&name={name}",
+			0);
+		$this->BuildSettingsMenuItem($r);
+		$this->BuildMenuItem(
+			$r,
+			"Data export",
+			"pluginadmin.php?ras=export&pid={pid}&iid={iid}&name={name}",
+			0);
+		$this->BuildMenuItem(
+			$r,
+			"Edit available input types",
+			"pluginsuperadmin.php?plugin={pid}&amp;instance={iid}",
+			2);
+		$this->BuildDeleteMenuItem($r);		
+		
+		return $r;
+	}
+
 	function Initialize()
 	{
 		Zymurgy::$db->query("CREATE TABLE `zcm_form_capture` (
@@ -540,23 +565,34 @@ function Validate$name(me) {
 		{
 			switch ($_GET['ras'])
 			{
-				case 'fields': $this->RenderAdminFields(); break;
-				case 'export': $this->RenderAdminExport(); break;
+				case 'export': 
+					$this->RenderAdminExport(); 
+					break;
+				
 				case 'doexport':
 					$expid = $this->RenderAdminPrepDownload();
 					$this->RenderAdminDoExport();
 					break;
+					
 				case 'dodownload': 
 					$expid = 0 + $_GET['expid'];
 					$this->RenderAdminDoDownload($expid); 
+					break;
+					
+				case 'fields':
+				default: 
+					$this->RenderAdminFields(); 
 					break;
 			}
 		}
 		else 
 		{
 			echo "<h3>Form administration for: ".$this->InstanceName."</h3>\r\n";
-			echo "<a href=\"pluginadmin.php?ras=fields&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Edit Fields</a><br />\r\n";
-			echo "<a href=\"pluginadmin.php?ras=export&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Data Exports</a><br />\r\n";
+
+			$this->RenderAdminFields(); 
+								
+			//echo "<a href=\"pluginadmin.php?ras=fields&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Edit Fields</a><br />\r\n";
+			//echo "<a href=\"pluginadmin.php?ras=export&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Data Exports</a><br />\r\n";
 		}
 		//echo "doexport"; exit;		
 	}
@@ -800,7 +836,7 @@ function DownloadExport(pid,iid,name) {
 		$dg->AddColumn('Export Time','exptime');
 		$dg->AddColumn('Exported By','expuser');
 		$dg->AddColumn('','id',"<a href=\"pluginadmin.php?ras=dodownload&expid={0}&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Download Again</a><br />\r\n");
-		$dg->AddLookup('expuser','Exported By:','passwd','id','username');
+		$dg->AddLookup('expuser','Exported By:','zcm_passwd','id','username');
 		$dg->insertlabel = '';
 		$dg->Render();
 	}
