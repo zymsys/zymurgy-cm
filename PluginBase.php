@@ -131,7 +131,12 @@ class PluginBase
 						str_replace("Plugin", "", $this->GetTitle()),
 						$menuItem->text);
 						
-					echo("<tr class=\"{$rowClass}\"><td><a href=\"{$url}\">{$text}</a></td></tr>");				
+					echo "<tr class=\"{$rowClass}\"><td><a ";
+					if (!is_null($menuItem->confirmation))
+					{
+						echo "onClick=\"return confirm('{$menuItem->confirmation}')\" ";
+					}
+					echo "href=\"{$url}\">{$text}</a></td></tr>";				
 				}				
 			}
 			
@@ -170,12 +175,13 @@ class PluginBase
 		die("GetCommandMenuItems must be implemented by plugins.");
 	}
 	
-	function BuildMenuItem(&$array, $text, $url, $authlevel = 0)
+	function BuildMenuItem(&$array, $text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$array[] = new PluginMenuItem(
 			$text,
 			$url,
-			$authlevel);
+			$authlevel,
+			$confirmation);
 	}
 	
 	function BuildSettingsMenuItem(&$r)
@@ -192,8 +198,9 @@ class PluginBase
 		$this->BuildMenuItem(
 			$r,
 			"Delete this {pluginName}",
-			"plugininstance.php?plugin={pid}&deletekey={iid}",
-			0);
+			"pluginadmin.php?pid={pid}&delkey={iid}",
+			0,
+			"Are you sure you want to delete this instance?  This action is not reversible.");
 	}	
 }
 
@@ -218,12 +225,14 @@ class PluginMenuItem
 	var $text;
 	var $url;
 	var $authlevel;
+	var $confirmation;
 	
-	function PluginMenuItem($text, $url, $authlevel = 0)
+	function PluginMenuItem($text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$this->text = $text;
 		$this->url = $url;
 		$this->authlevel = $authlevel;
+		$this->confirmation = $confirmation;
 	}
 }
 ?>

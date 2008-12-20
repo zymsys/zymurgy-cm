@@ -242,7 +242,7 @@ function renderZCMNav($parent)
 				$href = "customedit.php?t={$nav['navto']}";
 				break;
 			case 'Plugin':
-				$href = "pluginadmin.php?pid={$nav['navto']}";
+				$href = "pluginadmin.php?pid={$nav['navto']}&autoskip=1";
 				break;
 			case 'URL':
 				$href = $nav['navto'];

@@ -7,11 +7,11 @@
 
 	if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 	{
-		$breadcrumbTrail = "<a href=\"plugins.php\">Plugins</a> &gt; Edit";
+		$breadcrumbTrail = "<a href=\"plugins.php\">Plugin Management</a> &gt; Edit";
 	}
 	else 
 	{
-		$breadcrumbTrail = "Plugins";	
+		$breadcrumbTrail = "Plugin Management";	
 	}
 
 	require_once('header.php');
@@ -77,7 +77,7 @@
 	$dg = new DataGrid($ds);
 	$dg->AddColumn('Plugin Name','title');
 	$dg->AddColumn('Invocation','name',"&lt;?php echo Zymurgy::plugin('{0}','Instance Name'); ?&gt;");
-	$dg->AddColumn('','id',"<a href='pluginconfig.php?plugin={0}&instance=0'>Default Config</a>");
+	$dg->AddColumn('','id',"<a href='pluginconfig.php?plugin={0}&instance=0'>Default Settings</a>");
 	//$dg->AddColumn('','id',"<a href='plugininstance.php?plugin={0}'>Instances</a>");
 	$dg->AddColumn('','id',"<a href='pluginadmin.php?pid={0}'>Instances</a>");
 	//$dg->AddColumn('Enabled','enabled');

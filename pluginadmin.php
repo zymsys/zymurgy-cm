@@ -1,11 +1,31 @@
 <?
-$breadcrumbTrail = "Plugin Administration";
-
 $pid = 0+$_GET['pid'];
 if (array_key_exists('iid',$_GET))
 	$iid = 0 +$_GET['iid'];
 else 
 	$iid = 0;
+
+require_once 'cmo.php';
+
+$title = Zymurgy::$db->get("select title from zcm_plugin where id=$pid");
+
+if (array_key_exists('delkey',$_GET))
+{
+	$delkey = 0 + $_GET['delkey'];
+	$pluginname = Zymurgy::$db->get("select name from zcm_plugin where id=$pid");
+	$instancename = Zymurgy::$db->get("select name from zcm_plugininstance where id=$delkey");
+	$pi = Zymurgy::mkplugin($pluginname,$instancename);
+	$pi->RemoveInstance();
+	Zymurgy::$db->query("delete from zcm_plugininstance where id=$delkey");
+}
+
+$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; ";
+if ($iid)
+{
+	$breadcrumbTrail .= "<a href=\"pluginadmin.php?pid=$pid\">$title Instances</a> &gt; {$_GET['name']}";
+}
+else 
+	$breadcrumbTrail .= "$title Instances";
 
 require_once('header.php');
 require_once('datagrid.php');
@@ -31,6 +51,11 @@ if (($pid > 0) && ($iid > 0))
 	Zymurgy::LoadPluginConfig($pi);
 	$pi->RenderAdmin();
 	
+	if (!$hasdumpeddatagridcss)
+	{
+		DumpDataGridCSS();
+		$hasdumpeddatagridcss = true;
+	}
 	$pi->RenderCommandMenu();
 		
 	// echo "<p><a href=\"pluginconfig.php?plugin=$pid&instance=$iid\">Configuration Options</a></p>";
@@ -44,7 +69,7 @@ else
 		echo "There are no instances of this plugin yet.";
 	else 
 	{
-		if (Zymurgy::$db->num_rows($ri)==1)
+		if (array_key_exists('autoskip',$_GET) && (Zymurgy::$db->num_rows($ri)==1))
 		{
 			$row=Zymurgy::$db->fetch_array($ri);
 			$redirect = "pluginadmin.php?pid=$pid&iid={$row['id']}&name=".urlencode($row['name']);
@@ -52,7 +77,7 @@ else
 			header("Location: $redirect");
 			exit;
 		}
-		echo "<h3>Which one would you like to edit?</h3>";
+		echo "<h3>Which $title would you like to edit?</h3>";
 		while (($row=Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			echo "<a href=\"pluginadmin.php?pid=$pid&iid={$row['id']}&name=".urlencode($row['name'])."\">{$row['name']}</a><br>";

@@ -1,11 +1,19 @@
 <?
-$breadcrumbTrail = "<a href=\"plugin.php\">Plugins</a> &gt; Configuration";
 $id = 0 + $_GET['plugin'];
 $instance = 0 + $_GET['instance'];
 
 // Default configs may only be set by the webmaster
 if($instance == 0)
 	$adminlevel = 2;
+
+require_once 'cmo.php';
+$title = Zymurgy::$db->get("select title from zcm_plugin where id=$id");
+$instancename = Zymurgy::$db->get("select name from zcm_plugininstance where id=$instance");
+$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; <a href=\"pluginadmin.php?pid=$id\">$title Instances</a> &gt; ";
+if ($instance)
+	$breadcrumbTrail .= "<a href=\"pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($instancename)."\">$instancename</a> &gt; Settings";
+else 
+	$breadcrumbTrail .= "Default Settings";
 
 require_once('header.php');
 require_once('PluginBase.php');
