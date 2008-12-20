@@ -87,6 +87,11 @@ class Form extends PluginBase
 			"Edit available input types",
 			"pluginsuperadmin.php?plugin={pid}&amp;instance={iid}",
 			2);
+		$this->BuildMenuItem(
+			$r,
+			"Edit available validators",
+			"pluginadmin.php?ras=regex&pid={pid}&iid={iid}&name={name}",
+			2);
 		$this->BuildDeleteMenuItem($r);		
 		
 		return $r;
@@ -117,7 +122,7 @@ class Form extends PluginBase
   `disporder` int(11) NOT NULL default '0',
   `defaultvalue` text NOT NULL,
   `isrequired` smallint(6) NOT NULL default '0',
-  `validator` text NOT NULL,
+  `validator` bigint,
   `validatormsg` text NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`,`disporder`)
@@ -145,6 +150,16 @@ class Form extends PluginBase
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`)
 )");
+		
+		Zymurgy::$db->query("CREATE TABLE `zcm_form_regex` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `disporder` bigint(20) default NULL,
+  `name` varchar(35) default NULL,
+  `regex` text,
+  UNIQUE KEY `id` (`id`),
+  KEY `disporder` (`disporder`)
+)");
+		
 		Zymurgy::$db->query("INSERT INTO `zcm_form_inputtype` VALUES 
 			(1,0,'Short Text (30 characters)','input.30.30'),
 			(2,0,'Medium Text (60 characters)','input.30.60'),
@@ -159,6 +174,29 @@ class Form extends PluginBase
 			(11,0,'Date','unixdate'),
 			(12,0,'File Attachment','attachment'),
 			(13,0,'Verbiage','verbiage')");
+		
+			Zymurgy::$db->query($this->getDefaultRegexInsert());
+	}
+	
+	private function getDefaultRegexInsert()
+	{
+		$defaultregex = array(
+			'None'=>'',
+			'Email'=>'^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$',
+			'Postal/Zip Code'=>'^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$',
+			'Phone number (555-555-5555 format)'=>'^[2-9]\d{2}-\d{3}-\d{4}$');
+		$sql = "INSERT INTO `zcm_form_regex` (`id`,`disporder`,`name`, `regex`) VALUES ";
+		$id = 0;
+		$v = array();
+		foreach ($defaultregex as $name=>$regex)
+		{
+			$id++;
+			$v[] = "($id,$id,'".
+				Zymurgy::$db->escape_string($name)."','".
+				Zymurgy::$db->escape_string($regex)."')";
+		}
+		$sql .= implode(", ",$v);
+		return $sql;
 	}
 	
 	function Upgrade()
@@ -206,12 +244,58 @@ class Form extends PluginBase
 				@mysql_query($sql);// or die("Can't rename table ($sql): ".mysql_error());
 			}
 		}
+		if ($this->dbrelease < 5)
+		{
+			Zymurgy::$db->query("CREATE TABLE `zcm_form_regex` (
+			  `id` bigint(20) unsigned NOT NULL auto_increment,
+			  `disporder` bigint(20) default NULL,
+			  `name` varchar(35) default NULL,
+			  `regex` text,
+			  UNIQUE KEY `id` (`id`),
+			  KEY `disporder` (`disporder`))");
+			Zymurgy::$db->query($this->getDefaultRegexInsert());
+			$ri = Zymurgy::$db->query("select id,validator from zcm_form_input");
+			$reregex = array();
+			while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
+			{
+				$reregex[$row['id']] = $row['validator'];
+			}
+			Zymurgy::$db->free_result($ri);
+			$unknowncount = 0;
+			foreach($reregex as $id=>$validator)
+			{
+				switch($validator)
+				{
+					case '':
+						break;
+					case '^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$':
+						Zymurgy::$db->query("update zcm_form_input set validator=2 where id=$id");
+						break;
+					case '^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$':
+						Zymurgy::$db->query("update zcm_form_input set validator=3 where id=$id");
+						break;
+					case '^[2-9]\d{2}-\d{3}-\d{4}$':
+						Zymurgy::$db->query("update zcm_form_input set validator=4 where id=$id");
+						break;
+					default:
+						$unknowncount++;
+						$sql = "INSERT INTO `zcm_form_regex` (`name`, `regex`) VALUES ('Unknown Validator #$unknowncount','".
+							Zymurgy::$db->escape_string($validator)."')";
+						Zymurgy::$db->query($sql);
+						$newregex = Zymurgy::$db->insert_id();
+						Zymurgy::$db->query("update zcm_form_regex set disporder=$newregex where id=$newregex");
+						Zymurgy::$db->query("update zcm_form_input set validator=$newregex where id=$id");
+						break;
+				}
+			}
+			Zymurgy::$db->query("alter table zcm_form_input change validator validator bigint");
+		}
 		$this->CompleteUpgrade();		
 	}
 	
 	function GetRelease()
 	{
-		return 4; //Added capture/export capabilities to db.
+		return 5; //Added capture/export capabilities to db.
 		//return 3; //Added capture/export capabilities to db.
 	}
 
@@ -489,6 +573,12 @@ function Validate$name(me) {
 	
 	function IsValid()
 	{
+		$validators = array();
+		$ri = Zymurgy::$db->query("select id,regex from zcm_form_regex");
+		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
+		{
+			$validators[$row['id']] = $row['regex'];
+		}
 		foreach($this->InputRows as $row)
 		{
 			$fieldname = "Field".$row['fid'];
@@ -501,7 +591,7 @@ function Validate$name(me) {
 				$this->ValidationErrors[$row['fid']] = $row['validatormsg'];
 				continue;
 			}
-			if (($row['validator']!='') && ($input!='') && (!preg_match('/'.$row['validator'].'/',$input)))
+			if (array_key_exists($row['validator'],$validators) && ($validators[$row['validator']]!='') && ($input!='') && (!preg_match('/'.$validators[$row['validator']].'/',$input)))
 			{
 				$this->ValidationErrors[$row['fid']] = $row['validatormsg'];
 			}
@@ -577,6 +667,10 @@ function Validate$name(me) {
 				case 'dodownload': 
 					$expid = 0 + $_GET['expid'];
 					$this->RenderAdminDoDownload($expid); 
+					break;
+					
+				case 'regex':
+					$this->RenderAdminRegex();
 					break;
 					
 				case 'fields':
@@ -855,7 +949,7 @@ function DownloadExport(pid,iid,name) {
 		$dg->AddInput('header','Export Table Header:',40,20);
 		$dg->AddInput('defaultvalue','Default Value:',1024,40);
 		$dg->AddRadioEditor('isrequired','Required?',array(0=>'No',1=>'Yes'));
-		$dg->AddInput('validator','Regex Validator:',4096,60);
+		$dg->AddLookup('validator','Validator:','zcm_form_regex','id','name','disporder');
 		$dg->AddInput('validatormsg','Validator Message:',4096,60);
 		$dg->AddUpDownColumn('disporder');
 		$dg->AddEditColumn();
@@ -873,6 +967,21 @@ function DownloadExport(pid,iid,name) {
 			echo '<dd>^[2-9]\d{2}-\d{3}-\d{4}$</dd></dl>';
 			echo "Visit <a href=\"http://regexlib.com/\" target=\"_blank\">http://regexlib.com/</a> for more examples.";
 		}
+	}
+	
+	function RenderAdminRegex()
+	{
+		$ds = new DataSet('zcm_form_regex','id');
+		$ds->AddColumns('id','disporder','name','regex');
+		$dg = new DataGrid($ds);
+		$dg->AddColumn('Name','name');
+		$dg->AddUpDownColumn('disporder');
+		$dg->AddInput('name','Name:',35,35);
+		$dg->AddTextArea('regex','Validator Regex:');
+		$dg->AddEditColumn();
+		$dg->AddDeleteColumn();
+		$dg->insertlabel = 'Add New Regex Validator';
+		$dg->Render();
 	}
 }
 
