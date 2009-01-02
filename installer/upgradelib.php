@@ -83,6 +83,32 @@ function RenamePluginKeys($plugin,$keynames)
 }
 
 /**
+ * Check $table to make sure there are indexes on all the columns listed in $indexes.
+ *
+ * @param string $table
+ * @param string $indexes
+ */
+function CheckIndexes($table,$indexes)
+{
+	$existing = array();
+	$sql = "show index from $table";
+	$ri = mysql_query($sql) or die ("No such table: $table");
+	while (($row = mysql_fetch_array($ri))!==FALSE)
+	{
+		$existing[$row['Column_name']] = $row;
+	}
+	mysql_free_result($ri);
+	foreach($indexes as $column)
+	{
+		if (!array_key_exists($column,$existing))
+		{
+			$sql = "alter table $table add index($column)";
+			mysql_query($sql) or die("Unable to index $column in $table: $sql");
+		}
+	}
+}
+
+/**
  * Check that columns exist by looking at the keys of $columns.  If a column
  * is found to be missing, execute the SQL statement(s) of the value.  The
  * value may be a string (SQL statement) or an array of SQL statement strings.

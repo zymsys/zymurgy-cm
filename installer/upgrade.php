@@ -13,23 +13,24 @@ echo("done.<br>");
 echo("Updating table definitions...");
 
 $newsitetext = array(
-	'inputspec'=>"ALTER TABLE `sitetext` ADD `inputspec` VARCHAR( 100 ) DEFAULT 'html.600.400' NOT NULL ;",
-	'category'=>array("ALTER TABLE `sitetext` ADD `category` bigint(20) default '0'",
-		"ALTER TABLE `sitetext` ADD INDEX (`category`)"),
-	'plainbody'=>array("alter table sitetext add plainbody text after body",
-		"alter table sitetext add fulltext(plainbody)")
+	'inputspec'=>"ALTER TABLE `zcm_sitetext` ADD `inputspec` VARCHAR( 100 ) DEFAULT 'html.600.400' NOT NULL ;",
+	'category'=>array("ALTER TABLE `zcm_sitetext` ADD `category` bigint(20) default '0'",
+		"ALTER TABLE `zcm_sitetext` ADD INDEX (`category`)"),
+	'plainbody'=>array("alter table zcm_sitetext add plainbody text after body",
+		"alter table zcm_sitetext add fulltext(plainbody)")
 );
 
 $newplugininstance = array(
-	'private'=>"alter table plugininstance  add `private` tinyint default 0"
+	'private'=>"alter table zcm_plugininstance  add `private` tinyint default 0"
 );
 
 $newpasswd = array(
-	'eula'=>"alter table passwd add `eula` tinyint default 0"
+	'eula'=>"alter table zcm_passwd add `eula` tinyint default 0"
 );
 
 $newcustomtable = array(
-	'selfref'=>"alter table customtable add selfref varchar(30)"
+	'selfref'=>"alter table zcm_customtable add selfref varchar(30)",
+	'ismember'=>"alter table zcm_customtable add ismember tinyint after hasdisporder"
 );
 
 include('upgradelib.php');
@@ -40,6 +41,8 @@ CheckColumns('zcm_sitetext',$newsitetext);
 CheckColumns('zcm_passwd',$newpasswd);
 CheckColumns('zcm_plugininstance',$newplugininstance);
 CheckColumns('zcm_customtable',$newcustomtable);
+
+CheckIndexes('zcm_customtable',array('navname'));
 
 echo("done.<br>");
 echo("Renaming plugin configuration items...");
