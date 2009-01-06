@@ -490,6 +490,47 @@ function Validate$name(me) {
 		{
 			$body[] = "Submitted by member #{$this->member['id']}: {$this->member['email']}";
 		}
+		if (array_key_exists('zcmtracking',$_COOKIE))
+		{
+			$tracking = $_COOKIE['zcmtracking'];
+			$firstcontact = Zymurgy::$db->get("select * from zcm_tracking where id='".
+				Zymurgy::$db->escape_string($tracking)."'");
+			$body[] = '';
+			$body[] = "User tracking started {$firstcontact['created']}:";
+			if (!empty($firstcontact['tag']))
+				$body[] = "\tIncoming Link Tag: {$firstcontact['tag']}";
+			require_once Zymurgy::$root.'/zymurgy/include/referrer.php';
+			$r = new Referrer($firstcontact['referrer']);
+			if (!empty($r->host))
+				$body[] = "\tFrom Host: {$r->host}";
+			if (!empty($r->searchengine))
+				$body[] = "\tSearch Engine: {$r->searchengine}";
+			if (!empty($r->searchstring))
+				$body[] = "\tSearch String: {$r->searchstring}";
+			$ri = Zymurgy::$db->run("select viewtime,document from zcm_pageview left join zcm_meta on zcm_pageview.pageid=zcm_meta.id where trackingid='".
+				Zymurgy::$db->escape_string($tracking)."' order by viewtime");
+			$views = array();
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				$views[] = $row;
+			}
+			Zymurgy::$db->free_result($ri);
+			if (count($views)>0)
+			{
+				$body[] = '';
+				$body[] = "Page Views:";
+				if (count($views) > 10)
+				{
+					//Show only the first and last 5
+					$views = array_merge(array_slice($views,0,5), array_slice($views,-5));
+					$body[] = "(Showing only the first and last 5 page views)";
+				}
+				foreach($views as $view)
+				{
+					$body[] = "\t{$view['viewtime']}: {$view['document']}";
+				}
+			}
+		}
 		//Also substitute newline characters for blank to avoid attacks on our email headers
 		$values["\r"] = '';
 		$values["\n"] = '';

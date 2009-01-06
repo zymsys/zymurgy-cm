@@ -312,9 +312,39 @@ if (!class_exists('Zymurgy'))
 				$r[] = "<meta name=\"description\" content=\"".htmlentities($row['description'])."\" />";
 			if ($row['keywords']!='')
 				$r[] = "<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
-			$r = implode("\r\n",$r)."\r\n";
 			if (array_key_exists('zymurgy',$_COOKIE))
-				$r = Zymurgy::adminhead().$r;
+				$r[] = Zymurgy::adminhead().$r;
+			$r[] = "<script src=\"/zymurgy/include/cmo.js\"></script>";
+			if (array_key_exists('tracking',Zymurgy::$config) && (Zymurgy::$config['tracking']))
+			{
+				//Log the pageview
+				if (array_key_exists('zcmtracking',$_COOKIE))
+				{
+					$orphan = 0;
+					$userid = $_COOKIE['zcmtracking'];
+				}
+				else 
+				{
+					$orphan = 1;
+					$userid = uniqid(true);
+				}
+				$sql = "insert into zcm_pageview (trackingid,pageid,orphan,viewtime) values ('$userid',".
+					Zymurgy::$pageid.",$orphan,now())";
+				Zymurgy::$db->query($sql);
+				//Send tracking javascript
+				$r[] = "<script>";
+				if (!empty($_SERVER['HTTP_REFERER']))
+				{
+					$r[] = "if (!document.referrer) document.referrer = \"".addslashes($_SERVER['HTTP_REFERER'])."\";";
+				}
+				$r[] = "Zymurgy.track('$userid');
+					</script>";
+			}
+			$r = implode("\r\n",$r)."\r\n";
+			if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
+				include_once(Zymurgy::$root."/zymurgy/custom/render.php");
+			if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
+				include_once(Zymurgy::$root."/caseo/custom/render.php");
 			return $r;
 		}
 		
@@ -1094,10 +1124,6 @@ if (!class_exists('Zymurgy'))
 	   $_COOKIE = array_map('Zymurgy::stripslashes_deep', $_COOKIE);
 	}
 	
-	if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
-		include_once(Zymurgy::$root."/zymurgy/custom/render.php");
-	if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
-		include_once(Zymurgy::$root."/caseo/custom/render.php");
 	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 	
 	if (empty(Zymurgy::$config['database']))

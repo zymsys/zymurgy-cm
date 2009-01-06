@@ -56,6 +56,10 @@ function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,
 \$ZymurgyConfig['defaultdescription'] = '$siteDescription';
 \$ZymurgyConfig['defaultkeywords'] = '$siteKeywords';
 
+//Tracking and privacy
+//Check your local privacy laws before turning on this feature.
+\$ZymurgyConfig['tracking'] = FALSE;
+
 //Membership
 \$ZymurgyConfig['MemberLoginPage'] = '/login.php';
 \$ZymurgyConfig['MemberDefaultPage'] = '/members/';

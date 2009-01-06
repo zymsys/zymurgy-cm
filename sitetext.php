@@ -75,7 +75,7 @@ if (array_key_exists('editkey',$_GET))
 }
 else 
 {
-	$breadcrumbTrail = "General Content";	
+	$breadcrumbTrail = "Simple Content";	
 }
 
 include('header.php');

@@ -174,6 +174,30 @@ $tables = array(
   `keeper` tinyint(4) default '0',
   UNIQUE KEY `id` (`id`),
   KEY `form` (`form`),
-  KEY `saved` (`saved`))"
+  KEY `saved` (`saved`))",
+	'zcm_tracking'=>"CREATE TABLE `zcm_tracking` (
+  `id` varchar(23) default NULL,
+  `created` datetime default NULL,
+  `lastload` datetime default NULL,
+  `member` bigint(20) default NULL,
+  `addr` varchar(15) default NULL,
+  `tag` varchar(30) default NULL,
+  `referrer` text,
+  `ua` text,
+  UNIQUE KEY `id` (`id`),
+  KEY `member` (`member`),
+  KEY `tag` (`tag`),
+  KEY `created` (`created`))",
+	'zcm_pageview'=>"CREATE TABLE `zcm_pageview` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `trackingid` varchar(23) default NULL,
+  `pageid` bigint(20) default NULL,
+  `orphan` tinyint(4) default NULL,
+  `viewtime` datetime default NULL,
+  UNIQUE KEY `id` (`id`),
+  KEY `pageid` (`pageid`),
+  KEY `orphan` (`orphan`),
+  KEY `trackingid` (`trackingid`),
+  KEY `viewtime` (`viewtime`))"
 	);
 ?>
