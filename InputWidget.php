@@ -289,8 +289,6 @@ passThroughFormSubmit = false;
 	
 	function Render($type,$name,$value)
 	{
-		global $ZymurgyRoot;
-		
 		$ep = explode('.',$type);
 		if ($ep[0]!='html')
 			$value = htmlentities($value);
@@ -328,7 +326,7 @@ passThroughFormSubmit = false;
 				echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 				break;
 			case "inputspec":
-				require_once("$ZymurgyRoot/zymurgy/include/inputspec.php");
+				require_once(Zymurgy::$root."/zymurgy/include/inputspec.php");
 				echo "<script>makeInputSpecifier('".
 					str_replace("'","\'",$name)."','".
 					str_replace("'","\'",$value)."');</script>";
@@ -364,7 +362,7 @@ passThroughFormSubmit = false;
 				break;
 			case "unixdate":
 			case "date":
-				require_once("$ZymurgyRoot/zymurgy/jscalendar/calendar.php");
+				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
 				if ($ep[0] == "unixdate")
 				{
 					$date = $value;
@@ -388,7 +386,7 @@ passThroughFormSubmit = false;
 				break;
 			case "unixdatetime":
 			case "datetime":
-				require_once("$ZymurgyRoot/zymurgy/jscalendar/calendar.php");
+				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
 				if ($ep[0]=='unixdatetime')
 					$date = $value;
 				else
@@ -438,7 +436,7 @@ passThroughFormSubmit = false;
 				
 				break;
 			case "html":
-				require_once("$ZymurgyRoot/zymurgy/fckeditor/fckeditor.php");
+				require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
 				$fck = new FCKeditor($name);
 				$fck->BasePath = "/zymurgy/fckeditor/";
 				$fck->ToolbarSet = 'Zymurgy';
