@@ -378,7 +378,7 @@ function Validate$name(me) {
 			@list($inputtype, $inputparameters) = explode('.',$row['specifier'],2);
 			if ($inputtype=='verbiage')
 			{
-				echo "<tr><td colspan=\"2\" class=\"VerbiageCell\">{$row['caption']}</td></tr>\r\n";
+				echo "<tr><td colspan=\"2\" class=\"VerbiageCell\" id=\"Field{$row['fid']}\">{$row['caption']}</td></tr>\r\n";
 			}
 			else 
 			{
@@ -632,14 +632,18 @@ function Validate$name(me) {
 			if (($row['isrequired']==0) && (!array_key_exists($fieldname,$_POST)))
 				continue;
 			$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
-			if (($row['isrequired']==1) && ($input == ''))
+			if (empty($row['validatormsg']))
+				$vmsg = "The field \"{$row['caption']}\" failed to validate.";
+			else
+				$vmsg = $row['validatormsg'];			
+            if (($row['isrequired']==1) && ($input == ''))
 			{
-				$this->ValidationErrors[$row['fid']] = $row['validatormsg'];
+				$this->ValidationErrors[$row['fid']] = $vmsg;
 				continue;
 			}
 			if (array_key_exists($row['validator'],$validators) && ($validators[$row['validator']]!='') && ($input!='') && (!preg_match('/'.$validators[$row['validator']].'/',$input)))
 			{
-				$this->ValidationErrors[$row['fid']] = $row['validatormsg'];
+				$this->ValidationErrors[$row['fid']] = $vmsg;
 			}
 		}
 		return (count($this->ValidationErrors)==0);
@@ -1260,16 +1264,6 @@ td
 		$dg->insertlabel='Add a new Field';
 		$dg->AddConstant('instance',$this->iid);
 		$dg->Render();
-		if (((array_key_exists('action',$_GET)) && ($_GET['action']=='insert')) || (array_key_exists('editkey',$_GET)))
-		{
-			echo "<dl><dt>Email validator:</dt>";
-			echo '<dd>^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$</dd>';
-			echo "<dt>Postal/Zip Code:</dt>";
-			echo '<dd>^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$</dd>';
-			echo "<dt>Phone number (555-555-5555 format)</dt>";
-			echo '<dd>^[2-9]\d{2}-\d{3}-\d{4}$</dd></dl>';
-			echo "Visit <a href=\"http://regexlib.com/\" target=\"_blank\">http://regexlib.com/</a> for more examples.";
-		}
 	}
 	
 	function RenderAdminRegex()
@@ -1285,6 +1279,16 @@ td
 		$dg->AddDeleteColumn();
 		$dg->insertlabel = 'Add New Regex Validator';
 		$dg->Render();
+		if (((array_key_exists('action',$_GET)) && ($_GET['action']=='insert')) || (array_key_exists('editkey',$_GET)))
+		{
+			echo "<dl><dt>Email validator:</dt>";
+			echo '<dd>^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$</dd>';
+			echo "<dt>Postal/Zip Code:</dt>";
+			echo '<dd>^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$</dd>';
+			echo "<dt>Phone number (555-555-5555 format)</dt>";
+			echo '<dd>^[2-9]\d{2}-\d{3}-\d{4}$</dd></dl>';
+			echo "Visit <a href=\"http://regexlib.com/\" target=\"_blank\">http://regexlib.com/</a> for more examples.";
+		}
 	}
 }
 

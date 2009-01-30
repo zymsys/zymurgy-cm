@@ -372,7 +372,7 @@ passThroughFormSubmit = false;
 					$date = strtotime($value);
 				}
 				if ($date == 0) $date=time();
-				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
+				$cal = new DHTML_Calendar('/zymurgy/jscalendar/','en','calendar-win2k-2', false);
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
