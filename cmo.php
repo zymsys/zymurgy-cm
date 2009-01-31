@@ -313,7 +313,7 @@ if (!class_exists('Zymurgy'))
 			if ($row['keywords']!='')
 				$r[] = "<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
 			if (array_key_exists('zymurgy',$_COOKIE))
-				$r[] = Zymurgy::adminhead().$r;
+				$r[] = Zymurgy::adminhead();
 			$r[] = "<script src=\"/zymurgy/include/cmo.js\"></script>";
 			if (array_key_exists('tracking',Zymurgy::$config) && (Zymurgy::$config['tracking']))
 			{
