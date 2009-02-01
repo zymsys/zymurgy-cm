@@ -19,6 +19,7 @@ $ds = new DataSet('zcm_config','id');
 $ds->AddColumn('id',false);
 $ds->AddColumn('name',true);
 $ds->AddColumn('value',true);
+$ds->AddColumn('inputspec',true);
 $ds->AddColumn('disporder',true);
 
 $dg = new DataGrid($ds);
@@ -27,6 +28,7 @@ $dg->AddEditColumn();
 $dg->AddUpDownColumn('disporder');
 $dg->AddDeleteColumn();
 $dg->AddInput('name','Config Name:',40,40);
+$dg->AddEditor('inputspec','Input Spec:','inputspec');
 $dg->Render();
 include('footer.php');
 ?>

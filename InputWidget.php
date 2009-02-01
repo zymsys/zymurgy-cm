@@ -161,7 +161,7 @@ class InputWidget
 					Zymurgy::YUI("utilities/utilities.js").
 					Zymurgy::YUI("container/container-min.js").
 					Zymurgy::YUI("slider/slider-min.js").
-					Zymurgy::YUI("colorpicker/colorpicker-beta-min.js").'
+					Zymurgy::YUI("colorpicker/colorpicker-min.js").'
 <script type="text/javascript">
 var colourPicker;
 var colourPickerDlg;
@@ -198,19 +198,19 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
              });
             this.dialog.renderEvent.subscribe(function() {
 				if (!this.picker) {
-					YAHOO.log("Instantiating the color picker", "info", "example");
-					this.picker = new YAHOO.widget.ColorPicker("yui-picker", {
+					var pickerOptions = {
 						container: this.dialog,
 						showhexcontrols: true,
 						images: {
 							PICKER_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/picker_thumb.png",
 							HUE_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/hue_thumb.png"
 						}
-					});
-					this.picker.on("rgbChange", function(o) {
-						YAHOO.log(lang.dump(o), "info", "example");
-					});
+					};
+					var el = document.getElementById("yui-picker");
+					this.picker = new YAHOO.widget.ColorPicker(el,pickerOptions);
 					colourPicker = this.picker;
+					this.picker.on("rgbChange", function(o) {
+					});
 				}
 			});	
             this.dialog.validate = function() {
@@ -338,8 +338,8 @@ passThroughFormSubmit = false;
 				foreach($radioarray as $rkey=>$rcaption)
 				{
 					echo "<label><input type=\"radio\" id=\"$name-$rkey\" name=\"$name\" value=\"$rkey\"";
-					if ($value == $rkey) echo " checked";
-					echo " />$rcaption</label><br>\r\n";
+					if ($value == $rkey) echo " checked=\"checked\"";
+					echo " />$rcaption</label><br />\r\n";
 				}
 				break;
 			case "drop":
@@ -372,7 +372,7 @@ passThroughFormSubmit = false;
 					$date = strtotime($value);
 				}
 				if ($date == 0) $date=time();
-				$cal = new DHTML_Calendar('/zymurgy/jscalendar/','en','calendar-win2k-2', false);
+				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
@@ -415,9 +415,12 @@ passThroughFormSubmit = false;
 				foreach($ep as $targetsize)
 				{
 					$targetsize = str_replace('.','x',$targetsize);
-					$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.jpg?".rand(0,99999);
-					$thumbs[] = "<a onclick=\"aspectcrop_popup('sitetext.body','$targetsize','{$_GET['editkey']}','sitetext.body')\">".
-						"<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a> ";
+					if (array_key_exists('editkey',$_GET))
+					{
+						$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.jpg?".rand(0,99999);
+						$thumbs[] = "<a onclick=\"aspectcrop_popup('sitetext.body','$targetsize','{$_GET['editkey']}','sitetext.body')\">".
+							"<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a> ";
+					}
 				}
 				echo "<input type=\"file\" id=\"$name\" name=\"$name\" /> ".implode($thumbs);
 				break;
