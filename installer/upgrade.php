@@ -33,6 +33,10 @@ $newcustomtable = array(
 	'ismember'=>"alter table zcm_customtable add ismember tinyint after hasdisporder"
 );
 
+$newconfig = array(
+	'sitetext'=>"alter table zcm_config add `inputspec` varchar(100) default 'input.60.1024' NOT NULL"
+);
+
 include('upgradelib.php');
 
 RenameOldTables();
@@ -41,6 +45,7 @@ CheckColumns('zcm_sitetext',$newsitetext);
 CheckColumns('zcm_passwd',$newpasswd);
 CheckColumns('zcm_plugininstance',$newplugininstance);
 CheckColumns('zcm_customtable',$newcustomtable);
+CheckColumns('zcm_config',$newconfig);
 
 CheckIndexes('zcm_customtable',array('navname'));
 

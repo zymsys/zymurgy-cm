@@ -47,6 +47,7 @@ $tables = array(
   `name` varchar(40) NOT NULL default '',
   `value` varchar(100) NOT NULL default '',
   `disporder` int(11) NOT NULL default '0',
+  `inputspec` varchar(100) default NULL,
   PRIMARY KEY  (`id`),
   KEY `disporder` (`disporder`))",
 		'zcm_plugin'=>"CREATE TABLE `zcm_plugin` (
