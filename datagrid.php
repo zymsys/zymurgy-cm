@@ -1219,7 +1219,7 @@ class DataGrid
 				$fckcount = 0;
 				foreach ($this->columns as $c)
 				{
-					list($editor,$junk) = explode('.',$c->editor,2);
+					$editor = array_shift(explode('.',$c->editor,2));
 					if ($editor=='html')
 					{
 						$fckcount++;

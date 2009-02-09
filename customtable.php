@@ -142,6 +142,24 @@ function OnBeforeUpdate($values)
 			mysql_query($sql) or die("Unable to set default display order ($sql): ".mysql_error());
 		}
 	}
+	if ($row['ismember']!=$values['zcm_customtable.ismember'])
+	{
+		//ismember flag has changed
+		if ($values['zcm_customtable.ismember'] == 0)
+		{
+			//Remove member column
+			$sql = "alter table `{$values['zcm_customtable.tname']}` drop member";
+			$ri = mysql_query($sql) or die ("Unable to remove member ($sql): ".mysql_error());
+		}
+		else 
+		{
+			//Add member column
+			$sql = "alter table `{$values['zcm_customtable.tname']}` add member bigint";
+			mysql_query($sql) or die("Unable to add member ($sql): ".mysql_error());
+			$sql = "alter table `{$values['zcm_customtable.tname']}` add index(member)";
+			mysql_query($sql) or die("Unable to add member index ($sql): ".mysql_error());
+		}
+	}
 	if ($row['selfref']!=$values['zcm_customtable.selfref'])
 	{
 		//Self reference has changed
@@ -181,6 +199,10 @@ function OnBeforeInsert($values)
 	{
 		$sql .= ", disporder bigint, key disporder (disporder)";
 	}
+	if ($values['zcm_customtable.ismember'] == 1)
+	{
+		$sql .= ", member bigint, key member (member)";
+	}
 	$sql .= ")";
 	$ri = mysql_query($sql) or die("Unable to create table ($sql): ".mysql_error());
 	if (!$ri)
@@ -204,7 +226,7 @@ function OnBeforeInsert($values)
 }
 
 $ds = new DataSet('zcm_customtable','id');
-$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','navname','selfref');
+$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref');
 $ds->AddDataFilter('detailfor',$detailfor);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnBeforeInsert = 'OnBeforeInsert';
@@ -214,6 +236,7 @@ $dg = new DataGrid($ds);
 $dg->AddConstant('detailfor',$detailfor);
 $dg->AddColumn('Table','tname');
 $dg->AddColumn('Display Order?','hasdisporder');
+$dg->AddColumn('Member Data?','ismember');
 $dg->AddUpDownColumn('disporder');
 $dg->AddColumn('Fields','id','<a href="customfield.php?t={0}">Fields</a>');
 $dg->AddColumn('Detail Tables','id','<a href="customtable.php?d={0}">Detail Tables</a>');
@@ -221,6 +244,7 @@ $dg->AddInput('tname','Table Name:',30,30);
 $dg->AddInput('navname','Link Name:',30,30);
 $dg->AddInput('selfref','Self Reference:',30,30);
 $dg->AddDropListEditor('hasdisporder','Display Order?',array(0=>'No',1=>'Yes'));
+$dg->AddDropListEditor('ismember','Member Data?',array(0=>'No',1=>'Yes'));
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add a New Table';

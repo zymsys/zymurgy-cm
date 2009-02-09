@@ -385,7 +385,9 @@ function Validate$name(me) {
 				$isvalerr = array_key_exists($row['fid'],$this->ValidationErrors);
 				$fieldname = "Field{$row['fid']}";
 				if ($postback && (array_key_exists($fieldname,$_POST)))
-					$fieldvalue = $_POST[$fieldname];
+				{
+					$fieldvalue = $widget->PostValue($row['specifier'],$fieldname);
+				}
 				else
 				{
 					if (array_key_exists($row['header'],$values))
