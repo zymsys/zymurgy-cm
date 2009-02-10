@@ -53,42 +53,73 @@ class ZymurgyMemberDataTable
 	 */
 	public function __construct($tableid)
 	{
-		if (!is_numeric($tableid)) die("Invalid table ID: [$tableid]");
-		//Authenticate and make sure we have the member's info
+		// Authenticate and make sure we have the member's info
 		if (!Zymurgy::memberauthenticate())
 		{
 			$rurl = urlencode($_SERVER['REQUEST_URI']);
 			Zymurgy::JSRedirect(Zymurgy::$config['MemberLoginPage']."?rurl=$rurl");
 		}
+		
+		// Design my Contract terms
+		if (!is_numeric($tableid)) die("Invalid table ID: [$tableid]");
 		$table = Zymurgy::$db->get("select * from zcm_customtable where id=$tableid");
 		if ($table === FALSE) die("No such custom table ID: $tableid");
+		
+		// Define basic characteristics
 		$this->tableid = $table['id'];
 		$this->navname = $table['navname'];
 		$this->tablename = $table['tname'];
+		
 		if ($table['detailfor']>0)
 		{
-			$this->parent = true; //Ugly...  Used so that is_null checks to see if we're the root node work correctly,
-				// but this means that we can't count on parent being an object reference.  Should be re-visited.
+			//Ugly...  Used so that is_null checks to see if we're the root 
+			// node work correctly, but this means that we can't count on 
+			// parent being an object reference.  Should be re-visited.
+			
+			$this->parent = true; 
 		}
-		$ri = Zymurgy::$db->run("select * from zcm_customfield where tableid={$table['id']} order by disporder");
+		
+		$this->PopulateFieldList();
+		$this->PopulateChildTables();		
+	}
+	
+	/**
+	 * Populates the list of fields for the base table. Called by the 
+	 * constructor.
+	 */
+	private function PopulateFieldList()
+	{
+		$sql = "select * from zcm_customfield where tableid = {$this->tableid} order by disporder";
+		
+		$ri = Zymurgy::$db->run($sql) or die("Cannot retrieve list of fields for {$this->tablename}");
+		
 		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
 		{
 			$this->fields[$row['id']] = new ZymurgyMemberDataField($row); 
 		}
-		Zymurgy::$db->free_result($ri);
-		$ri = Zymurgy::$db->run("select id from zcm_customtable where detailfor=$tableid order by disporder");
-		$children = array();
+		
+		Zymurgy::$db->free_result($ri);		
+	}
+	
+	/**
+	 * Populates the list of child tables. Called by the constructor.
+	 */
+	private function PopulateChildTables()
+	{
+		$sql = "select id from zcm_customtable where detailfor = {$this->tableid} order by disporder";
+		
+		$ri = Zymurgy::$db->run($sql) or die("Cannot retrieve list of child tables for {$this->tablename}");
+		
 		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
 		{
-			$children[] = $row['id'];
-		}
-		Zymurgy::$db->free_result($ri);
-		foreach($children as $childid)
-		{
+			$childid = $row['id'];
+			
 			$newtable = new ZymurgyMemberDataTable($childid);
 			$newtable->parent = $this;
 			$this->children[$childid] = $newtable;
 		}
+		
+		Zymurgy::$db->free_result($ri);
 	}
 	
 	/**
@@ -129,38 +160,67 @@ class ZymurgyMemberDataTable
 	 */
 	private function renderFormSubmit()
 	{
-		//print_r($_POST); exit;
-		$values = array();
-		$updateid = 0 + $_POST['rowid'];
-		foreach($this->fields as $fieldid=>$field)
+		if(isset($_POST["delete"]))
 		{
-			$values[$field->columnname] = Zymurgy::$db->escape_string($_POST["field{$field->fieldid}"]);
+			$updateid = 0 + $_POST['rowid'];
+			
+			$sql = "delete from {$this->tablename} where id = $updateid";
+			
+			Zymurgy::$db->run($sql);
 		}
-		if ($updateid == 0)
+		else
 		{
-			if (is_null($this->parent))
+			//print_r($_POST); exit;
+			$values = array();
+			$updateid = 0 + $_POST['rowid'];
+			
+			foreach($this->fields as $fieldid=>$field)
 			{
-				$values['member'] = Zymurgy::$member['id'];
+				$values[$field->columnname] = Zymurgy::$db->escape_string($_POST["field{$field->fieldid}"]);
 			}
-			$sql = "insert into {$this->tablename} (".
-				implode(',',array_keys($values)).") values ('".
-				implode("','",$values)."')";
+			
+			if(isset($_POST["parentid"]))
+			{
+				$sql = "SELECT tname FROM zcm_customtable WHERE id = ".
+					Zymurgy::$db->escape_string($_POST["parentid"]);
+					
+				$parentName = Zymurgy::$db->get($sql);
+				
+				$values[$parentName] =
+					Zymurgy::$db->escape_string($_POST[$parentName]);
+			}
+			
+			if ($updateid <= 0)
+			{
+				if (is_null($this->parent))
+				{
+					$values['member'] = Zymurgy::$member['id'];
+				}
+				$sql = "insert into {$this->tablename} (".
+					implode(',',array_keys($values)).") values ('".
+					implode("','",$values)."')";
+			}
+			else 
+			{
+				$ucol = array();
+				foreach($values as $colname=>$value)
+				{
+					$ucol[] = "$colname='$value'";
+				}
+				$sql = "update {$this->tablename} set ".implode(', ',$ucol)." where (id=$updateid)";
+				if (is_null($this->parent))
+				{
+					$sql .= " and (member=".Zymurgy::$member['id'].")";
+				}
+			}
+			
+			echo $sql;
+			//die();
+			
+			Zymurgy::$db->run($sql);
+			
+			echo("<script type=\"text/javascript\">setTimeout('window.location.href = window.location.href', 1000);</script>");
 		}
-		else 
-		{
-			$ucol = array();
-			foreach($values as $colname=>$value)
-			{
-				$ucol[] = "$colname='$value'";
-			}
-			$sql = "update {$this->tablename} set ".implode(', ',$ucol)." where (id=$updateid)";
-			if (is_null($this->parent))
-			{
-				$sql .= " and (member=".Zymurgy::$member['id'].")";
-			}
-		}
-		echo $sql;
-		Zymurgy::$db->run($sql);
 	}
 	
 	/**
@@ -181,6 +241,7 @@ class ZymurgyMemberDataTable
 			if (!is_numeric($rowid)) die("Invalid row id for {$this->tablename}: $rowid");
 			$memberdata = Zymurgy::$db->get("select * from {$this->tablename} where id=$rowid");
 		}
+		
 		if (count($this->children) > 0)
 		{
 			echo "<div id=\"ZymurgyTabset{$this->tablename}\" class=\"yui-navset\">\r\n";
@@ -194,7 +255,9 @@ class ZymurgyMemberDataTable
 			echo "<div class=\"yui-content\">\r\n";
 			echo "<div>\r\n";
 		}
+		
 		echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['SCRIPT_URI']}\" method=\"post\">\r\n";
+		
 		if (is_array($memberdata))
 		{
 			$rowid = $memberdata['id'];
@@ -203,6 +266,8 @@ class ZymurgyMemberDataTable
 		{
 			$rowid = 0;
 		}
+		
+		echo "<input type=\"hidden\" name=\"tableid\" value=\"$this->tableid\" />\r\n";
 		echo "<input type=\"hidden\" name=\"rowid\" value=\"$rowid\" />\r\n";
 		echo "<table>\r\n";
 		foreach($this->fields as $fieldid=>$field)
@@ -244,6 +309,8 @@ class ZymurgyMemberDataTable
 		<form name="ZymurgyDialogForm<?= $this->tablename ?>" method="post" action="/zymurgy/memberdata.php">
 		<input type="hidden" name="tableid" value="<?= $this->tableid ?>" />
 		<input type="hidden" name="rowid" id="rowid<?= $this->tableid ?>" value="0" />
+		<input type="hidden" name="parentid" value="<?= $this->parent->tableid ?>"/>
+		<input type="hidden" id="<?= $this->parent->tablename ?>" name="<?= $this->parent->tablename ?>" value="" />
 		<table>
 <?
 foreach($this->fields as $fieldid=>$field)
@@ -255,18 +322,90 @@ foreach($this->fields as $fieldid=>$field)
 		</form>
 	</div>
 </div>
+<div id="ZymurgyDeleteDialog<?= $this->tablename ?>">
+	<div class="hd">Delete Record</div>
+	<div class="bd">
+		<form name="ZymurgyDeleteForm<?= $this->tablename ?>" method="post" action="/zymurgy/memberdata.php">
+			<input type="hidden" name="tableid" value="<?= $this->tableid ?>" />
+			<input type="hidden" name="rowid" id="rowid<?= $this->tableid ?>_delete" value="0" />
+			<input type="hidden" name="delete" value="1"/>			
+		</form>
+		Are you sure you want to delete this record?
+	</div>
+</div>		
 <script type="text/javascript">
+<?
+/*
+ZK: Get the Save button to reload DataTable data. 
+Unfortunately, DataTable does not have a ReQuery() method, so we get to 
+use a hack instead.
+
+Refer: http://yuilibrary.com/projects/yui2/ticket/1804089
+*/
+?>
+var ZymurgyDialog<?= $this->tablename ?>Buttons = [ { text:"Save", handler:function() {
+						this.submit();
+						ZymurgyDataTable<?= $this->tablename ?>.getDataSource().sendRequest(
+							ZymurgyDataTable<?= $this->tablename ?>.get("initialRequest"), 
+							ZymurgyDataTable<?= $this->tablename ?>.onDataReturnInitializeTable,
+							ZymurgyDataTable<?= $this->tablename ?>);
+					}, isDefault:true },
+				    { text:"Cancel", handler:function() {
+	this.cancel();
+}} ];
+
+var ZymurgyDeleteDialog<?= $this->tablename ?>Buttons = [ { text:"Yes", handler:function() {
+						this.submit();
+						ZymurgyDataTable<?= $this->tablename ?>.getDataSource().sendRequest(
+							ZymurgyDataTable<?= $this->tablename ?>.get("initialRequest"), 
+							ZymurgyDataTable<?= $this->tablename ?>.onDataReturnInitializeTable,
+							ZymurgyDataTable<?= $this->tablename ?>);
+					}},
+				    { text:"No", isDefalt: true, handler:function() {
+	this.cancel();
+}} ];
+
 var ZymurgyDialog<?= $this->tablename ?>;
+
 YAHOO.util.Event.addListener(window, "load", function() {
-	ZymurgyDialog<?= $this->tablename ?> = new YAHOO.widget.Dialog("ZymurgyDialog<?= $this->tablename ?>",{
-		visible:false,
-		buttons: zymurgyDialogButtons
-	});
+	ZymurgyDialog<?= $this->tablename ?> = new YAHOO.widget.Dialog(
+		"ZymurgyDialog<?= $this->tablename ?>",{
+			visible:false,
+			buttons:  ZymurgyDialog<?= $this->tablename ?>Buttons //zymurgyDialogButtons
+		}
+	);
 	ZymurgyDialog<?= $this->tablename ?>.setField = function(id,value) {
 		var el = document.getElementById('field'+id);
 		el.value = value;
 	};
 	ZymurgyDialog<?= $this->tablename ?>.render();
+});
+
+function New<?= $this->tablename ?>()
+{
+	<? foreach($this->fields as $fieldid=>$field)
+	{ ?>
+		document.getElementById('field<?= $fieldid ?>').value = "";
+	<? } ?>
+	document.getElementById('rowid<?= $this->tableid ?>').value = -1;
+	
+	ZymurgyDialog<?= $this->tablename ?>.show();
+}
+
+var ZymurgyDeleteDialog<?= $this->tablename ?>;
+
+YAHOO.util.Event.addListener(window, "load", function() {
+	ZymurgyDeleteDialog<?= $this->tablename ?> = new YAHOO.widget.Dialog(
+		"ZymurgyDeleteDialog<?= $this->tablename ?>", {
+			visible: false,
+			buttons: ZymurgyDeleteDialog<?= $this->tablename ?>Buttons		
+		}
+	);
+	ZymurgyDeleteDialog<?= $this->tablename ?>.setField = function(id, value) {
+		var el = document.getElementById('field'+id);
+		el.value = value;
+	};
+	ZymurgyDeleteDialog<?= $this->tablename ?>.render();
 });
 </script>	
 		<?
@@ -294,19 +433,28 @@ YAHOO.util.Event.addListener(window, "load", function() {
 			$editors[$fieldid] = "<label for=\"field$fieldid\">{$field->caption}</label>";
 			$dlgassigns[$fieldid] = "ZymurgyDialog{$this->tablename}.setField($fieldid,rowdata['{$field->columnname}']);";
 		}
-		$dtkeys['edit'] = "{key:\"edit\", label:\"Edit\", formatter:this.formatEdit}";
+		$dtkeys['edit'] = "{key: \"edit\", label: \"Edit\", formatter: this.formatEdit}";
+		$dtkeys['delete'] = "{key: \"delete\", label: \"Delete\", formatter: this.formatDelete}";
 		//Render the grid
-		echo "<div id=\"ZymurgyDataTable{$this->tablename}\"></div><script type=\"text/javascript\">\r\n";
+		echo "<div id=\"ZymurgyDataTable{$this->tablename}\"></div>\r\n";
+		echo "<p><input type=\"button\" name=\"btnAdd{$this->tablename}\" value=\"Add Item\" onclick=\"New{$this->tablename}();\"></p>\r\n";
 		?>
+		<script type="text/javascript">
+		var ZymurgyDataTable<?= $this->tablename ?>;
+		
 YAHOO.util.Event.addListener(window, "load", function() {
     InitializeGrid<?= $this->tablename ?> = new function() {
         this.formatEdit = function(elCell, oRecord, oColumn, sData) {
             elCell.innerHTML = "Edit";
         };
+        this.formatDelete = function(elCell, oRecord, oColumn, sData) {
+            elCell.innerHTML = "Delete";
+        };
 		this.onCellClickEvent = function(oArgs) {
 			var target = oArgs.target;
 			var column = InitializeGrid<?= $this->tablename ?>.myDataTable.getColumn(target);
-			if (column.key == 'edit') {
+			if (column.key == 'edit') 
+			{
 				var dtrec = InitializeGrid<?= $this->tablename ?>.myDataTable.getRecord(target);
 				var rowdata = dtrec.getData();
 				var el = document.getElementById('rowid<?= $this->tableid ?>');
@@ -315,6 +463,16 @@ YAHOO.util.Event.addListener(window, "load", function() {
 				echo implode("\r\n",$dlgassigns);
 				?>
 				ZymurgyDialog<?= $this->tablename ?>.show();
+			} 
+			else if(column.key == 'delete') 
+			{
+				var dtrec = InitializeGrid<?= $this->tablename ?>.myDataTable.getRecord(target);
+				var rowdata = dtrec.getData();
+
+				var el = document.getElementById('rowid<?= $this->tableid ?>_delete');
+				el.value = rowdata['id'];
+				
+				ZymurgyDeleteDialog<?= $this->tablename ?>.show();
 			}
 		};
 
@@ -329,10 +487,14 @@ YAHOO.util.Event.addListener(window, "load", function() {
         this.myDataTable = new YAHOO.widget.DataTable("ZymurgyDataTable<?= $this->tablename ?>", [<?= implode(",\r\n\t\t\t",$dtkeys) ?>],
                 this.myDataSource, {initialRequest:"t=<?= $this->tableid ?>&r=<?= $rowid ?>&m=<?= $this->parent->tableid ?>"});
 		this.myDataTable.subscribe('cellClickEvent',this.onCellClickEvent);
+		
+		document.getElementById("<?= $this->parent->tablename ?>").value = "<?= $rowid ?>";
+		
+		ZymurgyDataTable<?= $this->tablename ?> = this.myDataTable;
     };
 });
+		</script>
 <?
-		echo "</script>\r\n";
 	}
 	
 	public function renderJSON($rowid)
@@ -422,7 +584,11 @@ if (array_key_exists('t',$_GET))
 else if ($_SERVER['REQUEST_METHOD']=='POST')
 {
 	echo "Saving posted data for table #{$_POST['tableid']} and row #{$_POST['rowid']}\r\n";
+	
+	//echo("<br>Creating instance.");
 	$t = new ZymurgyMemberDataTable(0 + $_POST['tableid']);
+	
+	//echo("<br>Rendering form.");
 	$t->renderForm(0 + $_POST['rowid']);
 }
 ?>
