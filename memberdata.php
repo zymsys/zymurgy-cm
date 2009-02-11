@@ -175,7 +175,6 @@
 		{
 			$updateid = 0 + $_POST['rowid'];
 			
-			
 			if(isset($_POST["delete"]))
 			{
 				$this->DeleteRecord(
@@ -287,8 +286,18 @@
 			// Retrieve basic field values
 			foreach($this->fields as $fieldid=>$field)
 			{
-				$values[$field->columnname] = Zymurgy::$db->escape_string(
-					$_POST["field{$field->fieldid}"]);
+				if(strpos($field->columnname, "date") > 0)
+				{
+					$date = strtotime($_POST["field{$field->fieldid}"]);
+					
+					$values[$field->columnname] = Zymurgy::$db->escape_string(
+						$date);
+				}
+				else 
+				{
+					$values[$field->columnname] = Zymurgy::$db->escape_string(
+						$_POST["field{$field->fieldid}"]);
+				}				
 			}
 			
 			// For child tables, retrieve the field name and ID for the 
@@ -695,7 +704,7 @@
 			$dtkeys['delete'] = "{key: \"delete\", label: \"Delete\", formatter: this.formatDelete}";
 			
 			//Render the grid
-			echo "<div id=\"ZymurgyDataTable{$this->tablename}\"></div>\r\n";
+			echo "<div id=\"ZymurgyDataTable{$this->tablename}\" style=\"margin-bottom: 10px;\"></div>\r\n";
 			echo "<p><input type=\"button\" id=\"btnAdd{$this->tablename}\" name=\"btnAdd{$this->tablename}\" value=\"Add Item\" onclick=\"New{$this->tablename}();\"></p>\r\n";
 			?>
 			<script type="text/javascript">
@@ -801,7 +810,17 @@
 				$rp = array("\"id\":\"{$row['id']}\"");
 				foreach($this->fields as $field)
 				{
-					$rp[] = "\"{$field->columnname}\":\"{$row[$field->columnname]}\"";
+					if(strpos($field->columnname, "date") > 0
+						&& $row[$field->columnname] > 0)
+					{
+						$date = date("Y-m-d", $row[$field->columnname]);
+						
+						$rp[] = "\"{$field->columnname}\":\"{$date}\"";						
+					}
+					else 
+					{
+						$rp[] = "\"{$field->columnname}\":\"{$row[$field->columnname]}\"";						
+					}
 				}
 				$r[] = implode(',',$rp);
 			}

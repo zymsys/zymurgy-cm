@@ -59,6 +59,9 @@
 	$yuiGallery = CreatePicasaButton(
 		"ImageGallery",
 		"Image Gallery");	
+	$jwvideo = CreatePicasaButton(
+		"JWVideo",
+		"Video Gallery");	
 	
 	require_once("header.php");
 ?>	
@@ -69,6 +72,7 @@
 	<li><a href="http://picasa.google.com/">Google Picasa</a></li>
 	<li><a href="picasa://importbutton/?url=http://<?= $_SERVER['HTTP_HOST'] ?>/temp/{<?= $flashRelief ?>}.pbz">Button for Flash Relief image galleries</a></li>
 	<li><a href="picasa://importbutton/?url=http://<?= $_SERVER['HTTP_HOST'] ?>/temp/{<?= $yuiGallery ?>}.pbz">Button for YUI image galleries</a></li>
+	<li><a href="picasa://importbutton/?url=http://<?= $_SERVER['HTTP_HOST'] ?>/temp/{<?= $jwvideo ?>}.pbz">Button for video galleries</a></li>
 </ul>
 
 

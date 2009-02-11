@@ -372,7 +372,16 @@ passThroughFormSubmit = false;
 					$date = strtotime($value);
 				}
 				if ($date == 0) $date=time();
-				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
+							
+				$cal = new DHTML_Calendar(
+					"/zymurgy/jscalendar/",
+					'en',
+					'calendar-win2k-2', 
+					false);
+
+				$cal->SetFieldPrefix($name);
+				$cal->SetIncludeID(false);
+				
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
@@ -382,7 +391,8 @@ passThroughFormSubmit = false;
 		           // field attributes go here
 		           array('style'       => 'width: 15em; color: #840; background-color: #ff8; border: 1px solid #000; text-align: center',
 		                 'name'        => $name,
-		                 'value'       => strftime('%Y-%m-%d', $date)));
+		                 'value'       => strftime('%Y-%m-%d', $date)));		                 
+		                 
 				break;
 			case "unixdatetime":
 			case "datetime":

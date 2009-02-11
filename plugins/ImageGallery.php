@@ -239,7 +239,6 @@ class ImageGallery extends PluginBase
 		{
 			$html .= "<li>\n";
 			$html .= "<img src=\"".
-				$ZymurgyRoot.
 				"/UserFiles/".
 				$imgpath.
 				"/".
