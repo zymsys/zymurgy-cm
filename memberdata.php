@@ -456,7 +456,7 @@
 							// Generate tab for main data form
 							echo "<li class=\"selected\"><a href=\"#tab{$this->tableid}_{$this->tableid}\">".
 								"<em>{$this->navname}</em></a></li>\r\n";
-				
+								
 							// Generate a tab for each child form
 							foreach($this->children as $child)
 							{
@@ -466,7 +466,7 @@
 							
 							echo "</ul>\r\n";
 							echo "<div class=\"yui-content\">\r\n";
-							echo "<div>\r\n";
+							echo "<div id=\"tab{$this->tableid}_{$this->tableid}\">\r\n";
 						}
 						?>
 					
@@ -486,8 +486,12 @@
 							<table>
 							<?
 							foreach($this->fields as $fieldid=>$field)
-							{
-								$field->renderTableRow('');
+							{															
+								$field->renderTableRow(
+									'',
+									'ZymurgyDialog'.$this->tablename,
+									count($this->children) > 0 ? 'tabView'.$this->tablename : "",
+									count($this->children) > 0 ? 'tab'.$this->tableid.'_'.$this->tableid : "");
 							}
 							?>
 							</table>
@@ -507,12 +511,22 @@
 								echo "</div>"; //yui-content
 								echo "</div>\r\n"; //yui-navset
 								
-								echo "<script type=\"text/javascript\">\r\n";
-					    		echo "var tabView{$this->tablename} = new YAHOO.widget.TabView(".
-					    			"'ZymurgyTabset{$this->tablename}');\r\n";
-								echo "</script>";
+								?>
+								<script type="text/javascript">
+					    			var tabView<?= $this->tablename ?> = new YAHOO.widget.TabView(
+					    				'ZymurgyTabset<?= $this->tablename ?>');
+								</script>
+								<?
 							}
 							?>
+								<script type="text/javascript">
+					    			<? foreach($this->fields as $fieldid=>$field) { ?>
+										if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
+										{
+											Displayfield<?= $fieldid ?>();
+										}
+									<? } ?>								
+								</script>
 						</form>
 					</div>
 				</div>
@@ -558,6 +572,12 @@
 						text:"Save", 
 						isDefault: true,
 						handler:function() {
+							<? foreach($this->fields as $fieldid=>$field) { ?> 
+								if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
+								{
+									field<?= $fieldid ?>Editor.saveHTML();
+								}
+							<? } ?>
 							this.submit();
 							// alert("<?= $this->tablename ?>: " + ZymurgyDialog<?= $this->tablename ?>ID);
 							ZymurgyDataTable<?= $this->tablename ?>.getDataSource().sendRequest(
@@ -626,9 +646,16 @@
 						var el = document.getElementById('field'+id);
 						el.value = value;
 					};
+					
+					<? foreach($this->fields as $fieldid=>$field) { ?> 
+						if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
+						{
+							Linkfield<?= $fieldid ?>ToDialog();
+						}
+					<? } ?>
 				
 					ZymurgyDialog<?= $this->tablename ?>.render();
-				});
+				});			
 	
 				function New<?= $this->tablename ?>()
 				{
@@ -697,7 +724,7 @@
 					$dtkeys[$field->columnname] = $columndef;
 					
 				$editors[$fieldid] = "<label for=\"field$fieldid\">{$field->caption}</label>";
-				$dlgassigns[$fieldid] = "ZymurgyDialog{$this->tablename}.setField($fieldid,rowdata['{$field->columnname}']);";
+				$dlgassigns[$fieldid] = "ZymurgyDialog{$this->tablename}.setField($fieldid,rowdata['{$field->columnname}']); if(typeof Displayfield{$fieldid}Exists !== 'undefined') field{$fieldid}Editor.setEditorHTML(rowdata['{$field->columnname}']);";
 			}
 			
 			$dtkeys['edit'] = "{key: \"edit\", label: \"Edit\", formatter: this.formatEdit}";
@@ -730,7 +757,7 @@
 								
 								var el = document.getElementById('rowid<?= $this->tableid ?>');
 								el.value = rowdata['id'];
-								
+																
 								<?
 								echo implode("\r\n",$dlgassigns);
 								
@@ -860,11 +887,23 @@
 			$this->gridheader = $fieldrow['gridheader'];
 		}
 		
-		public function renderTableRow($value)
+		public function renderTableRow(
+			$value,
+			$dialogName = "",
+			$tabsetName = "",
+			$tabName = "")
 		{
 			$iw = new InputWidget();
 			echo "<tr><td>{$this->caption}</td><td>";
-			$iw->Render($this->inputspec,"field{$this->fieldid}",$value);
+			
+			$iw->Render(
+				$this->inputspec,
+				"field{$this->fieldid}",
+				$value,
+				$dialogName,
+				$tabsetName,
+				$tabName);
+			
 			echo "</td></tr>\r\n";
 		}
 		

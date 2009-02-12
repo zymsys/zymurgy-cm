@@ -287,7 +287,13 @@ passThroughFormSubmit = false;
 		}
 	}
 	
-	function Render($type,$name,$value)
+	function Render(
+		$type,
+		$name,
+		$value,
+		$dialogName = "",
+		$tabsetName = "",
+		$tabName = "")
 	{
 		$ep = explode('.',$type);
 		if ($ep[0]!='html')
@@ -438,14 +444,63 @@ passThroughFormSubmit = false;
 				echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
 				break;
 			case "yuihtml":
-				Zymurgy::YUI("assets/skins/sam/skin.css");
-				Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
-				Zymurgy::YUI("element/element-beta-min.js");
-				Zymurgy::YUI("container/container_core-min.js");
-				Zymurgy::YUI("menu/menu-min.js");
-				Zymurgy::YUI("button/button-beta-min.js");
-				Zymurgy::YUI("editor/editor-beta-min.js");
-				Zymurgy::YUI("connection/connection-min.js");
+				echo Zymurgy::YUI("assets/skins/sam/skin.css");
+				echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+				echo Zymurgy::YUI("element/element-beta-min.js");
+				echo Zymurgy::YUI("container/container_core-min.js");
+				echo Zymurgy::YUI("editor/editor-min.js");
+				
+				if($dialogName !== "")
+				{
+					echo("<div id=\"{$name}_div\"></div>");
+				}
+				
+				echo("<textarea id=\"$name\" name=\"$name\" cols=\"60\" rows=\"10\">$value</textarea>\r\n");
+					
+				?>					
+					<script type="text/javascript">
+						var Display<?= $name ?>Exists = true;
+						var <?= $name ?>Editor;
+					
+						function Display<?= $name ?>() {
+							var myConfig = {
+								height: '<?= $ep[2] ?>px',
+								width: '<?= $ep[1] ?>px',
+								dompath: true,
+								focusAtStart: false
+							};
+							
+							<?= $name ?>Editor = new YAHOO.widget.Editor(
+								'<?= $name ?>',
+								myConfig);
+							
+							<? if($dialogName !== "") { ?>
+							<?= $name ?>Editor.on('windowRender', function() {
+								document.getElementById('<?= $name ?>_div').appendChild(this.get('panel').element);
+							});
+							
+							if(typeof <?= $dialogName ?> == "Dialog")
+							{
+								Link<?= $name ?>ToDialog();
+							}
+							<? } ?>
+								
+							<?= $name ?>Editor.render();							
+						}
+						
+						function Link<?= $name ?>ToDialog()
+						{
+							<?= $dialogName ?>.showEvent.subscribe(
+								<?= $name ?>Editor.show,
+								<?= $name ?>Editor,
+								true);
+							<?= $dialogName ?>.hideEvent.subscribe(
+								<?= $name ?>Editor.hide,
+								<?= $name ?>Editor,
+								true);
+						}
+					</script>
+				<?
 				
 				break;
 			case "html":
