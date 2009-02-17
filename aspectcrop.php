@@ -1,8 +1,11 @@
 <?
 require_once('cms.php');
-require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
-$zauth = new ZymurgyAuth();
-$zauth->Authenticate("login.php");
+if (!Zymurgy::memberauthenticate())
+{
+	require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
+	$zauth = new ZymurgyAuth();
+	$zauth->Authenticate("login.php");
+}
 
 if (array_key_exists('fixedar',$_GET))
 	$fixedar = ($_GET['fixedar'] == 1);

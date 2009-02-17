@@ -302,7 +302,7 @@ class ZymurgyMember
 					Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 				}
 				//Update other user info (XML)
-				$sql = "update formcapture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
+				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
 				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 			}
@@ -312,7 +312,7 @@ class ZymurgyMember
 			if ($authed)
 			{
 				//We're logged in so update existing info.
-				$sql = "select formvalues from formcapture where id=".Zymurgy::$member['formdata'];
+				$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
 				$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
 				$xml = Zymurgy::$db->result($ri,0,0);
 				$pi->XmlValues = $xml;
@@ -502,7 +502,7 @@ class ZymurgyMember
 					$pi->LoadInputData();
 					if ($zcm_member['formdata'])
 					{
-						$sql = "select formvalues from formcapture where id=".Zymurgy::$member['formdata'];
+						$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
 						$ri = Zymurgy::$db->query($sql) or die("Unable to load form data ($sql): ".Zymurgy::$db->error());
 						$pi->XmlValues = Zymurgy::$db->result($ri,0,0);
 						array_unshift($pi->InputRows,array(
@@ -547,11 +547,12 @@ class ZymurgyMember
 	 * Render data entry form for user data using the navigation name for the Custom Table used for user data.
 	 *
 	 * @param string $navname
+	 * @param string $exitpage
 	 */
-	static function memberform($navname)
+	static function memberform($navname,$exitpage)
 	{
 		require_once('memberdata.php');
-		$f = ZymurgyMemberDataTable::FactoryByNavName($navname);
+		$f = ZymurgyMemberDataTable::FactoryByNavName($navname, $exitpage);
 		if (count($f->children) > 0)
 		{
 			//Get YUI dependancies

@@ -639,11 +639,12 @@ if (!class_exists('Zymurgy'))
 		 * Render data entry form for user data using the navigation name for the Custom Table used for user data.
 		 *
 		 * @param string $navname
+		 * @param string $exitpage
 		 */
-		static function memberform($navname)
+		static function memberform($navname, $exitpage)
 		{
 			require_once 'member.php';
-			return ZymurgyMember::memberform($navname);
+			return ZymurgyMember::memberform($navname,$exitpage);
 		}
 
 		/**
@@ -683,7 +684,8 @@ if (!class_exists('Zymurgy'))
 			$targets,
 			$uploadpath = '')
 		{
-			global $ZymurgyRoot, $ZymurgyConfig;
+			$ZymurgyRoot = Zymurgy::$root;
+			$ZymurgyConfig = Zymurgy::$config;
 			
 			@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
 			$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";

@@ -14,6 +14,8 @@ class InputWidget
 	var $fckeditorpath;
 	var $UsePennies = true;
 	var $lookups = array();
+	var $editkey = 0;
+	var $datacolumn = 'sitetext.body';
 	
 	function InputWidget()
 	{
@@ -428,17 +430,19 @@ passThroughFormSubmit = false;
 				array_shift($ep); //Remove type
 				$ep = explode(',',implode('.',$ep)); //Re-explode on ,
 				$thumbs = array();
+				if (($this->editkey==0) && array_key_exists('editkey',$_GET))
+					$this->editkey = 0 + $_GET['editkey'];
 				foreach($ep as $targetsize)
 				{
 					$targetsize = str_replace('.','x',$targetsize);
-					if (array_key_exists('editkey',$_GET))
+					if ($this->editkey > 0)
 					{
-						$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.jpg?".rand(0,99999);
-						$thumbs[] = "<a onclick=\"aspectcrop_popup('sitetext.body','$targetsize','{$_GET['editkey']}','sitetext.body')\">".
-							"<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a> ";
+						$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.jpg?".rand(0,99999);
+						$thumbs[] = "<a onclick=\"aspectcrop_popup('{$this->datacolumn}','$targetsize','{$this->editkey}','{$this->datacolumn}',true)\">".
+							"<img id=\"{$this->datacolumn}.$targetsize\" src=\"$imgsrc\" style=\"cursor: pointer\" /></a> ";
 					}
 				}
-				echo "<input type=\"file\" id=\"$name\" name=\"$name\" /> ".implode($thumbs);
+				echo "<table><tr><td valign=\"center\"><input type=\"file\" id=\"$name\" name=\"$name\" /></td><td>".implode($thumbs,"</td><td>")."</td></tr></table>";
 				break;
 			case "attachment":
 				echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";

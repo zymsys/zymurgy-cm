@@ -37,7 +37,7 @@
 		 *
 		 * @var string
 		 */
-		private $tablename;
+		public $tablename;
 		
 		/**
 		 * Navigation name for this table, used in grid UI's.
@@ -47,11 +47,19 @@
 		public $navname;
 		
 		/**
+		 * URL to go to after the user saves the main form's data
+		 *
+		 * @var string
+		 */
+		private $exitpage;
+		
+		/**
 		 * Creates a ZymurgyMemberDataTable from a table ID.  To create one from a navigation name use the FactoryByNavName static method.
 		 *
 		 * @param int $tableid
+		 * @param string $exitpage
 		 */
-		public function __construct($tableid)
+		public function __construct($tableid, $exitpage)
 		{
 			// Authenticate and make sure we have the member's info
 			if (!Zymurgy::memberauthenticate())
@@ -69,6 +77,7 @@
 			$this->tableid = $table['id'];
 			$this->navname = $table['navname'];
 			$this->tablename = $table['tname'];
+			$this->exitpage = $exitpage;
 			
 			if ($table['detailfor']>0)
 			{
@@ -106,7 +115,7 @@
 			
 			while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
 			{
-				$this->fields[$row['id']] = new ZymurgyMemberDataField($row); 
+				$this->fields[$row['id']] = new ZymurgyMemberDataField($row, $this); 
 			}
 			
 			Zymurgy::$db->free_result($ri);		
@@ -137,15 +146,16 @@
 		 * Create a ZymurgyMemberDataTable from a custom table navigation name.
 		 *
 		 * @param string $navname
+		 * @param string $exitpage
 		 * @return ZymurgyMemberDataTable
 		 */
-		public static function FactoryByNavName($navname)
+		public static function FactoryByNavName($navname, $exitpage)
 		{
 			//Look up table info by $navname
 			$tableid = Zymurgy::$db->get("select id from zcm_customtable where navname='".
 				Zymurgy::$db->escape_string($navname)."'");
 			if ($tableid === FALSE) die("No such custom table: $navname");
-			return new ZymurgyMemberDataTable($tableid);
+			return new ZymurgyMemberDataTable($tableid, $exitpage);
 		}
 		
 		/**
@@ -190,6 +200,7 @@
 					$this->InsertRecord(
 						$this->tablename,
 						$values);
+					$updateid = Zymurgy::$db->insert_id();
 				}
 				else 
 				{
@@ -198,9 +209,22 @@
 						$updateid,
 						$values);
 				}
-				
-				echo("<script type=\"text/javascript\">setTimeout('window.location.href = ".
-					"window.location.href', 1000);</script>");
+				foreach($this->fields as $fieldid=>$field)
+				{
+					$ip = explode('.',$field->inputspec);
+					if ($ip[0] == 'image')
+					{
+						$file = $_FILES["field{$field->fieldid}"];
+						if ($file['type']!='')
+						{
+							Zymurgy::MakeThumbs($this->tablename.'.'.$field->columnname,
+								$updateid, array($ip[1]."x".$ip[2]), $file['tmp_name']);
+						}
+					}
+				}
+				//echo "<pre>"; print_r(debug_backtrace()); echo "</pre>";
+				echo("<script type=\"text/javascript\">window.location.href = '{$this->exitpage}';</script>");
+				exit;
 			}
 		}
 		
@@ -238,7 +262,7 @@
 				implode(',',array_keys($values)).") values ('".
 				implode("','",$values)."')";
 				
-			echo $sql;
+			//echo $sql;
 			
 			Zymurgy::$db->run($sql);
 		}
@@ -269,7 +293,7 @@
 				$sql .= " and (member=".Zymurgy::$member['id'].")";
 			}
 				
-			echo $sql;
+			//echo $sql;
 			
 			Zymurgy::$db->run($sql);
 		}
@@ -282,11 +306,13 @@
 		private function RetrieveFieldValues()
 		{
 			$values = array();
+			$iw = new InputWidget();
 			
 			// Retrieve basic field values
 			foreach($this->fields as $fieldid=>$field)
 			{
-				if(strpos($field->columnname, "date") > 0)
+				$values[$field->columnname] = Zymurgy::$db->escape_string($iw->PostValue($field->inputspec,"field{$field->fieldid}"));
+				/*if(strpos($field->columnname, "date") > 0)
 				{
 					$date = strtotime($_POST["field{$field->fieldid}"]);
 					
@@ -297,7 +323,7 @@
 				{
 					$values[$field->columnname] = Zymurgy::$db->escape_string(
 						$_POST["field{$field->fieldid}"]);
-				}				
+				}*/				
 			}
 			
 			// For child tables, retrieve the field name and ID for the 
@@ -325,14 +351,30 @@
 		{
 			$memberdata = $this->RetrieveMemberData($rowid);			
 			$this->RenderTabs();		
-			
-			echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['SCRIPT_URI']}\" method=\"post\">\r\n";
+?>
+<script language="JavaScript">
+<!--
+		function aspectcrop_popup(ds, d, id, returnurl, fixedratio)
+		{
+			var fixedar;
+			if (fixedratio)
+				fixedar = '&fixedar=1';
+			else
+				fixedar = '';
+			window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&id='+id+'&returnurl='+returnurl+fixedar,'','scrollbars=no,width=780,height=500');
+		}
+//-->
+</script>
+<?
+			echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['SCRIPT_URI']}\" method=\"post\" enctype=\"multipart/form-data\">\r\n";
 			
 			$rowid = is_array($memberdata)
 				? $memberdata["id"]
 				: 0;
+			$this->editingid = $rowid;
 			
 			echo "<input type=\"hidden\" name=\"tableid\" value=\"$this->tableid\" />\r\n";
+			echo "<input type=\"hidden\" name=\"exitpage\" value=\"{$this->exitpage}\" />\r\n";
 			echo "<input type=\"hidden\" name=\"rowid\" value=\"$rowid\" />\r\n";
 			
 			echo "<table>\r\n";
@@ -878,13 +920,21 @@
 		public $gridheader;
 		public $fieldid;
 		
-		public function __construct($fieldrow)
+		/**
+		 * Data table which owns this row
+		 *
+		 * @var ZymurgyMemberDataTable
+		 */
+		public $table;
+		
+		public function __construct($fieldrow, $table)
 		{
 			$this->fieldid = $fieldrow['id'];
 			$this->columnname = $fieldrow['cname'];
 			$this->inputspec = $fieldrow['inputspec'];
 			$this->caption = $fieldrow['caption'];
 			$this->gridheader = $fieldrow['gridheader'];
+			$this->table = $table;
 		}
 		
 		public function renderTableRow(
@@ -894,6 +944,8 @@
 			$tabName = "")
 		{
 			$iw = new InputWidget();
+			$iw->editkey = $this->table->editingid;
+			$iw->datacolumn = $this->table->tablename.".".$this->columnname;
 			echo "<tr><td>{$this->caption}</td><td>";
 			
 			$iw->Render(
@@ -929,10 +981,10 @@
 	} 
 	else if ($_SERVER['REQUEST_METHOD']=='POST')
 	{
-		echo "Saving posted data for table #{$_POST['tableid']} and row #{$_POST['rowid']}\r\n";
+		//echo "Saving posted data for table #{$_POST['tableid']} and row #{$_POST['rowid']}\r\n";
 		
 		//echo("<br>Creating instance.");
-		$t = new ZymurgyMemberDataTable(0 + $_POST['tableid']);
+		$t = new ZymurgyMemberDataTable(0 + $_POST['tableid'],$_POST['exitpage']);
 		
 		//echo("<br>Rendering form.");
 		$t->renderForm(0 + $_POST['rowid']);
