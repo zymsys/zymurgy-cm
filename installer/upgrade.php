@@ -185,6 +185,25 @@ foreach ($plugins as $source=>$state)
 	}
 }
 
+// ==========
+// Fail if the hacked version of JSCalendar is not available
+// ==========
+
+echo("Testing for extended third-party components...<br>");
+
+require_once("../jscalendar/calendar.php");
+	
+$cal = new DHTML_Calendar(
+	"/zymurgy/jscalendar/",
+	'en',
+	'calendar-win2k-2', 
+	false);
+
+if(!method_exists($cal, "SetFieldPrefix"))
+{
+	die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");	
+}
+
 echo("Done.<br>");
 
 // ----------

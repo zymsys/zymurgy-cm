@@ -53,6 +53,9 @@
 		 */
 		private $exitpage;
 		
+	
+		public $editingid;
+		
 		/**
 		 * Creates a ZymurgyMemberDataTable from a table ID.  To create one from a navigation name use the FactoryByNavName static method.
 		 *
@@ -89,7 +92,7 @@
 			}
 			
 			$this->PopulateFieldList();
-			$this->PopulateChildTables();		
+			$this->PopulateChildTables($exitpage);		
 		}
 			
 		/**
@@ -124,7 +127,7 @@
 		/**
 		 * Populates the list of child tables. Called by the constructor.
 		 */
-		private function PopulateChildTables()
+		private function PopulateChildTables($exitpage)
 		{
 			$sql = "select id from zcm_customtable where detailfor = {$this->tableid} order by disporder";
 			
@@ -134,7 +137,7 @@
 			{
 				$childid = $row['id'];
 				
-				$newtable = new ZymurgyMemberDataTable($childid);
+				$newtable = new ZymurgyMemberDataTable($childid, $exitpage);
 				$newtable->parent = $this;
 				$this->children[$childid] = $newtable;
 			}
@@ -561,14 +564,14 @@
 								<?
 							}
 							?>
-								<script type="text/javascript">
-					    			<? foreach($this->fields as $fieldid=>$field) { ?>
-										if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
-										{
-											Displayfield<?= $fieldid ?>();
-										}
-									<? } ?>								
-								</script>
+							<script type="text/javascript">
+				    			<? foreach($this->fields as $fieldid=>$field) { ?>
+									if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
+									{
+										Displayfield<?= $fieldid ?>();
+									}
+								<? } ?>								
+							</script>
 						</form>
 					</div>
 				</div>
@@ -686,7 +689,11 @@
 				
 					ZymurgyDialog<?= $this->tablename ?>.setField = function(id,value) {
 						var el = document.getElementById('field'+id);
-						el.value = value;
+						
+						if(el.type !== "file")
+						{
+							el.value = value;
+						}
 					};
 					
 					<? foreach($this->fields as $fieldid=>$field) { ?> 
@@ -886,6 +893,10 @@
 						
 						$rp[] = "\"{$field->columnname}\":\"{$date}\"";						
 					}
+					else if($row[$field->columnname] == "image/jpeg")
+					{
+						$rp[] = "\"{$field->columnname}\":\"<img src='/UserFiles/DataGrid/{$this->tablename}.{$field->columnname}/{$rowid}thumb100x100.jpg'/>\"";						
+					}
 					else 
 					{
 						$rp[] = "\"{$field->columnname}\":\"{$row[$field->columnname]}\"";						
@@ -944,8 +955,10 @@
 			$tabName = "")
 		{
 			$iw = new InputWidget();
+			
 			$iw->editkey = $this->table->editingid;
 			$iw->datacolumn = $this->table->tablename.".".$this->columnname;
+
 			echo "<tr><td>{$this->caption}</td><td>";
 			
 			$iw->Render(

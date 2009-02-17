@@ -363,13 +363,15 @@ class ImageGallery extends PluginBase
 			"' AND `name` <> '0' ORDER BY `name`";
 		$instanceRI = Zymurgy::$db->query($instanceSQL) or die("Cannot retrieve list of instances");
 		
-		// require_once("../header.php");
+		include("../header_html.php");
 		
-		echo("<html><head><title>Picasa Upload Tool for Zymurgy:CM</title></head><body>");
+		echo("<p>The Zymurgy:CM&trade; Picasa Upload Utility allows you to upload your images directly from Google Picasa into your Image Gallery. It also takes care of re-sizing your images for the Web, so you don't have to wait a long time to upload images taken with your digital camera.</p>");
+		
 		echo("<form name=\"f\" method=\"POST\" action=\"ImageGallery.php\">");
 		echo("<input type=\"hidden\" name=\"process\" value=\"true\">");
 		echo("<input type=\"hidden\" name=\"DocType\" value=\"picasa\">");
-		echo("<p>Instance: <select name=\"cmbInstance\">");
+		echo("<p><b>Web Site:</b> ".Zymurgy::$config['defaulttitle']." (".Zymurgy::$config['sitehome'].")");
+		echo("<br><b>Upload to Gallery:</b> <select name=\"cmbInstance\">");
 		
 		while (($instanceRow = mysql_fetch_array($instanceRI))!==false)
 		{
@@ -377,7 +379,7 @@ class ImageGallery extends PluginBase
 		}		
 		
 		echo("</select></p>");
-		echo("<p><b>Selected Images</b></p><p>");
+		echo("<p>The following images will be uploaded:</p>");
 		
 		$xh = new xmlHandler();
 		$nodeNames = array("PHOTO:THUMBNAIL", "PHOTO:IMGSRC", "TITLE");
@@ -389,13 +391,23 @@ class ImageGallery extends PluginBase
 		$pData = $xh->xmlParse();
 		$br = 0;
 	
+		$cntr = 0;
+		
+		echo("<table border='0' cellspacing='10' cellpadding='0'><tr>");		
+
 		foreach($pData as $e) {
-			echo "<img src='".$e['photo:thumbnail']."?size=".$this->GetConfigValue('Thumbnail width')."'>\r\n";
+			if($cntr % 7 == 0)
+			{
+				echo("</tr><tr>");
+			}
+			echo "<td bgcolor='#C0C0C0' width='120' align='center' valign='middle'><img src='".$e['photo:thumbnail']."?size=".$this->GetConfigValue('Thumbnail width')."'></td>";
 			$large = $e['photo:imgsrc'];		
 			echo "<input type=hidden name='".$large."?size=1280'>\r\n";
+			
+			$cntr++;
 		}
-
-		echo("</p>");
+		
+		echo("</tr></table>");
 		
 		echo("<p>");
 		echo("<input type=\"submit\" value=\"Publish\">&nbsp;");
