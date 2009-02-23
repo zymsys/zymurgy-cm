@@ -240,6 +240,29 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 
 YAHOO.util.Event.onDOMReady(YAHOO.zymurgy.colorpicker.inDialog.init, YAHOO.zymurgy.colorpicker.inDialog, true);
 
+function updateSwatch(swatchName, newValue)
+{
+	YAHOO.util.Dom.setStyle(swatchName, "backgroundColor", "#"+newValue);
+}
+//Convert a hex value to its decimal value - the inputted hex must be in the
+//	format of a hex triplet - the kind we use for HTML colours. The function
+//	will return an array with three values.
+
+function hex2num(hex) {
+	if(hex.charAt(0) == "#") hex = hex.slice(1); //Remove the # char - if there is one.
+	hex = hex.toUpperCase();
+	var hex_alphabets = "0123456789ABCDEF";
+	var value = new Array(3);
+	var k = 0;
+	var int1,int2;
+	for(var i=0;i<6;i+=2) {
+		int1 = hex_alphabets.indexOf(hex.charAt(i));
+		int2 = hex_alphabets.indexOf(hex.charAt(i+1)); 
+		value[k] = (int1 * 16) + int2;
+		k++;
+	}
+	return(value);
+}
 </script>
 <div id="yui-picker-panel" class="yui-picker-panel">
 	<div class="hd">Please choose a color:</div>
@@ -520,7 +543,7 @@ passThroughFormSubmit = false;
 				break;
 			case "colour":
 			case "color":
-				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\">&nbsp;";
+				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value);\">&nbsp;";
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
 			case "hip":
