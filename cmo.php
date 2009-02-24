@@ -52,6 +52,13 @@ if (!class_exists('Zymurgy'))
 		 */
 		private static $yuiloaded = array();
 		
+		/**
+		 * Instance of a ZymurgyMember class, or a decendent which provides membership features
+		 *
+		 * @var ZymurgyMember
+		 */
+		private static $MemberProvider = null;
+		
 		private static $pageid;
 		private static $title;
 			
@@ -531,6 +538,28 @@ if (!class_exists('Zymurgy'))
 			</script>";
 			flush();
 		}
+
+		/**
+		 * Load membership subsystem and any configured membership provider
+		 *
+		 */
+		function initializemembership()
+		{
+			if (Zymurgy::$MemberProvider == null)
+			{
+				//Initialize membership provider
+				require_once 'member.php';
+				if (empty(Zymurgy::$config['MemberProvider']))
+				{
+					Zymurgy::$MemberProvider = new ZymurgyMember();
+				}
+				else 
+				{
+					require_once(Zymurgy::$root."/zymurgy/memberp/".Zymurgy::$config['MemberProvider'].".php");
+					Zymurgy::$MemberProvider = new Zymurgy::$config['MemberProvider'];
+				}
+			}
+		}
 		
 		/**
 		 * Is member authenticated?  If yes then loads auth info into global $member array.
@@ -539,8 +568,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberauthenticate()
 		{
-			require_once 'member.php';
-			return ZymurgyMember::memberauthenticate();
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberauthenticate();
 		}
 		
 		/**
@@ -551,8 +580,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberauthorize($groupname)
 		{
-			require_once 'member.php';
-			return ZymurgyMember::memberauthorize($groupname);
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberauthorize($groupname);
 		}
 		
 		/**
@@ -562,8 +591,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberaudit($activity)
 		{
-			require_once 'member.php';
-			ZymurgyMember::memberaudit($activity);
+			Zymurgy::initializemembership();
+			Zymurgy::$MemberProvider->memberaudit($activity);
 		}
 		
 		/**
@@ -575,8 +604,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberpage($groupname='Registered User')
 		{
-			require_once 'member.php';
-			ZymurgyMember::memberpage($groupname);
+			Zymurgy::initializemembership();
+			Zymurgy::$MemberProvider->memberpage($groupname);
 		}
 		
 		/**
@@ -589,8 +618,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberdologin($userid, $password)
 		{
-			require_once 'member.php';
-			return ZymurgyMember::memberdologin($userid,$password);
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberdologin($userid,$password);
 		}
 		
 		/**
@@ -600,8 +629,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberlogout($logoutpage)
 		{
-			require_once 'member.php';
-			ZymurgyMember::memberlogout($logoutpage);
+			Zymurgy::initializemembership();
+			Zymurgy::$MemberProvider->memberlogout($logoutpage);
 		}
 
 		/**
@@ -617,8 +646,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect)
 		{
-			require_once 'member.php';
-			return ZymurgyMember::membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
 		}
 		
 		/**
@@ -631,8 +660,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberlogin()
 		{
-			require_once 'member.php';
-			return ZymurgyMember::memberlogin();
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberlogin();
 		}
 		
 		/**
@@ -643,8 +672,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberform($navname, $exitpage)
 		{
-			require_once 'member.php';
-			return ZymurgyMember::memberform($navname,$exitpage);
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberform($navname,$exitpage);
 		}
 
 		/**
@@ -740,12 +769,12 @@ if (!class_exists('Zymurgy'))
 	}
 	
 	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
-	
+
+	//Initialize database provider
 	if (empty(Zymurgy::$config['database']))
 	{
 		Zymurgy::$config['database'] = 'mysql';
 	}
-	
 	require_once(Zymurgy::$root."/zymurgy/db/".Zymurgy::$config['database'].".php");
 	Zymurgy::$db = new Zymurgy_DB();
 	

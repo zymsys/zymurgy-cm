@@ -48,6 +48,7 @@ class Zymurgy_DB
 		{
 			return $row[0];
 		}
+		mysql_free_result($ri);
 		return $row;
 	}
 	

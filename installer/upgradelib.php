@@ -88,7 +88,7 @@ function RenamePluginKeys($plugin,$keynames)
  * @param string $table
  * @param string $indexes
  */
-function CheckIndexes($table,$indexes)
+function CheckIndexes($table,$indexes,$unique = false)
 {
 	$existing = array();
 	$sql = "show index from $table";
@@ -102,7 +102,14 @@ function CheckIndexes($table,$indexes)
 	{
 		if (!array_key_exists($column,$existing))
 		{
-			$sql = "alter table $table add index($column)";
+			if ($unique)
+			{
+				$sql = "alter table $table add unique($column)";
+			}
+			else 
+			{
+				$sql = "alter table $table add index($column)";
+			}
 			mysql_query($sql) or die("Unable to index $column in $table: $sql");
 		}
 	}

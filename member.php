@@ -20,20 +20,25 @@ class ZymurgyMember
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authenticate ($sql): ".Zymurgy::$db->error());
 			if (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
-				//Create member object
-				Zymurgy::$member = array(
-					'id'=>$row['id'],
-					'email'=>$row['email'],
-					'password'=>$row['password'],
-					'formdata'=>$row['formdata'],
-					'orgunit'=>$row['orgunit'],
-					'groups'=>array('Registered User')
-				);
+				ZymurgyMember::populatememberfromrow($row);
 				return true;
 			}
 		}
 		return false;
 	}
+	
+	static function populatememberfromrow($row)
+	{
+		Zymurgy::$member = array(
+			'id'=>$row['id'],
+			'email'=>$row['email'],
+			'password'=>$row['password'],
+			'formdata'=>$row['formdata'],
+			'orgunit'=>$row['orgunit'],
+			'groups'=>array('Registered User')
+		);
+	}
+	
 	/**
 	 * Is member authorized (by group name) to view this page?
 	 *
@@ -103,6 +108,22 @@ class ZymurgyMember
 		}
 	}
 	
+	static function createauthkey($id)
+	{
+		//Set up the authkey and last auth
+		$authkey = md5(uniqid(rand(),true));
+		$sql = "update zcm_member set lastauth=now(), authkey='$authkey' where id=$id";
+		Zymurgy::$db->query($sql) or die("Unable to set auth info ($sql): ".Zymurgy::$db->error());
+		//Set authkey session cookie
+		$_COOKIE['ZymurgyAuth'] = $authkey;
+		echo "<script language=\"javascript\">
+			<!--
+			document.cookie = \"ZymurgyAuth=$authkey\";
+			//-->
+			</script>";
+		Zymurgy::memberaudit("Successful login for [$userid]");
+	}
+	
 	/**
 	 * Attempt to log into the membership system with the provided user ID and password.  Returns true
 	 * if the login was successful or false if it was not.
@@ -118,19 +139,7 @@ class ZymurgyMember
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
-			//Set up the authkey and last auth
-			$authkey = md5(uniqid(rand(),true));
-			$sql = "update zcm_member set lastauth=now(), authkey='$authkey' where id={$row['id']}";
-			Zymurgy::$db->query($sql) or die("Unable to set auth info ($sql): ".Zymurgy::$db->error());
-			//Set authkey session cookie
-			$_COOKIE['ZymurgyAuth'] = $authkey;
-			echo "<script language=\"javascript\">
-		<!--
-		document.cookie = \"ZymurgyAuth=$authkey\";
-		//-->
-		</script>";
-			Zymurgy::memberaudit("Successful login for [$userid]");
-			//echo "Alright, logged in with $authkey, now fuck off.<pre>"; print_r($_COOKIE); exit;
+			ZymurgyMember::createauthkey($row['id']);
 			return true;
 		}
 		else 

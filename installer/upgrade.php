@@ -37,6 +37,10 @@ $newconfig = array(
 	'sitetext'=>"alter table zcm_config add `inputspec` varchar(100) default 'input.60.1024' NOT NULL"
 );
 
+$newmember = array(
+	'mpkey'=>"alter table zcm_member add `mpkey` varchar(40) default NULL)"
+);
+
 include('upgradelib.php');
 
 RenameOldTables();
@@ -46,8 +50,10 @@ CheckColumns('zcm_passwd',$newpasswd);
 CheckColumns('zcm_plugininstance',$newplugininstance);
 CheckColumns('zcm_customtable',$newcustomtable);
 CheckColumns('zcm_config',$newconfig);
+CheckColumns('zcm_member',$newmember);
 
 CheckIndexes('zcm_customtable',array('navname'));
+CheckIndexes('zcm_member',array('mpkey'),true);
 
 echo("done.<br>");
 echo("Renaming plugin configuration items...");
