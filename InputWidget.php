@@ -212,6 +212,10 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 					this.picker = new YAHOO.widget.ColorPicker(el,pickerOptions);
 					colourPicker = this.picker;
 					this.picker.on("rgbChange", function(o) {
+						if(typeof matchColors == "function")
+						{
+							matchColors(this.get("hex"));
+						}
 					});
 				}
 			});	
@@ -543,7 +547,15 @@ passThroughFormSubmit = false;
 				break;
 			case "colour":
 			case "color":
-				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value);\">&nbsp;";
+			case "colormatchprimary":
+				$matchJS = "";
+				
+				if($ep[0] == "colormatchprimary")
+				{
+					$matchJS = "matchColors(this.value)";
+				}
+				
+				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); $matchJS;\">&nbsp;";
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
 			case "hip":
