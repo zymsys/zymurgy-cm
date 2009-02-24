@@ -9,10 +9,21 @@
 	
 	echo InputWidget::GetPretext("color.");
 	
+	$sampleHTML = @file_get_contents(Zymurgy::$root."/zymurgy/config/colorsample.html");
+	
+	if($sampleHTML !== "")
+	{
+		$sampleHTML = @file_get_contents(Zymurgy::$root."/zymurgy/include/colorsample.html");
+	}
+	
+	$sampleHTML = str_replace("\r\n", "", $sampleHTML);
+	$sampleHTML = str_replace("\n", "", $sampleHTML);
+	$sampleHTML = str_replace("\t", "", $sampleHTML);
 ?>
 
 <script language="javascript" type="text/javascript">
 	var primaryColor = newColor();
+	var sampleHTML = '<?= $sampleHTML ?>';
 		
 	function newColor()
 	{
@@ -298,6 +309,8 @@
 		
 		z = GetRGBFromHueAndSaturation(y);
 		updateColor("color8", z);
+		
+		UpdatePreview();
 	}
 	
 	function AdjustLuminosity(luminosity, adjustment, pivotPoint)
@@ -343,11 +356,48 @@
 		q=(d-a)/16;
 		return hch.charAt(q)+hch.charAt(a);
 	}
+	
+	function UpdatePreview()
+	{
+		preview = document.getElementById("preview").contentDocument;
+		
+		if(preview == undefined || preview == null)
+		{
+			preview = document.getElementById("preview").contentWindow.document;
+		}
+		
+		if(!(preview == undefined || preview == null))
+		{
+			newContent = sampleHTML;
+			
+			for(cntr = 1; cntr <= 8; cntr++)
+			{
+				while(newContent.indexOf("color" + cntr + "_background") >= 0
+					|| newContent.indexOf("color" + cntr + "_foreground") >= 0)
+				{
+					newContent = newContent.replace(
+						"color" + cntr + "_background", 
+						"background-color: #" + document.getElementById("color" + cntr).value + "; ");
+					newContent = newContent.replace(
+						"color" + cntr + "_foreground", 
+						"color: #" + document.getElementById("color" + cntr).value + "; ");
+				}
+			}			
+				
+			preview.open();
+			preview.write(newContent);
+			preview.close();
+		}
+	}
+	
+	YAHOO.util.Event.on(window, "load", UpdatePreview);
 </script>
 
 <?php
 	
 	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\" enctype=\"multipart/form-data\"><table>\r\n";
+	
+	echo "<tr><td valign=\"top\"><table>";
 	
 	echo "<tr><td align=\"right\">Primary Color:</td><td>";
 	$iw = new InputWidget();
@@ -356,12 +406,12 @@
 	
 	echo "<tr><td align=\"right\">Primary Header Background:</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color1","FFFFFF");
+	$iw->Render("color","color1","D9D9D9");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Primary Header/Link Foreground:</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color2","FFFFFF");
+	$iw->Render("color","color2","B3B3B3");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Secondary Header Background:</td><td>";
@@ -371,17 +421,17 @@
 	
 	echo "<tr><td align=\"right\">Visited Link Foreground:</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color4","FFFFFF");
+	$iw->Render("color","color4","D9D9D9");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Secondary Header Foreground:</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color5","FFFFFF");
+	$iw->Render("color","color5","B3B3B3");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">(unused):</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color6","FFFFFF");
+	$iw->Render("color","color6","000000");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Page Background:</td><td>";
@@ -391,9 +441,14 @@
 	
 	echo "<tr><td align=\"right\">Text Color:</td><td>";
 	$iw = new InputWidget();
-	$iw->Render("color","color8","FFFFFF");
+	$iw->Render("color","color8","000000");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Save\"></td></tr>\r\n";
-	echo "</table></form>";	
+	
+	echo "</table></td><td valign=\"top\">";
+	
+	echo "<iframe id=\"preview\" height=\"400\" width=\"400\"/>\r\n";
+	
+	echo "</td></tr></table></form>\n\n";	
 ?>
