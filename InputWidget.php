@@ -211,10 +211,14 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 					var el = document.getElementById("yui-picker");
 					this.picker = new YAHOO.widget.ColorPicker(el,pickerOptions);
 					colourPicker = this.picker;
-					this.picker.on("rgbChange", function(o) {
-						if(typeof matchColors == "function")
-						{
+					this.picker.on("rgbChange", function(o) {				
+						// alert(colourPickerDlg.cpEditor.name);
+									
+						if(typeof matchColors == "function" && colourPickerDlg.cpEditor.name == "color0")
+						{						
+							// alert(this.get("hex"));
 							matchColors(this.get("hex"));
+							UpdatePreview();
 						}
 					});
 				}
@@ -230,7 +234,25 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 			var hex = document.getElementById(this.picker.ID.HEX);
 			this.cpEditor.value = hex.value;
 			YAHOO.util.Dom.setStyle([this.cpSwatch],"backgroundColor","#"+hex.value);
+			
+			if(typeof matchColors == "function" && colourPickerDlg.cpEditor.name == "color0")
+			{						
+				matchColors(hex.value);
+			}
+			
 			this.submit();
+			
+			if(typeof UpdatePreview == "function")
+			{
+				UpdatePreview();
+			}
+			
+			// alert(this.cpEditor.name);
+			
+			if(document.getElementById(this.cpEditor.name + "locked"))
+			{
+				document.getElementById(this.cpEditor.name + "locked").checked = true;
+			}
 		},
 		handleCancel: function() {
 			this.cancel();
@@ -552,10 +574,10 @@ passThroughFormSubmit = false;
 				
 				if($ep[0] == "colormatchprimary")
 				{
-					$matchJS = "matchColors(this.value)";
+					$matchJS = "matchColors(this.value);";
 				}
 				
-				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); $matchJS;\">&nbsp;";
+				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
 			case "hip":

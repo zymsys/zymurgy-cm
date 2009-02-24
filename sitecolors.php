@@ -182,8 +182,11 @@
 		return v;
 	}
 
-	function matchColors(newPrimary)
+	function matchColors(newPrimary) //, controlName)
 	{
+		// If this event is not firing for the primary color, abort
+		// if(controlName !== "color0") return;
+		
 		// hex2num is included by InputWidget as part of the preText for 
 		// the YUI color picker inputspec
 		rgb = hex2num(newPrimary);
@@ -336,10 +339,14 @@
 
 	function updateColor(colorName, clr)
 	{
-		hexValue = GetHexValueForRGB(clr);		
-		
-		updateSwatch("swatch" + colorName, hexValue);
-		document.getElementById(colorName).value = hexValue;
+		if(!(document.getElementById(colorName + "locked"))
+			|| !(document.getElementById(colorName + "locked").checked))
+		{
+			hexValue = GetHexValueForRGB(clr);		
+			
+			updateSwatch("swatch" + colorName, hexValue);
+			document.getElementById(colorName).value = hexValue;			
+		}
 	}
 
 	function GetHexValueForRGB(clr)
@@ -394,55 +401,63 @@
 </script>
 
 <?php
+	$iw = new InputWidget();
 	
 	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\" enctype=\"multipart/form-data\"><table>\r\n";
 	
 	echo "<tr><td valign=\"top\"><table>";
 	
 	echo "<tr><td align=\"right\">Primary Color:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("colormatchprimary","color0","FFFFFF");
 	echo "</td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Primary Header Background:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color1","D9D9D9");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color1locked", "");
+	echo "<label for=\"color1locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Primary Header/Link Foreground:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color2","B3B3B3");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color2locked", "");
+	echo "<label for=\"color2locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Secondary Header Background:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color3","FFFFFF");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color3locked", "");
+	echo "<label for=\"color3locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Visited Link Foreground:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color4","D9D9D9");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color4locked", "");
+	echo "<label for=\"color4locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Secondary Header Foreground:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color5","B3B3B3");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color5locked", "");
+	echo "<label for=\"color5locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">(unused):</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color6","000000");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color6locked", "");
+	echo "<label for=\"color6locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Page Background:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color7","FFFFFF");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color7locked", "");
+	echo "<label for=\"color7locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td align=\"right\">Text Color:</td><td>";
-	$iw = new InputWidget();
 	$iw->Render("color","color8","000000");
-	echo "</td></tr>\r\n";
+	echo(" ");
+	$iw->Render("checkbox.", "color8locked", "");
+	echo "<label for=\"color8locked\">Locked</label></td></tr>\r\n";
 	
 	echo "<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Save\"></td></tr>\r\n";
 	
