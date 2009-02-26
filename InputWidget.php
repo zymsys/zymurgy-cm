@@ -7,6 +7,9 @@ OOP support and my code can meet in the middle.
 
 Now I require PHP5 and the oop is good, but I still need to come back to this to "fix" it.
 */
+
+require_once("include/colorpicker.php");
+
 class InputWidget
 {
 	var $fck = array();
@@ -163,180 +166,10 @@ class InputWidget
 					Zymurgy::YUI("utilities/utilities.js").
 					Zymurgy::YUI("container/container-min.js").
 					Zymurgy::YUI("slider/slider-min.js").
-					Zymurgy::YUI("colorpicker/colorpicker-min.js").'
-<script type="text/javascript">
-var colourPicker;
-var colourPickerDlg;
-
-function showColourPicker(editorId,swatchId) {
-	var editor = document.getElementById(editorId);
-	var colour = editor.value;
-	var r = parseInt(colour.substr(0,2),16);
-	var g = parseInt(colour.substr(2,2),16);
-	var b = parseInt(colour.substr(4,2),16);
-	colourPicker.setValue(new Array(r,g,b),true);
-	colourPickerDlg.cpEditor = editor;
-	colourPickerDlg.cpSwatch = swatchId;
-	colourPickerDlg.show();
-}
-
-YAHOO.namespace("zymurgy.colorpicker")
-YAHOO.zymurgy.colorpicker.inDialog = function() {
-	var Event=YAHOO.util.Event,
-		Dom=YAHOO.util.Dom,
-		lang=YAHOO.lang;
-	
-	return {
-        init: function() {
-            this.dialog = new YAHOO.widget.Dialog("yui-picker-panel", { 
-				width : "370px",
-				close: true,
-				fixedcenter : true,
-				visible : false, 
-				constraintoviewport : true,
-				postmethod: "manual",
-				buttons : [ { text:"Submit", handler:this.handleSubmit, isDefault:true },
-							{ text:"Cancel", handler:this.handleCancel } ]
-             });
-            this.dialog.renderEvent.subscribe(function() {
-				if (!this.picker) {
-					var pickerOptions = {
-						container: this.dialog,
-						showhexcontrols: true,
-						images: {
-							PICKER_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/picker_thumb.png",
-							HUE_THUMB: "'.Zymurgy::YUIBaseURL().'colorpicker/assets/hue_thumb.png"
-						}
-					};
-					var el = document.getElementById("yui-picker");
-					this.picker = new YAHOO.widget.ColorPicker(el,pickerOptions);
-					colourPicker = this.picker;
-					this.picker.on("rgbChange", function(o) {				
-						// alert(colourPickerDlg.cpEditor.name);
-						colourPickerDlg.cpEditor.value = this.get("hex");
-									
-						if(typeof matchColors == "function" && colourPickerDlg.cpEditor.name == "color0")
-						{						
-							// alert(this.get("hex"));
-							matchColors(this.get("hex"));
-						}
-						
-						if(typeof UpdatePreview == "function")
-						{
-							UpdatePreview();
-						}
-					});
-				}
-			});	
-            this.dialog.validate = function() {
-				return true;
-            };
-            this.dialog.callback = { success: this.handleSuccess, thisfailure: this.handleFailure };
-            this.dialog.render();
-            colourPickerDlg = this.dialog;
-		},
-		handleSubmit: function() {
-			var hex = document.getElementById(this.picker.ID.HEX);
-			this.cpEditor.value = hex.value;
-			YAHOO.util.Dom.setStyle([this.cpSwatch],"backgroundColor","#"+hex.value);
-			
-			if(typeof matchColors == "function" && colourPickerDlg.cpEditor.name == "color0")
-			{						
-				matchColors(hex.value);
-			}
-			
-			this.submit();
-			
-			if(typeof UpdatePreview == "function")
-			{
-				UpdatePreview();
-			}
-			
-			// alert(this.cpEditor.name);
-			
-			if(document.getElementById(this.cpEditor.name + "locked"))
-			{
-				document.getElementById(this.cpEditor.name + "locked").checked = true;
-			}
-		},
-		handleCancel: function() {
-			this.cpEditor.value = rgbToHex(
-				YAHOO.util.Dom.getStyle([this.cpSwatch], "backgroundColor"));
-			
-			if(typeof UpdatePreview == "function")
-			{
-				UpdatePreview();
-			}
-			
-			this.cancel();
-		},
-		handleSuccess: function(o) {
-		},
-		handleFailure: function(o) {
-		}
-	}
-}();
-
-YAHOO.util.Event.onDOMReady(YAHOO.zymurgy.colorpicker.inDialog.init, YAHOO.zymurgy.colorpicker.inDialog, true);
-
-function updateSwatch(swatchName, newValue)
-{
-	YAHOO.util.Dom.setStyle(swatchName, "backgroundColor", "#"+newValue);
-}
-//Convert a hex value to its decimal value - the inputted hex must be in the
-//	format of a hex triplet - the kind we use for HTML colours. The function
-//	will return an array with three values.
-
-function hex2num(hex) {
-	if(hex.charAt(0) == "#") hex = hex.slice(1); //Remove the # char - if there is one.
-	hex = hex.toUpperCase();
-	var hex_alphabets = "0123456789ABCDEF";
-	var value = new Array(3);
-	var k = 0;
-	var int1,int2;
-	for(var i=0;i<6;i+=2) {
-		int1 = hex_alphabets.indexOf(hex.charAt(i));
-		int2 = hex_alphabets.indexOf(hex.charAt(i+1)); 
-		value[k] = (int1 * 16) + int2;
-		k++;
-	}
-	return(value);
-}
-function rgbToHex(rgbval){
-  var s = rgbval.toString().match(/rgb\s*\x28((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*,\s*((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*,\s*((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*\x29/);
-  if(s){
-    s=s.splice(1);
-    if(s && s.length==3){
-        d="";
-
-        for(i in s){
-            e=parseInt(s[i],10).toString(16);
-            if(e.length == 1){
-              e == "0" ? d+="00" : d+= ("0" + e);
-            }else{
-              d+=e;
-
-            }
-        } return d;
-    }else{
-      return rgbval;
-    }
-  }else{
-
-    return rgbval;
-  }
-}
-</script>
-<div id="yui-picker-panel" class="yui-picker-panel">
-	<div class="hd">Please choose a color:</div>
-	<div class="bd">
-		<form name="yui-picker-form" id="yui-picker-form">
-		<div class="yui-picker" id="yui-picker"></div>
-		</form>
-	</div>
-	<div class="ft"></div>
-</div>
-';
+					Zymurgy::YUI("colorpicker/colorpicker-min.js").
+					ColorPicker_JavaScript().
+					ColorPicker_DialogHTML();
+					
 				break;
 		}
 		return '';
@@ -394,24 +227,23 @@ passThroughFormSubmit = false;
 				echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
+				
 			case "password":
 				echo "<input type=\"password\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
-			/*case "colour":
-			case "color":
-				echo "<input type=\"text\" size=\"7\" maxlength=\"7\" name=\"".
-					"$name\" value=\"$value\" />";
-				break;*/
+			
 			case "checkbox":
 				echo "<input type=\"checkbox\" id=\"$name\" name=\"$name\"";
 				if (($ep[1]=='checked') || ($value!='')) echo " checked=\"checked\"";
 				echo " />";
 				break;
+				
 			case "textarea":
 				echo "<textarea id=\"$name\" name=\"".
 					"$name\" rows=\"{$ep[2]}\" cols=\"{$ep[1]}\">$value</textarea>";
 				break;
+				
 			case "money":
 				$m = $value;
 				if ($this->UsePennies)
@@ -419,12 +251,14 @@ passThroughFormSubmit = false;
 				$m = '$'.number_format($m,2,'.',',');
 				echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 				break;
+				
 			case "inputspec":
 				require_once(Zymurgy::$root."/zymurgy/include/inputspec.php");
 				echo "<script>makeInputSpecifier('".
 					str_replace("'","\'",$name)."','".
 					str_replace("'","\'",$value)."');</script>";
 				break;
+				
 			case "radio":
 				$rp = $ep;
 				array_shift($rp);
@@ -436,6 +270,7 @@ passThroughFormSubmit = false;
 					echo " />$rcaption</label><br />\r\n";
 				}
 				break;
+				
 			case "drop":
 				$rp = $ep;
 				array_shift($rp);
@@ -449,11 +284,13 @@ passThroughFormSubmit = false;
 				}
 				echo "</select>\r\n";
 				break;
+				
 			case "time":
 				$value = date("g:i a",strtotime($value));
 				echo "<input type=\"text\" size=\"8\" maxlength=\"8\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" /> <i>hh:mm am/pm</i>";
 				break;
+				
 			case "unixdate":
 			case "date":
 				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
@@ -488,6 +325,7 @@ passThroughFormSubmit = false;
 		                 'value'       => strftime('%Y-%m-%d', $date)));		                 
 		                 
 				break;
+				
 			case "unixdatetime":
 			case "datetime":
 				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
@@ -509,9 +347,11 @@ passThroughFormSubmit = false;
 		                 'name'        => $name,
 		                 'value'       => strftime('%Y-%m-%d [%I:%M %p]', $date)));
 				break;
+				
 			case "lookup":
 				echo $this->lookups[$ep[1]]->RenderDropList($name,$value);
 				break;
+				
 			case "image":
 				array_shift($ep); //Remove type
 				$ep = explode(',',implode('.',$ep)); //Re-explode on ,
@@ -530,9 +370,11 @@ passThroughFormSubmit = false;
 				}
 				echo "<table><tr><td valign=\"center\"><input type=\"file\" id=\"$name\" name=\"$name\" /></td><td>".implode($thumbs,"</td><td>")."</td></tr></table>";
 				break;
+				
 			case "attachment":
 				echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
 				break;
+				
 			case "yuihtml":
 				echo Zymurgy::YUI("assets/skins/sam/skin.css");
 				echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
@@ -593,6 +435,7 @@ passThroughFormSubmit = false;
 				<?
 				
 				break;
+				
 			case "html":
 				require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
 				$fck = new FCKeditor($name);
@@ -604,19 +447,16 @@ passThroughFormSubmit = false;
 				$fck->Config['EditorAreaCSS'] = $this->fckeditorcss;
 				$fck->Create();
 				break;
+				
 			case "colour":
 			case "color":
-			case "colormatchprimary":
+			case "color":
 				$matchJS = "";
-				
-				if($ep[0] == "colormatchprimary")
-				{
-					$matchJS = "matchColors(this.value);";
-				}
 				
 				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
+
 			case "hip":
 				switch ($ep[1])
 				{

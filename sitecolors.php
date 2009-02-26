@@ -3,8 +3,8 @@
 	
 	$breadcrumbTrail = "Site Colors";	
 
-	include('header.php');
-	include('datagrid.php');
+	require_once('header.php');
+	require_once('datagrid.php');
 	require_once('InputWidget.php');
 	
 	echo InputWidget::GetPretext("color.");
@@ -378,10 +378,9 @@
 			primaryColorPicker = new YAHOO.widget.ColorPicker(
 				"primaryColorContainer",
 				{
-					showhsvcontrols: false,
+					showhsvcontrols: true,
 					showhexcontrols: false,
-					showwebsafe: false,
-					
+					showwebsafe: false,					
 					images: 
 					{
 						PICKER_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/picker_thumb.png",
