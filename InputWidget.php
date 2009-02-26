@@ -171,6 +171,11 @@ class InputWidget
 					ColorPicker_DialogHTML();
 					
 				break;
+				
+			case "theme":
+				return Theme_JavaScript();
+				
+				break;
 		}
 		return '';
 	}
@@ -457,6 +462,12 @@ passThroughFormSubmit = false;
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
 
+			case "theme":
+				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"$value\">";
+				echo "<input type=\"button\" onClick=\"OpenThemeWindow('$name');\" value=\"View theme...\">";
+				
+				break;
+				
 			case "hip":
 				switch ($ep[1])
 				{

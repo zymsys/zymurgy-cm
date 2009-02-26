@@ -1,9 +1,14 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+	<HEAD>
+		<TITLE>Edit Color Theme</TITLE>
 <?php
 	ini_set("display_errors", 1);
 	
 	$breadcrumbTrail = "Site Colors";	
 
-	require_once('header.php');
+	// require_once('header.php');
+	require_once("cmo.php");
 	require_once('datagrid.php');
 	require_once('InputWidget.php');
 	
@@ -19,6 +24,8 @@
 	$sampleHTML = str_replace("\r\n", "", $sampleHTML);
 	$sampleHTML = str_replace("\n", "", $sampleHTML);
 	$sampleHTML = str_replace("\t", "", $sampleHTML);
+	
+	$iw = new InputWidget();
 ?>
 
 <script language="javascript" type="text/javascript">
@@ -356,111 +363,203 @@
 		}
 	}
 	
-	YAHOO.util.Event.on(window, "load", UpdatePreview);
-</script>
-
-<?php
-	$iw = new InputWidget();
+	var primaryColorPicker;
 	
-	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\" enctype=\"multipart/form-data\"><table>\r\n";
-	
-	echo "<tr><td valign=\"top\"><table>";
-	 
-	echo "<tr><td colspan=\"2\">";
-	echo "<input type=\"hidden\" name=\"color0\" onChange=\"if(typeof UpdatePreview == 'function') { UpdatePreview(); }; matchColors(this.value);\" value=\"B5B5FF\">";
-	echo "<div id=\"primaryColorContainer\" style=\"position: relative; width: 350px; height:200px;\"></div>";
-	echo "<script type=\"text/javascript\">";
-?>
-	(function() {
-		var primaryColorPicker;
-		
-		function createPrimaryColorPicker() {
-			primaryColorPicker = new YAHOO.widget.ColorPicker(
-				"primaryColorContainer",
+	function createPrimaryColorPicker() {
+		primaryColorPicker = new YAHOO.widget.ColorPicker(
+			"primaryColorContainer",
+			{
+				showhsvcontrols: false,
+				showhexcontrols: true,
+				showwebsafe: false,					
+				images: 
 				{
-					showhsvcontrols: true,
-					showhexcontrols: false,
-					showwebsafe: false,					
-					images: 
-					{
-						PICKER_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/picker_thumb.png",
-						HUE_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/hue_thumb.png"
-					}
+					PICKER_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/picker_thumb.png",
+					HUE_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/hue_thumb.png"
 				}
-			);
+			}
+		);
+		
+		primaryColorPicker.setValue(
+			hex2num(document.getElementById("color0").value),
+			true);
+					
+		primaryColorPicker.on("rgbChange", function(o) {	
+			document.getElementById("color0").value = this.get("hex");
+			matchColors(this.get("hex"));			
+			UpdatePreview();
+		});
+	}
+		
+	function SaveTheme()
+	{
+		var newTheme = "";
+		
+		for(cntr = 0; cntr <= 6; cntr++)
+		{
+			colorLabel = "color" + cntr;
 			
-			primaryColorPicker.setValue(hex2num("B5B5FF"));
+			if(document.getElementById(colorLabel + "locked")
+				&& document.getElementById(colorLabel + "locked").checked)
+			{
+				newTheme = newTheme + ",L";				
+			}
+			else
+			{
+				newTheme = newTheme + ",#";
+			}
 			
-			primaryColorPicker.on("rgbChange", function(o) {				
-				// alert(colourPickerDlg.cpEditor.name);
-							
-				if(typeof matchColors == "function")
-				{						
-					// alert(this.get("hex"));
-					matchColors(this.get("hex"));
-					UpdatePreview();
-				}
-			});
+			// alert(document.getElementById);
+			// alert(document.getElementById("color" + cntr));
+
+			newTheme = newTheme + document.getElementById(colorLabel).value;		
 		}
 		
-		YAHOO.util.Event.onDOMReady(createPrimaryColorPicker);		
-	})();
-<?php 
-	echo "</script>";
-	echo "</td></tr>\r\n";
-
+		themeControl = window.opener.document.getElementById(
+			document.getElementById("themeControl").value);
+		
+		// alert(themeControl.value);
+		// alert(newTheme.substring(1));			
+		themeControl.value = newTheme.substring(1);
+		// alert(themeControl.value);
+			
+		window.close();
+	}
 	
-	// echo "<tr><td align=\"right\">Primary Color:</td><td>";
-	// $iw->Render("colormatchprimary","color0","B5B5FF");
-	// echo "</td></tr>\r\n";
+	function LoadTheme()
+	{
+		var theme = window.opener.document.getElementById(
+			document.getElementById("themeControl").value).value;
+			
+		if(theme !== '')
+		{
+			var clrs = theme.split(",");
+			
+			// alert(clrs[1]);
+			
+			for(cntr = 0; cntr <= 6; cntr++)
+			{
+				colorLabel = "color" + cntr;
+				// alert(colorLabel);
+				
+				var locked = clrs[cntr].substring(0, 1);
+				var hex = clrs[cntr].substring(1);
+				
+				// alert("Locked:" + locked + "\nHex: " + hex);
+							
+				if(locked == "L")
+				{
+					document.getElementById(colorLabel + "locked").checked = true;
+				}
+				
+				document.getElementById(colorLabel).value = hex;			
+				updateSwatch('swatch' + colorLabel, hex);
+				
+				// alert("whee");
+			}	
+		}
+		
+		createPrimaryColorPicker();
+		
+		UpdatePreview();
+	}
 	
-	// echo("<tr><td>&nbsp;</td></tr>");
+	function LoadTheme_Timer()
+	{
+		setTimeout("LoadTheme();", 250);
+	}
 	
-	echo "<tr><td align=\"right\">Header Background:</td><td>";
-	$iw->Render("color","color1","B5B5FF");
-	echo(" ");
-	$iw->Render("checkbox.", "color1locked", "");
-	echo "<label for=\"color1locked\">Locked</label></td></tr>\r\n";
-	
-	echo "<tr><td align=\"right\">Menu Background:</td><td>";
-	$iw->Render("color","color2","7F7FB3");
-	echo(" ");
-	$iw->Render("checkbox.", "color2locked", "");
-	echo "<label for=\"color2locked\">Locked</label></td></tr>\r\n";
-	
-	echo "<tr><td align=\"right\">Menu Highlight:</td><td>";
-	$iw->Render("color","color3","9A9AD9");
-	echo(" ");
-	$iw->Render("checkbox.", "color3locked", "");
-	echo "<label for=\"color3locked\">Locked</label></td></tr>\r\n";
-	
-	echo("<tr><td>&nbsp;</td></tr>");
-	
-	echo "<tr><td align=\"right\">Page Background:</td><td>";
-	$iw->Render("color","color4","FFFFFF");
-	echo(" ");
-	$iw->Render("checkbox.", "color4locked", "");
-	echo "<label for=\"color4locked\">Locked</label></td></tr>\r\n";
-	
-	echo "<tr><td align=\"right\">Text Color:</td><td>";
-	$iw->Render("color","color5","000000");
-	echo(" ");
-	$iw->Render("checkbox.", "color5locked", "");
-	echo "<label for=\"color5locked\">Locked</label></td></tr>\r\n";
-	
-	echo "<tr><td align=\"right\">Link Color:</td><td>";
-	$iw->Render("color","color6","6037B3");
-	echo(" ");
-	$iw->Render("checkbox.", "color6locked", "");
-	echo "<label for=\"color6locked\">Locked</label></td></tr>\r\n";
-	
-	echo("<tr><td>&nbsp;</td></tr>");	
-	
-	echo "<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Save\"></td></tr>\r\n";
-	
-	echo "</table></td><td valign=\"top\">";
-	
-	echo "<iframe id=\"preview\" height=\"380\" width=\"440\"/>\r\n";
-	
-	echo "</td></tr></table></form>\n\n";	
-?>
+	YAHOO.util.Event.onDOMReady(LoadTheme_Timer);	
+</script>
+	</HEAD>
+	<BODY>
+		<form method="post" action="<?= $_SERVER['REQUEST_URI'] ?>" enctype="multipart/form-data">
+			<input type="hidden" name="themeControl" id="themeControl" value="<?= $_GET['themeControl'] ?>">
+			<input type="hidden" name="color0" id="color0" value="B5B5FF">
+			<table>
+				<tr>
+					<td valign="top">
+						<table>
+							<tr>
+								<td colspan="2">
+									
+									<div id="primaryColorContainer" style="position: relative; width: 350px; height:200px;"></div>
+								</td>
+							</tr>
+							<tr>
+								<td align="right">Header Background:</td>
+								<td>
+									<? 
+										$iw->Render("color","color1","B5B5FF");
+										echo(" ");
+										$iw->Render("checkbox.", "color1locked", ""); ?><label for=\"color1locked\">Locked</label>
+								</td>								
+							</tr>
+							<tr>
+								<td align="right">Menu Background:</td>
+								<td>
+									<? 
+										$iw->Render("color","color2","7F7FB3");
+										echo(" ");
+										$iw->Render("checkbox.", "color2locked", ""); ?><label for=\"color2locked\">Locked</label>
+								</td>								
+							</tr>
+							<tr>
+								<td align="right">Menu Highlight:</td>
+								<td>
+									<? 
+										$iw->Render("color","color3","9A9AD9");
+										echo(" ");
+										$iw->Render("checkbox.", "color3locked", ""); ?><label for=\"color3locked\">Locked</label>
+								</td>								
+							</tr>
+							<tr>
+								<td colspan="2">&nbsp;</td>
+							</tr>
+							<tr>
+								<td align="right">Page Background:</td>
+								<td>
+									<? 
+										$iw->Render("color","color4","FFFFFF");
+										echo(" ");
+										$iw->Render("checkbox.", "color4locked", ""); ?><label for=\"color4locked\">Locked</label>
+								</td>								
+							</tr>
+							<tr>
+								<td align="right">Text Color:</td>
+								<td>
+									<? 
+										$iw->Render("color","color5","000000");
+										echo(" ");
+										$iw->Render("checkbox.", "color5locked", ""); ?><label for=\"color5locked\">Locked</label>
+								</td>								
+							</tr>
+							<tr>
+								<td align="right">Link Color:</td>
+								<td>
+									<? 
+										$iw->Render("color","color6","6037B3");
+										echo(" ");
+										$iw->Render("checkbox.", "color6locked", ""); ?><label for=\"color6locked\">Locked</label>
+								</td>								
+							</tr>
+						</table>
+					</td>
+					<td valign="top">
+						<iframe id="preview" height="380" width="440">
+						</iframe>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">&nbsp;</td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center">
+						<input type="button" value="Save" onClick="SaveTheme();">
+						<input type="button" value="Cancel" onClick="window.close();">
+					</td>
+				</tr>
+			</table>
+		</form>
+	</BODY>
+</HTML>

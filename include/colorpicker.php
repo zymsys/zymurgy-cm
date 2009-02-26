@@ -116,7 +116,7 @@
             this.dialog = new YAHOO.widget.Dialog("yui-picker-panel", { 
 				width : "370px",
 				close: true,
-				fixedcenter : true,
+				fixedcenter : false,
 				visible : false, 
 				constraintoviewport : true,
 				postmethod: "manual",
@@ -223,6 +223,20 @@
 			</div>
 			<div class="ft"></div>
 		</div>
+		';
+	}
+	
+	function Theme_JavaScript()
+	{
+		return '
+			<script type="text/javascript">
+				function OpenThemeWindow(control) {
+					themeWindow = window.open(
+						"/zymurgy/sitecolors.php?themeControl=" + control, 
+						"themeWindow", 
+						"status=0,toolbar=0,width=840,height=450");
+				}
+			</script>
 		';
 	}
 ?>
