@@ -189,7 +189,7 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 	return {
         init: function() {
             this.dialog = new YAHOO.widget.Dialog("yui-picker-panel", { 
-				width : "500px",
+				width : "370px",
 				close: true,
 				fixedcenter : true,
 				visible : false, 
@@ -213,11 +213,16 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 					colourPicker = this.picker;
 					this.picker.on("rgbChange", function(o) {				
 						// alert(colourPickerDlg.cpEditor.name);
+						colourPickerDlg.cpEditor.value = this.get("hex");
 									
 						if(typeof matchColors == "function" && colourPickerDlg.cpEditor.name == "color0")
 						{						
 							// alert(this.get("hex"));
 							matchColors(this.get("hex"));
+						}
+						
+						if(typeof UpdatePreview == "function")
+						{
 							UpdatePreview();
 						}
 					});
@@ -255,6 +260,14 @@ YAHOO.zymurgy.colorpicker.inDialog = function() {
 			}
 		},
 		handleCancel: function() {
+			this.cpEditor.value = rgbToHex(
+				YAHOO.util.Dom.getStyle([this.cpSwatch], "backgroundColor"));
+			
+			if(typeof UpdatePreview == "function")
+			{
+				UpdatePreview();
+			}
+			
 			this.cancel();
 		},
 		handleSuccess: function(o) {
@@ -288,6 +301,30 @@ function hex2num(hex) {
 		k++;
 	}
 	return(value);
+}
+function rgbToHex(rgbval){
+  var s = rgbval.toString().match(/rgb\s*\x28((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*,\s*((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*,\s*((?:25[0-5])|(?:2[0-4]\d)|(?:[01]?\d?\d))\s*\x29/);
+  if(s){
+    s=s.splice(1);
+    if(s && s.length==3){
+        d="";
+
+        for(i in s){
+            e=parseInt(s[i],10).toString(16);
+            if(e.length == 1){
+              e == "0" ? d+="00" : d+= ("0" + e);
+            }else{
+              d+=e;
+
+            }
+        } return d;
+    }else{
+      return rgbval;
+    }
+  }else{
+
+    return rgbval;
+  }
 }
 </script>
 <div id="yui-picker-panel" class="yui-picker-panel">

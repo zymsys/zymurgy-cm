@@ -11,7 +11,7 @@
 	
 	$sampleHTML = @file_get_contents(Zymurgy::$root."/zymurgy/config/colorsample.html");
 	
-	if($sampleHTML !== "")
+	if($sampleHTML == "")
 	{
 		$sampleHTML = @file_get_contents(Zymurgy::$root."/zymurgy/include/colorsample.html");
 	}
@@ -182,11 +182,8 @@
 		return v;
 	}
 
-	function matchColors(newPrimary) //, controlName)
+	function matchColors(newPrimary)
 	{
-		// If this event is not firing for the primary color, abort
-		// if(controlName !== "color0") return;
-		
 		// hex2num is included by InputWidget as part of the preText for 
 		// the YUI color picker inputspec
 		rgb = hex2num(newPrimary);
@@ -197,7 +194,8 @@
 		
 		primaryColor = GetHueAndSaturationFromRGB(primaryColor);
 		
-		z = newColor();
+		updateColor("color1", primaryColor);
+		
 		y = newColor();
 		yx = newColor();
 		p = newColor();
@@ -210,96 +208,57 @@
 		p.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		
 		p = GetRGBFromHueAndSaturation(p);
-		updateColor("color1", p);
+		updateColor("color3", p);
 		
 		y = GetRGBFromHueAndSaturation(y);
 		updateColor("color2", y);
 		
 		if(primaryColor.hue < 30)
 		{
-			pr.hue = yx.hue = y.hue = primaryColor.hue + 20;
-			pr.saturation = yx.saturation = y.saturation = primaryColor.saturation;
-			y.luminosity = primaryColor.luminosity;
-			
+			yx.hue =primaryColor.hue + 20;
+			yx.saturation = primaryColor.saturation;			
 			yx.luminosity = AdjustLuminosity(primaryColor.luminosity, -30, 70);
-			pr.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		}
 		else if(primaryColor.hue < 60)
 		{
-			pr.hue = yx.hue = y.hue = primaryColor.hue + 150;
-			y.saturation = rc(primaryColor.saturation - 30, 100);
-			y.luminosity = rc(primaryColor.luminosity - 20, 100);
-			pr.saturation = yx.saturation = rc(primaryColor.saturation - 70, 100);
+			yx.hue = primaryColor.hue + 150;
+			yx.saturation = rc(primaryColor.saturation - 70, 100);
 			yx.luminosity = rc(primaryColor.luminosity + 20, 100);
-			pr.luminosity = primaryColor.luminosity;			
 		}
 		else if(primaryColor.hue < 180)
 		{
-			pr.hue = yx.hue = y.hue = primaryColor.hue - 40;
-			pr.saturation = yx.saturation = y.saturation = primaryColor.saturation;
-			y.luminosity = primaryColor.luminosity;
-			
+			yx.hue = primaryColor.hue - 40;
+			yx.saturation = primaryColor.saturation;
 			yx.luminosity = AdjustLuminosity(primaryColor.luminosity, -30, 70);
-			pr.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		}
 		else if(primaryColor.hue < 220)
 		{
-			pr.hue = yx.hue = primaryColor.hue - 170;
-			y.hue = primaryColor.hue - 160;
-			pr.saturation = yx.saturation = y.saturation =  primaryColor.saturation;
-			y.luminosity = primaryColor.luminosity;
-			
+			yx.hue = primaryColor.hue - 170;
+			yx.saturation = primaryColor.saturation;
 			yx.luminosity = AdjustLuminosity(primaryColor.luminosity, -30, 70);
-			pr.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		}
 		else if (primaryColor < 300)
 		{
-			pr.hue = yx.hue = y.hue = primaryColor.hue;
-			pr.saturation = yx.saturation = y.saturation = rc(primaryColor.saturation - 60, 100);
-			y.luminosity = primaryColor.luminosity;
-			
+			yx.hue = primaryColor.hue;
+			yx.saturation = rc(primaryColor.saturation - 60, 100);
 			yx.luminosity = AdjustLuminosity(primaryColor.luminosity, -30, 70);
-			pr.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		}
 		else
 		{
-			pr.hue = yx.hue = y.hue = (primaryColor.hue + 20) % 360;
-			
-			if(primaryColor.saturation > 50)
-			{
-				pr.saturation = yx.saturation = y.saturation = primaryColor.saturation - 40;
-			}
-			else
-			{
-				pr.saturation = yx.saturation = y.saturation = primaryColor.saturation + 40;
-			}
-			
-			y.luminosity = primaryColor.luminosity;
-
+			yx.hue = (primaryColor.hue + 20) % 360;
+			yx.saturation = AdjustLuminosity(primaryColor.saturation, -40, 50);
 			yx.luminosity = AdjustLuminosity(primaryColor.luminosity, -30, 70);
-			pr.luminosity = AdjustLuminosity(primaryColor.luminosity, -15, 70);
 		}
 		
-		z = GetRGBFromHueAndSaturation(y);
-		updateColor("color3", z);
-		
-		z = GetRGBFromHueAndSaturation(yx);
-		updateColor("color5", z);
+		yx = GetRGBFromHueAndSaturation(yx);
+		updateColor("color6", yx);
 		
 		y.hue = 0;
-		y.saturation = 0;
-		y.luminosity = 100 - primaryColor.luminosity;
-		
-		z = GetRGBFromHueAndSaturation(y);
-		updateColor("color6", z);
-		
+		y.saturation = 0;		
 		y.luminosity = primaryColor.luminosity;
 		
-		z = GetRGBFromHueAndSaturation(y);
-		updateColor("color7", z);
-		
-		z = GetRGBFromHueAndSaturation(pr);
-		updateColor("color4", z);
+		y = GetRGBFromHueAndSaturation(y);
+		updateColor("color4", y);
 		
 		if(primaryColor.luminosity >= 50)
 		{
@@ -310,8 +269,8 @@
 			y.luminosity = 100;
 		}
 		
-		z = GetRGBFromHueAndSaturation(y);
-		updateColor("color8", z);
+		y = GetRGBFromHueAndSaturation(y);
+		updateColor("color5", y);
 		
 		UpdatePreview();
 	}
@@ -377,7 +336,7 @@
 		{
 			newContent = sampleHTML;
 			
-			for(cntr = 1; cntr <= 8; cntr++)
+			for(cntr = 0; cntr <= 6; cntr++)
 			{
 				while(newContent.indexOf("color" + cntr + "_background") >= 0
 					|| newContent.indexOf("color" + cntr + "_foreground") >= 0)
@@ -406,64 +365,103 @@
 	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\" enctype=\"multipart/form-data\"><table>\r\n";
 	
 	echo "<tr><td valign=\"top\"><table>";
-	
-	echo "<tr><td align=\"right\">Primary Color:</td><td>";
-	$iw->Render("colormatchprimary","color0","FFFFFF");
+	 
+	echo "<tr><td colspan=\"2\">";
+	echo "<input type=\"hidden\" name=\"color0\" onChange=\"if(typeof UpdatePreview == 'function') { UpdatePreview(); }; matchColors(this.value);\" value=\"B5B5FF\">";
+	echo "<div id=\"primaryColorContainer\" style=\"position: relative; width: 350px; height:200px;\"></div>";
+	echo "<script type=\"text/javascript\">";
+?>
+	(function() {
+		var primaryColorPicker;
+		
+		function createPrimaryColorPicker() {
+			primaryColorPicker = new YAHOO.widget.ColorPicker(
+				"primaryColorContainer",
+				{
+					showhsvcontrols: false,
+					showhexcontrols: false,
+					showwebsafe: false,
+					
+					images: 
+					{
+						PICKER_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/picker_thumb.png",
+						HUE_THUMB: "<?= Zymurgy::YUIBaseURL() ?>colorpicker/assets/hue_thumb.png"
+					}
+				}
+			);
+			
+			primaryColorPicker.setValue(hex2num("B5B5FF"));
+			
+			primaryColorPicker.on("rgbChange", function(o) {				
+				// alert(colourPickerDlg.cpEditor.name);
+							
+				if(typeof matchColors == "function")
+				{						
+					// alert(this.get("hex"));
+					matchColors(this.get("hex"));
+					UpdatePreview();
+				}
+			});
+		}
+		
+		YAHOO.util.Event.onDOMReady(createPrimaryColorPicker);		
+	})();
+<?php 
+	echo "</script>";
 	echo "</td></tr>\r\n";
+
 	
-	echo "<tr><td align=\"right\">Primary Header Background:</td><td>";
-	$iw->Render("color","color1","D9D9D9");
+	// echo "<tr><td align=\"right\">Primary Color:</td><td>";
+	// $iw->Render("colormatchprimary","color0","B5B5FF");
+	// echo "</td></tr>\r\n";
+	
+	// echo("<tr><td>&nbsp;</td></tr>");
+	
+	echo "<tr><td align=\"right\">Header Background:</td><td>";
+	$iw->Render("color","color1","B5B5FF");
 	echo(" ");
 	$iw->Render("checkbox.", "color1locked", "");
 	echo "<label for=\"color1locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">Primary Header/Link Foreground:</td><td>";
-	$iw->Render("color","color2","B3B3B3");
+	echo "<tr><td align=\"right\">Menu Background:</td><td>";
+	$iw->Render("color","color2","7F7FB3");
 	echo(" ");
 	$iw->Render("checkbox.", "color2locked", "");
 	echo "<label for=\"color2locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">Secondary Header Background:</td><td>";
-	$iw->Render("color","color3","FFFFFF");
+	echo "<tr><td align=\"right\">Menu Highlight:</td><td>";
+	$iw->Render("color","color3","9A9AD9");
 	echo(" ");
 	$iw->Render("checkbox.", "color3locked", "");
 	echo "<label for=\"color3locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">Visited Link Foreground:</td><td>";
-	$iw->Render("color","color4","D9D9D9");
+	echo("<tr><td>&nbsp;</td></tr>");
+	
+	echo "<tr><td align=\"right\">Page Background:</td><td>";
+	$iw->Render("color","color4","FFFFFF");
 	echo(" ");
 	$iw->Render("checkbox.", "color4locked", "");
 	echo "<label for=\"color4locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">Secondary Header Foreground:</td><td>";
-	$iw->Render("color","color5","B3B3B3");
+	echo "<tr><td align=\"right\">Text Color:</td><td>";
+	$iw->Render("color","color5","000000");
 	echo(" ");
 	$iw->Render("checkbox.", "color5locked", "");
 	echo "<label for=\"color5locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">(unused):</td><td>";
-	$iw->Render("color","color6","000000");
+	echo "<tr><td align=\"right\">Link Color:</td><td>";
+	$iw->Render("color","color6","6037B3");
 	echo(" ");
 	$iw->Render("checkbox.", "color6locked", "");
 	echo "<label for=\"color6locked\">Locked</label></td></tr>\r\n";
 	
-	echo "<tr><td align=\"right\">Page Background:</td><td>";
-	$iw->Render("color","color7","FFFFFF");
-	echo(" ");
-	$iw->Render("checkbox.", "color7locked", "");
-	echo "<label for=\"color7locked\">Locked</label></td></tr>\r\n";
-	
-	echo "<tr><td align=\"right\">Text Color:</td><td>";
-	$iw->Render("color","color8","000000");
-	echo(" ");
-	$iw->Render("checkbox.", "color8locked", "");
-	echo "<label for=\"color8locked\">Locked</label></td></tr>\r\n";
+	echo("<tr><td>&nbsp;</td></tr>");	
 	
 	echo "<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Save\"></td></tr>\r\n";
 	
 	echo "</table></td><td valign=\"top\">";
 	
-	echo "<iframe id=\"preview\" height=\"400\" width=\"400\"/>\r\n";
+	echo "<iframe id=\"preview\" height=\"380\" width=\"440\"/>\r\n";
 	
 	echo "</td></tr></table></form>\n\n";	
 ?>
