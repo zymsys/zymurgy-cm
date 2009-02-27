@@ -750,6 +750,37 @@ if (!class_exists('Zymurgy'))
 			
 			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.jpg $thumbdest/{$id}aspectcropDark.jpg");
 		}
+		
+		static function theme(
+			$index,
+			$theme)
+		{
+			if(!is_numeric($index))
+			{
+				$index = Zymurgy::$ThemeColor[$index];
+			}
+			
+			if(substr($theme, 0, 1) !== "#")
+			{
+				// $theme = "#B5B5FF,#B5B5FF,#7F7FB3,#9A9AD9,#FFFFFF,#000000,#6037B3";				
+				
+				$theme = Zymurgy::$userconfig[$theme];
+			}
+			
+			$themeColors = explode(",", $theme);			
+			$color = $themeColors[$index];
+			
+			return "#" . substr($color, 1);
+		}
+		
+		static $ThemeColor = array(
+			"Header Background" => 1,
+			"Menu Background" => 2,
+			"Menu Highlight" => 3,
+			"Page Background" => 4,
+			"Text Color" => 5,
+			"Link Color" => 6			
+		);
 	}
 		
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
@@ -757,7 +788,7 @@ if (!class_exists('Zymurgy'))
 	else 
 		Zymurgy::$root = $_SERVER['DOCUMENT_ROOT'];
 	
-	Zymurgy::$build = 1986;
+	Zymurgy::$build = 1987;
 	include(Zymurgy::$root."/zymurgy/config/config.php");
 	Zymurgy::$config = $ZymurgyConfig;
 	unset($ZymurgyConfig);
