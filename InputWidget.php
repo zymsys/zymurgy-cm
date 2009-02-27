@@ -464,7 +464,30 @@ passThroughFormSubmit = false;
 
 			case "theme":
 				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"$value\">";
-				echo "<input type=\"button\" onClick=\"OpenThemeWindow('$name');\" value=\"View theme...\">";
+				
+				$colors = explode(",", $value);
+				
+				echo "<span style=\"border: 1px solid black; padding-top: 1px; padding-bottom: 1px;\">";
+				
+				for($cntr = 1; $cntr < count($colors); $cntr++)
+				{
+					$hex = substr($colors[$cntr], 1);
+					$lockedStyle = " border: 1px solid #$hex;";
+					
+					if(substr($colors[$cntr], 0, 1) == "L")
+					{
+						$lockedStyle = " border: 1px inset black;";
+					}
+					
+					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#$hex; cursor:pointer;$lockedStyle\">&nbsp;&nbsp;&nbsp;</span>";			
+				}
+				
+				for($cntr = count($colors); $cntr <= 6; $cntr++)
+				{
+					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#FFFFFF; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";			
+				}
+				
+				echo "</span>&nbsp;<input type=\"button\" onClick=\"OpenThemeWindow('$name');\" value=\"View theme...\">";
 				
 				break;
 				

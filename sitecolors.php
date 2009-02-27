@@ -399,29 +399,46 @@
 		{
 			colorLabel = "color" + cntr;
 			
+			colorControlLabel = "swatch" + 
+				document.getElementById("themeControl").value + 
+				cntr;	
+				
+			colorControl = window.opener.document.getElementById(colorControlLabel);
+
 			if(document.getElementById(colorLabel + "locked")
 				&& document.getElementById(colorLabel + "locked").checked)
 			{
-				newTheme = newTheme + ",L";				
+				newTheme = newTheme + ",L";	
+				
+				if(colorControl)
+				{
+					colorControl.style.border = "1px inset black";
+				}
 			}
 			else
 			{
 				newTheme = newTheme + ",#";
+				
+				if(colorControl)
+				{
+					colorControl.style.border = "1px solid #" + 
+						document.getElementById(colorLabel).value;
+				}
 			}
-			
-			// alert(document.getElementById);
-			// alert(document.getElementById("color" + cntr));
 
-			newTheme = newTheme + document.getElementById(colorLabel).value;		
+			newTheme = newTheme + document.getElementById(colorLabel).value;	
+			
+			if(colorControl)
+			{
+				colorControl.style.backgroundColor = "#" + 
+					document.getElementById(colorLabel).value;				
+			}
 		}
 		
 		themeControl = window.opener.document.getElementById(
 			document.getElementById("themeControl").value);
 		
-		// alert(themeControl.value);
-		// alert(newTheme.substring(1));			
 		themeControl.value = newTheme.substring(1);
-		// alert(themeControl.value);
 			
 		window.close();
 	}
