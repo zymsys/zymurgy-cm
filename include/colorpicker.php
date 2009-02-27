@@ -38,6 +38,11 @@
 					UpdatePreview();
 				}
 				
+				if(document.getElementById("primaryColorContainer"))
+				{
+					document.getElementById("primaryColorContainer").style.visibility = "visible";
+				}
+				
 				this.cancel();
 			},
 			handleSuccess: function(o) {
@@ -152,6 +157,11 @@
 				{
 					document.getElementById(this.cpEditor.name + "locked").checked = true;
 				}
+				
+				if(document.getElementById("primaryColorContainer"))
+				{
+					document.getElementById("primaryColorContainer").style.visibility = "visible";
+				}
 			},
 		';
 	}
@@ -207,6 +217,11 @@
 				colourPickerDlg.cpEditor = editor;
 				colourPickerDlg.cpSwatch = swatchId;
 				colourPickerDlg.show();
+				
+				if(document.getElementById("primaryColorContainer"))
+				{
+					document.getElementById("primaryColorContainer").style.visibility = "hidden";
+				}
 			}
 		';
 	}
