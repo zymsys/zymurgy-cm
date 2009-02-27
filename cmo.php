@@ -32,6 +32,13 @@ if (!class_exists('Zymurgy'))
 		static $userconfig;
 		
 		/**
+		 * Site Color Theme cache.
+		 *
+		 * @var unknown_type
+		 */
+		static $colorThemes = array();
+		
+		/**
 		 * Zymurgy:CM release number
 		 *
 		 * @var int
@@ -751,24 +758,43 @@ if (!class_exists('Zymurgy'))
 			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.jpg $thumbdest/{$id}aspectcropDark.jpg");
 		}
 		
+		/**
+		 * Return a color value in #RRGGBB format, as set in a color theme.
+		 *
+		 * @param $index The index of the color within the theme, either as a 
+		 * number, or as a text value set in the $ThemeColor static array.
+		 * @param $theme The theme definition, either as a comma-delimited list
+		 * of color values, or as a reference to an item in the site config.
+		 * @return The color value.
+		 */
 		static function theme(
 			$index,
 			$theme)
 		{
+			// If the index was passed in as text, convert it to the numeric index
+			// based on the $ThemeColor static array.
 			if(!is_numeric($index))
 			{
 				$index = Zymurgy::$ThemeColor[$index];
 			}
 			
+			// If the theme was passed in hard-coded, use it as-is. Otherwise, 
+			// assume that the theme is actually a reference to an item in 
+			// the site config.
 			if(substr($theme, 0, 1) !== "#")
 			{
-				// $theme = "#B5B5FF,#B5B5FF,#7F7FB3,#9A9AD9,#FFFFFF,#000000,#6037B3";				
-				
 				$theme = Zymurgy::$userconfig[$theme];
 			}
 			
-			$themeColors = explode(",", $theme);			
-			$color = $themeColors[$index];
+			// If the theme is being used for the first time, add it to the 
+			// look-up cache. This cache is used to prevent the explode() 
+			// method from running too often.
+			if(!array_key_exists($theme, Zymurgy::$colorThemes))
+			{
+				Zymurgy::$colorThemes[$theme] = explode(",", $theme);
+			}
+			
+			$color = Zymurgy::$colorThemes[$theme][$index];
 			
 			return "#" . substr($color, 1);
 		}
