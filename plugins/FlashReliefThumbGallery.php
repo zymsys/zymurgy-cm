@@ -189,6 +189,13 @@ class FlashReliefThumbGallery extends PluginBase
 		return $js;
 	}
 	
+	function isOlder($isthis,$olderthanthis)
+	{
+		$a = stat($isthis);
+		$b = stat($olderthanthis);
+		return ($a['mtime'] < $b['mtime']);
+	}
+	
 	function RenderXML()
 	{
 		global $ZymurgyRoot;
@@ -245,12 +252,12 @@ class FlashReliefThumbGallery extends PluginBase
 				//If the source file doesn't exist we're screwed...  Maybe this should barf but I'd like to be graceful if there's any hope.
 				continue;
 			}
-			if (!file_exists($thumb))
+			if (!file_exists($thumb) || $this->isOlder($thumb,$raw))
 			{
 				Thumb::MakeFixedThumb($this->GetConfigValue('Thumb Width'),
 					$this->GetConfigValue('Thumb Height'),$raw,$thumb);
 			}
-			if (!file_exists($image))
+			if (!file_exists($image) || $this->isOlder($image,$raw))
 			{
 				Thumb::MakeFixedThumb($this->GetConfigValue('Main Image Area Width'),
 					$this->GetConfigValue('Main Image Area Height'),$raw,$image);
