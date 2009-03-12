@@ -199,88 +199,46 @@ class ZymurgyMember
 			}
 			//Look for user id, password and password confirmation fields
 			$values = array(); //Build a new array of inputs except for password.
-			foreach($pi->InputRows as $row)
-			{
-				$fldname = 'Field'.$row['fid'];
-				if (array_key_exists($fldname,$_POST))
-					$row['value'] = $_POST[$fldname];
-				else 
-					$row['value'] = '';
-				switch($row['header'])
-				{
-					case $useridfield:
-						$userid = $row['value'];
-						$values[$row['header']] = $row['value'];
-						break;
-					case $passwordfield:
-						$password = $row['value'];
-						break;
-					case $confirmfield:
-						$confirm = $row['value'];
-						break;
-					default:
-						$values[$row['header']] = $row['value'];
-				}
-			}
-			//Now we have our rows, is there anything obviously wrong?
-			if ($userid == '')
-				$pi->ValidationErrors[] = 'Email address is a required field.';
-			if ($password != $confirm)
-				$pi->ValidationErrors[] = 'Passwords do not match.';
-			if (($password == '') && !$authed)
-				$pi->ValidationErrors[] = 'Password is a required field.';
+			
+			ZymurgyMember::membersignup_GetValuesFromForm(
+				$pi, 
+				$values, 
+				$userid, 
+				$password,
+				$confirm,
+				$useridfield,
+				$passwordfield,
+				$confirmfield);
+			ZymurgyMember::membersignup_ValidateForm(
+				$userid,
+				$password,
+				$confirm,
+				$authed);			
+			
 			if (!$pi->IsValid())
 			{
 				$pi->RenderForm();
 				return;
 			}
+			
 			if (array_key_exists('rurl',$_GET))
 				$rurl = $_GET['rurl'];
 			else 
 				$rurl = $redirect;
+				
 			if (strpos($rurl,'?')===false)
 				$joinchar = '?';
 			else
 				$joinchar = '&';
+				
 			if (!$authed)
 			{
 				//New registration
-				$sql = "insert into zcm_member(email,password,regtime) values ('".
-					Zymurgy::$db->escape_string($userid)."','".
-					Zymurgy::$db->escape_string($password)."',now())";
-				$ri = Zymurgy::$db->query($sql);
-				if (!$ri)
+				$ri = ZymurgyMember::membersignup_CreateMember($userid, $password);
+
+				if($ri)
 				{
-					if (Zymurgy::$db->errno() == 1062)
-					{
-						$pi->ValidationErrors[] = "That user ID is already in use.";
-						$pi->RenderForm();
-					}
-					else 
-					{
-						die("Unable to create member ($sql): ".Zymurgy::$db->error());
-					}
-				}
-				else 
-				{
-					//Created member successfully.  Login and redirect to default member page.
-					if (Zymurgy::memberdologin($userid,$password))
-					{
-						Zymurgy::memberauthenticate();
-						$pi->StoreCapture($pi->MakeXML($values));
-						$pi->SendEmail();
-						$iid = Zymurgy::$db->insert_id();
-						if ($iid)
-						{
-							$sql = "update zcm_member set formdata=$iid where id=".Zymurgy::$member['id'];
-							Zymurgy::$db->query($sql) or die("Can't set form data ($sql): ".Zymurgy::$db->error());
-						}
-						Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=new');
-					}
-					else 
-					{
-						echo "Oddly we couldn't log you in.";
-					}
+					ZymurgyMember::membersignup_AuthenticateNewMember($userid, $password);
 				}
 			}
 			else 
@@ -288,27 +246,12 @@ class ZymurgyMember
 				//Has email changed?
 				if (Zymurgy::$member['email']!==$userid)
 				{
-					//Is the new user id already in use?
-					$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
-					$ri = Zymurgy::$db->query($sql);
-					if (!$ri)
-					{
-						if (Zymurgy::$db->errno() == 1062)
-						{
-							$pi->ValidationErrors[] = "That user ID is already in  use.";
-							$pi->RenderForm();
-						}
-						else 
-						{
-							die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
-						}
-					}
+					ZymurgyMember::membersignup_UpdateUserID($userid);
 				}
 				//Has password changed?
 				if (!empty($password))
 				{
-					$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
-					Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+					ZymurgyMember::membersignup_UpdatePassword($password);
 				}
 				//Update other user info (XML)
 				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
@@ -317,7 +260,7 @@ class ZymurgyMember
 			}
 		}
 		else 
-		{
+		{		
 			if ($authed)
 			{
 				//We're logged in so update existing info.
@@ -331,6 +274,142 @@ class ZymurgyMember
 				return $pi->Render();
 		}
 		return '';
+	}
+	
+	function membersignup_GetValuesFromForm(
+		$pi,
+		&$values,
+		&$userid,
+		&$password,
+		&$confirm,
+		$useridfield,
+		$passwordfield,
+		$confirmfield)
+	{
+		foreach($pi->InputRows as $row)
+		{
+			$fldname = 'Field'.$row['fid'];
+			
+			if (array_key_exists($fldname,$_POST))
+				$row['value'] = $_POST[$fldname];
+			else 
+				$row['value'] = '';
+				
+			switch($row['header'])
+			{
+				case $useridfield:
+					$userid = $row['value'];
+					$values[$row['header']] = $row['value'];
+					break;
+					
+				case $passwordfield:
+					$password = $row['value'];
+					break;
+					
+				case $confirmfield:
+					$confirm = $row['value'];
+					break;
+					
+				default:
+					$values[$row['header']] = $row['value'];
+			}
+		}		
+	}
+	
+	function membersignup_ValidateForm(
+		$userid,
+		$password,
+		$confirm,
+		$authed)
+	{		
+		//Now we have our rows, is there anything obviously wrong?
+		if ($userid == '')
+			$pi->ValidationErrors[] = 'Email address is a required field.';
+			
+		if ($password != $confirm)
+			$pi->ValidationErrors[] = 'Passwords do not match.';
+			
+		if (($password == '') && !$authed)
+			$pi->ValidationErrors[] = 'Password is a required field.';
+	}
+	
+	function membersignup_CreateMember(
+		$userid,
+		$password)
+	{
+		$sql = "insert into zcm_member(email,password,regtime) values ('".
+			Zymurgy::$db->escape_string($userid)."','".
+			Zymurgy::$db->escape_string($password)."',now())";
+			
+		$ri = Zymurgy::$db->query($sql);
+
+		if(!$ri)
+		{
+			if (Zymurgy::$db->errno() == 1062)
+			{
+				$pi->ValidationErrors[] = "That user ID is already in use.";
+				$pi->RenderForm();
+			}
+			else 
+			{
+				die("Unable to create member ($sql): ".Zymurgy::$db->error());
+			}			
+		}
+		
+		return $ri;
+	}
+	
+	function membersignup_AuthenticateNewMember(
+		$userid,
+		$password)
+	{
+		if (Zymurgy::memberdologin($userid,$password))
+		{
+			Zymurgy::memberauthenticate();
+			
+			$pi->StoreCapture($pi->MakeXML($values));
+			$pi->SendEmail();
+			
+			$iid = Zymurgy::$db->insert_id();
+			
+			if ($iid)
+			{
+				$sql = "update zcm_member set formdata=$iid where id=".Zymurgy::$member['id'];
+				Zymurgy::$db->query($sql) or die("Can't set form data ($sql): ".Zymurgy::$db->error());
+			}
+			
+			Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=new');
+		}
+		else 
+		{
+			echo "Oddly we couldn't log you in.";
+		}		
+	}
+	
+	function membersignup_UpdateUserID($userid)
+	{
+		//Is the new user id already in use?
+		$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
+		$ri = Zymurgy::$db->query($sql);
+		
+		if (!$ri)
+		{
+			if (Zymurgy::$db->errno() == 1062)
+			{
+				$pi->ValidationErrors[] = "That user ID is already in  use.";
+				$pi->RenderForm();
+			}
+			else 
+			{
+				die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+			}
+		}		
+	}
+	
+	function membersignup_UpdatePassword($password)
+	{
+		$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
+		Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());		
 	}
 	
 	/**

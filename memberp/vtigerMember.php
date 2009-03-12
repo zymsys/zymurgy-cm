@@ -135,5 +135,216 @@ class vtigerMember extends ZymurgyMember
 		}
 		Zymurgy::JSRedirect($logoutpage);
 	}
+	
+	static function membersignup(
+		$formname,
+		$useridfield,
+		$passwordfield,
+		$confirmfield,
+		$redirect)
+	{
+		$pi = Zymurgy::mkplugin('Form',$formname);
+		$pi->LoadInputData();
+		$userid = $password = $confirm = $firstname = $lastname = '';
+		$authed = Zymurgy::memberauthenticate();
+			
+		if ($_SERVER['REQUEST_METHOD']=='POST')
+		{
+			if ($_POST['formname']!=$pi->InstanceName)
+			{
+				//Another form is posting, just render the form as usual.
+				$pi->RenderForm();
+				return ;
+			}
+			//Look for user id, password and password confirmation fields
+			$values = array(); //Build a new array of inputs except for password.
+			
+			vtigerMember::membersignup_GetValuesFromVTigerForm(
+				$pi, 
+				$values, 
+				$userid, 
+				$password,
+				$confirm,
+				$useridfield,
+				$passwordfield,
+				$confirmfield,
+				'firstname',
+				'lastname');
+			vtigerMember::membersignup_ValidateVTigerForm(
+				$userid,
+				$password,
+				$confirm,
+				$firstname,
+				$lastname,
+				$authed);			
+			
+			if (!$pi->IsValid())
+			{
+				$pi->RenderForm();
+				return;
+			}
+			
+			if (array_key_exists('rurl',$_GET))
+				$rurl = $_GET['rurl'];
+			else 
+				$rurl = $redirect;
+				
+			if (strpos($rurl,'?')===false)
+				$joinchar = '?';
+			else
+				$joinchar = '&';
+				
+			if (!$authed)
+			{
+				//New registration
+				$ri = vtigerMember::membersignup_CreateVTigerMember(
+					$userid,
+					$password,
+					$firstname,
+					$lastname);
+
+				if($ri)
+				{
+					vtigerMember::membersignup_AuthenticateNewMember($userid, $password);
+				}
+			}
+			else 
+			{ //Update existing registration
+				//Has email changed?
+				if (Zymurgy::$member['email']!==$userid)
+				{
+					vtigerMember::membersignup_UpdateUserID($userid);
+				}
+				//Has password changed?
+				if (!empty($password))
+				{
+					vtigerMember::membersignup_UpdatePassword($password);
+				}
+				//Update other user info (XML)
+				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
+				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
+			}
+		}
+		else 
+		{			
+			if ($authed)
+			{
+				//We're logged in so update existing info.
+				$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
+				$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
+				$xml = Zymurgy::$db->result($ri,0,0);
+				$pi->XmlValues = $xml;
+				return $pi->Render();
+			}
+			else 
+				return $pi->Render();
+		}
+		return '';
+	}
+	
+	function membersignup_GetValuesFromVTigerForm(
+		$pi, 
+		&$values, 
+		&$userid, 
+		&$password,
+		&$confirm,
+		&$firstname,
+		&$lastname,
+		$useridfield,
+		$passwordfield,
+		$confirmfield,
+		$firstnamefield,
+		$lastnamefield)
+	{
+		foreach($pi->InputRows as $row)
+		{
+			$fldname = 'Field'.$row['fid'];
+			
+			if (array_key_exists($fldname,$_POST))
+				$row['value'] = $_POST[$fldname];
+			else 
+				$row['value'] = '';
+				
+			switch($row['header'])
+			{
+				case $useridfield:
+					$userid = $row['value'];
+					$values[$row['header']] = $row['value'];
+					break;
+					
+				case $passwordfield:
+					$password = $row['value'];
+					break;
+					
+				case $confirmfield:
+					$confirm = $row['value'];
+					break;
+					
+				case $firstnamefield:
+					$firstname = $row['value'];
+					break;
+					
+				case $lastnamefield:
+					$lastname = $row['value'];
+					break;
+					
+				default:
+					$values[$row['header']] = $row['value'];
+			}
+		}		
+	}
+	
+	function membersignup_ValidateVTigerForm(
+		$userid,
+		$password,
+		$confirm,
+		$firstname,
+		$lastname,
+		$authed)
+	{
+		parent::ValidateForm(
+			$userid,
+			$password,
+			$confirm,
+			$authed);
+			
+		if ($firstname == '')
+			$pi->ValidationErrors[] = 'First name is a required field.';
+			
+		if ($lastname == '')
+			$pi->ValidationErrors[] = 'Last name is a required field.';
+	}
+
+	function membersignup_CreateVTigerMember(
+		$userid,
+		$password,
+		$firstname,
+		$lastname)
+	{
+		parent::membersignup_CreateMember($userid, $password);
+		
+		if($ri)
+		{
+			require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
+			$client = new soapclient2(
+				Zymurgy::$config['vtiger Server Path']."/zcmservice.php?service=zcm");
+				
+			$input_array = array(
+		    		'firstname' => $firstname,
+		    		'lastname' => $lastname,
+		    		'email' => $userid,
+		    		'emailoptout' => 'off',
+		    		'leadsource' => 'Web Site',
+		    		'portal' => 'on',
+		    		'password' => $password,
+		    		'fromemailname' => Zymurgy::$config['vtiger E-mail Name'],
+		    		'fromemailaddress' => Zymurgy::$config['vtiger E-mail Address']);
+				
+		    $result = $client->call(
+		    	'create_member', 
+		    	$input_array);
+		}
+	}
 }
 ?>

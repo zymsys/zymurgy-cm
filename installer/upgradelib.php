@@ -141,10 +141,10 @@ function CheckColumns($table,$columns)
 			if (is_array($colsql))
 			{
 				foreach($colsql as $sql)
-					mysql_query($sql);
+					mysql_query($sql) or die("Can't create column ($sql): ".mysql_error());
 			}
 			else 
-				mysql_query($colsql);
+				mysql_query($colsql) or die("Can't create column ($colsql): ".mysql_error());
 			//Special cases
 			if (($table=='sitetext') && ($colname=='plainbody'))
 			{

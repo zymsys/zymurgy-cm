@@ -34,11 +34,11 @@ $newcustomtable = array(
 );
 
 $newconfig = array(
-	'sitetext'=>"alter table zcm_config add `inputspec` varchar(100) default 'input.60.1024' NOT NULL"
+	'inputspec'=>"alter table zcm_config add `inputspec` varchar(100) default 'input.60.1024' NOT NULL"
 );
 
 $newmember = array(
-	'mpkey'=>"alter table zcm_member add `mpkey` varchar(40) default NULL)"
+	'mpkey'=>"alter table zcm_member add `mpkey` varchar(40) default NULL"
 );
 
 include('upgradelib.php');
