@@ -364,7 +364,7 @@
 			}		
 		}
 		
-		private function membersignup_GetValuesFromForm(
+		function membersignup_GetValuesFromForm(
 			$field,
 			$originalValue,
 			$row)
