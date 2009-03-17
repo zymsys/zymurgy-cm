@@ -129,6 +129,8 @@
 		 */
 		static function memberdologin($userid, $password)
 		{
+			// die(var_dump(debug_backtrace()));
+			
 			require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
 			
 			$client = new soapclient2(Zymurgy::$config['oscommerce Server Path']."/soap.php");
@@ -178,6 +180,8 @@
 			$confirmfield,
 			$redirect)
 		{
+			// die("Child membersignup called");
+			
 			$pi = Zymurgy::mkplugin('Form',$formname);
 			$pi->LoadInputData();
 			$userid = $password = $confirm = '';
@@ -256,6 +260,8 @@
 					
 				if (!$authed)
 				{
+					// die("Creating member");
+					
 					//New registration
 					$ri = oscommerceMember::membersignup_CreateOSCommerceMember(
 						$userid,
@@ -269,10 +275,12 @@
 						$province,
 						$country,
 						$phone);
+						
+					// die(print_r($ri));
 	
 					if($ri)
 					{
-						vtigerMember::membersignup_AuthenticateNewMember($userid, $password);
+						oscommerceMember::membersignup_AuthenticateNewMember($userid, $password);
 					}
 				}
 				else 
@@ -280,12 +288,12 @@
 					//Has email changed?
 					if (Zymurgy::$member['email']!==$userid)
 					{
-						vtigerMember::membersignup_UpdateUserID($userid);
+						oscommerceMember::membersignup_UpdateUserID($userid);
 					}
 					//Has password changed?
 					if (!empty($password))
 					{
-						vtigerMember::membersignup_UpdatePassword($password);
+						oscommerceMember::membersignup_UpdatePassword($password);
 					}
 					//Update other user info (XML)
 					$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
@@ -441,6 +449,8 @@
 			$country,
 			$phone)
 		{
+			// die("membersignup_CreateOSCommerceMember() Start");
+			
 			parent::membersignup_CreateMember($userid, $password);
 			
 			if($ri)
@@ -467,6 +477,8 @@
 			    $result = $client->call(
 			    	'create_member', 
 			    	$input_array);
+			    	
+			    // die(print_r($result));
 			}
 		}	
 	}
