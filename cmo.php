@@ -654,6 +654,9 @@ if (!class_exists('Zymurgy'))
 		static function membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect)
 		{
 			Zymurgy::initializemembership();
+			
+			die("membersignup: ".gettype(Zymurgy::$MemberProvider));
+			
 			return Zymurgy::$MemberProvider->membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
 		}
 		
@@ -667,6 +670,9 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberlogin()
 		{
+			// die("memberlogin: ".gettype(Zymurgy::$MemberProvider));
+			die(var_dump(debug_backtrace()));
+
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberlogin();
 		}

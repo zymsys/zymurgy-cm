@@ -121,7 +121,7 @@ class ZymurgyMember
 			document.cookie = \"ZymurgyAuth=$authkey\";
 			//-->
 			</script>";
-		Zymurgy::memberaudit("Successful login for [$userid]");
+		Zymurgy::memberaudit("Successful login for [$id]");
 	}
 	
 	/**
@@ -182,8 +182,15 @@ class ZymurgyMember
 	 * @param string $redirect
 	 * @return string
 	 */
-	static function membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect)
+	static function membersignup(
+		$formname,
+		$useridfield,
+		$passwordfield,
+		$confirmfield,
+		$redirect)
 	{
+		die("base membersignup called");
+		
 		$pi = Zymurgy::mkplugin('Form',$formname);
 		$pi->LoadInputData();
 		$userid = $password = $confirm = '';
@@ -337,6 +344,8 @@ class ZymurgyMember
 		$userid,
 		$password)
 	{
+		// die("membersignup_CreateMember() Start");
+			
 		$sql = "insert into zcm_member(email,password,regtime) values ('".
 			Zymurgy::$db->escape_string($userid)."','".
 			Zymurgy::$db->escape_string($password)."',now())";
