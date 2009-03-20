@@ -293,10 +293,26 @@
 	{
 		static function PopulateAll()
 		{
+			return MediaFilePopulator::PopulateMultiple("1 = 1");
+		}
+		
+		static function PopulateAllNotInPackage($mediaPackage)
+		{
+			return MediaFilePopulator::PopulateMultiple(
+				"NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
+				"`zcm_media_file_package`.`media_file_id` = `zcm_media_file`.`media_file_id` AND ".
+				"`zcm_media_file_package`.`media_package_id` = '".
+				$mediaPackage->get_media_package_id()."')");
+		}
+		
+		private static function PopulateMultiple($criteria)
+		{
 			$sql = "SELECT `media_file_id`, `member_id`, `mimetype`, `extension`, ".
-				"`display_name`, `media_restriction_id` FROM `zcm_media_file`";
+				"`display_name`, `media_restriction_id` FROM `zcm_media_file` WHERE $criteria";
 				
-			$ri = Zymurgy::$db->query($sql) or die();
+			// die($sql);
+								
+			$ri = Zymurgy::$db->query($sql) or die("Could not select list of media files: ".mysql_error());
 			$mediaFiles = array();
 			
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
@@ -489,6 +505,8 @@
 		
 		private $m_media_files = array();
 		
+		private $m_errors = array();
+		
 		public function get_media_package_id()
 		{
 			return $this->m_media_package_id;
@@ -511,7 +529,7 @@
 		
 		public function get_display_name()
 		{
-			return $this->m_display_name();
+			return $this->m_display_name;
 		}
 		
 		public function set_display_name($newValue)
@@ -550,16 +568,67 @@
 		{
 			unset($this->m_media_files[$key]);
 		}
+		
+		public function get_errors()
+		{
+			return $this->m_errors;
+		}
+		
+		public function set_errors($newValue)
+		{
+			$this->m_errors = $newValue;
+		}
+		
+		public function validate($action)
+		{
+			$isValid = true;
+			
+			if(strlen($this->m_display_name) <= 0)
+			{
+				$this->m_errors[] = "Display Name is required.";				
+				$isValid = false;
+			}
+			
+			return $isValid;
+		}
 	}
 	
 	class MediaPackagePopulator
 	{
+		static function PopulateAll()
+		{
+			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`, `display_name` ".
+				"FROM `zcm_media_package`";				
+			$ri = Zymurgy::$db->query($sql) or die();
+			
+			$mediaPackages = array();
+			
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$mediaPackage = new MediaPackage();
+				
+				$mediaPackage->set_media_package_id($row["media_package_id"]);
+				$mediaPackage->set_display_name($row["display_name"]);
+				
+				$member = MediaMemberPopulator::PopulateByID(
+					$row["member_id"]);
+				$mediaPackage->set_member($member);
+				
+				$restriction = MediaRestrictionPopulator::PopulateByID(
+					$row["media_restriction_id"]);				
+				$mediaPackage->set_restriction($restriction);
+				
+				$mediaPackages[] = $mediaPackage;
+			}
+			
+			return $mediaPackages;
+		}
+		
 		static function PopulateByID($media_package_id)
 		{
-			$sql = "SELECT `media_restriction_id`, `display_name` FROM `zcm_media_package` ".
+			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name` FROM `zcm_media_package` ".
 				"WHERE `media_package_id` = '".
-				mysql_escape_string($restriction_id)."'";
-				
+				mysql_escape_string($media_package_id)."'";				
 			$ri = Zymurgy::$db->query($sql) or die();
 			
 			if(Zymurgy::$db->num_rows($ri) > 0)
@@ -575,20 +644,22 @@
 				$mediaPackage->set_member($member);
 				
 				$restriction = MediaRestrictionPopulator::PopulateByID(
-					$row["restriction_id"]);				
+					$row["media_restriction_id"]);				
 				$mediaPackage->set_restriction($restriction);
 				
 				return $mediaPackage;
 			}
 		}
 		
-		static function PopulateMediaFiles($mediaPackage)
+		static function PopulateMediaFiles(&$mediaPackage)
 		{
 			$sql = "SELECT `media_file_id`, `disporder`, `relation_type` FROM ".
 				"`zcm_media_file_package` WHERE `media_package_id` = '".
-				mysql_escape_string($mediaPackage->get_media_package_id).
-				"' ORDER BY `disporder`";			
+				mysql_escape_string($mediaPackage->get_media_package_id()).
+				"' ORDER BY `disporder`";		
 				
+			// die($sql);	
+								
 			$ri = Zymurgy::$db->query($sql) or die();
 			
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
@@ -601,6 +672,76 @@
 					
 				$mediaPackage->add_media_file($mediaFile);
 			}
+		}
+		
+		static function PopulateFromForm()
+		{
+			$mediaPackage = new MediaPackage();
+			
+			$mediaPackage->set_media_package_id($_POST["media_package_id"]);			
+			$mediaPackage->set_display_name($_POST["display_name"]);
+			
+			$mediaMember = MediaMemberPopulator::PopulateByID(
+				$_POST["member_id"]);
+			$mediaPackage->set_member($mediaMember);
+			
+			return $mediaPackage;				
+		}
+		
+		static function SaveMediaPackage($mediaPackage)
+		{
+			$sql = "";
+			
+			if($mediaPackage->get_media_package_id() <= 0)
+			{
+				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `display_name` ) VALUES ( '".
+					mysql_escape_string($mediaPackage->get_member()->get_member_id())."', '".
+					mysql_escape_string($mediaPackage->get_display_name())."' )";
+										
+				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
+				
+				$sql = "SELECT MAX(`media_package_id`) FROM `zcm_media_package`";
+				
+				$mediaPackage->set_media_package_id(
+					Zymurgy::$db->get($sql));
+			}
+			else 
+			{
+				$sql = "UPDATE `zcm_media_package` SET ".
+					"`member_id` = '".mysql_escape_string($mediaPackage->get_member()->get_member_id())."', ".
+					"`display_name` = '".mysql_escape_string($mediaPackage->get_display_name())."' ".
+					"WHERE `media_package_id` = '".mysql_escape_string($mediaPackage->get_media_package_id())."'";
+					
+				Zymurgy::$db->query($sql) or die("Could not update media file record: ".mysql_error());
+			}						
+		}
+		
+		public function DeleteMediaPackage($media_package_id)
+		{
+			$sql = "DELETE FROM `zcm_media_package` WHERE `media_package_id` = '".
+				mysql_escape_string($media_package_id)."'";
+				
+			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
+		}
+		
+		public function AddMediaFileToPackage($media_package_id, $media_file_id)
+		{
+			$sql = "INSERT INTO `zcm_media_file_package` ( `media_package_id`, ".
+				"`media_file_id`, `disporder`, `relation_type` ) VALUES ('".
+				mysql_escape_string($media_package_id)."', '".
+				mysql_escape_string($media_file_id)."', '".
+				mysql_escape_string("1")."', '')";
+				
+			Zymurgy::$db->query($sql) or die("Could not media file to media package: ".mysql_error());
+		}
+		
+		public function DeleteMediaFileFromPackage($media_package_id, $media_file_id)
+		{
+			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
+				mysql_escape_string($media_package_id)."' AND `media_file_id` = '".
+				mysql_escape_string($media_file_id)."'";
+				
+			Zymurgy::$db->query($sql) or die("Could not delete media file from media package: ".mysql_error());
 		}
 	}
 	
@@ -880,6 +1021,206 @@
 		}
 	}
 	
+	class MediaPackageView
+	{
+		static function DisplayList($mediaPackages)
+		{
+			include("header.php");
+			include('datagrid.php');
+			
+			DumpDataGridCSS();
+			
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Display Name</td>");
+			echo("<td>Owner</td>");
+			echo("<td colspan=\"2\">&nbsp;</td>");
+			echo("</tr>");
+			
+			$cntr = 1;
+			
+			foreach($mediaPackages as $mediaPackage)			
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"media.php?action=edit_media_package&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."\">".$mediaPackage->get_display_name()."</td>");
+				echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
+				echo("<td><a href=\"media.php?action=list_media_package_files&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."\">Files</a></td>");
+				echo("<td><a href=\"media.php?action=delete_media_package&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."\">Delete</a></td>");
+				echo("</tr>");
+				
+				$cntr++;
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"4\"><a style=\"color: white;\" href=\"media.php?action=add_media_package\">Add Media Package</td>");
+			
+			echo("</table>");
+			
+			include("footer.php");
+		}
+		
+		static function DisplayEditForm($mediaPackage, $action)
+		{
+			include("header.php");
+			$widget = new InputWidget();			
+			
+			// echo("<pre>");
+			// print_r($mediaFile);
+			// echo("</pre>");
+			
+			$errors = $mediaPackage->get_errors();
+			
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">");
+				echo("<div style=\"color: red\">Error</div>");
+				echo("<ul>");
+				
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>");
+				}
+				
+				echo("</ul>");
+				echo("</div>");
+			}
+			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">");
+			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">");
+			echo("<input type=\"hidden\" name=\"media_package_id\" value=\"".$mediaPackage->get_media_package_id()."\">");
+			echo("<input type=\"hidden\" name=\"member_id\" value=\"".$mediaPackage->get_member()->get_member_id()."\">");
+			echo("<table>");
+			
+			echo("<tr>");
+			echo("<td>Display Name:</td>");
+			echo("<td>");
+			$widget->Render("input.30.100", "display_name", $mediaPackage->get_display_name());
+			echo("</td>");
+			echo("</tr>");
+			
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+			
+			echo("<tr>");
+			echo("<td>Owner:</td>");
+			echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
+			echo("</tr>");
+			
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+			
+			echo("<tr>");
+			echo("<td>&nbsp;</td>");
+			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("</tr>");
+			
+			echo("</table>");
+			echo("</form>");
+			
+			include("footer.php");
+		}
+	
+		static function DisplayDeleteFrom($mediaPackage)
+		{
+			include("header.php");
+			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+			
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_delete_media_package\">");
+			echo("<input type=\"hidden\" name=\"media_package_id\" value=\"".
+				$mediaPackage->get_media_package_id()."\">");
+			
+			echo("<p>Are you sure you want to delete the following media package:</p>");
+			echo("<p>Display Name: ".$mediaPackage->get_display_name()."</p>");
+			
+			echo("<p>");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"Yes\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"No\" onclick=\"window.location.href='media.php?action=list_media_packages';\">");
+			echo("</p>");
+			
+			echo("</form>");
+			
+			include("footer.php");
+		}
+		
+		static function DisplayRelatedMedia($mediaPackage)
+		{
+			include("header.php");
+			include('datagrid.php');
+			
+			DumpDataGridCSS();
+			
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Media File Name</td>");
+			echo("<td>Owner</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
+
+			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
+			{
+				$mediaFile = $mediaPackage->get_media_file($cntr);
+				
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">");
+				echo("<td>".$mediaFile->get_display_name()."</td>");
+				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
+				echo("<td><a href=\"media.php?action=delete_media_package_file&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">Delete</a></td>");
+				echo("</tr>");
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
+			
+			echo("</table>");
+			
+			include("footer.php");
+		}
+		
+		static function DisplayListOfFilesToAdd($mediaPackage, $mediaFiles)
+		{
+			include("header.php");
+			include('datagrid.php');
+			
+			DumpDataGridCSS();
+			
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Display Name</td>");
+			echo("<td>MIME Type</td>");
+			echo("<td>Owner</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
+			
+			$cntr = 1;
+			
+			foreach($mediaFiles as $mediaFile)			
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"media.php?action=act_add_media_package_file&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">".$mediaFile->get_display_name()."</td>");
+				echo("<td>".$mediaFile->get_mimetype()."</td>");
+				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
+				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">Download</a></td>");
+				echo("</tr>");
+				
+				$cntr++;
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"4\">&nbsp;</td>");
+			
+			echo("</table>");
+			
+			include("footer.php");
+		}
+		
+	}
+	
 	class MediaController
 	{
 		function Execute($action)
@@ -951,6 +1292,96 @@
 					$fileContent = MediaFilePopulator::GetFilestream(
 						$mediaFile);
 					MediaFileView::DownloadMediaFile($mediaFile, $fileContent);
+					break;
+					
+				case "list_media_packages":
+					$mediaPackages = MediaPackagePopulator::PopulateAll();
+					MediaPackageView::DisplayList($mediaPackages);
+					break;
+						
+				case "add_media_package":
+					$mediaPackage = new MediaPackage();
+					$mediaPackage->set_member(
+						MediaMemberPopulator::PopulateByID(1));
+					MediaPackageView::DisplayEditForm($mediaPackage, "act_add_media_package");
+					break;
+					
+				case "edit_media_package":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					MediaPackageView::DisplayEditForm($mediaPackage, "act_edit_media_package");
+					break;
+					
+				case "act_add_media_package":
+				case "act_edit_media_package":
+					$mediaPackage = MediaPackagePopulator::PopulateFromForm();
+						
+					if(!$mediaPackage->validate($action))
+					{
+						MediaPackageView::DisplayEditForm($mediaPackage, $action);
+					}
+					else 
+					{
+						if(MediaPackagePopulator::SaveMediaPackage($mediaPackage))
+						{
+							MediaPackageView::DisplayEditForm($mediaPackage, $action);
+						}
+						else 
+						{
+							header("Location: media.php?action=list_media_packages");	
+						}
+					}
+					break;
+					
+				case "delete_media_package":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					MediaPackageView::DisplayDeleteFrom($mediaPackage);
+					break;
+					
+				case "act_delete_media_package":
+					MediaPackagePopulator::DeleteMediaPackage(
+						$_POST["media_package_id"]);
+					header("Location: media.php?action=list_media_packages");	
+					
+				case "list_media_package_files":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+			
+					// echo("<pre>");
+					// print_r($mediaPackage);
+					// echo("</pre>");
+					// echo($mediaPackage->get_media_file_count());
+					// die();
+
+					MediaPackageView::DisplayRelatedMedia($mediaPackage);
+					break;
+					
+				case "add_media_package_file":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
+						$mediaPackage);
+					MediaPackageView::DisplayListOfFilesToAdd($mediaPackage, $mediaFiles);
+					break;
+					
+				case "act_add_media_package_file":
+					MediaPackagePopulator::AddMediaFileToPackage(
+						$_GET["media_package_id"],
+						$_GET["media_file_id"]);
+					header(
+						"Location: media.php?action=list_media_package_files&media_package_id=".
+						$_GET["media_package_id"]);	
+					break;
+				
+				case "delete_media_package_file":
+					MediaPackagePopulator::DeleteMediaFileFromPackage(
+						$_GET["media_package_id"],
+						$_GET["media_file_id"]);
+					header(
+						"Location: media.php?action=list_media_package_files&media_package_id=".
+						$_GET["media_package_id"]);	
 					break;
 					
 				default:
