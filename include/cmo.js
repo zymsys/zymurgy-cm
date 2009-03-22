@@ -60,6 +60,57 @@ function ZymurgyFactory() {
 			this.lightAJAX(url);
 		}
 	};
+	
+	this.toggleText = function(el, a, b) {
+		if (el.value == a)
+			el.value = b;
+		else
+			el.value = a;
+	};
+	
+	this.enableHint = function(elTextbox) {
+		elTextbox._oldTextBoxColor = YAHOO.util.Dom.getStyle(elTextbox,'color');
+		elTextbox._showingHint = false;
+		var ShowHint = function() {
+			if (elTextbox.value == '')
+			{
+				var title = YAHOO.util.Dom.getAttribute(elTextbox,'title');
+				if (title)
+				{
+					elTextbox._oldTextBoxColor = YAHOO.util.Dom.getStyle(elTextbox,'color');
+					YAHOO.util.Dom.setStyle(elTextbox,'color','#aaaaaa');
+					elTextbox.value = title;
+					elTextbox._showingHint = true;
+					return;
+				}
+				elTextbox._showingHint = false;
+			}
+			else
+			{
+				elTextbox._showingHint = false;
+			}
+		};
+		YAHOO.util.Event.addListener(elTextbox, "focus", function () {
+			if (elTextbox._showingHint)
+			{
+				YAHOO.util.Dom.setStyle(this,'color',elTextbox._oldTextBoxColor);
+				elTextbox.value = '';
+			}
+		});
+		YAHOO.util.Event.addListener(elTextbox, "blur", function () {
+			ShowHint();
+		});
+		ShowHint();
+	};
+	
+	this.refreshHint = function(elTextbox) {
+		if (elTextbox._showingHint)
+		{
+			var title = YAHOO.util.Dom.getAttribute(elTextbox,'title');
+			elTextbox.value = title;
+		}
+	}
+	
 	return this;
 };
 

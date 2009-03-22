@@ -80,6 +80,10 @@ function inputspec2sqltype($inputspec)
 	$pp = explode('.',$params);
 	switch($type)
 	{
+		case "datetime":
+		case "date":
+			return $type;
+			break;
 		case "money":
 		case "unixdatetime":
 		case "unixdate":

@@ -146,6 +146,10 @@ class InputWidget
 				$ritems = $this->HackedUnserialize($ep[1]);
 				$display = $ritems[$display];
 				break;
+			case "plugin":
+				$ep = explode('&',$display);
+				$display = urldecode($ep[0]).' ('.urldecode($ep[1]).')';
+				break;
 			case "password":
 				$display = "*******";
 				break;
@@ -173,7 +177,11 @@ class InputWidget
 				break;
 				
 			case "theme":
-				return Theme_JavaScript();
+				return Zymurgy::YUI("container/assets/container.css").
+					Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js").
+					Zymurgy::YUI("animation/animation-min.js").
+					Zymurgy::YUI("container/container-min.js").
+					Theme_JavaScript();
 				
 				break;
 		}
@@ -222,7 +230,7 @@ passThroughFormSubmit = false;
 		$tabName = "")
 	{
 		$ep = explode('.',$type);
-		if ($ep[0]!='html')
+		if (($ep[0]!='html') && ($ep[0]!='plugin'))
 			$value = htmlentities($value);
 		switch($ep[0])
 		{
@@ -262,6 +270,84 @@ passThroughFormSubmit = false;
 				echo "<script>makeInputSpecifier('".
 					str_replace("'","\'",$name)."','".
 					str_replace("'","\'",$value)."');</script>";
+				break;
+				
+			case "plugin":
+				global $ZymurgyAutocompleteZIndex;
+				$ep = explode('&',$value);
+				$pluginvalue = urldecode($ep[0]);
+				$textvalue = urldecode($ep[1]);
+				$acwidth = 200;
+				if (!isset($ZymurgyAutocompleteZIndex)) $ZymurgyAutocompleteZIndex = 9000;
+				$jsname = str_replace('.','_',$name);
+				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"\"/>";
+				echo "<div style=\"float:left\">";
+				echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
+				$ri = Zymurgy::$db->run("select id,title from zcm_plugin order by title");
+				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+				{
+					echo "\t<option value=\"{$row['id']}\"";
+					if ($row['title'] == $pluginvalue)
+						echo " selected=\"selected\"";
+					echo ">{$row['title']}</option>\r\n";
+				}
+				echo "</select>";
+				echo "</div><div style=\"float:left; margin-left:6px\">";
+				echo Zymurgy::YUI('autocomplete/assets/skins/sam/autocomplete.css');
+				echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+				echo Zymurgy::YUI('datasource/datasource-min.js');
+				echo Zymurgy::YUI('get/get-min.js');
+				echo Zymurgy::YUI('connection/connection-min.js');
+				echo Zymurgy::YUI('animation/animation-min.js');
+				echo Zymurgy::YUI('json/json-min.js');
+				echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
+				echo Zymurgy::YUI('datasource/datasource-min.js');
+				echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
+				echo Zymurgy::RequireOnce('/zymurgy/include/cmo.js');
+				echo "<div id=\"{$name}-autocomplete\" style=\"width: {$acwidth}px\"><input id=\"{$name}-input\" type=\"text\" title=\"Choose a Plugin First\" value=\"".htmlentities($textvalue)."\" />";
+				echo "<div id=\"{$name}-container\" style=\"z-index:$ZymurgyAutocompleteZIndex\"></div></div>";
+				echo "<div style=\"float:left; margin-left:".($acwidth+5)."px\"><input type=\"button\" value=\"&raquo;\" onclick=\"{$jsname}_autocomp.toggleContainer(); Zymurgy.toggleText(this,'&raquo;','&laquo;');\" /></div>";
+				echo "</div>";
+				echo '<script type="text/javascript">
+					'.$jsname.'_text = document.getElementById("'.$name.'-input");
+					'.$jsname.'_plugin = document.getElementById("'.$name.'-plugin");
+					'.$jsname.'_hidden = document.getElementById("'.$name.'");
+					Zymurgy.enableHint('.$jsname.'_text);
+					';
+				if (empty($textvalue))
+					echo "{$jsname}_text.disabled = true;\r\n";
+				echo 'function '.$jsname.'_update() {
+						if ('.$jsname.'_text.disabled || '.$jsname.'_plugin.value == 0)
+							'.$jsname.'_hidden.value = "&";
+						else
+							'.$jsname.'_hidden.value = escape('.$jsname.'_plugin.options['.$jsname.'_plugin.selectedIndex].text) + "&" + escape('.$jsname.'_text.value);
+					}
+					YAHOO.util.Event.addListener("'.$name.'-plugin", "change", function () {
+						if (this.value == "")
+						{
+							'.$jsname.'_text.disabled = true;
+							YAHOO.util.Dom.setAttribute('.$jsname.'_text,"title","Choose a Plugin First");
+						}
+						else
+						{
+							'.$jsname.'_text.disabled = false;
+							YAHOO.util.Dom.setAttribute('.$jsname.'_text,"title","Select one, or name a new one");
+						}
+						Zymurgy.refreshHint('.$jsname.'_text);
+						'.$jsname.'_update();
+					});
+					var '.$jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/plugin.php?pg='.$_GET['d'].'&");
+					'.$jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
+					'.$jsname.'_datasource.responseSchema = {fields : ["plugin"]};
+					var '.$jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$name.'-input","'.$name.'-container", '.$jsname.'_datasource);
+					'.$jsname.'_autocomp.textboxChangeEvent.subscribe('.$jsname.'_update);
+					'.$jsname.'_autocomp.generateRequest = function(sQuery) {
+						var elSel = document.getElementById("'.$name.'-plugin");
+						return "/zymurgy/include/plugin.php?pg='.$_GET['d'].'&pi=" + elSel.value + "&q=" + sQuery;
+					};
+				</script>
+				';
+				$ZymurgyAutocompleteZIndex++;
 				break;
 				
 			case "radio":
@@ -455,7 +541,6 @@ passThroughFormSubmit = false;
 				
 			case "colour":
 			case "color":
-			case "color":
 				$matchJS = "";
 				
 				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
@@ -479,7 +564,7 @@ passThroughFormSubmit = false;
 						$lockedStyle = " border: 1px inset black;";
 					}
 					
-					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#$hex; cursor:pointer;$lockedStyle\">&nbsp;&nbsp;&nbsp;</span>";			
+					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#$hex; cursor:pointer;$lockedStyle\" onClick=\"OpenThemeWindow('$name');\">&nbsp;&nbsp;&nbsp;</span>";			
 				}
 				
 				for($cntr = count($colors); $cntr <= 6; $cntr++)
@@ -488,6 +573,22 @@ passThroughFormSubmit = false;
 				}
 				
 				echo "</span>&nbsp;<input type=\"button\" onClick=\"OpenThemeWindow('$name');\" value=\"Edit theme...\">";
+				
+				$themenames = array();
+				foreach(Zymurgy::$ThemeColor as $cname=>$index)
+				{
+					$themenames[$index] = $cname;
+				}
+				echo "<script type=\"text/javascript\">\r\n";
+				for($cntr = 1; $cntr < count($colors); $cntr++)
+				{
+					echo "swatchTT{$name}{$cntr} = new YAHOO.widget.Tooltip(\"swatchTT{$name}{$cntr}\", { 
+						context:\"swatch{$name}{$cntr}\", 
+						text:\"".addslashes($themenames[$cntr])."\",
+						showDelay:0,
+						hidedelay:0 } );\r\n";
+				}
+				echo "</script>\r\n";
 				
 				break;
 				

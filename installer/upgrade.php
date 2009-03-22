@@ -128,6 +128,8 @@ echo("Updating table definitions...");
 //Run random column type updates
 mysql_query("alter table zcm_sitetext change body body longtext");
 mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
+mysql_query("alter table zcm_config change value value longtext");
+mysql_query("alter table zcm_config change inputspec inputspec text");
 
 echo("done.<br>");
 

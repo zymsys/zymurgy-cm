@@ -4,35 +4,33 @@
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
-<? if(isset($includeNav) && $includeNav) { ?>
-<? echo Zymurgy::YUI("yuiloader/yuiloader-min.js"); ?>
-<script type="text/javascript">
-var loader = new YAHOO.util.YUILoader({
-    require: ["event","menu"],
-    loadOptional: true,
-    onSuccess: function() {
-		YAHOO.util.Event.onContentReady("zcmnavContent", function () {
-			var oMenu = new YAHOO.widget.Menu("zcmnavContent", { 
-													position: "static", 
-													hidedelay:  750, 
-													lazyload: true });
-			oMenu.render();            
-		});
-		YAHOO.util.Dom.setStyle('zcmnavContentNav','display','block');
-		resizenav();
-		if (window.yuiLoaded)
-		{
-			yuiLoaded();
-		}
-    }
+<? 
+if (isset($includeNav) && $includeNav) 
+{
+echo Zymurgy::YUI("fonts/fonts-min.css");
+echo Zymurgy::YUI("menu/assets/skins/sam/menu.css");
+echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+echo Zymurgy::YUI("container/container_core-min.js");
+echo Zymurgy::YUI("menu/menu-min.js");
+echo '<script type="text/javascript">
+YAHOO.util.Event.onContentReady("zcmnavContent", function () {
+	var oMenu = new YAHOO.widget.Menu("zcmnavContent", { 
+											position: "static", 
+											hidedelay:  750, 
+											lazyload: true });
+	oMenu.render();            
 });
-loader.insert();
 function resizenav() {
 	var ht = YAHOO.util.Dom.getViewportHeight();
-	YAHOO.util.Dom.setStyle('zcmnavContent','height',(ht-100)+'px');
+	YAHOO.util.Dom.setStyle("zcmnavContent","height",(ht-100)+"px");
 }
-</script>
-<? } ?>
+YAHOO.util.Event.onContentReady("zcmnavContentNav", function () {
+	YAHOO.util.Dom.setStyle("zcmnavContentNav","display","block");
+	resizenav();
+});
+</script>';
+} 
+?>
 <style type="text/css">
 <!--
 body {
@@ -97,7 +95,7 @@ div.ZymurgyBreadcrumbs
 }
 .ZymurgyClientArea {
 	margin: 10px;
-	overflow: auto;
+	//overflow: auto;
 }
 #zcmnavContent {
 	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;

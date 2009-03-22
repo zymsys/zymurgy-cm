@@ -142,7 +142,7 @@ function OnBeforeUpdate($values)
 			mysql_query($sql) or die("Unable to set default display order ($sql): ".mysql_error());
 		}
 	}
-	if ($row['ismember']!=$values['zcm_customtable.ismember'])
+	if ((0+$row['ismember'])!=(0+$values['zcm_customtable.ismember']))
 	{
 		//ismember flag has changed
 		if ($values['zcm_customtable.ismember'] == 0)

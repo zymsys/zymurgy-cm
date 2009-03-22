@@ -53,11 +53,25 @@ if (!class_exists('Zymurgy'))
 		static $member;
 		
 		/**
-		 * Array of loaded YUI javascript files
+		 * If set to true, included YUI assets will be stripped of '-min' to facilitate debugging.
+		 *
+		 * @var boolean
+		 */
+		public static $yuitest = false;
+		
+		/**
+		 * Array of loaded YUI javascript & css files
 		 *
 		 * @var array
 		 */
 		private static $yuiloaded = array();
+		
+		/**
+		 * Array of loaded non-YUI javascript & css files
+		 *
+		 * @var array
+		 */
+		private static $otherloaded = array();
 		
 		/**
 		 * Instance of a ZymurgyMember class, or a decendent which provides membership features
@@ -69,6 +83,57 @@ if (!class_exists('Zymurgy'))
 		private static $pageid;
 		private static $title;
 			
+		public static $ThemeColor = array(
+			"Header Background" => 1,
+			"Menu Background" => 2,
+			"Menu Highlight" => 3,
+			"Page Background" => 4,
+			"Text Color" => 5,
+			"Link Color" => 6			
+		);
+		
+		public static $defaulttheme = null;
+
+		/**
+		 * Provides the base functionality for both RequireOnce() and YUI() methods.
+		 *
+		 * @param boolean $isYUI
+		 * @param string $src
+		 * @return string
+		 */
+		private static function RequireOnceCore($isYUI,$src)
+		{
+			if ($isYUI)
+				$included = (array_key_exists($src,Zymurgy::$yuiloaded));
+			else
+				$included = (array_key_exists($src,Zymurgy::$otherloaded));
+			if ($included)
+				return '';//"<!-- $src is already loaded. -->"; //Already loaded
+			if ($isYUI)
+			{
+				Zymurgy::$yuiloaded[$src]='';
+				$baseurl = Zymurgy::YUIBaseURL();
+			}
+			else
+			{
+				Zymurgy::$otherloaded[$src]='';
+				$baseurl = '';
+			}
+			$sp = explode('.',$src);
+			$ext = strtolower(array_pop($sp));
+			switch($ext)
+			{
+				case 'js':
+					if ($isYUI && Zymurgy::$yuitest)
+						$src = str_replace('-min.js','-debug.js',$src); //Scrub -min for testing YUI
+					return "<script type=\"text/javascript\" src=\"".$baseurl."$src\"></script>\r\n";
+				case 'css':
+					return "<link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
+				default:
+					return "<!-- Request for non supported resource: $src -->\r\n";
+			}
+		}
+		
 		/**
 		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
 		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
@@ -79,21 +144,28 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function YUI($src)
 		{
-			if (array_key_exists($src,Zymurgy::$yuiloaded))
-				return '<!-- $src is already loaded. -->'; //Already loaded
-			Zymurgy::$yuiloaded[$src]='';
-			$sp = explode('.',$src);
-			$ext = strtolower(array_pop($sp));
-			switch($ext)
+			$r = array();
+			if (Zymurgy::$yuitest)
 			{
-				case 'js':
-					$src = str_replace('-min.js','.js',$src); //Scrub -min for testing YUI
-					return "<script type=\"text/javascript\" src=\"".Zymurgy::YUIBaseURL()."$src\"></script>\r\n";
-				case 'css':
-					return "<link rel=\"stylesheet\" type=\"text/css\" href=\"".Zymurgy::YUIBaseURL()."$src\" />";
-				default:
-					return "<!-- Request for non supported YUI resource: $src -->\r\n";
+				//YUI in debug mode requires logger, which in turn requires the rest of this list.
+				$r[] = Zymurgy::RequireOnceCore(true,'logger/assets/skins/sam/logger.css');
+				$r[] = Zymurgy::RequireOnceCore(true,'yahoo-dom-event/yahoo-dom-event.js');
+				$r[] = Zymurgy::RequireOnceCore(true,'dragdrop/dragdrop-min.js');
+				$r[] = Zymurgy::RequireOnceCore(true,'logger/logger-min.js');
 			}
+			$r[] = Zymurgy::RequireOnceCore(true,$src);
+			return implode($r);
+		}
+		
+		/**
+		 * Return javascript or CSS tags to load the supplied source file if it has not already been loaded by this method.
+		 *
+		 * @param string $src
+		 * @return string
+		 */
+		static function RequireOnce($src)
+		{
+			return Zymurgy::RequireOnceCore(false,$src);
 		}
 		
 		/**
@@ -104,7 +176,7 @@ if (!class_exists('Zymurgy'))
 		
 		static function YUIBaseURL()
 		{
-			return "http://yui.yahooapis.com/2.6.0/build/";
+			return "http://yui.yahooapis.com/2.7.0/build/";
 		}
 		
 		/**
@@ -300,11 +372,16 @@ if (!class_exists('Zymurgy'))
 	
 		/**
 		 * Get header tags such as title, meta tags, and admin javascript for in-place editing.
+		 * @param $ispage boolean Is this a page in the context of the site?  CSS for example is not a page.
 		 *
 		 * @return string
 		 */
-		static function headtags()
+		static function headtags($ispage = true)
 		{
+			if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
+				include_once(Zymurgy::$root."/zymurgy/custom/render.php");
+			if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
+				include_once(Zymurgy::$root."/caseo/custom/render.php");
 			$s = Zymurgy::$db->escape_string($_SERVER['PHP_SELF']);
 			if (($s=='') || ($s=='/'))
 				$s = '/index.php';
@@ -331,7 +408,7 @@ if (!class_exists('Zymurgy'))
 				$r[] = "<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
 			if (array_key_exists('zymurgy',$_COOKIE))
 				$r[] = Zymurgy::adminhead();
-			$r[] = "<script type=\"text/javascript\" src=\"/zymurgy/include/cmo.js\"></script>";
+			$r[] = trim(Zymurgy::RequireOnce('/zymurgy/include/cmo.js'));
 			if (array_key_exists('tracking',Zymurgy::$config) && (Zymurgy::$config['tracking']))
 			{
 				//Log the pageview
@@ -358,10 +435,6 @@ if (!class_exists('Zymurgy'))
 					</script>";
 			}
 			$r = implode("\r\n",$r)."\r\n";
-			if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
-				include_once(Zymurgy::$root."/zymurgy/custom/render.php");
-			if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
-				include_once(Zymurgy::$root."/caseo/custom/render.php");
 			return $r;
 		}
 		
@@ -766,17 +839,29 @@ if (!class_exists('Zymurgy'))
 		
 		/**
 		 * Return a color value in #RRGGBB format, as set in a color theme.
+		 * 
+		 * The standard theme color indexes are:
+		 *  - Header Background
+		 *  - Menu Background
+		 *  - Menu Highlight
+		 *  - Page Background
+		 *  - Text Color
+		 *  - Link Color
 		 *
-		 * @param $index The index of the color within the theme, either as a 
+		 * @param mixed $index The index of the color within the theme, either as a 
 		 * number, or as a text value set in the $ThemeColor static array.
-		 * @param $theme The theme definition, either as a comma-delimited list
+		 * @param string $theme The theme definition, either as a comma-delimited list
 		 * of color values, or as a reference to an item in the site config.
 		 * @return The color value.
 		 */
 		static function theme(
 			$index,
-			$theme)
+			$theme = null)
 		{
+			if (is_null($theme))
+			{
+				$theme = Zymurgy::$defaulttheme;
+			}
 			// If the index was passed in as text, convert it to the numeric index
 			// based on the $ThemeColor static array.
 			if(!is_numeric($index))
@@ -802,17 +887,15 @@ if (!class_exists('Zymurgy'))
 			
 			$color = Zymurgy::$colorThemes[$theme][$index];
 			
-			return "#" . substr($color, 1);
+			return substr($color, 1);
 		}
 		
-		static $ThemeColor = array(
-			"Header Background" => 1,
-			"Menu Background" => 2,
-			"Menu Highlight" => 3,
-			"Page Background" => 4,
-			"Text Color" => 5,
-			"Link Color" => 6			
-		);
+		function sitenav($ishorizontal = true,$baseurl = 'pages')
+		{
+			require_once('sitenav.php');
+			$nav = new ZymurgySiteNav();
+			$nav->render($ishorizontal,$baseurl);
+		}
 	}
 		
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
@@ -848,6 +931,8 @@ if (!class_exists('Zymurgy'))
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			Zymurgy::$userconfig[$row['name']] = $row['value'];
+			if (($row['inputspec']=='theme') && (is_null(Zymurgy::$defaulttheme)))
+				Zymurgy::$defaulttheme = $row['name'];
 		}
 		Zymurgy::$db->free_result($ri);
 	} //Else this is init so we don't care.

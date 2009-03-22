@@ -165,60 +165,59 @@ function updateNoSubMenuChange() {
 		YAHOO.util.Dom.setStyle('noSubMenuChange','display','none');
 	}
 }
-function yuiLoaded() {
-	YAHOO.util.Event.onDOMReady(function() {
-		var elNavType = document.getElementById('zcm_nav.navtype');
-		var elNavTo = document.getElementById('zcm_nav.navto');
-		var elNavTypeCell = document.getElementById('cell-zcm_nav.navtype');
-		var newdiv = document.createElement('div');
-		newdiv.setAttribute('id','noSubMenuChange');
-		newdiv.innerHTML="Sub-Menu's cannot be changed to another type.";
-		elNavTypeCell.appendChild(newdiv);
-		updateNoSubMenuChange();
+
+YAHOO.util.Event.onDOMReady(function() {
+	var elNavType = document.getElementById('zcm_nav.navtype');
+	var elNavTo = document.getElementById('zcm_nav.navto');
+	var elNavTypeCell = document.getElementById('cell-zcm_nav.navtype');
+	var newdiv = document.createElement('div');
+	newdiv.setAttribute('id','noSubMenuChange');
+	newdiv.innerHTML="Sub-Menu's cannot be changed to another type.";
+	elNavTypeCell.appendChild(newdiv);
+	updateNoSubMenuChange();
+	switch(elNavType.value) {
+		case 'URL':
+			lasturl = elNavTo.value;
+			setUrlContent();
+			setDestination(urlContent);
+			break;
+		case 'Custom Table':
+			lastct = elNavTo.value;
+			setCtContent();
+			setDestination(ctContent);
+			break;
+		case 'Plugin':
+			lastpi = elNavTo.value;
+			setPiContent();
+			setDestination(piContent);
+			break;
+		case 'Sub-Menu':
+		default:
+			setDestination(smContent);
+			elNavType.disabled = true;
+			break;
+	}
+	YAHOO.util.Event.addListener("zcm_nav.navtype", "change", function() {
 		switch(elNavType.value) {
 			case 'URL':
-				lasturl = elNavTo.value;
 				setUrlContent();
 				setDestination(urlContent);
 				break;
 			case 'Custom Table':
-				lastct = elNavTo.value;
 				setCtContent();
 				setDestination(ctContent);
 				break;
 			case 'Plugin':
-				lastpi = elNavTo.value;
 				setPiContent();
 				setDestination(piContent);
 				break;
 			case 'Sub-Menu':
 			default:
 				setDestination(smContent);
-				elNavType.disabled = true;
 				break;
 		}
-		YAHOO.util.Event.addListener("zcm_nav.navtype", "change", function() {
-			switch(elNavType.value) {
-				case 'URL':
-					setUrlContent();
-					setDestination(urlContent);
-					break;
-				case 'Custom Table':
-					setCtContent();
-					setDestination(ctContent);
-					break;
-				case 'Plugin':
-					setPiContent();
-					setDestination(piContent);
-					break;
-				case 'Sub-Menu':
-				default:
-					setDestination(smContent);
-					break;
-			}
-		}); 
-	});
-}
+	}); 
+});
 </script>
 <?
 }

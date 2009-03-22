@@ -1,5 +1,6 @@
 <?
 require_once('cmo.php');
+Zymurgy::$yuitest = true;
 
 $t = 0 + $_GET['t'];
 $parentrow = array_key_exists('d',$_GET) ? 0 + $_GET['d'] : 0;

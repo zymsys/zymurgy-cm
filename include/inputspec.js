@@ -387,7 +387,7 @@ function GetDropSpecifier()
 	valueParameter.description = "Values (comma seperated)";
 	valueParameter.type = "text";
 	valueParameter.size = "30";
-	valueParameter.maxlength = "200";
+	valueParameter.maxlength = "4096";
 	valueParameter.value = "Value 1,Value 2,Value 3";
 	specifier.inputparameters.push(valueParameter);
 
@@ -399,6 +399,24 @@ function GetAttachmentSpecifier()
 	var specifier = new InputSpecifier;
 	specifier.description = "Attachment";
 	specifier.type = "attachment";
+
+	return specifier;
+}
+
+function GetColourSpecifier()
+{
+	var specifier = new InputSpecifier;
+	specifier.description = "Color";
+	specifier.type = "color";
+
+	return specifier;
+}
+
+function GetThemeSpecifier()
+{
+	var specifier = new InputSpecifier;
+	specifier.description = "Color Theme";
+	specifier.type = "theme";
 
 	return specifier;
 }
@@ -556,6 +574,8 @@ function GetSupportedSpecifiers()
 	list.push(GetFloatSpecifier());
 	list.push(GetUnixDateSpecifier());
 	list.push(GetLookupSpecifier());
+	list.push(GetColourSpecifier());
+	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());
 	list.push(GetHipAsirraSpecifier());
 	

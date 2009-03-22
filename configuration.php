@@ -29,7 +29,10 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 				//??
 				break;
 			case 'image':
-				Zymurgy::MakeThumbs('zcm_config.value',$id,array("{$isp[0]}x{$isp[1]}"),$_FILES["Config$id"]['tmp_name']);
+				if (!empty($_FILES["Config$id"]['tmp_name']))
+				{
+					Zymurgy::MakeThumbs('zcm_config.value',$id,array("{$isp[0]}x{$isp[1]}"),$_FILES["Config$id"]['tmp_name']);
+				}
 				break;
 		}
 		$sql = "update zcm_config set value='".
@@ -57,6 +60,8 @@ else
 	echo implode("\r\n",$pretext);
 	Zymurgy::$db->free_result($ri);
 	$ri = Zymurgy::$db->run("select * from zcm_config order by disporder");
+	$iw = new InputWidget();
+	$iw->datacolumn = "zcm_config.value";
 	if (Zymurgy::$db->num_rows($ri)==0)
 	{
 		echo "This site has no configuration values to set.";
@@ -67,9 +72,8 @@ else
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			echo "<tr><td align=\"right\">{$row['name']}:</td><td>";
-			$iw = new InputWidget();
+			$iw->editkey = $row['id'];
 			$iw->Render($row['inputspec'],"Config{$row['id']}",$row['value']);
-			//echo "<input type=\"text\" name=\"Config{$row['id']}\" value=\"".str_replace('"','&quot;',$row['value'])."\">";
 			echo "</td></tr>\r\n";
 		}
 		echo "<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Save\"></td></tr>\r\n";
