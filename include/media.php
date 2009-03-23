@@ -12,6 +12,15 @@
 			Zymurgy::$db->query($sql) 
 				or die("Could not create zcm_media_restriction table: ".mysql_error());
 				
+			$sql = "CREATE TABLE `zcm_media_relation` (".
+				"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+				"`relation_type` VARCHAR(50) NOT NULL,".
+				"`relation_type_label` VARCHAR(50) NOT NULL,".
+				"PRIMARY KEY (`media_relation_id`)".
+				") ENGINE = InnoDB;";
+			Zymurgy::$db->query($sql)
+				or die("Could not create zcm_media_relation table: ".mysql_error());
+				
 			$sql = "CREATE TABLE `zcm_media_file` (".
   				"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
   				"`member_id` INTEGER UNSIGNED NOT NULL,".
@@ -39,7 +48,7 @@
 				"`media_file_id` INTEGER UNSIGNED NOT NULL,".
 				"`media_package_id` INTEGER UNSIGNED NOT NULL,".
 				"`disporder` INTEGER UNSIGNED NOT NULL,".
-				"`relation_type` VARCHAR(50) NOT NULL,".
+				"`media_relation_id` INTEGER NOT NULL,".
 				"PRIMARY KEY (`media_file_package_id`)".
 				") ENGINE = InnoDB;";
 			Zymurgy::$db->query($sql) 
@@ -60,6 +69,9 @@
 			Zymurgy::$db->query($sql); 
 			//	or die("Could not drop zcm_media_file table: ".mysql_error());
 			
+			$sql = "DROP TABLE `zcm_media_relation`";
+			Zymurgy::$db->query($sql); 
+			
 			$sql = "DROP TABLE `zcm_media_restriction`";
 			Zymurgy::$db->query($sql); 
 			//	or die("Could not drop zcm_media_restriction table: ".mysql_error());
@@ -74,7 +86,8 @@
 		private $m_display_name;
 		
 		private $m_disporder;
-		private $m_relation_type;
+		private $m_media_relation_id;
+		private $m_relation_label;
 		
 		private $m_restriction;
 		private $m_member;
@@ -151,14 +164,24 @@
 			$this->m_disporder = $newValue;
 		}
 		
-		public function get_relation_type()
+		public function get_media_relation_id()
 		{
-			return $this->m_relation_type;
+			return $this->m_media_relation_id;
 		}
 		
-		public function set_relation_type($newValue)
+		public function set_media_relation_id($newValue)
 		{
-			$this->m_relation_type = $newValue;
+			$this->m_media_relation_id = $newValue;
+		}
+		
+		public function get_relation_label()
+		{
+			return $this->m_relation_label;
+		}
+		
+		public function set_relation_label($newValue)
+		{
+			$this->m_relation_label = $newValue;
 		}
 		
 		public function get_restriction()
@@ -687,14 +710,17 @@
 		
 		static function PopulateMediaFiles(&$mediaPackage)
 		{
-			$sql = "SELECT `media_file_id`, `disporder`, `relation_type` FROM ".
-				"`zcm_media_file_package` WHERE `media_package_id` = '".
+			$sql = "SELECT `media_file_id`, `disporder`, mfp.`media_relation_id`, ".
+				"`relation_type_label` FROM `zcm_media_file_package` mfp INNER JOIN ".
+				"`zcm_media_relation` mr ON mr.`media_relation_id` = ".
+				"mfp.`media_relation_id` WHERE `media_package_id` = '".
 				mysql_escape_string($mediaPackage->get_media_package_id()).
 				"' ORDER BY `disporder`";		
 				
 			// die($sql);	
 								
-			$ri = Zymurgy::$db->query($sql) or die();
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve list of files: ".mysql_error().", $sql");
 			
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{
@@ -702,7 +728,8 @@
 					$row["media_file_id"]);
 					
 				$mediaFile->set_disporder($row["disporder"]);
-				$mediaFile->set_relation_type($row["relation_type"]);
+				$mediaFile->set_media_relation_id($row["media_relation_id"]);
+				$mediaFile->set_relation_label($row["relation_type_label"]);
 					
 				$mediaPackage->add_media_file($mediaFile);
 			}
@@ -758,15 +785,21 @@
 			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
 		}
 		
-		public function AddMediaFileToPackage($media_package_id, $media_file_id)
+		public function AddMediaFileToPackage(
+			$media_package_id, 
+			$media_file_id,
+			$media_relation_id,
+			$disporder)
 		{
 			$sql = "INSERT INTO `zcm_media_file_package` ( `media_package_id`, ".
-				"`media_file_id`, `disporder`, `relation_type` ) VALUES ('".
+				"`media_file_id`, `media_relation_id`, `disporder` ) VALUES ('".
 				mysql_escape_string($media_package_id)."', '".
 				mysql_escape_string($media_file_id)."', '".
-				mysql_escape_string("1")."', '')";
+				mysql_escape_string($media_relation_id)."', '".
+				mysql_escape_string($disporder)."')";
 				
-			Zymurgy::$db->query($sql) or die("Could not media file to media package: ".mysql_error());
+			Zymurgy::$db->query($sql) 
+				or die("Could not add media file to media package: ".mysql_error().", $sql");
 		}
 		
 		public function SaveMediaFileOrder($mediaPackage)
@@ -903,6 +936,169 @@
 				
 				return $member;
 			}
+		}
+	}
+	
+	class MediaRelation
+	{
+		private $m_media_relation_id;		
+		private $m_relation_type;
+		private $m_relation_label;
+		
+		private $m_errors = array();
+		
+		public function get_media_relation_id()
+		{
+			return $this->m_media_relation_id;
+		}
+		
+		public function set_media_relation_id($newValue)
+		{
+			$this->m_media_relation_id = $newValue;
+		}
+		
+		public function get_relation_type()
+		{
+			return $this->m_relation_type;
+		}
+		
+		public function set_relation_type($newValue)
+		{
+			$this->m_relation_type = $newValue;
+		}
+		
+		public function get_relation_label()
+		{
+			return $this->m_relation_label;
+		}
+		
+		public function set_relation_label($newValue)
+		{
+			$this->m_relation_label = $newValue;
+		}
+		
+		public function get_errors()
+		{
+			return $this->m_errors;
+		}
+		
+		public function set_errors($newValue)
+		{
+			$this->m_errors = $newValue;
+		}
+		
+		public function validate($action)
+		{
+			$isValid = true;
+			
+			if(strlen($this->m_relation_type) <= 0)
+			{
+				$this->m_errors[] = "Relation Type is required.";				
+				$isValid = false;
+			}
+			
+			if(strlen($this->m_relation_label) <= 0)
+			{
+				$this->m_errors[] = "Label is required.";				
+				$isValid = false;
+			}
+			
+			return $isValid;
+		}
+	}
+	
+	class MediaRelationPopulator
+	{
+		static function PopulateAll()
+		{
+			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label` ".
+				"FROM `zcm_media_relation` ORDER BY `relation_type_label`";				
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve relation types: ".mysql_error().", $sql");
+			
+			$mediaRelations = array();
+			
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$mediaRelation = new MediaRelation();
+				
+				$mediaRelation->set_media_relation_id($row["media_relation_id"]);
+				$mediaRelation->set_relation_type($row["relation_type"]);
+				$mediaRelation->set_relation_label($row["relation_type_label"]);
+				
+				$mediaRelations[] = $mediaRelation;
+			}
+			
+			return $mediaRelations;
+		}
+		
+		static function PopulateByID($media_relation_id)
+		{
+			$sql = "SELECT `relation_type`, `relation_type_label` ".
+				"FROM `zcm_media_relation` WHERE `media_relation_id` = '".
+				mysql_escape_string($media_relation_id)."'";				
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve relation: ".mysql_error().", $sql");
+			
+			if(Zymurgy::$db->num_rows($ri) > 0)
+			{
+				$row = Zymurgy::$db->fetch_array($ri);
+				$mediaRelation = new MediaRelation();
+				
+				$mediaRelation->set_media_relation_id($media_relation_id);
+				$mediaRelation->set_relation_type($row["relation_type"]);
+				$mediaRelation->set_relation_label($row["relation_type_label"]);
+				
+				return $mediaRelation;
+			}
+		}
+		
+		static function PopulateFromForm()
+		{
+			$mediaRelation = new MediaRelation();
+		
+			$mediaRelation->set_media_relation_id($_POST["media_relation_id"]);
+			$mediaRelation->set_relation_type($_POST["relation_type"]);
+			$mediaRelation->set_relation_label($_POST["relation_label"]);
+			
+			return $mediaRelation;				
+		}
+		
+		static function SaveRelation($mediaRelation)
+		{
+			$sql = "";
+			
+			if($mediaRelation->get_media_relation_id() <= 0)
+			{
+				$sql = "INSERT INTO `zcm_media_relation` ( `relation_type`, ".
+					"`relation_type_label` ) VALUES ( '".
+					mysql_escape_string($mediaRelation->get_relation_type())."', '".
+					mysql_escape_string($mediaRelation->get_relation_label())."' )";
+										
+				Zymurgy::$db->query($sql) or die("Could not insert relation record: ".mysql_error());
+				
+				$sql = "SELECT MAX(`media_relation_id`) FROM `zcm_media_relation`";
+				
+				$mediaRelation->set_media_relation_id(
+					Zymurgy::$db->get($sql));
+			}
+			else 
+			{
+				$sql = "UPDATE `zcm_media_relation` SET ".
+					"`relation_type` = '".mysql_escape_string($mediaRelation->get_relation_type())."', ".
+					"`relation_type_label` = '".mysql_escape_string($mediaRelation->get_relation_label())."' ".
+					"WHERE `media_relation_id` = '".mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					
+				Zymurgy::$db->query($sql) or die("Could not update relation record: ".mysql_error());
+			}						
+		}
+		
+		public function DeleteRelation($media_relation_id)
+		{
+			$sql = "DELETE FROM `zcm_media_relation` WHERE `media_relation_id` = '".
+				mysql_escape_string($media_relation_id)."'";
+				
+			Zymurgy::$db->query($sql) or die("Could not delete relation: ".mysql_error());
 		}
 	}
 	
@@ -1205,6 +1401,7 @@
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Media File Name</td>");
 			echo("<td>Owner</td>");
+			echo("<td>Relation</td>");
 			echo("<td colspan=\"3\">&nbsp;</td>");
 			echo("</tr>");
 
@@ -1215,6 +1412,7 @@
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">");
 				echo("<td>".$mediaFile->get_display_name()."</td>");
 				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
+				echo("<td>".$mediaFile->get_relation_label()."</td>");
 				echo("<td><a href=\"media.php?action=move_media_package_file_up&amp;media_package_id=".
 					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
 					$mediaFile->get_media_file_id()."\">".
@@ -1230,22 +1428,29 @@
 			}
 			
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
 			
 			echo("</table>");
 			
 			include("footer.php");
 		}
 		
-		static function DisplayListOfFilesToAdd($mediaPackage, $mediaFiles)
+		static function DisplayListOfFilesToAdd($mediaPackage, $mediaFiles, $mediaRelations)
 		{
 			include("header.php");
 			include('datagrid.php');
 			
 			DumpDataGridCSS();
 			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+			
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_add_media_package_file\">");
+			echo("<input type=\"hidden\" name=\"media_package_id\" value=\"".
+				$mediaPackage->get_media_package_id()."\">");
+						
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>&nbsp;</td>");
 			echo("<td>Display Name</td>");
 			echo("<td>MIME Type</td>");
 			echo("<td>Owner</td>");
@@ -1257,9 +1462,16 @@
 			foreach($mediaFiles as $mediaFile)			
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
-				echo("<td><a href=\"media.php?action=act_add_media_package_file&amp;media_package_id=".
-					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
-					$mediaFile->get_media_file_id()."\">".$mediaFile->get_display_name()."</td>");
+				echo("<td><input type=\"radio\" id=\"media_file_id_".
+					$mediaFile->get_media_file_id().
+					"\" name=\"media_file_id\" value=\"".
+					$mediaFile->get_media_file_id().
+					"\">");
+				echo("<td><label for=\"media_file_id_".
+					$mediaFile->get_media_file_id().
+					"\">".
+					$mediaFile->get_display_name().
+					"</td>");
 				echo("<td>".$mediaFile->get_mimetype()."</td>");
 				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
@@ -1270,13 +1482,150 @@
 			}
 			
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"4\">&nbsp;</td>");
+			echo("<td colspan=\"5\">&nbsp;</td>");
+			
+			echo("</table>");
+
+			echo("<p>Relation: <select name=\"media_relation_id\">");
+			
+			foreach($mediaRelations as $mediaRelation)
+			{
+				echo("<option value=\"".
+					$mediaRelation->get_media_relation_id().
+					"\">".
+					$mediaRelation->get_relation_label().
+					"</option>");
+			}
+
+			echo("</select></p>");			
+			echo("<p><input type=\"submit\" value=\"Save\"></p>");
+
+			include("footer.php");
+		}
+		
+	}
+	
+	class MediaRelationView
+	{
+		static function DisplayList($mediaRelations)
+		{
+			include("header.php");
+			include('datagrid.php');
+			
+			DumpDataGridCSS();
+			
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Type</td>");
+			echo("<td>Label</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
+			
+			$cntr = 1;
+			
+			foreach($mediaRelations as $mediaRelation)			
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"media.php?action=edit_relation&amp;media_relation_id=".
+					urlencode($mediaRelation->get_media_relation_id())."\">".
+					$mediaRelation->get_relation_type()."</td>");
+				echo("<td>".$mediaRelation->get_relation_label()."</td>");
+				echo("<td><a href=\"media.php?action=delete_relation&amp;media_relation_id=".
+					urlencode($mediaRelation->get_media_relation_id())."\">Delete</a></td>");
+				echo("</tr>");
+				
+				$cntr++;
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_relation\">Add Relation Type</td>");
 			
 			echo("</table>");
 			
 			include("footer.php");
 		}
 		
+		static function DisplayEditForm($mediaRelation, $action)
+		{
+			include("header.php");
+			$widget = new InputWidget();			
+			
+			// echo("<pre>");
+			// print_r($mediaFile);
+			// echo("</pre>");
+			
+			$errors = $mediaRelation->get_errors();
+			
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">");
+				echo("<div style=\"color: red\">Error</div>");
+				echo("<ul>");
+				
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>");
+				}
+				
+				echo("</ul>");
+				echo("</div>");
+			}
+			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">");
+			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">");
+			echo("<input type=\"hidden\" name=\"media_relation_id\" value=\"".$mediaRelation->get_media_relation_id()."\">");
+			echo("<table>");
+			
+			echo("<tr>");
+			echo("<td>Relation Type:</td>");
+			echo("<td>");
+			$widget->Render("input.30.50", "relation_type", $mediaRelation->get_relation_type());
+			echo("</td>");
+			echo("</tr>");
+						
+			echo("<tr>");
+			echo("<td>Label:</td>");
+			echo("<td>");
+			$widget->Render("input.30.50", "relation_label", $mediaRelation->get_relation_label());
+			echo("</td>");
+			echo("</tr>");
+			
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+			
+			echo("<tr>");
+			echo("<td>&nbsp;</td>");
+			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("</tr>");
+			
+			echo("</table>");
+			echo("</form>");
+			
+			include("footer.php");
+		}
+	
+		static function DisplayDeleteFrom($mediaRelation)
+		{
+			include("header.php");
+			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+			
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_delete_relation\">");
+			echo("<input type=\"hidden\" name=\"media_relation_id\" value=\"".
+				$mediaRelation->get_media_relation_id()."\">");
+			
+			echo("<p>Are you sure you want to delete the following media package:</p>");
+			echo("<p>Relation Type: ".$mediaRelation->get_relation_type());
+			echo("<br>Label: ".$mediaRelation->get_relation_label()."</p>");
+			
+			echo("<p>");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"Yes\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"No\" onclick=\"window.location.href='media.php?action=list_relations';\">");
+			echo("</p>");
+			
+			echo("</form>");
+			
+			include("footer.php");
+		}
 	}
 	
 	class MediaController
@@ -1286,6 +1635,7 @@
 			if($this->Execute_InstallerActions($action)) {}
 			else if($this->Execute_MediaFileActions($action)) {}
 			else if($this->Execute_MediaPackageActions($action)) {}
+			else if($this->Execute_RelationActions($action)) {}
 			else 
 			{
 				die("Unsupported action ".$action);
@@ -1452,16 +1802,26 @@
 						$_GET["media_package_id"]);
 					$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
 						$mediaPackage);
-					MediaPackageView::DisplayListOfFilesToAdd($mediaPackage, $mediaFiles);
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					MediaPackageView::DisplayListOfFilesToAdd($mediaPackage, $mediaFiles, $mediaRelations);
 					return true;
 					
 				case "act_add_media_package_file":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_POST["media_package_id"]);
+					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+					$disporder = $mediaPackage->get_media_file_count();
+
 					MediaPackagePopulator::AddMediaFileToPackage(
-						$_GET["media_package_id"],
-						$_GET["media_file_id"]);
+						$_POST["media_package_id"],
+						$_POST["media_file_id"],
+						$_POST["media_relation_id"],
+						$disporder + 1);
+						
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
-						$_GET["media_package_id"]);	
+						$_POST["media_package_id"]);	
+						
 					return true;
 					
 				case "move_media_package_file_up":
@@ -1498,6 +1858,64 @@
 				default:
 					return false;
 			}
-		}			
+		}	
+
+		private function Execute_RelationActions($action)
+		{
+			switch($action)
+			{
+				case "list_relations":
+					$relations = MediaRelationPopulator::PopulateAll();
+					MediaRelationView::DisplayList($relations);
+					return true;
+					
+				case "add_relation":
+					$relation = new MediaRelation();
+					MediaRelationView::DisplayEditForm($relation, "act_add_relation");
+					return true;
+					
+				case "edit_relation":
+					$relation = MediaRelationPopulator::PopulateByID(
+						$_GET["media_relation_id"]);
+					MediaRelationView::DisplayEditForm($relation, "act_add_relation");
+					return true;
+					
+				case "act_add_relation":
+				case "act_edit_relation":
+					$relation = MediaRelationPopulator::PopulateFromForm();
+						
+					if(!$relation->validate($action))
+					{
+						MediaRelationView::DisplayEditForm($relation, $action);
+					}
+					else 
+					{
+						if(MediaRelationPopulator::SaveRelation($relation))
+						{
+							MediaRelationView::DisplayEditForm($relation, $action);
+						}
+						else 
+						{
+							header("Location: media.php?action=list_relations");	
+						}
+					}
+					return true;
+					
+				case "delete_relation":
+					$relation = MediaRelationPopulator::PopulateByID(
+						$_GET["media_relation_id"]);
+					MediaRelationView::DisplayDeleteFrom($relation);
+					return true;
+					
+				case "act_delete_relation":
+					MediaRelationPopulator::DeleteRelation(
+						$_POST["media_relation_id"]);
+					header("Location: media.php?action=list_relations");	
+					return true;
+				
+				default:
+					return false;
+			}			
+		}
 	}
 ?>
