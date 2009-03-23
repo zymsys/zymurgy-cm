@@ -1283,20 +1283,40 @@
 	{
 		function Execute($action)
 		{
+			if($this->Execute_InstallerActions($action)) {}
+			else if($this->Execute_MediaFileActions($action)) {}
+			else if($this->Execute_MediaPackageActions($action)) {}
+			else 
+			{
+				die("Unsupported action ".$action);
+			}				
+		}
+
+		private function Execute_InstallerActions($action)
+		{
 			switch($action)
 			{
 				case "install":
 					MediaFileInstaller::Install();
-					break;
+					return true;
 					
 				case "uninstall":
 					MediaFileInstaller::Uninstall();
-					break;
-				
+					return true;
+					
+				default:
+					return false;
+			}
+		}
+		
+		private function Execute_MediaFileActions($action)
+		{
+			switch($action)
+			{
 				case "list_media_files":
 					$mediaFiles = MediaFilePopulator::PopulateAll();					
 					MediaFileView::DisplayList($mediaFiles);					
-					break;
+					return true;
 					
 				case "add_media_file":
 					$mediaFile = new MediaFile();
@@ -1304,13 +1324,13 @@
 					$mediaFile->set_member(
 						MediaMemberPopulator::PopulateByID(1));
 					MediaFileView::DisplayEditForm($mediaFile, "act_add_media_file");
-					break;
+					return true;
 					
 				case "edit_media_file":
 					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_GET["media_file_id"]);
 					MediaFileView::DisplayEditForm($mediaFile, "act_edit_media_file");
-					break;
+					return true;
 					
 				case "act_add_media_file":
 				case "act_edit_media_file":
@@ -1331,18 +1351,19 @@
 							header("Location: media.php?action=list_media_files");	
 						}
 					}
-					break;
+					return true;
 					
 				case "delete_media_file":
 					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_GET["media_file_id"]);
 					MediaFileView::DisplayDeleteFrom($mediaFile);
-					break;
+					return true;
 					
 				case "act_delete_media_file":
 					MediaFilePopulator::DeleteMediaFile(
 						$_POST["media_file_id"]);
 					header("Location: media.php?action=list_media_files");	
+					return true;
 					
 				case "download_media_file":
 					$mediaFile = MediaFilePopulator::PopulateByID(
@@ -1350,25 +1371,34 @@
 					$fileContent = MediaFilePopulator::GetFilestream(
 						$mediaFile);
 					MediaFileView::DownloadMediaFile($mediaFile, $fileContent);
-					break;
+					return true;
 					
+				default:
+					return false;
+			}
+		}
+		
+		private function Execute_MediaPackageActions($action)
+		{
+			switch($action)
+			{
 				case "list_media_packages":
 					$mediaPackages = MediaPackagePopulator::PopulateAll();
 					MediaPackageView::DisplayList($mediaPackages);
-					break;
+					return true;
 						
 				case "add_media_package":
 					$mediaPackage = new MediaPackage();
 					$mediaPackage->set_member(
 						MediaMemberPopulator::PopulateByID(1));
 					MediaPackageView::DisplayEditForm($mediaPackage, "act_add_media_package");
-					break;
+					return true;
 					
 				case "edit_media_package":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
 						$_GET["media_package_id"]);
 					MediaPackageView::DisplayEditForm($mediaPackage, "act_edit_media_package");
-					break;
+					return true;
 					
 				case "act_add_media_package":
 				case "act_edit_media_package":
@@ -1389,18 +1419,19 @@
 							header("Location: media.php?action=list_media_packages");	
 						}
 					}
-					break;
+					return true;
 					
 				case "delete_media_package":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
 						$_GET["media_package_id"]);
 					MediaPackageView::DisplayDeleteFrom($mediaPackage);
-					break;
+					return true;
 					
 				case "act_delete_media_package":
 					MediaPackagePopulator::DeleteMediaPackage(
 						$_POST["media_package_id"]);
 					header("Location: media.php?action=list_media_packages");	
+					return true;
 					
 				case "list_media_package_files":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
@@ -1414,7 +1445,7 @@
 					// die();
 
 					MediaPackageView::DisplayRelatedMedia($mediaPackage);
-					break;
+					return true;
 					
 				case "add_media_package_file":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
@@ -1422,7 +1453,7 @@
 					$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
 						$mediaPackage);
 					MediaPackageView::DisplayListOfFilesToAdd($mediaPackage, $mediaFiles);
-					break;
+					return true;
 					
 				case "act_add_media_package_file":
 					MediaPackagePopulator::AddMediaFileToPackage(
@@ -1431,7 +1462,7 @@
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
 						$_GET["media_package_id"]);	
-					break;
+					return true;
 					
 				case "move_media_package_file_up":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
@@ -1442,7 +1473,7 @@
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
 						$_GET["media_package_id"]);	
-					break;
+					return true;
 					
 				case "move_media_package_file_down":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
@@ -1453,7 +1484,7 @@
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
 						$_GET["media_package_id"]);	
-					break;
+					return true;
 				
 				case "delete_media_package_file":
 					MediaPackagePopulator::DeleteMediaFileFromPackage(
@@ -1462,11 +1493,11 @@
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
 						$_GET["media_package_id"]);	
-					break;
+					return true;
 					
 				default:
-					die("Unsupported action ".$action);
+					return false;
 			}
-		}
+		}			
 	}
 ?>
