@@ -591,6 +591,40 @@
 			
 			return $isValid;
 		}
+		
+		public function MoveMediaFile($mediaFileID, $offset)
+		{
+			// Just in case the media file disporder has been corrupted, 
+			// clean it up.
+			$this->FixMediaFileOrder();
+			
+			// Calculate the start and end indexes.
+			// If we're moving the file up ($offset = -1), we want to start on the 
+			// second file and end on the last file.
+			// If we're moving the file down ($offset = 1), we want to start on the 
+			// first file and end on the second-last file.
+			$start = $offset > 0 ? 0 : 1;
+			$end = count($this->m_media_files) + ($offset > 0 ? -1 : 0);
+			
+			// NOTE: This loop skips a file on purpose. If it's the 
+			// ID sent, it can't be moved up any further.
+			for($cntr = $start; $cntr < $end; $cntr++)
+			{
+				if($this->m_media_files[$cntr]->get_media_file_id() == $mediaFileID)
+				{					
+					$this->m_media_files[$cntr]->set_disporder($cntr + 1 + $offset);
+					$this->m_media_files[$cntr + $offset]->set_disporder($cntr + 1);
+				}
+			}
+		}
+		
+		public function FixMediaFileOrder()
+		{
+			for($cntr = 0; $cntr < count($this->m_media_files); $cntr++)
+			{
+				$this->m_media_files[$cntr]->set_disporder($cntr + 1);
+			}
+		}
 	}
 	
 	class MediaPackagePopulator
@@ -733,6 +767,22 @@
 				mysql_escape_string("1")."', '')";
 				
 			Zymurgy::$db->query($sql) or die("Could not media file to media package: ".mysql_error());
+		}
+		
+		public function SaveMediaFileOrder($mediaPackage)
+		{
+			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
+			{
+				$mediaFile = $mediaPackage->get_media_file($cntr);
+				
+				$sql = "UPDATE `zcm_media_file_package` SET `disporder` = '".
+					mysql_escape_string($mediaFile->get_disporder())."' WHERE `media_package_id` = '".
+					mysql_escape_string($mediaPackage->get_media_package_id())."' AND `media_file_id` = '".
+					mysql_escape_string($mediaFile->get_media_file_id())."'";
+				
+				Zymurgy::$db->query($sql) 
+					or die("Could not re-order media file in package: ".mysql_error());
+			}
 		}
 		
 		public function DeleteMediaFileFromPackage($media_package_id, $media_file_id)
@@ -1155,7 +1205,7 @@
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Media File Name</td>");
 			echo("<td>Owner</td>");
-			echo("<td>&nbsp;</td>");
+			echo("<td colspan=\"3\">&nbsp;</td>");
 			echo("</tr>");
 
 			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
@@ -1165,14 +1215,22 @@
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">");
 				echo("<td>".$mediaFile->get_display_name()."</td>");
 				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
+				echo("<td><a href=\"media.php?action=move_media_package_file_up&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">".
+					"<img src=\"images/Up.gif\" alt=\"Up\" border=\"0\"></a></td>");
+				echo("<td><a href=\"media.php?action=move_media_package_file_down&amp;media_package_id=".
+					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">".
+					"<img src=\"images/Down.gif\" alt=\"Down\" border=\"0\"></a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_package_file&amp;media_package_id=".
 					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
-					$mediaFile->get_media_file_id()."\">Delete</a></td>");
+					$mediaFile->get_media_file_id()."\">Delete</a></td>");				
 				echo("</tr>");
 			}
 			
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
+			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
 			
 			echo("</table>");
 			
@@ -1370,6 +1428,28 @@
 					MediaPackagePopulator::AddMediaFileToPackage(
 						$_GET["media_package_id"],
 						$_GET["media_file_id"]);
+					header(
+						"Location: media.php?action=list_media_package_files&media_package_id=".
+						$_GET["media_package_id"]);	
+					break;
+					
+				case "move_media_package_file_up":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+					$mediaPackage->MoveMediaFile($_GET["media_file_id"], -1);
+					MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
+					header(
+						"Location: media.php?action=list_media_package_files&media_package_id=".
+						$_GET["media_package_id"]);	
+					break;
+					
+				case "move_media_package_file_down":
+					$mediaPackage = MediaPackagePopulator::PopulateByID(
+						$_GET["media_package_id"]);
+					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+					$mediaPackage->MoveMediaFile($_GET["media_file_id"], 1);
+					MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
 					header(
 						"Location: media.php?action=list_media_package_files&media_package_id=".
 						$_GET["media_package_id"]);	
