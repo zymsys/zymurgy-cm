@@ -32,6 +32,16 @@
 				") ENGINE = InnoDB;";
 			Zymurgy::$db->query($sql) 
 				or die("Could not create zcm_media_file table: ".mysql_error());
+				
+			$sql = "CREATE TABLE `zcm_media_file_relation` (".
+				"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+				"`media_file_id` INTEGER UNSIGNED NOT NULL,".
+				"`related_media_file_id` INTEGER UNSIGNED NOT NULL,".
+				"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
+				"PRIMARY KEY (`media_file_relation_id`)".
+				") ENGINE = InnoDB";
+			Zymurgy::$db->query($sql) 
+				or die("Could not create zcm_media_file_relation table: ".mysql_error());
 		
 			$sql = "CREATE TABLE `zcm_media_package` (".
 				"`media_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -328,6 +338,18 @@
 				$mediaPackage->get_media_package_id()."')");
 		}
 		
+		static function PopulateAllNotRelated($mediaFile)
+		{
+			return MediaFilePopulator::PopulateMultiple(
+				"`media_file_id` <> '".
+				$mediaFile->get_media_file_id().
+				"' AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_relation` WHERE ".
+				"`zcm_media_file_relation`.`related_media_file_id` = `zcm_media_file`.`media_file_id` AND ".
+				"`zcm_media_file_relation`.`media_file_id` = '".
+				$mediaFile->get_media_file_id().
+				"')");
+		}
+		
 		private static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `media_file_id`, `member_id`, `mimetype`, `extension`, ".
@@ -368,7 +390,8 @@
 				"`media_restriction_id` FROM `zcm_media_file` WHERE `media_file_id` = '".
 				mysql_escape_string($media_file_id)."'";
 				
-			$ri = Zymurgy::$db->query($sql) or die();
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve media file record: ".mysql_error().", $sql");
 			
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
@@ -395,19 +418,22 @@
 		static function PopulateRelatedMedia(
 			$base_media_file)
 		{
-			$sql = "SELECT `related_media_file_id`, `relation_type` FROM ".
-			"`media_file_relation` WHERE `media_file_id` = '".
+			$sql = "SELECT `related_media_file_id`, mfr.`media_relation_id`, `relation_type_label` FROM `zcm_media_file_relation` mfr INNER JOIN `zcm_media_relation` mr ON mr.`media_relation_id` = mfr.`media_relation_id` WHERE `media_file_id` = '".
 			mysql_escape_string($base_media_file->get_media_file_id())."'";
-				
-			$ri = Zymurgy::$db->query($sql) or die();
 			
+			// die($sql);
+				
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve related media: ".mysql_error().", $sql");
+				
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{ 
-				$media_file = MediaFilePopulator::PopulateByID(
+				$mediaFile = MediaFilePopulator::PopulateByID(
 					$row["related_media_file_id"]);
-				$media_file->set_relation_type($row["relation_type"]);
+				$mediaFile->set_media_relation_id($row["media_relation_id"]);
+				$mediaFile->set_relation_label($row["relation_type_label"]);
 				
-				$base_media_file->add_relatedmedia($media_file);
+				$base_media_file->add_relatedmedia($mediaFile);
 			}
 		}
 		
@@ -515,6 +541,28 @@
 				mysql_escape_string($media_file_id)."'";
 				
 			Zymurgy::$db->query($sql) or die("Could not delete media file record: ".mysql_error());
+		}
+		
+		public function AddRelatedMedia($media_file_id, $related_media_file_id, $media_relation_id)
+		{
+			$sql = "INSERT INTO `zcm_media_file_relation` ( `media_file_id`,".
+			 	" `related_media_file_id`, `media_relation_id` ) VALUES ( '".
+			 	mysql_escape_string($media_file_id)."', '".
+			 	mysql_escape_string($related_media_file_id)."', '".
+			 	mysql_escape_string($media_relation_id)."' )";
+			 	
+			// die($sql);
+				
+			Zymurgy::$db->query($sql) or die("Could not add related media: ".mysql_error().", $sql");
+		}
+		
+		public function DeleteRelatedMedia($media_file_id, $related_media_file_id)
+		{
+			$sql = "DELETE FROM `zcm_media_file_relation` WHERE `media_file_id` = '".
+				mysql_escape_string($media_file_id)."' AND `related_media_file_id` = '".
+				mysql_escape_string($related_media_file_id)."'";
+				
+			Zymurgy::$db->query($sql) or die("Could not delete related media: ".mysql_error().", $sql");
 		}
 	}
 	
@@ -1148,8 +1196,12 @@
 		static function DisplayEditForm($mediaFile, $action)
 		{
 			include("header.php");
-			$widget = new InputWidget();			
+			include('datagrid.php');
 			
+			DumpDataGridCSS();
+
+			$widget = new InputWidget();	
+								
 			// echo("<pre>");
 			// print_r($mediaFile);
 			// echo("</pre>");
@@ -1213,6 +1265,18 @@
 			echo("<td>".$mediaFile->get_member()->get_email()."</td>");
 			echo("</tr>");
 			
+			if($action == "act_edit_media_file")			
+			{
+				echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+				
+				echo("<tr>");
+				echo("<td valign=\"top\">Related Media:</td>");
+				echo("<td>");
+				MediaFileView::DisplayRelatedMedia($mediaFile);
+				echo("</td>");
+				echo("</tr>");
+			}
+			
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 			
 			echo("<tr>");
@@ -1224,6 +1288,48 @@
 			echo("</form>");
 			
 			include("footer.php");
+		}
+		
+		static function DisplayRelatedMedia($mediaFile)
+		{
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Display Name</td>");
+			echo("<td>MIME Type</td>");
+			echo("<td>Owner</td>");
+			echo("<td>Relation</td>");
+			echo("<td colspan=\"2\">&nbsp;</td>");
+			echo("</tr>");
+			
+			$totalRelated = $mediaFile->get_relatedmedia_count();
+			
+			for($cntr = 0; $cntr < $totalRelated; $cntr++)
+			{
+				$relatedFile = $mediaFile->get_relatedmedia($cntr);
+				
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">");
+				echo("<td><label for=\"media_file_id_".
+					$relatedFile->get_media_file_id().
+					"\">".
+					$relatedFile->get_display_name().
+					"</td>");
+				echo("<td>".$relatedFile->get_mimetype()."</td>");
+				echo("<td>".$relatedFile->get_member()->get_email()."</td>");
+				echo("<td>".$relatedFile->get_relation_label()."</td>");
+				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
+					$relatedFile->get_media_file_id()."\">Download</a></td>");
+				echo("<td><a href=\"media.php?action=delete_media_file_relation&amp;media_file_id=".
+					$mediaFile->get_media_file_id().
+					"&amp;related_media_file_id=".
+					$relatedFile->get_media_file_id().
+					"\">Delete</a></td>");
+				echo("</tr>");
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_file_relatedmedia&amp;media_file_id=".$mediaFile->get_media_file_id()."\">Add Related Media File</td>");
+			
+			echo("</table>");
 		}
 	
 		static function DisplayDeleteFrom($mediaFile)
@@ -1248,7 +1354,76 @@
 			
 			include("footer.php");
 		}
-		
+				
+		static function DisplayListOfFilesToAdd($mediaFile, $mediaFiles, $mediaRelations)
+		{
+			include("header.php");
+			include('datagrid.php');
+			
+			DumpDataGridCSS();
+			
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+			
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_add_media_file_relatedmedia\">");
+			echo("<input type=\"hidden\" name=\"media_file_id\" value=\"".
+				$mediaFile->get_media_file_id()."\">");
+						
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>&nbsp;</td>");
+			echo("<td>Display Name</td>");
+			echo("<td>MIME Type</td>");
+			echo("<td>Owner</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
+			
+			$cntr = 1;
+			
+			foreach($mediaFiles as $relatedFile)			
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><input type=\"radio\" id=\"media_file_id_".
+					$relatedFile->get_media_file_id().
+					"\" name=\"related_media_file_id\" value=\"".
+					$relatedFile->get_media_file_id().
+					"\">");
+				echo("<td><label for=\"media_file_id_".
+					$relatedFile->get_media_file_id().
+					"\">".
+					$relatedFile->get_display_name().
+					"</td>");
+				echo("<td>".$relatedFile->get_mimetype()."</td>");
+				echo("<td>".$relatedFile->get_member()->get_email()."</td>");
+				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
+					$relatedFile->get_media_file_id()."\">Download</a></td>");
+				echo("</tr>");
+				
+				$cntr++;
+			}
+			
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"5\">&nbsp;</td>");
+			
+			echo("</table>");
+
+			echo("<p>Relation: <select name=\"media_relation_id\">");
+			
+			foreach($mediaRelations as $mediaRelation)
+			{
+				echo("<option value=\"".
+					$mediaRelation->get_media_relation_id().
+					"\">".
+					$mediaRelation->get_relation_label().
+					"</option>");
+			}
+
+			echo("</select></p>");			
+			echo("<p><input style=\"width: 80px;\" type=\"submit\" value=\"Save\">&nbsp;");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"Cancel\" onclick=\"window.location.href='media.php?action=edit_media_file&media_file_id=".$mediaFile->get_media_file_id()."';\">&nbsp;</p>");
+
+			include("footer.php");
+		}
+
 		static function DownloadMediaFile($mediaFile, $fileContent)
 		{
 			header('Content-Description: File Transfer');
@@ -1498,11 +1673,11 @@
 			}
 
 			echo("</select></p>");			
-			echo("<p><input type=\"submit\" value=\"Save\"></p>");
+			echo("<p><input style=\"width: 80px;\" type=\"submit\" value=\"Save\">&nbsp;");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"Cancel\" onclick=\"window.location.href='media.php?action=list_media_package_files&media_package_id=".$mediaPackage->get_media_package_id()."';\">&nbsp;</p>");
 
 			include("footer.php");
-		}
-		
+		}		
 	}
 	
 	class MediaRelationView
@@ -1679,6 +1854,7 @@
 				case "edit_media_file":
 					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_GET["media_file_id"]);
+					MediaFilePopulator::PopulateRelatedMedia($mediaFile);
 					MediaFileView::DisplayEditForm($mediaFile, "act_edit_media_file");
 					return true;
 					
@@ -1713,6 +1889,39 @@
 					MediaFilePopulator::DeleteMediaFile(
 						$_POST["media_file_id"]);
 					header("Location: media.php?action=list_media_files");	
+					return true;
+					
+				case "add_media_file_relatedmedia":
+					$mediaFile = MediaFilePopulator::PopulateByID(
+						$_GET["media_file_id"]);
+					$mediaFiles = MediaFilePopulator::PopulateAllNotRelated(
+						$mediaFile);
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					MediaFileView::DisplayListOfFilesToAdd($mediaFile, $mediaFiles, $mediaRelations);
+					return true;
+					
+				case "act_add_media_file_relatedmedia":
+					$mediaFile = MediaFilePopulator::PopulateByID(
+						$_POST["media_file_id"]);
+
+					MediaFilePopulator::AddRelatedMedia(
+						$_POST["media_file_id"],
+						$_POST["related_media_file_id"],
+						$_POST["media_relation_id"]);
+						
+					header(
+						"Location: media.php?action=edit_media_file&media_file_id=".
+						$_POST["media_file_id"]);	
+						
+					return true;
+					
+				case "delete_media_file_relation":
+					MediaFilePopulator::DeleteRelatedMedia(
+						$_GET["media_file_id"],
+						$_GET["related_media_file_id"]);
+					header(
+						"Location: media.php?action=edit_media_file&media_file_id=".
+						$_GET["media_file_id"]);	
 					return true;
 					
 				case "download_media_file":
