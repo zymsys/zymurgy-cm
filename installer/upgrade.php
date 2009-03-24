@@ -1,13 +1,14 @@
 <?
 ini_set('display_errors', 1);
 
+require_once("../cmo.php");
 require_once('../config/config.php');
 include('tables.php');
 
 echo("Connecting to database...");
 
-mysql_connect($ZymurgyConfig['mysqlhost'],$ZymurgyConfig['mysqluser'],$ZymurgyConfig['mysqlpass']);
-mysql_select_db($ZymurgyConfig['mysqldb']);
+// mysql_connect($ZymurgyConfig['mysqlhost'],$ZymurgyConfig['mysqluser'],$ZymurgyConfig['mysqlpass']);
+// mysql_select_db($ZymurgyConfig['mysqldb']);
 
 echo("done.<br>");
 echo("Updating table definitions...");
@@ -132,6 +133,31 @@ mysql_query("alter table zcm_config change value value longtext");
 mysql_query("alter table zcm_config change inputspec inputspec text");
 
 echo("done.<br>");
+
+// ----------
+// ZK: 2009.03.24
+//
+// Install/upgrade the media file component.
+// ----------
+
+echo("Checking media file support...<br>");
+
+require_once("../cmo.php");
+require_once("../include/media.php");
+
+$installedVersion = MediaFileInstaller::InstalledVersion();
+$targetVersion = MediaFileInstaller::Version();
+
+if($installedVersion < $targetVersion)
+{
+	echo("-- Installing/upgrading from version $installedVersion to version $targetVersion");
+	
+	MediaFileInstaller::Upgrade($installedVersion, $targetVersion);
+}
+else 
+{
+	echo("-- No install/upgrade required");
+}
 
 // ----------
 // ZK: 2008.11.18

@@ -1,90 +1,126 @@
 <?php
 	class MediaFileInstaller
 	{
-		static function Install()
+		static function InstalledVersion()
 		{
-			$sql = "CREATE TABLE `zcm_media_restriction` (".
-				"`media_restriction_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-				"`download_limit` INTEGER UNSIGNED NOT NULL,".
-				"`day_limit` INTEGER UNSIGNED NOT NULL,".
-				"PRIMARY KEY (`media_restriction_id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql) 
-				or die("Could not create zcm_media_restriction table: ".mysql_error());
+			$sql = "show tables like 'zcm_media_file'";
+			$tableExists = Zymurgy::$db->get($sql);				
 				
-			$sql = "CREATE TABLE `zcm_media_relation` (".
-				"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-				"`relation_type` VARCHAR(50) NOT NULL,".
-				"`relation_type_label` VARCHAR(50) NOT NULL,".
-				"PRIMARY KEY (`media_relation_id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql)
-				or die("Could not create zcm_media_relation table: ".mysql_error());
-				
-			$sql = "CREATE TABLE `zcm_media_file` (".
-  				"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-  				"`member_id` INTEGER UNSIGNED NOT NULL,".
-  				"`mimetype` VARCHAR(45) NOT NULL,".
-  				"`extension` VARCHAR(10) NOT NULL,".
-  				"`display_name` VARCHAR(100) NOT NULL,".
-  				"`media_restriction_id` INTEGER UNSIGNED,".
-  				"PRIMARY KEY (`media_file_id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql) 
-				or die("Could not create zcm_media_file table: ".mysql_error());
-				
-			$sql = "CREATE TABLE `zcm_media_file_relation` (".
-				"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-				"`media_file_id` INTEGER UNSIGNED NOT NULL,".
-				"`related_media_file_id` INTEGER UNSIGNED NOT NULL,".
-				"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
-				"PRIMARY KEY (`media_file_relation_id`)".
-				") ENGINE = InnoDB";
-			Zymurgy::$db->query($sql) 
-				or die("Could not create zcm_media_file_relation table: ".mysql_error());
-		
-			$sql = "CREATE TABLE `zcm_media_package` (".
-				"`media_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-  				"`member_id` INTEGER UNSIGNED NOT NULL,".
-				"`display_name` VARCHAR(100) NOT NULL,".
-				"`media_restriction_id` INTEGER UNSIGNED,".
-				"PRIMARY KEY (`media_package_id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql) 
-				or die("Could not create zcm_media_package table: ".mysql_error());
-				
-			$sql = "CREATE TABLE `zcm_media_file_package` (".
-				"`media_file_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-				"`media_file_id` INTEGER UNSIGNED NOT NULL,".
-				"`media_package_id` INTEGER UNSIGNED NOT NULL,".
-				"`disporder` INTEGER UNSIGNED NOT NULL,".
-				"`media_relation_id` INTEGER NOT NULL,".
-				"PRIMARY KEY (`media_file_package_id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql) 
-				or die("Could not create zcm_media_file_package table: ".mysql_error());
+			if($tableExists == 'zcm_media_file')
+			{
+				return 1;
+			}
+			else 
+			{
+				return 0;
+			}
 		}
 		
+		static function Version()
+		{
+			return 1;
+		}
+		
+		static function Install()
+		{
+			MediaFileInstaller::Upgrade(0, MediaFileInstaller::Version());
+		}
+		
+		static function Upgrade($currentVersion, $targetVersion)
+		{
+			for($version = $currentVersion + 1; $version <= $targetVersion; $version++)
+			{
+				switch($version)
+				{
+					case 1:
+						$sql = "CREATE TABLE `zcm_media_restriction` (".
+							"`media_restriction_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+							"`download_limit` INTEGER UNSIGNED NOT NULL,".
+							"`day_limit` INTEGER UNSIGNED NOT NULL,".
+							"PRIMARY KEY (`media_restriction_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql) 
+							or die("Could not create zcm_media_restriction table: ".mysql_error());
+							
+						$sql = "CREATE TABLE `zcm_media_relation` (".
+							"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+							"`relation_type` VARCHAR(50) NOT NULL,".
+							"`relation_type_label` VARCHAR(50) NOT NULL,".
+							"PRIMARY KEY (`media_relation_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql)
+							or die("Could not create zcm_media_relation table: ".mysql_error());
+							
+						$sql = "CREATE TABLE `zcm_media_file` (".
+			  				"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+			  				"`member_id` INTEGER UNSIGNED NOT NULL,".
+			  				"`mimetype` VARCHAR(45) NOT NULL,".
+			  				"`extension` VARCHAR(10) NOT NULL,".
+			  				"`display_name` VARCHAR(100) NOT NULL,".
+			  				"`media_restriction_id` INTEGER UNSIGNED,".
+			  				"PRIMARY KEY (`media_file_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql) 
+							or die("Could not create zcm_media_file table: ".mysql_error());
+							
+						$sql = "CREATE TABLE `zcm_media_file_relation` (".
+							"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
+							"`related_media_file_id` INTEGER UNSIGNED NOT NULL,".
+							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
+							"PRIMARY KEY (`media_file_relation_id`)".
+							") ENGINE = InnoDB";
+						Zymurgy::$db->query($sql) 
+							or die("Could not create zcm_media_file_relation table: ".mysql_error());
+					
+						$sql = "CREATE TABLE `zcm_media_package` (".
+							"`media_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+			  				"`member_id` INTEGER UNSIGNED NOT NULL,".
+							"`display_name` VARCHAR(100) NOT NULL,".
+							"`media_restriction_id` INTEGER UNSIGNED,".
+							"PRIMARY KEY (`media_package_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql) 
+							or die("Could not create zcm_media_package table: ".mysql_error());
+							
+						$sql = "CREATE TABLE `zcm_media_file_package` (".
+							"`media_file_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
+							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
+							"`media_package_id` INTEGER UNSIGNED NOT NULL,".
+							"`disporder` INTEGER UNSIGNED NOT NULL,".
+							"`media_relation_id` INTEGER NOT NULL,".
+							"PRIMARY KEY (`media_file_package_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql) 
+							or die("Could not create zcm_media_file_package table: ".mysql_error());
+							
+						break;
+						
+					default:
+						die("Unsupported version");
+				}
+			}
+		}
+				
 		static function Uninstall()
 		{
 			$sql = "DROP TABLE `zcm_media_file_package`";
 			Zymurgy::$db->query($sql); 
-			//	or die("Could not drop zcm_media_file_package table: ".mysql_error());
 			
 			$sql = "DROP TABLE `zcm_media_package`";
 			Zymurgy::$db->query($sql); 
-			//	or die("Could not drop zcm_media_package table: ".mysql_error());
-
+	
+			$sql = "DROP TABLE `zcm_media_file_relation`";
+			Zymurgy::$db->query($sql); 
+	
 			$sql = "DROP TABLE `zcm_media_file`";
 			Zymurgy::$db->query($sql); 
-			//	or die("Could not drop zcm_media_file table: ".mysql_error());
 			
 			$sql = "DROP TABLE `zcm_media_relation`";
 			Zymurgy::$db->query($sql); 
 			
 			$sql = "DROP TABLE `zcm_media_restriction`";
 			Zymurgy::$db->query($sql); 
-			//	or die("Could not drop zcm_media_restriction table: ".mysql_error());
 		}
 	}
 
@@ -1807,8 +1843,17 @@
 	{
 		function Execute($action)
 		{
-			if($this->Execute_InstallerActions($action)) {}
-			else if($this->Execute_MediaFileActions($action)) {}
+			// ZK: The Installer actions are disabled by default.
+			// If you are working on the component and need to reset the 
+			// table definitions, uncomment the two lines below, and use 
+			// the following URLs:
+			//
+			// (ZymurgyRoot)/media.php?action=install
+			// (ZymurgyRoot)/media.php?action=uninstall
+			
+			// if($this->Execute_InstallerActions($action)) {}
+			// else
+			if($this->Execute_MediaFileActions($action)) {}
 			else if($this->Execute_MediaPackageActions($action)) {}
 			else if($this->Execute_RelationActions($action)) {}
 			else 
