@@ -62,6 +62,8 @@ if (!function_exists('getapplpath'))
 	}
 }
 
+if(!isset($suppressDatagridJavascript))
+{
 ?>
 <script language="JavaScript">
 <!--
@@ -85,6 +87,8 @@ if (!function_exists('getapplpath'))
 //-->
 </script>
 <?
+}
+
 if (get_magic_quotes_gpc()) {
    function stripslashes_deep($value)
    {
