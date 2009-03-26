@@ -1,6 +1,7 @@
 <?php 
 	require_once('InputWidget.php');
 	require_once('cmo.php');
+	require_once("datagrid.php");
 
 	class ZymurgyMemberDataTable
 	{
@@ -958,6 +959,13 @@
 			
 			$iw->editkey = $this->table->editingid;
 			$iw->datacolumn = $this->table->tablename.".".$this->columnname;
+			
+			$ep = explode('.', $this->inputspec);
+			
+			if($ep[0] == "lookup")
+			{
+				$iw->lookups[$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
+			}
 
 			echo "<tr><td>{$this->caption}</td><td>";
 			
