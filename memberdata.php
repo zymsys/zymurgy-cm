@@ -1,6 +1,9 @@
 <?php 
 	require_once('InputWidget.php');
 	require_once('cmo.php');
+	
+	$suppressDatagridJavascript = true;
+	
 	require_once("datagrid.php");
 
 	class ZymurgyMemberDataTable
@@ -353,23 +356,24 @@
 		 */
 		private function renderFormUI($rowid = 0)
 		{
+			// die("renderFromUI called");
+			echo "<script language=\"JavaScript\">\n";
+			echo "<!--\n";
+			echo "function aspectcrop_popup(ds, d, id, returnurl, fixedratio)\n";
+			echo "{\n";
+			echo "var fixedar;\n";
+			echo "if (fixedratio)\n";
+			echo "fixedar = '&fixedar=1';\n";
+			echo "else\n";
+			echo "fixedar = '';\n";
+			echo "window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&id='+id+'&returnurl='+returnurl+fixedar,'','scrollbars=no,width=780,height=500');\n";
+			echo "}\n";
+			echo"//-->\n";
+			echo "</script>\n";
+			
 			$memberdata = $this->RetrieveMemberData($rowid);			
 			$this->RenderTabs();		
-?>
-<script language="JavaScript">
-<!--
-		function aspectcrop_popup(ds, d, id, returnurl, fixedratio)
-		{
-			var fixedar;
-			if (fixedratio)
-				fixedar = '&fixedar=1';
-			else
-				fixedar = '';
-			window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&id='+id+'&returnurl='+returnurl+fixedar,'','scrollbars=no,width=780,height=500');
-		}
-//-->
-</script>
-<?
+			
 			echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['SCRIPT_URI']}\" method=\"post\" enctype=\"multipart/form-data\">\r\n";
 			
 			$rowid = is_array($memberdata)
@@ -436,7 +440,7 @@
 				
 				echo "</ul>\r\n";
 				echo "<div class=\"yui-content\">\r\n";
-				echo "<div>\r\n";
+				echo "<div id=\"tab{$this->tableid}\">\r\n";
 			}			
 		}
 		
@@ -449,7 +453,7 @@
 				
 				foreach($this->children as $child)
 				{
-					echo "<div>";
+					echo "<div id=\"tab{$child->tableid}\">";
 					$child->renderGrid($rowid);
 					echo "</div>";
 				}
@@ -713,7 +717,7 @@
 						foreach($this->fields as $fieldid=>$field)
 						{ 
 					?>
-					document.getElementById('field<?= $fieldid ?>').value = "";
+							document.getElementById('field<?= $fieldid ?>').value = "";
 					<? 
 						} 
 					?>
@@ -775,6 +779,7 @@
 					
 				$editors[$fieldid] = "<label for=\"field$fieldid\">{$field->caption}</label>";
 				$dlgassigns[$fieldid] = "ZymurgyDialog{$this->tablename}.setField($fieldid,rowdata['{$field->columnname}']); if(typeof Displayfield{$fieldid}Exists !== 'undefined') field{$fieldid}Editor.setEditorHTML(rowdata['{$field->columnname}']);";
+				// $dlgassigns[$fieldid] .= " alert(\"assign for {$fieldid} complete\");";
 			}
 			
 			$dtkeys['edit'] = "{key: \"edit\", label: \"Edit\", formatter: this.formatEdit}";
@@ -802,19 +807,27 @@
 							var column = InitializeGrid<?= $this->tablename ?>.myDataTable.getColumn(target);
 							if (column.key == 'edit') 
 							{
+								// alert("Editing row");
+								
 								var dtrec = InitializeGrid<?= $this->tablename ?>.myDataTable.getRecord(target);
 								var rowdata = dtrec.getData();
 								
+								// alert("Row data retrieved");
+								
 								var el = document.getElementById('rowid<?= $this->tableid ?>');
 								el.value = rowdata['id'];
+								
+								// alert(el.value);
 																
 								<?
 								echo implode("\r\n",$dlgassigns);
+								// echo("alert(\"assigns complete\");\n");
 								
 								foreach($this->children as $child)
 								{
 									?>									
 									ZymurgyDialog<?= $child->tablename ?>ID = rowdata['id'];
+									
 									// alert("<?= $child->tablename ?>: " + ZymurgyDialog<?= $child->tablename ?>ID);
 									
 									ZymurgyDataTable<?= $child->tablename ?>.getDataSource().sendRequest(
@@ -824,10 +837,13 @@
 									document.getElementById("<?= $this->tablename ?>_<?= $child->tableid ?>").value = rowdata['id'];								
 									document.getElementById('ZymurgyDataTable<?= $child->tablename ?>').style.display = "block";
 									document.getElementById('btnAdd<?= $child->tablename ?>').style.display = "block";
+									// alert("Configuration for <?= $child->tablename ?> complete");
 									<?
 								}
 								?>
 								ZymurgyDialog<?= $this->tablename ?>.show();
+								
+								// alert("Dialog displayed");
 							} 
 							else if(column.key == 'delete') 
 							{
