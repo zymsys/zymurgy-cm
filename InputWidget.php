@@ -469,7 +469,7 @@ passThroughFormSubmit = false;
 			case "yuihtml":
 				echo Zymurgy::YUI("assets/skins/sam/skin.css");
 				echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
-				echo Zymurgy::YUI("element/element-beta-min.js");
+				echo Zymurgy::YUI("element/element-min.js");
 				echo Zymurgy::YUI("container/container_core-min.js");
 				echo Zymurgy::YUI("editor/editor-min.js");
 				
@@ -641,7 +641,7 @@ class DataGridLookup
 	function RenderDropList($name,$selected)
 	{
 		$r = array();
-		$r[] = "<select name='$name'>";
+		$r[] = "<select id='$name' name='$name'>";
 		foreach ($this->keys as $key)
 		{
 			$o = "<option value=\"$key\"";
