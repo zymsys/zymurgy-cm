@@ -329,11 +329,15 @@
 		public function validateFile()
 		{
 			$isValid = true;
+			$continueProcessing = true;
 	
 			switch ($this->m_file['error'])
 			{
 				case UPLOAD_ERR_OK:
+					break;
+	
 				case UPLOAD_ERR_NO_FILE:
+					$continueProcessing = false;
 					break;
 	
 				case UPLOAD_ERR_INI_SIZE:
@@ -366,10 +370,13 @@
 					$isValid = false;
 			}
 			
-			if(!($this->m_relation->isValidMimetype($this->m_file['type'])))
+			if($continueProcessing)
 			{
-				$this->m_errors[] = ("The selected file is not in the correct format for the selected content type. The following mimetypes are supported: ".$this->m_relation->get_allowed_mimetypes().".");
-				$isValid = false;
+				if(!($this->m_relation->isValidMimetype($this->m_file['type'])))
+				{
+					$this->m_errors[] = ("The selected file is not in the correct format for the selected content type. The following mimetypes are supported: ".$this->m_relation->get_allowed_mimetypes().".");
+					$isValid = false;
+				}				
 			}
 
 			return $isValid;
@@ -1472,7 +1479,7 @@
 			foreach($mediaRelations as $mediaRelation)
 			{
 				echo("<option ".
-					($mediaRelation->get_media_relation_id() == $mediaFile->get_relation()->get_media_relation_id ? "SELECTED" : "").
+					($mediaRelation->get_media_relation_id() == $mediaFile->get_relation()->get_media_relation_id() ? "SELECTED" : "").
 					" value=\"".
 					$mediaRelation->get_media_relation_id().
 					"\">".
@@ -1562,7 +1569,7 @@
 					"</td>");
 				echo("<td>".$relatedFile->get_mimetype()."</td>");
 				echo("<td>".$relatedFile->get_member()->get_email()."</td>");
-				echo("<td>".$relatedFile->get_relation_label()."</td>");
+				echo("<td>".$relatedFile->get_relation()->get_relation_label()."</td>");
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
 					$relatedFile->get_media_file_id()."\">Download</a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_file_relation&amp;media_file_id=".
