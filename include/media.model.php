@@ -1083,6 +1083,28 @@
 	
 	class MediaMemberPopulator
 	{
+		static function PopulateAll()
+		{
+			$sql = "SELECT `id`, `email` FROM `zcm_member`";
+	
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve list of members: ".mysql_error().", $sql");
+			
+			$members = array();
+
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$member = new MediaMember();
+	
+				$member->set_member_id($row["id"]);
+				$member->set_email($row["email"]);
+				
+				$members[] = $member;
+			}
+			
+			return $members;
+		}
+		
 		static function PopulateByID($member_id)
 		{
 			$sql = "SELECT `email` ".

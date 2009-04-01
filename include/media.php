@@ -267,7 +267,7 @@
 			include("footer.php");
 		}
 	
-		static function DisplayEditForm($mediaFile, $mediaRelations, $action)
+		static function DisplayEditForm($mediaFile, $mediaRelations, $members, $action)
 		{
 			include("header.php");
 			include('datagrid.php');
@@ -302,13 +302,33 @@
 			echo("<input type=\"hidden\" name=\"media_file_id\" value=\"".$mediaFile->get_media_file_id()."\">");
 			echo("<input type=\"hidden\" name=\"mimetype\" value=\"".$mediaFile->get_mimetype()."\">");
 			echo("<input type=\"hidden\" name=\"extension\" value=\"\"".$mediaFile->get_extension()."\">");
-			echo("<input type=\"hidden\" name=\"member_id\" value=\"".$mediaFile->get_member()->get_member_id()."\">");
+			// echo("<input type=\"hidden\" name=\"member_id\" value=\"".$mediaFile->get_member()->get_member_id()."\">");
 			echo("<table>");
 	
 			echo("<tr>");
 			echo("<td>Display Name:</td>");
 			echo("<td>");
 			$widget->Render("input.30.100", "display_name", $mediaFile->get_display_name());
+			echo("</td>");
+			echo("</tr>");
+	
+			echo("<tr>");
+			echo("<td>Owner:</td>");
+			echo("<td>");
+			echo("<select name=\"member_id\">");
+	
+			foreach($members as $member)
+			{
+				echo("<option ".
+					($member->get_member_id() == $mediaFile->get_member()->get_member_id() ? "SELECTED" : "").
+					" value=\"".
+					$member->get_member_id().
+					"\">".
+					$member->get_email().
+					"</option>");
+			}
+	
+			echo("</select>");
 			echo("</td>");
 			echo("</tr>");
 	
@@ -327,7 +347,6 @@
 					$mediaRelation->get_relation_label().
 					"</option>");
 			}
-			//$widget->Render("lookup.zcm_media_relation.media_relation_id.relation_type_label", "media_relation_id", $mediaFile->get_relation()->get_media_relation_id());
 	
 			echo("</select>");
 			echo("</td>");
@@ -355,10 +374,10 @@
 			echo("<td>".$mediaFile->get_mimetype()."</td>");
 			echo("</tr>");
 	
-			echo("<tr>");
-			echo("<td>Owner:</td>");
-			echo("<td>".$mediaFile->get_member()->get_email()."</td>");
-			echo("</tr>");
+			// echo("<tr>");
+			// echo("<td>Owner:</td>");
+			// echo("<td>".$mediaFile->get_member()->get_email()."</td>");
+			// echo("</tr>");
 	
 			if($action == "act_edit_media_file")
 			{
@@ -595,14 +614,10 @@
 			include("footer.php");
 		}
 	
-		static function DisplayEditForm($mediaPackage, $action)
+		static function DisplayEditForm($mediaPackage, $members, $action)
 		{
 			include("header.php");
 			$widget = new InputWidget();
-	
-			// echo("<pre>");
-			// print_r($mediaFile);
-			// echo("</pre>");
 	
 			$errors = $mediaPackage->get_errors();
 	
@@ -624,7 +639,7 @@
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">");
 			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">");
 			echo("<input type=\"hidden\" name=\"media_package_id\" value=\"".$mediaPackage->get_media_package_id()."\">");
-			echo("<input type=\"hidden\" name=\"member_id\" value=\"".$mediaPackage->get_member()->get_member_id()."\">");
+			// echo("<input type=\"hidden\" name=\"member_id\" value=\"".$mediaPackage->get_member()->get_member_id()."\">");
 			echo("<table>");
 	
 			echo("<tr>");
@@ -633,13 +648,33 @@
 				$widget->Render("input.30.100", "display_name", $mediaPackage->get_display_name());
 			echo("</td>");
 			echo("</tr>");
-	
-			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
-	
+			
 			echo("<tr>");
 			echo("<td>Owner:</td>");
-			echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
+			echo("<td>");
+			echo("<select name=\"member_id\">");
+	
+			foreach($members as $member)
+			{
+				echo("<option ".
+					($member->get_member_id() == $mediaPackage->get_member()->get_member_id() ? "SELECTED" : "").
+					" value=\"".
+					$member->get_member_id().
+					"\">".
+					$member->get_email().
+					"</option>");
+			}
+	
+			echo("</select>");
+			echo("</td>");
 			echo("</tr>");
+	
+			// echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+	
+			// echo("<tr>");
+			// echo("<td>Owner:</td>");
+			// echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
+			// echo("</tr>");
 	
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 	
@@ -991,8 +1026,14 @@
 					$mediaFile->set_relation($mediaRelation);
 	
 					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					$members = MediaMemberPopulator::PopulateAll();
 	
-					MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, "act_add_media_file");
+					MediaFileView::DisplayEditForm(
+						$mediaFile, 
+						$mediaRelations, 
+						$members,
+						"act_add_media_file");
+					
 					return true;
 	
 				case "edit_media_file":
@@ -1000,8 +1041,13 @@
 						$_GET["media_file_id"]);
 					MediaFilePopulator::PopulateRelatedMedia($mediaFile);
 					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					$members = MediaMemberPopulator::PopulateAll();
 	
-					MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, "act_edit_media_file");
+					MediaFileView::DisplayEditForm(
+						$mediaFile, 
+						$mediaRelations, 
+						$members,
+						"act_edit_media_file");
 					
 					return true;
 	
@@ -1105,15 +1151,26 @@
 	
 				case "add_media_package":
 					$mediaPackage = new MediaPackage();
-					$mediaPackage->set_member(
-						MediaMemberPopulator::PopulateByID(1));
-					MediaPackageView::DisplayEditForm($mediaPackage, "act_add_media_package");
+					$members = MediaMemberPopulator::PopulateAll();
+					$mediaPackage->set_member($members[0]);
+						
+					MediaPackageView::DisplayEditForm(
+						$mediaPackage, 
+						$members,
+						"act_add_media_package");
+						
 					return true;
 	
 				case "edit_media_package":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
 						$_GET["media_package_id"]);
-					MediaPackageView::DisplayEditForm($mediaPackage, "act_edit_media_package");
+					$members = MediaMemberPopulator::PopulateAll();
+						
+					MediaPackageView::DisplayEditForm(
+						$mediaPackage,
+						$members,
+						"act_edit_media_package");
+					
 					return true;
 	
 				case "act_add_media_package":
