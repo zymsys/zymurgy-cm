@@ -549,6 +549,15 @@
 	
 			if($uploadingFile)
 			{
+				$oldPath = $uploadfolder."/".$mediaFile->get_media_file_id().".*";
+				foreach(glob($oldPath) as $oldFile)
+				{
+					// echo($oldFile."<br>");
+					unlink($oldFile);
+				}
+				
+				// die();
+				
 				$newPath = $uploadfolder."/".$mediaFile->get_media_file_id().".".$extension;
 	
 				if(move_uploaded_file($file["tmp_name"], $newPath))
@@ -558,17 +567,29 @@
 			}
 		}
 	
-		public function DeleteMediaFile($media_file_id)
+		public function DeleteMediaFile($mediaFile)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_file_id` = '".
-				mysql_escape_string($media_file_id)."'";
+				mysql_escape_string($mediaFile->media_file_id)."'";
 	
 			Zymurgy::$db->query($sql) or die("Could not delete media file record from packages: ".mysql_error());
 			
 			$sql = "DELETE FROM `zcm_media_file` WHERE `media_file_id` = '".
-				mysql_escape_string($media_file_id)."'";
+				mysql_escape_string($mediaFile->media_file_id)."'";
 	
 			Zymurgy::$db->query($sql) or die("Could not delete media file record: ".mysql_error());
+			
+			$uploadfolder = Zymurgy::$config["Media File Local Path"];
+			$filepath = $uploadfolder.
+				"/".
+				$mediaFile->get_media_file_id().
+				".".
+				$mediaFile->get_extension();
+
+			if(file_exists($filepath))
+			{
+				unlink($filepath);
+			}
 		}
 	
 		public function AddRelatedMedia($media_file_id, $related_media_file_id, $media_relation_id)

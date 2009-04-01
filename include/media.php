@@ -340,7 +340,7 @@
 			foreach($mediaRelations as $mediaRelation)
 			{
 				echo("<option ".
-					($mediaRelation->get_media_relation_id() == $mediaFile->get_relation()->get_media_relation_id() ? "SELECTED" : "").
+					($mediaFile->get_relation() !== null && $mediaRelation->get_media_relation_id() == $mediaFile->get_relation()->get_media_relation_id() ? "SELECTED" : "").
 					" value=\"".
 					$mediaRelation->get_media_relation_id().
 					"\">".
@@ -1081,8 +1081,10 @@
 					return true;
 	
 				case "act_delete_media_file":
-					MediaFilePopulator::DeleteMediaFile(
+					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_POST["media_file_id"]);
+					MediaFilePopulator::DeleteMediaFile(
+						$mediaFile);
 					header("Location: media.php?action=list_media_files");
 					return true;
 	
