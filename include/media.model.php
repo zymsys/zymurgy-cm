@@ -247,12 +247,24 @@
 			return MediaFilePopulator::PopulateMultiple("1 = 1");
 		}
 	
-		static function PopulateByOwner($member_id)
+		static function PopulateByOwner(
+			$member_id,
+			$mediaRelationType = "")
 		{
-			return MediaFilePopulator::PopulateMultiple(
-				"`zcm_media_file`.`member_id` = '".
+			$relationCriteria = "1 = 1";
+			
+			if($mediaRelationType !== "")
+			{
+				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);				
+				$relationCriteria = "`media_relation_id` = '".
+					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+			}
+			
+			$criteria = "`zcm_media_file`.`member_id` = '".
 				mysql_escape_string($member_id).
-				"'");
+				"' AND $relationCriteria";
+			
+			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
 	
 		static function PopulateAllNotInPackage(
