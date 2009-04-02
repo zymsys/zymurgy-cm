@@ -203,9 +203,9 @@
 								mysql_error());
 								
 						$sql = "CREATE TABLE `zcm_media_package_type_allowed_relation` (".
-							"`media_file_package_type_allowed_relation_id` INTEGER UNSIGNED ".
+							"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
 								"NOT NULL AUTO_INCREMENT,".
-							"`media_file_package_type_id` INTEGER UNSIGNED NOT NULL,".
+							"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
 							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
 							"`max_instances` INTEGER UNSIGNED NOT NULL,".
 							"PRIMARY KEY (`media_file_package_type_allowed_relation_id`)".
@@ -900,8 +900,9 @@
 	
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td>Display Name</td>");
-			echo("<td colspan=\"2\">&nbsp;</td>");
+			echo("<td>Package Type</td>");
+			echo("<td>Label</td>");
+			echo("<td>&nbsp;</td>");
 			echo("</tr>");
 	
 			$cntr = 1;
@@ -910,9 +911,8 @@
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
 				echo("<td><a href=\"media.php?action=edit_media_package_type&amp;media_package_type_id=".
-					$mediaPackageType->get_media_package_type_id()."\">".$mediaPackageType->get_package_label()."</td>");
-				echo("<td><a href=\"media.php?action=list_media_package_type_allowed_mimetypes&amp;media_package_type_id=".
-					$mediaPackageType->get_media_package_type_id()."\">Allowed mimetypes</a></td>");
+					$mediaPackageType->get_media_package_type_id()."\">".$mediaPackageType->get_package_type()."</a></td>");
+				echo("<td>".$mediaPackageType->get_package_label()."</td>");
 				echo("<td><a href=\"media.php?action=delete_media_package_type&amp;media_package_type_id=".
 					$mediaPackageType->get_media_package_type_id()."\">Delete</a></td>");
 				echo("</tr>");
@@ -931,6 +931,10 @@
 		public static function DisplayEditForm($mediaPackageType, $action)
 		{
 			include("header.php");
+			include('datagrid.php');
+	
+			DumpDataGridCSS();
+	
 			$widget = new InputWidget();
 	
 			// echo("<pre>");
@@ -973,6 +977,18 @@
 			echo("</td>");
 			echo("</tr>");
 		
+			if($action == "act_edit_media_package_type")
+			{
+				echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+	
+				echo("<tr>");
+				echo("<td valign=\"top\">Allowed Relations:</td>");
+				echo("<td>");
+				MediaPackageTypeView::DisplayAllowedRelations($mediaPackageType);
+				echo("</td>");
+				echo("</tr>");
+			}
+
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 	
 			echo("<tr>");
@@ -985,7 +1001,116 @@
 	
 			include("footer.php");
 		}
+				
+		public static function DisplayAllowedRelations($mediaPackageType)
+		{
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Relation</td>");
+			echo("<td>Max Instances</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
 	
+			$totalRelated = $mediaPackageType->get_allowedrelation_count();
+	
+			for($cntr = 0; $cntr < $totalRelated; $cntr++)
+			{
+				$relation = $mediaPackageType->get_allowedrelation($cntr);
+	
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">");
+				echo("<td><a href=\"media.php?action=edit_media_package_type_allowed_relation&amp;allowed_relation_id=".
+					$relation->get_media_package_type_allowed_relation_id().
+					"\">".
+					$relation->get_relation()->get_relation_label().
+					"</a></td>");
+				echo("<td>".$relation->get_maxinstances()."</td>");
+				echo("<td><a href=\"media.php?action=delete_media_package_type_allowed_relation&amp;allowed_relation_id=".
+					$relation->get_media_package_type_allowed_relation_id().
+					"\">Delete</a></td>");
+				echo("</tr>");
+			}
+	
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_type_allowed_relation&amp;media_package_type_id=".
+					$mediaPackageType->get_media_package_type_id().
+					"\">Add relation</td>");
+	
+			echo("</table>");
+		}
+
+		public static function DisplayEditAllowedRelationForm(
+			$allowedRelation, 
+			$packageType, 
+			$mediaRelations,
+			$action)
+		{
+			include("header.php");
+			$widget = new InputWidget();
+	
+			// echo("<pre>");
+			// print_r($mediaFile);
+			// echo("</pre>");
+	
+			$errors = $allowedRelation->get_errors();
+	
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">");
+				echo("<div style=\"color: red\">Error</div>");
+				echo("<ul>");
+	
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>");
+				}
+	
+				echo("</ul>");
+				echo("</div>");
+			}
+	
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">");
+			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">");
+			echo("<input type=\"hidden\" name=\"media_package_type_allowed_relation_id\" value=\"".$allowedRelation->get_media_package_type_allowed_relation_id()."\">");
+			echo("<input type=\"hidden\" name=\"media_package_type_id\" value=\"".$packageType->get_media_package_type_id()."\">");
+			echo("<table>");
+	
+			echo("<tr>");
+			echo("<td>Relation:</td>");
+			echo("<td><select name=\"media_relation_id\">");
+			foreach($mediaRelations as $mediaRelation)
+			{
+				$selected = $allowedRelation->get_relation() !== null && $mediaRelation->get_media_relation_id == $allowedRelation->get_relation()->get_media_relation_id()
+					? "SELECTED"
+					: "";
+				echo("<option $selected value=\"".
+					$mediaRelation->get_media_relation_id().
+					"\">".
+					$mediaRelation->get_relation_label().
+					"</option>");
+			}
+			echo("</td>");
+			echo("</tr>");
+	
+			echo("<tr>");
+			echo("<td>Max Instances:</td>");
+			echo("<td>");
+			$widget->Render("numeric.5.5", "max_instances", $allowedRelation->get_maxinstances());
+			echo("</td>");
+			echo("</tr>");
+			
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+	
+			echo("<tr>");
+			echo("<td>&nbsp;</td>");
+			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("</tr>");
+	
+			echo("</table>");
+			echo("</form>");
+	
+			include("footer.php");			
+		}
+		
 		public static function DisplayDeleteForm($packageType)
 		{
 			include("header.php");
@@ -1536,6 +1661,7 @@
 				case "edit_media_package_type":
 					$packageType = MediaPackageTypePopulator::PopulateByID(
 						$_GET["media_package_type_id"]);
+					MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
 					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
 					return true;
 					
@@ -1551,7 +1677,7 @@
 					{
 						if(MediaPackageTypePopulator::SaveMediaPackageType($packageType))
 						{
-							MediaPackageTypeVieW::DisplayEditForm($packageType, $action);
+							MediaPackageTypeView::DisplayEditForm($packageType, $action);
 						}
 						else
 						{
@@ -1570,6 +1696,82 @@
 					MediaPackageTypePopulator::DeleteMediaPackageType(
 						$_POST["media_package_type_id"]);
 					header("Location: media.php?action=list_media_package_types");
+					return true;
+					
+				case "add_media_package_type_allowed_relation":
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$_GET["media_package_type_id"]);
+					$allowedRelation = new MediaPackageTypeAllowedRelation();
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					MediaPackageTypeView::DisplayEditAllowedRelationForm(
+						$allowedRelation,
+						$packageType,
+						$mediaRelations,
+						"act_add_media_package_type_allowed_relation");
+					return true;
+					
+				case "edit_media_package_type_allowed_relation":
+					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
+						$_GET["allowed_relation_id"]);
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$allowedRelation->get_media_package_type_id());
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					MediaPackageTypeView::DisplayEditAllowedRelationForm(
+						$allowedRelation,
+						$packageType,
+						$mediaRelations,
+						"act_edit_media_package_type_allowed_relation");
+					return true;
+
+				case "act_add_media_package_type_allowed_relation":				
+				case "act_edit_media_package_type_allowed_relation":				
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$_POST["media_package_type_id"]);
+					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationFromForm();
+	
+					if(!$allowedRelation->validate($action))
+					{
+						$mediaRelations = MediaRelationPopulator::PopulateAll();
+						MediaPackageTypeView::DisplayEditAllowedRelationForm(
+							$allowedRelation,
+							$packageType,
+							$mediaRelations,
+							$action);
+					}
+					else
+					{
+						if(MediaPackageTypePopulator::SaveMediaPackageTypeAllowedRelation($allowedRelation))
+						{
+							$mediaRelations = MediaRelationPopulator::PopulateAll();
+							MediaPackageTypeView::DisplayEditAllowedRelationForm(
+								$allowedRelation,
+								$packageType,
+								$mediaRelations,
+								$action);
+						}
+						else
+						{
+							header("Location: media.php?action=edit_media_package_type&media_package_type_id=".$_POST["media_package_type_id"]);
+						}
+					}
+					
+					return true;					
+	
+				case "delete_media_package_type_allowed_relation":
+					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
+						$_GET["allowed_relation_id"]);
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$allowedRelation->get_media_package_type_id());
+					
+					if($allowedRelation !== null)
+					{
+						MediaPackageTypePopulator::DeleteMediaPackageTypeAllowedRelation(
+							$allowedRelation->get_media_package_type_allowed_relation_id());					
+					}
+						
+					MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
+					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");			
+						
 					return true;
 				
 				default:

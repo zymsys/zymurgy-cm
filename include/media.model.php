@@ -1061,6 +1061,8 @@
 		private $m_package_type;
 		private $m_package_label;
 		
+		private $m_allowedrelations = array();
+		
 		private $m_errors = array();
 		
 		public function get_media_package_type_id()
@@ -1091,6 +1093,39 @@
 		public function set_package_label($newValue)
 		{
 			$this->m_package_label = $newValue;
+		}
+		
+	
+		public function get_allowedrelation($key)
+		{
+			return $this->m_allowedrelations[$key];
+		}
+	
+		public function get_allowedrelation_count()
+		{
+			return count($this->m_allowedrelations);
+		}
+			
+		public function set_allowedrelation($key, $newValue)
+		{
+			$this->m_allowedrelations[$key] = $newValue;
+		}
+
+		public function add_allowedrelation($allowedrelation)
+		{
+			$this->m_allowedrelations[] = $allowedrelation;
+	
+			return count($this->m_allowedrelations) - 1;
+		}
+	
+		public function delete_allowedrelation($key)
+		{
+			unset($this->m_allowedrelations[$key]);
+		}
+	
+		public function clear_allowedrelations()
+		{
+			$this->m_allowedrelations = array();
 		}
 	
 		public function get_errors()
@@ -1123,6 +1158,95 @@
 		}
 	}
 	
+	class MediaPackageTypeAllowedRelation
+	{
+		private $m_media_package_type_allowed_relation_id;
+		private $m_media_package_type_id;
+		private $m_media_relation_id;
+		private $m_maxinstances;
+
+		private $m_relation;
+
+		private $m_errors = array();
+		
+		public function get_media_package_type_allowed_relation_id()
+		{
+			return $this->m_media_package_type_allowed_relation_id;
+		}
+		
+		public function set_media_package_type_allowed_relation_id($newValue)
+		{
+			$this->m_media_package_type_allowed_relation_id = $newValue;
+		}
+		
+		public function get_media_package_type_id()
+		{
+			return $this->m_media_package_type_id;
+		}
+		
+		public function set_media_package_type_id($newValue)
+		{
+			$this->m_media_package_type_id = $newValue;
+		}
+		
+		public function get_maxinstances()
+		{
+			return $this->m_maxinstances;
+		}
+		
+		public function set_maxinstances($newValue)
+		{
+			$this->m_maxinstances = $newValue;
+		}
+		
+		public function get_relation()
+		{
+			return $this->m_relation;
+		}
+		
+		public function set_relation($newValue)
+		{
+			$this->m_relation = $newValue;
+		}
+	
+		public function get_errors()
+		{
+			return $this->m_errors;
+		}
+	
+		public function set_errors($newValue)
+		{
+			$this->m_errors = $newValue;
+		}
+	
+		public function validate($action)
+		{
+			$isValid = true;
+	
+			if($this->m_relation == null)
+			{
+				$this->m_errors[] = "Relation is required.";
+				$isValid = false;
+			}
+	
+			if(strlen($this->m_maxinstances) <= 0)
+			{
+				$this->m_errors[] = "Max instances is required.";
+				$isValid = false;
+			}
+			else 
+			{
+				if(!is_numeric($this->m_maxinstances))
+				{
+					$this->m_errors[] = "Max instances must be a number.";
+					$isValid = false;					
+				}
+			}
+	
+			return $isValid;
+		}
+	}
+	
 	class MediaPackageTypePopulator
 	{
 		public static function PopulateAll()
@@ -1149,7 +1273,8 @@
 			return $packageTypes;
 		}
 	
-		public static function PopulateByID($media_package_type_id)
+		public static function PopulateByID(
+			$media_package_type_id)
 		{
 			$sql = "SELECT `package_type`, `package_type_label` FROM ".
 				"`zcm_media_package_type` WHERE `media_package_type_id` = '".
@@ -1171,6 +1296,57 @@
 				return $packageType;
 			}
 		}
+		
+		public static function PopulateAllowedRelations(
+			&$packageType)
+		{			
+			$sql = "SELECT `media_package_type_allowed_relation_id`, `media_relation_id`, `max_instances` FROM `zcm_media_package_type_allowed_relation` WHERE `media_package_type_id` = '".mysql_escape_string($packageType->get_media_package_type_id())."'";
+	
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve allowed relations: ".mysql_error().", $sql");
+			
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$allowedRelation = new MediaPackageTypeAllowedRelation();
+				
+				$allowedRelation->set_media_package_type_allowed_relation_id(
+					$row["media_package_type_allowed_relation_id"]);
+				$allowedRelation->set_media_package_type_id($packageType->get_media_package_type_id());
+				$allowedRelation->set_maxinstances($row["max_instances"]);
+				
+				$relation = MediaRelationPopulator::PopulateByID(
+					$row["media_relation_id"]);
+				$allowedRelation->set_relation($relation);
+				
+				$packageType->add_allowedrelation($allowedRelation);
+			}			
+		}
+		
+		public static function PopulateAllowedRelationByID(
+			$allowedRelationID)
+		{			
+			$sql = "SELECT `media_package_type_id`, `media_relation_id`, `max_instances` FROM `zcm_media_package_type_allowed_relation` WHERE `media_package_type_allowed_relation_id` = '".mysql_escape_string($allowedRelationID)."'";
+	
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve allowed relations: ".mysql_error().", $sql");
+			
+			if(Zymurgy::$db->num_rows($ri) > 0)
+			{
+				$row = Zymurgy::$db->fetch_array($ri);
+				$allowedRelation = new MediaPackageTypeAllowedRelation();
+				
+				$allowedRelation->set_media_package_type_allowed_relation_id(
+					$allowedRelationID);
+				$allowedRelation->set_media_package_type_id($row["media_package_type_id"]);
+				$allowedRelation->set_maxinstances($row["max_instances"]);
+				
+				$relation = MediaRelationPopulator::PopulateByID(
+					$row["media_relation_id"]);
+				$allowedRelation->set_relation($relation);
+				
+				return $allowedRelation;
+			}			
+		}
 	
 		static function PopulateFromForm()
 		{
@@ -1181,6 +1357,22 @@
 			$packageType->set_package_label($_POST["package_label"]);
 	
 			return $packageType;
+		}
+		
+		public static function PopulateAllowedRelationFromForm()
+		{
+			$allowedRestriction = new MediaPackageTypeAllowedRelation();
+			
+			$allowedRestriction->set_media_package_type_allowed_relation_id(
+				$_POST["media_package_type_allowed_relation_id"]);
+			$allowedRestriction->set_media_package_type_id($_POST["media_package_type_id"]);
+			$allowedRestriction->set_maxinstances($_POST["max_instances"]);
+
+			$relation = MediaRelationPopulator::PopulateByID(
+				$_POST["media_relation_id"]);
+			$allowedRestriction->set_relation($relation);
+			
+			return $allowedRestriction;
 		}
 
 		static function SaveMediaPackageType($packageType)
@@ -1212,12 +1404,53 @@
 			}
 		}
 	
-		public function DeleteMediaPackageType($media_package_type_id)
+		public static function DeleteMediaPackageType($media_package_type_id)
 		{
 			$sql = "DELETE FROM `zcm_media_package_type` WHERE `media_package_type_id` = '".
 				mysql_escape_string($media_package_type_id)."'";
 	
 			Zymurgy::$db->query($sql) or die("Could not delete package type: ".mysql_error());
+		}
+		
+		public static function SaveMediaPackageTypeAllowedRelation($allowedRelation)
+		{
+			$sql = "";
+	
+			if($allowedRelation->get_media_package_type_allowed_relation_id() <= 0)
+			{
+				$sql = "INSERT INTO `zcm_media_package_type_allowed_relation` ( ".
+					"`media_package_type_id`, `media_relation_id`, `max_instances` ) VALUES ( '".
+					mysql_escape_string($allowedRelation->get_media_package_type_id())."', '".
+					mysql_escape_string($allowedRelation->get_relation()->get_media_relation_id())."', '".
+					mysql_escape_string($allowedRelation->get_maxinstances())."')";
+	
+				Zymurgy::$db->query($sql) or die("Could not insert allowed relation record: ".mysql_error());
+	
+				$sql = "SELECT MAX(`media_package_type_allowed_relation_id`) FROM ".
+					"`zcm_media_package_type_allowed_relation`";
+	
+				$allowedRelation->set_media_package_type_allowed_relation_id(
+					Zymurgy::$db->get($sql));
+			}
+			else
+			{
+				$sql = "UPDATE `zcm_media_package_type_allowed_relation` SET ".
+					"`media_package_type_id` = '".mysql_escape_string($allowedRelation->get_media_package_type_id())."', ".
+					"`media_relation_id` = '".mysql_escape_string($allowedRelation->get_relation()->get_media_relation_id())."', ".
+					"`max_instances` = '".mysql_escape_string($allowedRelation->get_maxinstances())."' ".
+					"WHERE `media_package_type_allowed_relation_id` = '".mysql_escape_string($allowedRelation->get_media_package_type_allowed_relation_id())."'";
+	
+				Zymurgy::$db->query($sql) or die("Could not update allowed relation record: ".mysql_error());
+			}
+		}
+		
+		public static function DeleteMediaPackageTypeAllowedRelation($allowedRelationID)
+		{
+			$sql = "DELETE FROM `zcm_media_package_type_allowed_relation` ".
+				"WHERE `media_package_type_allowed_relation_id` = '".
+				mysql_escape_string($allowedRelationID)."'";
+	
+			Zymurgy::$db->query($sql) or die("Could not delete allowed relation: ".mysql_error());
 		}
 	}
 	
