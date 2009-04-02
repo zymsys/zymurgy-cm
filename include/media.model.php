@@ -642,10 +642,11 @@
 	class MediaPackage
 	{
 		private $m_media_package_id;
-		private $m_member;
 		private $m_display_name;
 	
+		private $m_member;
 		private $m_restriction;
+		private $m_packagetype;
 	
 		private $m_media_files = array();
 	
@@ -689,6 +690,16 @@
 		public function set_restriction($newValue)
 		{
 			$this->m_restriction = $newValue;
+		}
+		
+		public function get_packagetype()
+		{
+			return $this->m_packagetype;
+		}
+		
+		public function set_packagetype($newValue)
+		{
+			$this->m_packagetype = $newValue;
 		}
 	
 		public function get_media_file($key)
@@ -799,8 +810,8 @@
 	
 		static function PopulateMultiple($criteria)
 		{
-			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`, `display_name` ".
-				"FROM `zcm_media_package` WHERE $criteria";
+			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`,".
+				" `display_name`, `media_package_type_id` FROM `zcm_media_package` WHERE $criteria";
 			$ri = Zymurgy::$db->query($sql) or die("Could not retrieve list of packages: ".mysql_error());
 	
 			$mediaPackages = array();
@@ -819,6 +830,10 @@
 				$restriction = MediaRestrictionPopulator::PopulateByID(
 					$row["media_restriction_id"]);
 				$mediaPackage->set_restriction($restriction);
+				
+				$packageType = MediaPackageTypePopulator::PopulateByID(
+					$row["media_package_type_id"]);
+				$mediaPackage->set_packagetype($packageType);
 	
 				$mediaPackages[] = $mediaPackage;
 			}
@@ -828,8 +843,9 @@
 	
 		static function PopulateByID($media_package_id)
 		{
-			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name` FROM `zcm_media_package` ".
-				"WHERE `media_package_id` = '".
+			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name`, ".
+				"`media_package_type_id` FROM `zcm_media_package` WHERE ".
+				"`media_package_id` = '".
 				mysql_escape_string($media_package_id)."'";
 			$ri = Zymurgy::$db->query($sql) or die();
 	
@@ -848,7 +864,11 @@
 				$restriction = MediaRestrictionPopulator::PopulateByID(
 					$row["media_restriction_id"]);
 				$mediaPackage->set_restriction($restriction);
-	
+					
+				$packageType = MediaPackageTypePopulator::PopulateByID(
+					$row["media_package_type_id"]);
+				$mediaPackage->set_packagetype($packageType);
+
 				return $mediaPackage;
 			}
 		}
@@ -907,6 +927,10 @@
 			$mediaMember = MediaMemberPopulator::PopulateByID(
 				$_POST["member_id"]);
 			$mediaPackage->set_member($mediaMember);
+			
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$_POST["media_package_type_id"]);
+			$mediaPackage->set_packagetype($packageType);
 	
 			return $mediaPackage;
 		}
@@ -917,8 +941,9 @@
 	
 			if($mediaPackage->get_media_package_id() <= 0)
 			{
-				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `display_name` ) VALUES ( '".
+				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `media_package_type_id`, `display_name` ) VALUES ( '".
 					mysql_escape_string($mediaPackage->get_member()->get_member_id())."', '".
+					mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', '".
 					mysql_escape_string($mediaPackage->get_display_name())."' )";
 	
 				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
@@ -932,6 +957,7 @@
 			{
 				$sql = "UPDATE `zcm_media_package` SET ".
 					"`member_id` = '".mysql_escape_string($mediaPackage->get_member()->get_member_id())."', ".
+					"`media_package_type_id` = '".mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', ".
 					"`display_name` = '".mysql_escape_string($mediaPackage->get_display_name())."' ".
 					"WHERE `media_package_id` = '".mysql_escape_string($mediaPackage->get_media_package_id())."'";
 	

@@ -638,6 +638,7 @@
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Display Name</td>");
+			echo("<td>Package Type</td>");
 			echo("<td>Owner</td>");
 			echo("<td colspan=\"2\">&nbsp;</td>");
 			echo("</tr>");
@@ -649,6 +650,16 @@
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
 				echo("<td><a href=\"media.php?action=edit_media_package&amp;media_package_id=".
 					$mediaPackage->get_media_package_id()."\">".$mediaPackage->get_display_name()."</td>");
+				
+				if($mediaPackage->get_packagetype() == null)
+				{
+					echo("<td>&nbsp;</td>");
+				}
+				else 
+				{
+					echo("<td>".$mediaPackage->get_packagetype()->get_package_label()."</td>");
+				}
+								
 				echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
 				echo("<td><a href=\"media.php?action=list_media_package_files&amp;media_package_id=".
 					$mediaPackage->get_media_package_id()."\">Files</a></td>");
@@ -660,14 +671,18 @@
 			}
 	
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"4\"><a style=\"color: white;\" href=\"media.php?action=add_media_package\">Add Media Package</td>");
+			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"media.php?action=add_media_package\">Add Media Package</td>");
 	
 			echo("</table>");
 	
 			include("footer.php");
 		}
 	
-		static function DisplayEditForm($mediaPackage, $members, $action)
+		static function DisplayEditForm(
+			$mediaPackage, 
+			$members, 
+			$packageTypes,  
+			$action)
 		{
 			include("header.php");
 			$widget = new InputWidget();
@@ -715,6 +730,31 @@
 					$member->get_member_id().
 					"\">".
 					$member->get_email().
+					"</option>");
+			}
+	
+			echo("</select>");
+			echo("</td>");
+			echo("</tr>");
+			
+			echo("<tr>");
+			echo("<td>Owner:</td>");
+			echo("<td>");
+			echo("<select name=\"media_package_type_id\">");
+	
+			foreach($packageTypes as $packageType)
+			{
+				$selected = $mediaPackage->get_packagetype() !== null 
+					&& $packageType->get_media_package_type_id() == $mediaPackage->get_packagetype()->get_media_package_type_id()
+					? "SELECTED" 
+					: "";
+				
+				echo("<option ".
+					$selected.
+					" value=\"".
+					$packageType->get_media_package_type_id().
+					"\">".
+					$packageType->get_package_label().
 					"</option>");
 			}
 	
@@ -1456,10 +1496,12 @@
 					$mediaPackage = new MediaPackage();
 					$members = MediaMemberPopulator::PopulateAll();
 					$mediaPackage->set_member($members[0]);
+					$packageTypes = MediaPackageTypePopulator::PopulateAll();
 						
 					MediaPackageView::DisplayEditForm(
 						$mediaPackage, 
 						$members,
+						$packageTypes,
 						"act_add_media_package");
 						
 					return true;
@@ -1468,10 +1510,12 @@
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
 						$_GET["media_package_id"]);
 					$members = MediaMemberPopulator::PopulateAll();
+					$packageTypes = MediaPackageTypePopulator::PopulateAll();
 						
 					MediaPackageView::DisplayEditForm(
 						$mediaPackage,
 						$members,
+						$packageTypes,
 						"act_edit_media_package");
 					
 					return true;
@@ -1479,16 +1523,26 @@
 				case "act_add_media_package":
 				case "act_edit_media_package":
 					$mediaPackage = MediaPackagePopulator::PopulateFromForm();
-	
+					$members = MediaMemberPopulator::PopulateAll();
+					$packageTypes = MediaPackageTypePopulator::PopulateAll();
+					
 					if(!$mediaPackage->validate($action))
 					{
-						MediaPackageView::DisplayEditForm($mediaPackage, $action);
+						MediaPackageView::DisplayEditForm(
+							$mediaPackage, 
+							$members,
+							$packageTypes,
+							$action);
 					}
 					else
 					{
 						if(MediaPackagePopulator::SaveMediaPackage($mediaPackage))
 						{
-							MediaPackageView::DisplayEditForm($mediaPackage, $action);
+							MediaPackageView::DisplayEditForm(
+								$mediaPackage, 
+								$members,
+								$packageTypes,
+								$action);
 						}
 						else
 						{
