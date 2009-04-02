@@ -876,7 +876,7 @@
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>&nbsp;</td>");
 			echo("<td>Display Name</td>");
-			echo("<td>MIME Type</td>");
+			echo("<td>Content Type</td>");
 			echo("<td>Owner</td>");
 			echo("<td>&nbsp;</td>");
 			echo("</tr>");
@@ -896,7 +896,7 @@
 					"\">".
 					$mediaFile->get_display_name().
 					"</td>");
-				echo("<td>".$mediaFile->get_mimetype()."</td>");
+				echo("<td>".$mediaFile->get_relation()->get_relation_label()."</td>");
 				echo("<td>".$mediaFile->get_member()->get_email()."</td>");
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id()."\">Download</a></td>");
@@ -909,18 +909,7 @@
 			echo("<td colspan=\"5\">&nbsp;</td>");
 	
 			echo("</table>");
-	
-			echo("<p>Relation: <select name=\"media_relation_id\">");
-	
-			foreach($mediaRelations as $mediaRelation)
-			{
-				echo("<option value=\"".
-					$mediaRelation->get_media_relation_id().
-					"\">".
-					$mediaRelation->get_relation_label().
-					"</option>");
-			}
-	
+		
 			echo("</select></p>");
 			echo("<p><input style=\"width: 80px;\" type=\"submit\" value=\"Save\">&nbsp;");
 			echo("<input style=\"width: 80px;\" type=\"button\" value=\"Cancel\" onclick=\"window.location.href='media.php?action=list_media_package_files&media_package_id=".$mediaPackage->get_media_package_id()."';\">&nbsp;</p>");
@@ -1589,13 +1578,15 @@
 				case "act_add_media_package_file":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
 						$_POST["media_package_id"]);
+					$mediaFile = MediaFilePopulator::PopulateByID(
+						$_POST["media_file_id"]);
 					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
 					$disporder = $mediaPackage->get_media_file_count();
 	
 					MediaPackagePopulator::AddMediaFileToPackage(
-						$_POST["media_package_id"],
-						$_POST["media_file_id"],
-						$_POST["media_relation_id"],
+						$mediaPackage->get_media_package_id(),
+						$mediaFile->get_media_file_id(),
+						$mediaFile->get_relation()->get_media_relation_id(),
 						$disporder + 1);
 	
 					header(

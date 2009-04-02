@@ -313,11 +313,20 @@
 					mysql_escape_string($owner)."'";
 			}
 			
-			$criteria = "NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
+			$allowedRelationCriteria = "EXISTS(SELECT 1 FROM `zcm_media_package_type_allowed_relation` ".
+				"WHERE `zcm_media_package_type_allowed_relation`.`media_relation_id` = ".
+				"`zcm_media_file`.`media_relation_id` AND ". 
+				"`zcm_media_package_type_allowed_relation`.`media_package_type_id` = '".
+				mysql_escape_string($mediaPackage->get_packageType()->get_media_package_type_id()).
+				"')";
+			
+			$notInPackageCriteria = "NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
 				"`zcm_media_file_package`.`media_file_id` = `zcm_media_file`.`media_file_id` AND ".
 				"`zcm_media_file_package`.`media_package_id` = '".
-				mysql_escape_string($mediaPackage->get_media_package_id())."') ".
-				"AND $relationCriteria AND $ownerCriteria";
+				mysql_escape_string($mediaPackage->get_media_package_id())."') ";
+			
+			$criteria = "$relationCriteria AND $ownerCriteria AND ".
+				"$allowedRelationCriteria AND $notInPackageCriteria";				
 			
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
