@@ -201,6 +201,29 @@ $tables = array(
   KEY `pageid` (`pageid`),
   KEY `orphan` (`orphan`),
   KEY `trackingid` (`trackingid`),
-  KEY `viewtime` (`viewtime`))"
+  KEY `viewtime` (`viewtime`))",
+	'zcm_sitepage'=>"CREATE TABLE `zcm_sitepage` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `disporder` bigint(20) default NULL,
+  `linktext` varchar(40) default NULL,
+  `body` longtext,
+  `parent` bigint(20) default '0',
+  `retire` datetime default NULL,
+  `golive` datetime default NULL,
+  `softlaunch` datetime default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `disporder` (`disporder`),
+  KEY `parent` (`parent`),
+  KEY `retire` (`retire`),
+  KEY `parent_2` (`parent`,`linktext`))",
+	'zcm_sitepageplugin'=>"CREATE TABLE `zcm_sitepageplugin` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `zcm_sitepage` bigint(20) default NULL,
+  `disporder` bigint(20) default NULL,
+  `plugin` text,
+  `align` varchar(6) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `zcm_sitepage` (`zcm_sitepage`),
+  KEY `disporder` (`disporder`))"
 	);
 ?>

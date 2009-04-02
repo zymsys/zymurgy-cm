@@ -1,9 +1,8 @@
 <?
 //Get query parameters.  Barf if they're nfg.
-$page = 0 + $_GET['pg'];
 $plugin = 0 + $_GET['pi'];
 $query = $_GET['q'];
-if (!$page || !$plugin)
+if (!$plugin)
 {
 	die('["Bad query; please try again."]');
 }

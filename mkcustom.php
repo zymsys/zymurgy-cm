@@ -66,6 +66,7 @@ function GetOptions()
 					"<input type=\"radio\" name=\"f$fld\" value=\"file\">File ".
 					"<input type=\"radio\" name=\"f$fld\" value=\"thumb\">Thumb";
 				break;
+			case('longtext'):
 			case('text'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\">Text ".
 					"<input type=\"radio\" name=\"f$fld\" value=\"html\" checked>HTML";

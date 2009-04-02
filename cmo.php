@@ -896,6 +896,44 @@ if (!class_exists('Zymurgy'))
 			$nav = new ZymurgySiteNav();
 			$nav->render($ishorizontal,$baseurl);
 		}
+		
+		function pagetext($navpath)
+		{
+			if (empty($navpath))
+			{
+				$row=Zymurgy::$db->get("select id,body from zcm_sitepage where parent=0 order by disporder limit 1");
+			}
+			else 
+			{
+				$np = explode('/',$navpath);
+				$parent = 0;
+				foreach ($np as $navpart)
+				{
+					$navpart = Zymurgy::$db->escape_string(str_replace('_',' ',$navpart));
+					$row = Zymurgy::$db->get("select id,body from zcm_sitepage where parent=$parent and linktext='$navpart'");
+					if ($row === false)
+					{
+						// How to handle 404 like response?
+						echo "$navpart couldn't be found from $navpath.";
+						return;
+					}
+					$parent = $row['id'];
+				}
+			}
+			echo "<div>{$row['body']}</div>";
+			$ri = Zymurgy::$db->run("select * from zcm_sitepageplugin where zcm_sitepage={$row['id']} order by disporder");
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				$pp = explode('&',$row['plugin']);
+				$instance = urldecode($pp[1]);
+				if ($instance == "Page Navigation Name")
+					$instance = $navpart;
+				echo "<div align=\"{$row['align']}\">";
+				Zymurgy::plugin(urldecode($pp[0]),$instance);
+				echo "</div>";
+			}
+			Zymurgy::$db->free_result($ri);
+		}
 	}
 		
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))

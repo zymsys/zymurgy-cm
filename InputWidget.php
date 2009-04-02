@@ -283,13 +283,13 @@ passThroughFormSubmit = false;
 				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"\"/>";
 				echo "<div style=\"float:left\">";
 				echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
-				$ri = Zymurgy::$db->run("select id,title from zcm_plugin order by title");
+				$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
 				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 				{
 					echo "\t<option value=\"{$row['id']}\"";
-					if ($row['title'] == $pluginvalue)
+					if ($row['name'] == $pluginvalue)
 						echo " selected=\"selected\"";
-					echo ">{$row['title']}</option>\r\n";
+					echo ">{$row['name']}</option>\r\n";
 				}
 				echo "</select>";
 				echo "</div><div style=\"float:left; margin-left:6px\">";

@@ -25,14 +25,14 @@ class ZymurgySiteNav
 	
 	function __construct($navinfo='')
 	{
-		$ri = Zymurgy::$db->run("select id,linktext,selfref,golive,softlaunch,retire from pages order by disporder");
+		$ri = Zymurgy::$db->run("select id,linktext,parent,golive,softlaunch,retire from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			$this->items[$row['id']] = new ZymurgySiteNavItem($row['linktext'],$row['selfref'],$row['golive'],$row['softlaunch'],$row['retire']);
-			if (array_key_exists($row['selfref'],$this->structureparts))
-				$this->structureparts[$row['selfref']][] = $row['id'];
+			$this->items[$row['id']] = new ZymurgySiteNavItem($row['linktext'],$row['parent'],$row['golive'],$row['softlaunch'],$row['retire']);
+			if (array_key_exists($row['parent'],$this->structureparts))
+				$this->structureparts[$row['parent']][] = $row['id'];
 			else 
-				$this->structureparts[$row['selfref']] = array($row['id']);
+				$this->structureparts[$row['parent']] = array($row['id']);
 		}
 		Zymurgy::$db->free_result($ri);
 		$this->structure = $this->buildnav(0);
