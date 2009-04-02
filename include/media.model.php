@@ -266,7 +266,31 @@
 			
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
-	
+		
+		static function PopulateStrayFiles(
+			$member_id,
+			$mediaRelationType = "")
+		{
+			$relationCriteria = "1 = 1";
+			
+			if($mediaRelationType !== "")
+			{
+				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);				
+				$relationCriteria = "`media_relation_id` = '".
+					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+			}
+			
+			$criteria = "`zcm_media_file`.`member_id` = '".
+				mysql_escape_string($member_id).
+				"' AND $relationCriteria ".
+				"AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
+				"`zcm_media_file_package`.`media_file_id` = `zcm_media_file`.`media_file_id`) ".
+				"AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_relation` WHERE ".
+				"`zcm_media_file_relation`.`related_media_file_id` = `zcm_media_file`.`media_file_id`)";
+			
+			return MediaFilePopulator::PopulateMultiple($criteria);
+		}
+
 		static function PopulateAllNotInPackage(
 			$mediaPackage,
 			$mediaRelationType = "",
@@ -570,12 +594,12 @@
 		public function DeleteMediaFile($mediaFile)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_file_id` = '".
-				mysql_escape_string($mediaFile->media_file_id)."'";
+				mysql_escape_string($mediaFile->get_media_file_id())."'";
 	
 			Zymurgy::$db->query($sql) or die("Could not delete media file record from packages: ".mysql_error());
 			
 			$sql = "DELETE FROM `zcm_media_file` WHERE `media_file_id` = '".
-				mysql_escape_string($mediaFile->media_file_id)."'";
+				mysql_escape_string($mediaFile->get_media_file_id())."'";
 	
 			Zymurgy::$db->query($sql) or die("Could not delete media file record: ".mysql_error());
 			
@@ -917,6 +941,11 @@
 	
 		public function DeleteMediaPackage($media_package_id)
 		{
+			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
+				mysql_escape_string($media_package_id)."'";
+	
+			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
+			
 			$sql = "DELETE FROM `zcm_media_package` WHERE `media_package_id` = '".
 				mysql_escape_string($media_package_id)."'";
 	
@@ -1023,6 +1052,172 @@
 			}
 			
 			MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
+		}
+	}
+	
+	class MediaPackageType
+	{
+		private $m_media_package_type_id;
+		private $m_package_type;
+		private $m_package_label;
+		
+		private $m_errors = array();
+		
+		public function get_media_package_type_id()
+		{
+			return $this->m_media_package_type_id;
+		}
+		
+		public function set_media_package_type_id($newValue)
+		{
+			$this->m_media_package_type_id = $newValue;
+		}
+		
+		public function get_package_type()
+		{
+			return $this->m_package_type;
+		}
+		
+		public function set_package_type($newValue)
+		{
+			$this->m_package_type = $newValue;
+		}
+		
+		public function get_package_label()
+		{
+			return $this->m_package_label;
+		}
+		
+		public function set_package_label($newValue)
+		{
+			$this->m_package_label = $newValue;
+		}
+	
+		public function get_errors()
+		{
+			return $this->m_errors;
+		}
+	
+		public function set_errors($newValue)
+		{
+			$this->m_errors = $newValue;
+		}
+	
+		public function validate($action)
+		{
+			$isValid = true;
+	
+			if(strlen($this->m_package_type) <= 0)
+			{
+				$this->m_errors[] = "Package Type is required.";
+				$isValid = false;
+			}
+	
+			if(strlen($this->m_package_label) <= 0)
+			{
+				$this->m_errors[] = "Label is required.";
+				$isValid = false;
+			}
+	
+			return $isValid;
+		}
+	}
+	
+	class MediaPackageTypePopulator
+	{
+		public static function PopulateAll()
+		{
+			$sql = "SELECT `media_package_type_id`, `package_type`, ".
+				"`package_type_label` FROM `zcm_media_package_type`";
+	
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve list of package types: ".mysql_error().", $sql");
+			
+			$packageTypes = array();
+
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$packageType = new MediaPackageType();
+
+				$packageType->set_media_package_type_id($row["media_package_type_id"]);
+				$packageType->set_package_type($row["package_type"]);
+				$packageType->set_package_label($row["package_type_label"]);
+				
+				$packageTypes[] = $packageType;
+			}
+			
+			return $packageTypes;
+		}
+	
+		public static function PopulateByID($media_package_type_id)
+		{
+			$sql = "SELECT `package_type`, `package_type_label` FROM ".
+				"`zcm_media_package_type` WHERE `media_package_type_id` = '".
+				mysql_escape_string($media_package_type_id).
+				"'";
+	
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve package type: ".mysql_error().", $sql");
+			
+			if(Zymurgy::$db->num_rows($ri) > 0)
+			{
+				$row = Zymurgy::$db->fetch_array($ri);
+				$packageType = new MediaPackageType();
+
+				$packageType->set_media_package_type_id($media_package_type_id);
+				$packageType->set_package_type($row["package_type"]);
+				$packageType->set_package_label($row["package_type_label"]);
+			
+				return $packageType;
+			}
+		}
+	
+		static function PopulateFromForm()
+		{
+			$packageType = new MediaPackageType();
+	
+			$packageType->set_media_package_type_id($_POST["media_package_type_id"]);
+			$packageType->set_package_type($_POST["package_type"]);
+			$packageType->set_package_label($_POST["package_label"]);
+	
+			return $packageType;
+		}
+
+		static function SaveMediaPackageType($packageType)
+		{
+			$sql = "";
+	
+			if($packageType->get_media_package_type_id() <= 0)
+			{
+				$sql = "INSERT INTO `zcm_media_package_type` ( `package_type`, ".
+					"`package_type_label` ) VALUES ( '".
+					mysql_escape_string($packageType->get_package_type())."', '".
+					mysql_escape_string($packageType->get_package_label())."')";
+	
+				Zymurgy::$db->query($sql) or die("Could not insert package type record: ".mysql_error());
+	
+				$sql = "SELECT MAX(`media_package_type_id`) FROM `zcm_media_package_type`";
+	
+				$packageType->set_media_package_type_id(
+					Zymurgy::$db->get($sql));
+			}
+			else
+			{
+				$sql = "UPDATE `zcm_media_package_type` SET ".
+					"`package_type` = '".mysql_escape_string($packageType->get_package_type())."', ".
+					"`package_type_label` = '".mysql_escape_string($packageType->get_package_label())."' ".
+					"WHERE `media_package_type_id` = '".mysql_escape_string($packageType->get_media_package_type_id())."'";
+	
+				Zymurgy::$db->query($sql) or die("Could not update package type record: ".mysql_error());
+			}
+		}
+	
+		public function DeleteMediaPackageType($media_package_type_id)
+		{
+			$sql = "DELETE FROM `zcm_media_package_type` WHERE `media_package_type_id` = '".
+				mysql_escape_string($media_package_type_id)."'";
+	
+			Zymurgy::$db->query($sql) or die("Could not delete package type: ".mysql_error());
 		}
 	}
 	

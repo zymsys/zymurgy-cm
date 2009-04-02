@@ -67,10 +67,23 @@
 			{
 				$sql = "show columns from `zcm_media_file` like 'media_relation_id'";
 				$fieldExists = Zymurgy::$db->get($sql);
+				
+				// print_r($fieldExists);
+				// die($fieldExists[0]);
 	
-				if($fieldExists == 'media_relation_id')
+				if($fieldExists[0] == 'media_relation_id')
 				{
-					return 2;
+					$sql = "show columns from `zcm_media_package` like 'media_package_type_id'";
+					$fieldExists = Zymurgy::$db->get($sql);
+					
+					if($fieldExists[0] == 'media_package_type_id')
+					{
+						return 3;	
+					}
+					else 
+					{
+						return 2;
+					}					
 				}
 				else
 				{
@@ -85,7 +98,7 @@
 	
 		static function Version()
 		{
-			return 2;
+			return 3;
 		}
 	
 		static function Install()
@@ -175,15 +188,55 @@
 							or die("Could not upgrade zcm_media_file table: ".mysql_error());
 	
 						break;
+						
+					case 3:
+						$sql = "CREATE TABLE `zcm_media_package_type` (".
+							"`media_package_type_id` INTEGER UNSIGNED ".
+								"NOT NULL AUTO_INCREMENT,".
+							"`package_type` VARCHAR(50) NOT NULL,".
+							"`package_type_label` VARCHAR(50) NOT NULL,".
+							"PRIMARY KEY (`media_package_type_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql)
+							or die(
+								"Could not create zcm_media_package_type table: ".
+								mysql_error());
+								
+						$sql = "CREATE TABLE `zcm_media_package_type_allowed_relation` (".
+							"`media_file_package_type_allowed_relation_id` INTEGER UNSIGNED ".
+								"NOT NULL AUTO_INCREMENT,".
+							"`media_file_package_type_id` INTEGER UNSIGNED NOT NULL,".
+							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
+							"`max_instances` INTEGER UNSIGNED NOT NULL,".
+							"PRIMARY KEY (`media_file_package_type_allowed_relation_id`)".
+							") ENGINE = InnoDB;";
+						Zymurgy::$db->query($sql)
+							or die(
+								"Could not create zcm_media_package_type_allowed_relation table: ".
+								mysql_error());
+	
+						$sql = "ALTER TABLE `zcm_media_package` ".
+							"ADD COLUMN `media_package_type_id` INTEGER UNSIGNED NOT NULL ".
+								"AFTER `media_restriction_id`;";								
+						Zymurgy::$db->query($sql)
+							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
+							
+						break;
 	
 					default:
-						die("Unsupported version");
+						die("Unsupported version $version");
 				}
 			}
 		}
 	
 		static function Uninstall()
 		{
+			$sql = "DROP TABLE `zcm_media_package_type_allowed_relation`";
+			Zymurgy::$db->query($sql);
+	
+			$sql = "DROP TABLE `zcm_media_package_type`";
+			Zymurgy::$db->query($sql);
+	
 			$sql = "DROP TABLE `zcm_media_file_package`";
 			Zymurgy::$db->query($sql);
 	
@@ -836,6 +889,128 @@
 		}
 	}
 	
+	class MediaPackageTypeView
+	{
+		static function DisplayList($mediaPackageTypes)
+		{
+			include("header.php");
+			include('datagrid.php');
+	
+			DumpDataGridCSS();
+	
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Display Name</td>");
+			echo("<td colspan=\"2\">&nbsp;</td>");
+			echo("</tr>");
+	
+			$cntr = 1;
+	
+			foreach($mediaPackageTypes as $mediaPackageType)
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"media.php?action=edit_media_package_type&amp;media_package_type_id=".
+					$mediaPackageType->get_media_package_type_id()."\">".$mediaPackageType->get_package_label()."</td>");
+				echo("<td><a href=\"media.php?action=list_media_package_type_allowed_mimetypes&amp;media_package_type_id=".
+					$mediaPackageType->get_media_package_type_id()."\">Allowed mimetypes</a></td>");
+				echo("<td><a href=\"media.php?action=delete_media_package_type&amp;media_package_type_id=".
+					$mediaPackageType->get_media_package_type_id()."\">Delete</a></td>");
+				echo("</tr>");
+	
+				$cntr++;
+			}
+	
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_type\">Add Media Package Type</td>");
+	
+			echo("</table>");
+	
+			include("footer.php");
+		}
+		
+		public static function DisplayEditForm($mediaPackageType, $action)
+		{
+			include("header.php");
+			$widget = new InputWidget();
+	
+			// echo("<pre>");
+			// print_r($mediaFile);
+			// echo("</pre>");
+	
+			$errors = $mediaPackageType->get_errors();
+	
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">");
+				echo("<div style=\"color: red\">Error</div>");
+				echo("<ul>");
+	
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>");
+				}
+	
+				echo("</ul>");
+				echo("</div>");
+			}
+	
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">");
+			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">");
+			echo("<input type=\"hidden\" name=\"media_package_type_id\" value=\"".$mediaPackageType->get_media_package_type_id()."\">");
+			echo("<table>");
+	
+			echo("<tr>");
+			echo("<td>Package Type:</td>");
+			echo("<td>");
+			$widget->Render("input.30.50", "package_type", $mediaPackageType->get_package_type());
+			echo("</td>");
+			echo("</tr>");
+	
+			echo("<tr>");
+			echo("<td>Label:</td>");
+			echo("<td>");
+			$widget->Render("input.30.50", "package_label", $mediaPackageType->get_package_label());
+			echo("</td>");
+			echo("</tr>");
+		
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+	
+			echo("<tr>");
+			echo("<td>&nbsp;</td>");
+			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("</tr>");
+	
+			echo("</table>");
+			echo("</form>");
+	
+			include("footer.php");
+		}
+	
+		public static function DisplayDeleteForm($packageType)
+		{
+			include("header.php");
+	
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+	
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_delete_media_package_type\">");
+			echo("<input type=\"hidden\" name=\"media_package_type_id\" value=\"".
+				$packageType->get_media_package_type_id()."\">");
+	
+			echo("<p>Are you sure you want to delete the following media package type:</p>");
+			echo("<p>Relation Type: ".$packageType->get_package_type());
+			echo("<br>Label: ".$packageType->get_package_label()."</p>");
+	
+			echo("<p>");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"Yes\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"No\" onclick=\"window.location.href='media.php?action=list_media_package_types';\">");
+			echo("</p>");
+	
+			echo("</form>");
+	
+			include("footer.php");
+		}
+	}
+	
 	class MediaRelationView
 	{
 		static function DisplayList($mediaRelations)
@@ -951,7 +1126,7 @@
 			echo("<input type=\"hidden\" name=\"media_relation_id\" value=\"".
 				$mediaRelation->get_media_relation_id()."\">");
 	
-			echo("<p>Are you sure you want to delete the following media package:</p>");
+			echo("<p>Are you sure you want to delete the following relation:</p>");
 			echo("<p>Relation Type: ".$mediaRelation->get_relation_type());
 			echo("<br>Label: ".$mediaRelation->get_relation_label()."</p>");
 	
@@ -983,6 +1158,7 @@
 			if($this->Execute_MediaFileActions($action)) {}
 			else if($this->Execute_MediaPackageActions($action)) {}
 			else if($this->Execute_RelationActions($action)) {}
+			else if($this->Execute_MediaPackageTypeActions($action)) {}
 			else
 			{
 				die("Unsupported action ".$action);
@@ -1338,6 +1514,64 @@
 					header("Location: media.php?action=list_relations");
 					return true;
 	
+				default:
+					return false;
+			}
+		}
+		
+		private function Execute_MediaPackageTypeActions($action)
+		{
+			switch($action)
+			{
+				case "list_media_package_types":
+					$packageTypes = MediaPackageTypePopulator::PopulateAll();
+					MediaPackageTypeView::DisplayList($packageTypes);
+					return true;
+					
+				case "add_media_package_type":
+					$packageType = new MediaPackageType();
+					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_add_media_package_type");
+					return true;
+					
+				case "edit_media_package_type":
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$_GET["media_package_type_id"]);
+					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
+					return true;
+					
+				case "act_add_media_package_type":
+				case "act_edit_media_package_type":
+					$packageType = MediaPackageTypePopulator::PopulateFromForm();
+	
+					if(!$packageType->validate($action))
+					{
+						MediaPackageTypeVieW::DisplayEditForm($packageType, $action);
+					}
+					else
+					{
+						if(MediaPackageTypePopulator::SaveMediaPackageType($packageType))
+						{
+							MediaPackageTypeVieW::DisplayEditForm($packageType, $action);
+						}
+						else
+						{
+							header("Location: media.php?action=list_media_package_types");
+						}
+					}
+					return true;
+	
+				case "delete_media_package_type":
+					$packageType = MediaPackageTypePopulator::PopulateByID(
+						$_GET["media_package_type_id"]);
+					MediaPackageTypeVieW::DisplayDeleteForm($packageType);
+					return true;
+	
+				case "act_delete_media_package_type":
+					MediaPackageTypePopulator::DeleteMediaPackageType(
+						$_POST["media_package_type_id"]);
+					header("Location: media.php?action=list_media_package_types");
+					return true;
+				
 				default:
 					return false;
 			}
