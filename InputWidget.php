@@ -425,7 +425,16 @@ passThroughFormSubmit = false;
 				else
 					$date = strtotime($value);
 				if ($date == 0) $date=time();
-				$cal = new DHTML_Calendar($this->mypath.'jscalendar/','en','calendar-win2k-2', false);
+							
+				$cal = new DHTML_Calendar(
+					"/zymurgy/jscalendar/",
+					'en',
+					'calendar-win2k-2', 
+					false);
+
+				$cal->SetFieldPrefix($name);
+				$cal->SetIncludeID(false);
+				
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
@@ -508,11 +517,12 @@ passThroughFormSubmit = false;
 							}
 							<? } ?>
 								
-							<?= $name ?>Editor.render();							
+							<?= $name ?>Editor.render();								
 						}
 						
 						function Link<?= $name ?>ToDialog()
 						{
+							<? if($dialogName !== '') { ?>
 							<?= $dialogName ?>.showEvent.subscribe(
 								<?= $name ?>Editor.show,
 								<?= $name ?>Editor,
@@ -521,7 +531,12 @@ passThroughFormSubmit = false;
 								<?= $name ?>Editor.hide,
 								<?= $name ?>Editor,
 								true);
+							<? } ?>
 						}
+						
+						<? if($dialogName == '') { ?>
+							YAHOO.util.Event.onDOMReady(Display<?= $name ?>);
+						<? } ?>
 					</script>
 				<?
 				
