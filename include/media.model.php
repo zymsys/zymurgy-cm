@@ -10,6 +10,7 @@
 		private $m_mimetype;
 		private $m_extension;
 		private $m_display_name;
+		private $m_price;
 	
 		private $m_disporder;
 	
@@ -77,6 +78,16 @@
 		public function set_display_name($newValue)
 		{
 			$this->m_display_name = str_replace("\\'", "'", $newValue);
+		}
+	
+		public function get_price()
+		{
+			return $this->m_price;
+		}
+	
+		public function set_price($newValue)
+		{
+			$this->m_price = $newValue;
 		}
 	
 		public function get_disporder()
@@ -368,7 +379,7 @@
 		private static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `media_file_id`, `member_id`, `mimetype`, `extension`, ".
-				"`display_name`, `media_restriction_id`, `media_relation_id` ".
+				"`display_name`, `price`, `media_restriction_id`, `media_relation_id` ".
 				"FROM `zcm_media_file` WHERE $criteria";
 	
 			// die($sql);
@@ -384,6 +395,7 @@
 				$mediaFile->set_mimetype($row["mimetype"]);
 				$mediaFile->set_extension($row["extension"]);
 				$mediaFile->set_display_name($row["display_name"]);
+				$mediaFile->set_price($row["price"]);
 	
 				$member = MediaMemberPopulator::PopulateByID(
 					$row["member_id"]);
@@ -417,7 +429,7 @@
 		static function PopulateByID(
 		$media_file_id)
 		{
-			$sql = "SELECT `member_id`, `mimetype`, `extension`, `display_name`, ".
+			$sql = "SELECT `member_id`, `mimetype`, `extension`, `display_name`, `price`, ".
 				"`media_restriction_id`, `media_relation_id` FROM `zcm_media_file` ".
 				"WHERE `media_file_id` = '".
 				mysql_escape_string($media_file_id)."'";
@@ -434,6 +446,7 @@
 				$mediaFile->set_mimetype($row["mimetype"]);
 				$mediaFile->set_extension($row["extension"]);
 				$mediaFile->set_display_name($row["display_name"]);
+				$mediaFile->set_price($row["price"]);
 	
 				$member = MediaMemberPopulator::PopulateByID(
 				$row["member_id"]);
@@ -497,6 +510,7 @@
 			$mediaFile->set_member(
 				MediaMemberPopulator::PopulateByID($_POST["member_id"]));
 			$mediaFile->set_display_name($_POST["display_name"]);
+			$mediaFile->set_price($_POST["price"]);
 			
 			$mediaRelation = MediaRelationPopulator::PopulateByID(
 				$_POST["media_relation_id"]);
@@ -553,11 +567,12 @@
 			if($mediaFile->get_media_file_id() <= 0)
 			{
 				$sql = "INSERT INTO `zcm_media_file` ( `member_id`, `mimetype`, `extension`, ".
-					"`display_name`, `media_relation_id` ) VALUES ( '".
+					"`display_name`, `price`, `media_relation_id` ) VALUES ( '".
 					mysql_escape_string($mediaFile->get_member()->get_member_id())."', '".
 					mysql_escape_string($mediaFile->get_mimetype())."', '".
 					mysql_escape_string($mediaFile->get_extension())."', '".
 					mysql_escape_string($mediaFile->get_display_name())."', '".
+					mysql_escape_string($mediaFile->get_price())."', '".
 					mysql_escape_string($mediaFile->get_relation()->get_media_relation_id())."' )";
 	
 				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
@@ -574,6 +589,7 @@
 					"`mimetype` = '".mysql_escape_string($mediaFile->get_mimetype())."', ".
 					"`extension` = '".mysql_escape_string($mediaFile->get_extension())."', ".
 					"`display_name` = '".mysql_escape_string($mediaFile->get_display_name())."', ".
+					"`price` = '".mysql_escape_string($mediaFile->get_price())."', ".
 					"`media_relation_id` = '".mysql_escape_string($mediaFile->get_relation()->get_media_relation_id())."' ".				
 					"WHERE `media_file_id` = '".mysql_escape_string($mediaFile->get_media_file_id())."'";
 	
@@ -652,6 +668,7 @@
 	{
 		private $m_media_package_id;
 		private $m_display_name;
+		private $m_price;
 	
 		private $m_member;
 		private $m_restriction;
@@ -689,6 +706,16 @@
 		public function set_display_name($newValue)
 		{
 			$this->m_display_name = $newValue;
+		}
+	
+		public function get_price()
+		{
+			return $this->m_price;
+		}
+	
+		public function set_price($newValue)
+		{
+			$this->m_price = $newValue;
 		}
 	
 		public function get_restriction()
@@ -820,7 +847,8 @@
 		static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`,".
-				" `display_name`, `media_package_type_id` FROM `zcm_media_package` WHERE $criteria";
+				" `display_name`, `price`, `media_package_type_id` ".
+				"FROM `zcm_media_package` WHERE $criteria";
 			$ri = Zymurgy::$db->query($sql) or die("Could not retrieve list of packages: ".mysql_error());
 	
 			$mediaPackages = array();
@@ -831,6 +859,7 @@
 	
 				$mediaPackage->set_media_package_id($row["media_package_id"]);
 				$mediaPackage->set_display_name($row["display_name"]);
+				$mediaPackage->set_price($row["price"]);
 	
 				$member = MediaMemberPopulator::PopulateByID(
 					$row["member_id"]);
@@ -853,10 +882,11 @@
 		static function PopulateByID($media_package_id)
 		{
 			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name`, ".
-				"`media_package_type_id` FROM `zcm_media_package` WHERE ".
+				"`price`, `media_package_type_id` FROM `zcm_media_package` WHERE ".
 				"`media_package_id` = '".
 				mysql_escape_string($media_package_id)."'";
-			$ri = Zymurgy::$db->query($sql) or die();
+			$ri = Zymurgy::$db->query($sql) 
+				or die("Could not retrieve media package: ".mysql_error().", $sql");
 	
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
@@ -865,6 +895,7 @@
 	
 				$mediaPackage->set_media_package_id($media_package_id);
 				$mediaPackage->set_display_name($row["display_name"]);
+				$mediaPackage->set_price($row["price"]);				
 	
 				$member = MediaMemberPopulator::PopulateByID(
 					$row["member_id"]);
@@ -932,6 +963,7 @@
 	
 			$mediaPackage->set_media_package_id($_POST["media_package_id"]);
 			$mediaPackage->set_display_name($_POST["display_name"]);
+			$mediaPackage->set_price($_POST["price"]);
 	
 			$mediaMember = MediaMemberPopulator::PopulateByID(
 				$_POST["member_id"]);
@@ -950,10 +982,11 @@
 	
 			if($mediaPackage->get_media_package_id() <= 0)
 			{
-				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `media_package_type_id`, `display_name` ) VALUES ( '".
+				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `media_package_type_id`, `display_name`, `price` ) VALUES ( '".
 					mysql_escape_string($mediaPackage->get_member()->get_member_id())."', '".
 					mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', '".
-					mysql_escape_string($mediaPackage->get_display_name())."' )";
+					mysql_escape_string($mediaPackage->get_display_name())."', '".
+					mysql_escape_string($mediaPackage->get_price())."' )";
 	
 				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
 	
@@ -967,7 +1000,8 @@
 				$sql = "UPDATE `zcm_media_package` SET ".
 					"`member_id` = '".mysql_escape_string($mediaPackage->get_member()->get_member_id())."', ".
 					"`media_package_type_id` = '".mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', ".
-					"`display_name` = '".mysql_escape_string($mediaPackage->get_display_name())."' ".
+					"`display_name` = '".mysql_escape_string($mediaPackage->get_display_name())."', ".
+					"`price` = '".mysql_escape_string($mediaPackage->get_price())."' ".
 					"WHERE `media_package_id` = '".mysql_escape_string($mediaPackage->get_media_package_id())."'";
 	
 				Zymurgy::$db->query($sql) or die("Could not update media file record: ".mysql_error());

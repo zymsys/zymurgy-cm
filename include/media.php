@@ -63,42 +63,38 @@
 			$sql = "show tables like 'zcm_media_file'";
 			$tableExists = Zymurgy::$db->get($sql);
 	
-			if($tableExists == 'zcm_media_file')
+			if(!($tableExists == 'zcm_media_file'))
 			{
-				$sql = "show columns from `zcm_media_file` like 'media_relation_id'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				
-				// print_r($fieldExists);
-				// die($fieldExists[0]);
-	
-				if($fieldExists[0] == 'media_relation_id')
-				{
-					$sql = "show columns from `zcm_media_package` like 'media_package_type_id'";
-					$fieldExists = Zymurgy::$db->get($sql);
-					
-					if($fieldExists[0] == 'media_package_type_id')
-					{
-						return 3;	
-					}
-					else 
-					{
-						return 2;
-					}					
-				}
-				else
-				{
-					return 1;
-				}
+				return 0;
 			}
 			else
 			{
-				return 0;
+				// Check for a column defined in each version of the 
+				// table definition, in descending order. If the column is 
+				// found, the return statement ensures that older versions 
+				// won't be checked.
+				
+				// If none of the columns are found, return as version 1.				
+				
+				$sql = "show columns from `zcm_media_file` like 'price'";
+				$fieldExists = Zymurgy::$db->get($sql);
+				if(isset($fieldExists[0]) && $fieldExists[0] == 'price') return 4;
+
+				$sql = "show columns from `zcm_media_package` like 'media_package_type_id'";
+				$fieldExists = Zymurgy::$db->get($sql);
+				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_package_type_id') return 3;
+				
+				$sql = "show columns from `zcm_media_file` like 'media_relation_id'";
+				$fieldExists = Zymurgy::$db->get($sql);
+				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_relation_id') return 2;
+				
+				return 1;
 			}
 		}
 	
 		static function Version()
 		{
-			return 3;
+			return 4;
 		}
 	
 		static function Install()
@@ -221,6 +217,18 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
 							
+						break;
+						
+					case 4:
+						$sql = "ALTER TABLE `zcm_media_file` ".
+							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
+						Zymurgy::$db->query($sql)
+							or die("Could not upgrade zcm_media_file table: ".mysql_error());
+							
+						$sql = "ALTER TABLE `zcm_media_package` ".
+							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
+						Zymurgy::$db->query($sql)
+							or die("Could not upgrade zcm_media_package table: ".mysql_error());
 						break;
 	
 					default:
@@ -362,6 +370,13 @@
 			echo("<td>Display Name:</td>");
 			echo("<td>");
 			$widget->Render("input.30.100", "display_name", $mediaFile->get_display_name());
+			echo("</td>");
+			echo("</tr>");
+	
+			echo("<tr>");
+			echo("<td>Price:</td>");
+			echo("<td>");
+			$widget->Render("input.10.9", "price", $mediaFile->get_price());
 			echo("</td>");
 			echo("</tr>");
 	
@@ -716,6 +731,13 @@
 				$widget->Render("input.30.100", "display_name", $mediaPackage->get_display_name());
 			echo("</td>");
 			echo("</tr>");
+	
+			echo("<tr>");
+			echo("<td>Price:</td>");
+			echo("<td>");
+				$widget->Render("input.10.9", "price", $mediaPackage->get_price());
+			echo("</td>");
+			echo("</tr>");
 			
 			echo("<tr>");
 			echo("<td>Owner:</td>");
@@ -738,7 +760,7 @@
 			echo("</tr>");
 			
 			echo("<tr>");
-			echo("<td>Owner:</td>");
+			echo("<td>Package Type:</td>");
 			echo("<td>");
 			echo("<select name=\"media_package_type_id\">");
 	
