@@ -13,22 +13,6 @@
 		public $phone = "";
 		public $fax = "";
 		public $email = "";
-		
-		public function PopulateFromForm($scope)
-		{
-			$this->first_name = isset($scope["first_name"]) ? $scope["first_name"] : "";
-			$this->last_name = isset($scope["last_name"]) ? $scope["last_name"] : "";
-			$this->company_name = isset($scope["company_name"]) ? $scope["company_name"] : "";
-			$this->address1 = isset($scope["address1"]) ? $scope["address1"] : "";
-			$this->address2 = isset($scope["address2"]) ? $scope["address2"] : "";
-			$this->city = isset($scope["city"]) ? $scope["city"] : "";
-			$this->province = isset($scope["province"]) ? $scope["province"] : "";
-			$this->country = isset($scope["country"]) ? $scope["country"] : "";
-			$this->postal_code = isset($scope["postal_code"]) ? $scope["postal_code"] : "";
-			$this->phone = isset($scope["phone"]) ? $scope["phone"] : "";
-			$this->fax = isset($scope["fax"]) ? $scope["fax"] : "";
-			$this->email = isset($scope["email"]) ? $scope["email"] : "";
-		}
 	}
 
 	interface IPaymentProcessor
@@ -191,7 +175,7 @@
 				"email", 
 				$this->m_billingInformation->email);
 			
-			return "";
+			return $output;
 		}
 		
 		private function RenderHiddenInput($name, $value)
@@ -216,7 +200,7 @@
 			$output = "";
 			
 			$output .= "<script type=\"text/javascript\">\n";
-			// $output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
+			$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
 			$output .= "</script>\n";
 			
 			$output .= "<noscript>\n";
