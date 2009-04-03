@@ -410,6 +410,10 @@ function Validate$name(me) {
 					$widget->Render($row['specifier'],$fieldname,$fieldvalue);
 					echo "</td><th class=\"CheckboxLabel\">{$row['caption']}</th></tr>\r\n";
 				}
+				else if($inputtype=='hidden')
+				{
+					$widget->Render($row['specifier'],$fieldname,$fieldvalue);
+				}
 				else 
 				{
 					echo "<th class=\"NormalLabel";
@@ -755,14 +759,17 @@ function Validate$name(me) {
 		$xi = xml_parse_into_struct($p,$xml,$xvals,$xindex);
 		xml_parser_free($p);
 		$xrow = array();
-		foreach($xindex['VALUE'] as $idx)
+		if(isset($xindex["VALUE"]))
 		{
-			$key = $xvals[$idx]['attributes']['HEADER'];
-			if (array_key_exists('value',$xvals[$idx]))
-				$val = $xvals[$idx]['value'];
-			else 
-				$val = '';
-			$xrow[$key] = $val;
+			foreach($xindex['VALUE'] as $idx)
+			{
+				$key = $xvals[$idx]['attributes']['HEADER'];
+				if (array_key_exists('value',$xvals[$idx]))
+					$val = $xvals[$idx]['value'];
+				else 
+					$val = '';
+				$xrow[$key] = $val;
+			}			
 		}
 		return $xrow;
 	}
