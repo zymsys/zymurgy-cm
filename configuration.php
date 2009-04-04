@@ -11,6 +11,7 @@ else
 include('header.php');
 include('datagrid.php');
 require_once('InputWidget.php');
+require_once('include/Thumb.php');
 
 if ($_SERVER['REQUEST_METHOD']=='POST')
 {
@@ -31,7 +32,9 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			case 'image':
 				if (!empty($_FILES["Config$id"]['tmp_name']))
 				{
-					Zymurgy::MakeThumbs('zcm_config.value',$id,array("{$isp[0]}x{$isp[1]}"),$_FILES["Config$id"]['tmp_name']);
+					$ext = Thumb::mime2ext($_FILES["Config$id"]['type']);
+					$value = $_FILES["Config$id"]['type'];
+					Zymurgy::MakeThumbs('zcm_config.value',$id,array("{$isp[0]}x{$isp[1]}"),$_FILES["Config$id"]['tmp_name'],$ext);
 				}
 				break;
 		}

@@ -889,10 +889,10 @@ class DataGrid
 		
 		//Delete associated thumb stuff
 		$path = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
-		@unlink("$path/{$id}aspectcropDark.jpg");
-		@unlink("$path/{$id}aspectcropNormal.jpg");
-		@unlink("$path/{$id}raw.jpg");
 		$thumbs = glob("$path/{$id}thumb*");
+		array_merge($thumbs,glob("$path/{$id}aspectcropDark.jpg"));
+		array_merge($thumbs,glob("$path/{$id}aspectcropNormal.jpg"));
+		array_merge($thumbs,glob("$path/{$id}raw.jpg"));
 		foreach($thumbs as $thumb)
 		{
 			@unlink($thumb);
@@ -991,9 +991,9 @@ class DataGrid
 		exit;
 	}
 	
-	function MakeThumbs($datacolumn,$id,$targets,$uploadpath = '')
+	function MakeThumbs($datacolumn,$id,$targets,$uploadpath = '',$ext = 'jpg')
 	{
-		Zymurgy::MakeThumbs($datacolumn, $id, $targets, $uploadpath);
+		Zymurgy::MakeThumbs($datacolumn, $id, $targets, $uploadpath,$ext);
 		
 		/*
 		global $ZymurgyRoot, $ZymurgyConfig;
@@ -1026,14 +1026,14 @@ class DataGrid
 		*/
 	}
 	
-	function RegenerateThumbs()
+	function RegenerateThumbs($ext='jpg')
 	{
 		$this->DataSet->fill();
 		foreach ($this->DataSet->rows as $dsr)
 		{
 			foreach ($this->thumbs as $dc=>$size)
 			{
-				$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$size);
+				$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$size,'',$ext);
 			}
 		}
 	}
@@ -1156,7 +1156,8 @@ class DataGrid
 				{
 					if (array_key_exists($dc,$this->thumbs))
 					{
-						$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$this->thumbs[$dc],$upload);
+						$ext = Thumb::mime2ext($file['type']);
+						$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$this->thumbs[$dc],$upload,Thumb::mime2ext($file['type']));
 					}
 					else if (!@move_uploaded_file($upload,"$uploadfolder/$dc.$id"))
 					{

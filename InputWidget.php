@@ -137,7 +137,8 @@ class InputWidget
 					$targetsize = $this->targetsize;
 				else
 					$targetsize = "{$ep[1]}x{$ep[2]}";
-				$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.jpg?".rand(0,99999);
+				$ext = Thumb::mime2ext($display);
+				$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.$ext?".rand(0,99999);
 				$display = "<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a>";
 				break;
 			case "drop":
@@ -393,7 +394,7 @@ passThroughFormSubmit = false;
 				{
 					$date = strtotime($value);
 				}
-				if ($date == 0) $date=time();
+				//if ($date == 0) $date=time();
 							
 				$cal = new DHTML_Calendar(
 					"/zymurgy/jscalendar/",
@@ -413,7 +414,7 @@ passThroughFormSubmit = false;
 		           // field attributes go here
 		           array('style'       => 'width: 15em; color: #840; background-color: #ff8; border: 1px solid #000; text-align: center',
 		                 'name'        => $name,
-		                 'value'       => strftime('%Y-%m-%d', $date)));		                 
+		                 'value'       => ($date == 0) ? '' : strftime('%Y-%m-%d', $date)));		                 
 		                 
 				break;
 				
@@ -424,7 +425,7 @@ passThroughFormSubmit = false;
 					$date = $value;
 				else
 					$date = strtotime($value);
-				if ($date == 0) $date=time();
+				//if ($date == 0) $date=time();
 							
 				$cal = new DHTML_Calendar(
 					"/zymurgy/jscalendar/",
@@ -445,7 +446,7 @@ passThroughFormSubmit = false;
 		           // field attributes go here
 		           array('style'       => 'width: 15em; color: #840; background-color: #ff8; border: 1px solid #000; text-align: center',
 		                 'name'        => $name,
-		                 'value'       => strftime('%Y-%m-%d [%I:%M %p]', $date)));
+		                 'value'       => ($date == 0) ? '' : strftime('%Y-%m-%d [%I:%M %p]', $date)));
 				break;
 				
 			case "lookup":
@@ -463,7 +464,9 @@ passThroughFormSubmit = false;
 					$targetsize = str_replace('.','x',$targetsize);
 					if ($this->editkey > 0)
 					{
-						$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.jpg?".rand(0,99999);
+						require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+						$ext = Thumb::mime2ext($value);
+						$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.$ext?".rand(0,99999);
 						$thumbs[] = "<a onclick=\"aspectcrop_popup('{$this->datacolumn}','$targetsize','{$this->editkey}','{$this->datacolumn}',true)\">".
 							"<img id=\"{$this->datacolumn}.$targetsize\" src=\"$imgsrc\" style=\"cursor: pointer\" /></a> ";
 					}

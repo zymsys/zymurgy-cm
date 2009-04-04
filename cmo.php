@@ -308,12 +308,13 @@ if (!class_exists('Zymurgy'))
 					}
 					//Make sure we have the requested thumb.
 					$requestedSize = str_replace('.','x',$requestedSize);
-					$thumbName = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}thumb$requestedSize.jpg";
+					$ext = Thumb::mime2ext($row['body']);
+					$thumbName = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}thumb$requestedSize.$ext";
 					if (!file_exists($thumbName))
 					{
 						require_once("Zymurgy::$root/zymurgy/include/Thumb.php");
 						$dimensions = explode('x',$requestedSize);
-						$rawimage = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}raw.jpg";
+						$rawimage = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}raw.$ext";
 						Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,$thumbName);
 					}
 				}
@@ -797,7 +798,8 @@ if (!class_exists('Zymurgy'))
 			$datacolumn,
 			$id,
 			$targets,
-			$uploadpath = '')
+			$uploadpath = '',
+			$ext = 'jpg')
 		{
 			$ZymurgyRoot = Zymurgy::$root;
 			$ZymurgyConfig = Zymurgy::$config;
@@ -806,17 +808,18 @@ if (!class_exists('Zymurgy'))
 			$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
 			@mkdir($thumbdest);
 			
-			$rawimage = "$thumbdest/{$id}raw.jpg";
+			$rawimage = "$thumbdest/{$id}raw.$ext";
 			
 			if ($uploadpath!=='')
 				move_uploaded_file($uploadpath,$rawimage);
 				
+			/* Supports non-jpg now, so this isn't needed.
 			if ((function_exists('mime_content_type')) && (mime_content_type($rawimage)!='image/jpeg'))
 			{
 				//Supplied image isn't a jpeg.  Convert raw into one (best effort!).
 				system("{$ZymurgyConfig['ConvertPath']}convert $rawimage $thumbdest/{$id}jpg.jpg");
 				rename("$thumbdest/{$id}jpg.jpg",$rawimage);
-			}
+			}*/
 			
 			require_once("$ZymurgyRoot/zymurgy/include/Thumb.php");
 			
@@ -828,13 +831,13 @@ if (!class_exists('Zymurgy'))
 				foreach ($targetsizes as $targetsize)
 				{
 					$dimensions = explode('x',$targetsize);
-					Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.jpg");
+					Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.$ext");
 				}
 			}
 			
-			Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.jpg");
+			Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.$ext");
 			
-			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.jpg $thumbdest/{$id}aspectcropDark.jpg");
+			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.$ext $thumbdest/{$id}aspectcropDark.$ext");
 		}
 		
 		/**

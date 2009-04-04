@@ -1,6 +1,23 @@
 <?
 class Thumb
 {
+	static function mime2ext($mime)
+	{
+		switch($mime)
+		{
+			case 'image/jpeg':
+			case 'image/pjpeg':
+				return 'jpg';
+			case 'image/gif':
+				return 'gif';
+			case 'image/png':
+			case 'image/x-png':
+				return 'png';
+			default:
+				return '';
+		}
+	}
+	
 	function ThumbFolder($galleryname)
 	{
 		global $ZymurgyRoot;
