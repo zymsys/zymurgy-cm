@@ -28,18 +28,21 @@
 				"Invoice",
 				"input.30.100");
 				
-			$sql = "SELECT `header` FROM `zcm_form_input` WHERE `instance` = '".
-				mysql_escape_string($_GET["instance"]).
-				"' ORDER BY `disporder`";
-			$ri = Zymurgy::$db->query($sql)
-				or die("Could not retrieve field list: ".mysql_error().", $sql");
-				
 			$fieldList = array();
 			$fieldList[] = "(none)";
-				
-			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
-			{
-				$fieldList[] = $row["header"];
+			
+			if (array_key_exists('instance',$_GET))
+			{ //Not available during install/upgrade when this plugin is created.
+				$sql = "SELECT `header` FROM `zcm_form_input` WHERE `instance` = '".
+					Zymurgy::$db->escape_string($_GET["instance"]).
+					"' ORDER BY `disporder`";
+				$ri = Zymurgy::$db->query($sql)
+					or die("Could not retrieve field list: ".mysql_error().", $sql");
+					
+				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+				{
+					$fieldList[] = $row["header"];
+				}
 			}
 				
 			$this->AddBillingInformationLink($r, $fieldList, "First Name");

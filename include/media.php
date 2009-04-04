@@ -204,7 +204,7 @@
 							"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
 							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
 							"`max_instances` INTEGER UNSIGNED NOT NULL,".
-							"PRIMARY KEY (`media_file_package_type_allowed_relation_id`)".
+							"PRIMARY KEY (`media_package_type_allowed_relation_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
 							or die(
