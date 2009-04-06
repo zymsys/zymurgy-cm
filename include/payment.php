@@ -18,6 +18,7 @@
 	interface IPaymentProcessor
 	{
 		public function GetPaymentProcessorName();
+		public function GetReturnQueryParameter();
 		
 		public function GetAmount();
 		public function SetAmount($newValue);
@@ -28,8 +29,13 @@
 		public function GetInvoiceID();
 		public function SetInvoiceID($newValue);
 		
+		public function GetReturnURL();
+		public function SetReturnURL($newValue);
+		
+		public function GetCancelURL();
+		public function SetCancelURL($newValue);
+		
 		public function Process();	
-		public function Callback();
 	}
 	
 	class PaypalIPNProcessor implements IPaymentProcessor 
@@ -37,6 +43,8 @@
 		private $m_amount;
 		private $m_billingInformation;
 		private $m_invoiceID;
+		private $m_returnURL;
+		private $m_cancelURL;
 		
 		public function PaypalIPNProcessor()
 		{
@@ -84,6 +92,11 @@
 			return "Paypal IPN";
 		}
 		
+		public function GetReturnQueryParameter()
+		{
+			return "merchant_return_link";
+		}
+		
 		public function GetAmount()
 		{
 			return $this->m_amount;
@@ -114,6 +127,26 @@
 			$this->m_invoiceID = $newValue;
 		}
 		
+		public function GetReturnURL()
+		{
+			return $this->m_returnURL;
+		}
+		
+		public function SetReturnURL($newValue)
+		{
+			$this->m_returnURL = $newValue;
+		}
+		
+		public function GetCancelURL()
+		{
+			return $this->m_cancelURL;
+		}
+		
+		public function SetCancelURL($newValue)
+		{
+			$this->m_cancelURL = $newValue;
+		}
+		
 		public function Process()
 		{
 			$output = "";
@@ -129,6 +162,9 @@
 			$output .= $this->RenderHiddenInput("currency_code", Zymurgy::$config["PaypalIPN.CurrencyCode"]);
 			$output .= $this->RenderHiddenInput("amount", $this->m_amount);
 			$output .= $this->RenderBillingInformation();
+			
+			$output .= $this->RenderOptionalHiddenInput("return", $this->m_returnURL);
+			$output .= $this->RenderOptionalHiddenInput("cancel_return", $this->m_cancelURL);
 			
 			$output .= $this->RenderSubmitButton(Zymurgy::$config["PaypalIPN.SubmitText"]);
 
@@ -200,19 +236,14 @@
 			$output = "";
 			
 			$output .= "<script type=\"text/javascript\">\n";
-			$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
+			//$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
 			$output .= "</script>\n";
 			
-			$output .= "<noscript>\n";
-			$output .= "<input type=\"submit\" value=\"$value\">\n;";
-			$output .= "</noscript>\n";			
+			// $output .= "<noscript>\n";
+			$output .= "<input type=\"submit\" value=\"$value\">\n";
+			// $output .= "</noscript>\n";			
 			
 			return $output;
-		}
-		
-		public function Callback()
-		{
-			// do nothing
 		}
 	}
 ?>
