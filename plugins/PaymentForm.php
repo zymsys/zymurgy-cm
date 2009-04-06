@@ -16,7 +16,7 @@
 				$r, 
 				"Payment Gateway",
 				"Paypal IPN",
-				"drop.Paypal IPN, Moneris, Authorize.NET");
+				"drop.Paypal IPN, Moneris eSELECT Plus, Authorize.NET");
 			$this->BuildConfig(
 				$r,
 				"Item Amount",
@@ -27,14 +27,19 @@
 				"Invoice Prefix",
 				"Invoice",
 				"input.30.100");
-				
+			$this->BuildConfig(
+				$r,
+				"Cancellation URL",
+				"/index.php",
+				"input.50.200");
+
 			$fieldList = array();
 			$fieldList[] = "(none)";
-			
-			if (array_key_exists('instance',$_GET))
-			{ //Not available during install/upgrade when this plugin is created.
+					
+			if(isset($_GET["instance"]))
+			{
 				$sql = "SELECT `header` FROM `zcm_form_input` WHERE `instance` = '".
-					Zymurgy::$db->escape_string($_GET["instance"]).
+					mysql_escape_string($_GET["instance"]).
 					"' ORDER BY `disporder`";
 				$ri = Zymurgy::$db->query($sql)
 					or die("Could not retrieve field list: ".mysql_error().", $sql");
@@ -42,7 +47,7 @@
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
 					$fieldList[] = $row["header"];
-				}
+				}				
 			}
 				
 			$this->AddBillingInformationLink($r, $fieldList, "First Name");
@@ -70,7 +75,7 @@
 				"drop.".implode(", ", $fieldList));
 		}
 	
-		function RenderThanks()
+		function RenderPaymentForm()
 		{
 			if ($this->GetConfigValue('Email Form Results To Address') != '')
 				$this->SendEmail();
@@ -123,6 +128,14 @@
 			
 			$paymentProcessor->SetBillingInformation($billing);
 			
+			$paymentProcessor->SetReturnURL(
+				"http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
+			if(trim($this->GetConfigValue("Cancellation URL")) !== "")
+			{
+				$paymentProcessor->SetCancelURL(
+					"http://".$_SERVER['HTTP_HOST'].$this->GetConfigValue("Cancellation URL"));
+			}
+			
 			// echo "<pre>";
 			// print_r($paymentProcessor->GetBillingInformation());
 			// echo "</pre>";
@@ -136,6 +149,12 @@
 			{
 				case "Paypal IPN":
 					return new PaypalIPNProcessor();
+					
+				case "Moneris eSELECT Plus":
+					return new MonerisEselectProcessor();
+					
+				case "Authorize.NET":
+					return new AuthorizeNetProcessor();
 					
 				default:
 					die("The ".$this->GetConfigValue("Payment Gateway")." payment gateway is not supported at this time.");
@@ -152,6 +171,50 @@
 				
 				$billing->$propertyName = 
 					$values[trim($this->GetConfigValue($configValue))];
+			}
+		}
+		
+		function RenderThanks()
+		{
+			echo $this->GetConfigValue('Thanks');
+		}
+	
+		function Render()
+		{
+			if (!$this->InputDataLoaded)
+				$this->LoadInputData();
+			if ($_SERVER['REQUEST_METHOD']=='POST')
+			{
+				if ($_POST['formname']!=$this->InstanceName)
+				{
+					//Another form is posting, just render the form as usual.
+					$this->RenderForm();
+				}
+				else 
+				{
+					if ($this->IsValid())
+					{
+						//This does the send/store and the thanks.
+						$this->RenderPaymentForm();
+					}
+					else 
+					{
+						$this->RenderForm();
+					}
+				}
+			}
+			else
+			{
+				$paymentProcessor = $this->GetPaymentProcessor();
+				
+				if(isset($_GET[$paymentProcessor->GetReturnQueryParameter()]))
+				{
+					$this->RenderThanks();				
+				}
+				else 
+				{
+					$this->RenderForm();
+				}
 			}
 		}
 	}
