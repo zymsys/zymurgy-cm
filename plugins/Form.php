@@ -337,6 +337,18 @@ class Form extends PluginBase
 		$js = array();
 		foreach ($this->InputRows as $row)
 		{
+			$fieldname = "Field{$row['fid']}";
+			if ($postback && (array_key_exists($fieldname,$_POST)))
+			{
+				$fieldvalue = $widget->PostValue($row['specifier'],$fieldname);
+			}
+			else
+			{
+				if (array_key_exists($row['header'],$values))
+					$fieldvalue = $values[$row['header']];
+				else 
+					$fieldvalue = $row['defaultvalue'];
+			}
 			$code = $widget->JSRender($row['specifier'],$fieldname,$fieldvalue);
 			if (!empty($code))
 			{
