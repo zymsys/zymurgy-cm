@@ -38,64 +38,13 @@
 		public function Process();	
 	}
 	
-	class PaypalIPNProcessor implements IPaymentProcessor 
-	{
-		private $m_amount;
-		private $m_billingInformation;
-		private $m_invoiceID;
-		private $m_returnURL;
-		private $m_cancelURL;
-		
-		public function PaypalIPNProcessor()
-		{
-			$this->m_billingInformation = new BillingInformation();
-			
-			$this->ValidateConfiguration();
-		}
-		
-		private function ValidateConfiguration()
-		{
-			$issues = "";
-			$isValid = true;
-			
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.URL");
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.PageStyle");
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.Business");
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CurrencyCode");
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.SubmitText");
-			
-			if(!$isValid)
-			{
-				$issue = "Could not set up Paypal IPN Processor: <ul>\n".
-					$issue.
-					"</ul>\n";
-					
-				die($issue);
-			}
-		}
-		
-		private function ValidateConfigurationItem(&$issue, $name)
-		{
-			$isValid = true;
-			
-			if(!isset(Zymurgy::$config[$name]))
-			{
-				$issue .= "<li>The <b>$name</b> configuration must be set.</li>\n";
-				$isValid = false;
-			}
-			
-			return $isValid;
-		}
-		
-		public function GetPaymentProcessorName()
-		{
-			return "Paypal IPN";
-		}
-		
-		public function GetReturnQueryParameter()
-		{
-			return "merchant_return_link";
-		}
+	abstract class PaymentProcessor
+	{		
+		protected $m_amount;
+		protected $m_billingInformation;
+		protected $m_invoiceID;
+		protected $m_returnURL;
+		protected $m_cancelURL;
 		
 		public function GetAmount()
 		{
@@ -147,6 +96,92 @@
 			$this->m_cancelURL = $newValue;
 		}
 		
+		protected function ValidateConfigurationItem(&$issue, $name)
+		{
+			$isValid = true;
+			
+			if(!isset(Zymurgy::$config[$name]))
+			{
+				$issue .= "<li>The <b>$name</b> configuration must be set.</li>\n";
+				$isValid = false;
+			}
+			
+			return $isValid;
+		}
+		
+		protected function RenderHiddenInput($name, $value)
+		{
+			return "<input type=\"hidden\" name=\"$name\" value=\"$value\">\n";
+		}
+		
+		protected function RenderOptionalHiddenInput($name, $value)
+		{
+			if($value == "")
+			{
+				return "";
+			}
+			else 
+			{
+				return "<input type=\"hidden\" name=\"$name\" value=\"$value\">\n";
+			}			
+		}
+		
+		protected function RenderSubmitButton($value)
+		{
+			$output = "";
+			
+			$output .= "<script type=\"text/javascript\">\n";
+			$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
+			$output .= "</script>\n";
+			
+			$output .= "<noscript>\n";
+			$output .= "<input type=\"submit\" value=\"$value\">\n";
+			$output .= "</noscript>\n";			
+			
+			return $output;
+		}
+	}
+	
+	class PaypalIPNProcessor extends PaymentProcessor implements IPaymentProcessor 
+	{
+		public function PaypalIPNProcessor()
+		{
+			$this->m_billingInformation = new BillingInformation();
+			
+			$this->ValidateConfiguration();
+		}
+		
+		private function ValidateConfiguration()
+		{
+			$issues = "";
+			$isValid = true;
+			
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.URL");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.PageStyle");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.Business");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CurrencyCode");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.SubmitText");
+			
+			if(!$isValid)
+			{
+				$issue = "Could not set up Paypal IPN Processor: <ul>\n".
+					$issue.
+					"</ul>\n";
+					
+				die($issue);
+			}
+		}
+		
+		public function GetPaymentProcessorName()
+		{
+			return "Paypal IPN";
+		}
+		
+		public function GetReturnQueryParameter()
+		{
+			return "merchant_return_link";
+		}
+				
 		public function Process()
 		{
 			$output = "";
@@ -170,9 +205,6 @@
 
 			$output .= "</form>\n";
 			
-			// ZK: Not sure if this should just echo, or if it should return a string.
-			// For now, it echoes.
-			// return $output;
 			echo $output;
 		}
 		
@@ -213,37 +245,183 @@
 			
 			return $output;
 		}
-		
-		private function RenderHiddenInput($name, $value)
+	}
+	
+	class MonerisEselectProcessor extends PaymentProcessor implements IPaymentProcessor 
+	{
+		public function MonerisEselectProcessor()
 		{
-			return "<input type=\"hidden\" name=\"$name\" value=\"$value\">\n";
+			$this->m_billingInformation = new BillingInformation();
+			
+			$this->ValidateConfiguration();
 		}
 		
-		private function RenderOptionalHiddenInput($name, $value)
+		private function ValidateConfiguration()
 		{
-			if($value == "")
+			$issues = "";
+			$isValid = true;
+			
+			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.URL");
+			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.StoreID");
+			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.HPPKey");
+			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.SubmitText");
+			
+			if(!$isValid)
 			{
-				return "";
+				$issue = "Could not set up Moneris eSELECT Processor: <ul>\n".
+					$issue.
+					"</ul>\n";
+					
+				die($issue);
 			}
-			else 
-			{
-				return "<input type=\"hidden\" name=\"$name\" value=\"$value\">\n";
-			}			
 		}
 		
-		private function RenderSubmitButton($value)
+		public function GetPaymentProcessorName()
+		{
+			return "Moneris eSELECT Plus";
+		}
+		
+		public function GetReturnQueryParameter()
+		{
+			return "";
+		}
+		
+		public function Process()
 		{
 			$output = "";
 			
-			$output .= "<script type=\"text/javascript\">\n";
-			//$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
-			$output .= "</script>\n";
+			$output .= "<form name=\"frmPaymentGateway\" method=\"POST\" action=\"".
+				Zymurgy::$config["MonerisEselect.URL"].
+				"\">\n";
+				
+			$output .= $this->RenderHiddenInput("ps_store_id", Zymurgy::$config["MonerisEselect.StoreID"]);
+			$output .= $this->RenderHiddenInput("hpp_key", Zymurgy::$config["MonerisEselect.HPPKey"]);
+			$output .= $this->RenderHiddenInput("order_id", $this->m_invoiceID);
+			$output .= $this->RenderHiddenInput("charge_total", $this->m_amount);
+			$output .= $this->RenderBillingInformation();
 			
-			// $output .= "<noscript>\n";
-			$output .= "<input type=\"submit\" value=\"$value\">\n";
-			// $output .= "</noscript>\n";			
+			// $output .= $this->RenderOptionalHiddenInput("return", $this->m_returnURL);
+			// $output .= $this->RenderOptionalHiddenInput("cancel_return", $this->m_cancelURL);
+			
+			$output .= $this->RenderSubmitButton(Zymurgy::$config["MonerisEselect.SubmitText"]);
+
+			$output .= "</form>\n";
+			
+			echo $output;
+		}
+		
+		private function RenderBillingInformation()
+		{
+			$output = "";
+			
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_first_name", 
+				$this->m_billingInformation->first_name);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_last_name", 
+				$this->m_billingInformation->last_name);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_company_name", 
+				$this->m_billingInformation->company_name);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_address_one", 
+				$this->m_billingInformation->address1);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_city", 
+				$this->m_billingInformation->city);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_state_or_province", 
+				$this->m_billingInformation->province);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_postal_code", 
+				$this->m_billingInformation->postal_code);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_country", 
+				$this->m_billingInformation->country);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_phone", 
+				$this->m_billingInformation->phone);
+			$output .= $this->RenderOptionalHiddenInput(
+				"bill_fax", 
+				$this->m_billingInformation->fax);
 			
 			return $output;
 		}
-	}
+	}	
+	
+	class AuthorizeNetProcessor extends PaymentProcessor implements IPaymentProcessor 
+	{
+		public function AuthorizeNetProcessor()
+		{
+			$this->m_billingInformation = new BillingInformation();
+			
+			$this->ValidateConfiguration();
+		}
+		
+		private function ValidateConfiguration()
+		{
+			$issues = "";
+			$isValid = true;
+			
+			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.URL");
+			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.Login");
+			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.TransactionKey");
+			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.SubmitText");
+			
+			if(!$isValid)
+			{
+				$issue = "Could not set up Authorize.NET Processor: <ul>\n".
+					$issue.
+					"</ul>\n";
+					
+				die($issue);
+			}
+		}
+		
+		public function GetPaymentProcessorName()
+		{
+			return "Authorize.NET";
+		}
+		
+		public function GetReturnQueryParameter()
+		{
+			return "";
+		}
+		
+		public function Process()
+		{
+			$output = "";
+			
+			$output .= "<form name=\"frmPaymentGateway\" method=\"POST\" action=\"".
+				Zymurgy::$config["AuthorizeNET.URL"].
+				"\">\n";
+				
+			$output .= $this->RenderHiddenInput("x_version", "3.1");
+			$output .= $this->RenderHiddenInput("x_method", "CC");
+			$output .= $this->RenderHiddenInput("x_type", "AUTH_CAPTURE");
+			$output .= $this->RenderHiddenInput("x_login", Zymurgy::$config["AuthorizeNET.Login"]);
+			$output .= $this->RenderHiddenInput("x_tran_key", Zymurgy::$config["AuthorizeNET.TransactionKey"]);
+			$output .= $this->RenderHiddenInput("x_relay_response", "FALSE");
+			$output .= $this->RenderHiddenInput("x_url", "FALSE");
+			$output .= $this->RenderHiddenInput("x_po_num", $this->m_invoiceID);
+			$output .= $this->RenderHiddenInput("x_amount", $this->m_amount);
+			$output .= $this->RenderBillingInformation();
+			
+			// $output .= $this->RenderOptionalHiddenInput("return", $this->m_returnURL);
+			// $output .= $this->RenderOptionalHiddenInput("cancel_return", $this->m_cancelURL);
+			
+			$output .= $this->RenderSubmitButton(Zymurgy::$config["MonerisEselect.SubmitText"]);
+
+			$output .= "</form>\n";
+			
+			echo $output;
+		}
+		
+		private function RenderBillingInformation()
+		{
+			$output = "";
+						
+			return $output;
+		}
+	}	
 ?>
