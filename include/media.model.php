@@ -1157,9 +1157,8 @@
 					die("Cannot create $filepath");
 				}
 				$zip->addFromString(
-					"0. Downloaded from Divirta.com.txt",
-					"Downloaded from Divirta.com by ".
-					Zymurgy::$member["email"]);
+					"0. Downloaded from ".$_SERVER['HTTP_HOST'].".txt",
+					"File generated on ".date("Y/M/d"));
 				$zip->close();
 
 				for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
