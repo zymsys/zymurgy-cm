@@ -160,13 +160,20 @@
 		{
 			$output = "";
 
-			$output .= "<script type=\"text/javascript\">\n";
-			$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
-			$output .= "</script>\n";
+			if(Zymurgy::$config["PaymentProcessor.SilentPost"])
+			{
+				$output .= "<script type=\"text/javascript\">\n";
+				$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
+				$output .= "</script>\n";
 
-			$output .= "<noscript>\n";
-			$output .= "<input type=\"submit\" value=\"$value\">\n";
-			$output .= "</noscript>\n";
+				$output .= "<noscript>\n";
+				$output .= "<input type=\"submit\" value=\"$value\">\n";
+				$output .= "</noscript>\n";
+			}
+			else
+			{
+				$output .= "<input type=\"submit\" value=\"$value\">\n";
+			}
 
 			return $output;
 		}
@@ -187,12 +194,15 @@
 			$issues = "";
 			$isValid = true;
 
+			$isValid = $this->ValidateConfigurationItem($issue, "PaymentProcessor.SilentPost");
+
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.URL");
-			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CallbackServer");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.PageStyle");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.Business");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CurrencyCode");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.SubmitText");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CallbackServer");
+			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CallbackPort");
 
 			if(!$isValid)
 			{
@@ -296,12 +306,13 @@
 
 			$header = "";
 			$header .= "POST /cgi-bin/webscr HTTP/1.0\r\n";
+			$header .= "Host: ".str_replace("ssl://", "", Zymurgy::$config["PaypalIPN.CallbackServer"])."\r\n";
 			$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
 			$header .= "Content-Length: ".strlen($req)."\r\n\r\n";
 
-			$fp = fsockopen(
+			$fp = @fsockopen(
 				Zymurgy::$config["PaypalIPN.CallbackServer"],
-				443,
+				Zymurgy::$config["PaypalIPN.CallbackPort"],
 				$errno,
 				$errstr,
 				30);
@@ -309,6 +320,11 @@
 			if(!$fp)
 			{
 				$this->m_paymentTransaction->status_code = "NORESPONSE";
+
+				$err = array();
+				$err["Err#".$errno] = $errstr;
+
+				$this->m_paymentTransaction->postback_variables = $err;
 			}
 			else
 			{
@@ -340,6 +356,8 @@
 		{
 			$issues = "";
 			$isValid = true;
+
+			$isValid = $this->ValidateConfigurationItem($issue, "PaymentProcessor.SilentPost");
 
 			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.URL");
 			$isValid = $this->ValidateConfigurationItem($issue, "MonerisEselect.StoreID");
@@ -454,6 +472,8 @@
 		{
 			$issues = "";
 			$isValid = true;
+
+			$isValid = $this->ValidateConfigurationItem($issue, "PaymentProcessor.SilentPost");
 
 			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.URL");
 			$isValid = $this->ValidateConfigurationItem($issue, "AuthorizeNET.Login");
