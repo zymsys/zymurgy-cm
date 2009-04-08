@@ -17,6 +17,7 @@
 			$sql = "CREATE TABLE `zcm_form_paymentresponse` (".
 				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 				"`instance` INTEGER UNSIGNED NOT NULL,".
+				"`response_date` DATETIME NOT NULL,".
 				"`status_code` VARCHAR(50) NOT NULL,".
 				"`post_vars` TEXT NOT NULL,".
 				"PRIMARY KEY (`id`)".
@@ -238,11 +239,11 @@
 
 			$paymentProcessor = $this->GetPaymentProcessor();
 
-			if(isset($_GET[$paymentProcessor->GetCallbackQueryParameter()])
-				|| isset($_POST[$paymentProcessor->GetCallbackQueryParameter()])
-				|| $paymentProcessor->GetCallbackQueryParameter() == "nocallback")
+			if(!($paymentProcessor->GetCallbackQueryParameter() == "nocallback") && (
+				isset($_GET[$paymentProcessor->GetCallbackQueryParameter()])
+				|| isset($_POST[$paymentProcessor->GetCallbackQueryParameter()])))
 			{
-				$paymentProcessor->callback();
+				$paymentProcessor->Callback();
 				$this->SavePostbackData($paymentProcessor->GetPaymentTransaction());
 
 				// IPN-style operations don't require any output
@@ -292,8 +293,10 @@
 				$postVarString .= "$key: $value\n";
 			}
 
-			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `status_code`, ".
-				"`post_vars` ) VALUES ( '".
+			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `response_date`, ".
+				"`status_code`, `post_vars` ) VALUES ( '".
+				mysql_escape_string(date("Y/M/d")).
+				"', '".
 				mysql_escape_string($this->iid).
 				"', '".
 				mysql_escape_string($transaction->status_code).
