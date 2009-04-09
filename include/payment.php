@@ -17,6 +17,7 @@
 
 	class PaymentTransaction
 	{
+		public $invoice_id = "";
 		public $status_code = "";
 		public $postback_variables = array();
 	}
@@ -296,6 +297,11 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->invoice_id = $_POST["invoice"];
+			$this->m_paymentTransaction->status_code = "UNCONFIRMED";
+			$this->m_paymentTransaction->postback_variables = $_POST;
+			return;
+
 			$req = "cmd=_notify-validate";
 
 			foreach($_POST as $key => $value)
@@ -310,7 +316,7 @@
 			$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
 			$header .= "Content-Length: ".strlen($req)."\r\n\r\n";
 
-			$fp = @fsockopen(
+			$fp = fsockopen(
 				Zymurgy::$config["PaypalIPN.CallbackServer"],
 				Zymurgy::$config["PaypalIPN.CallbackPort"],
 				$errno,
@@ -328,12 +334,14 @@
 			}
 			else
 			{
-				fputs($fl, $header, $req);
+				fputs($fp, $header, $req);
 
 				$res = "";
-				while(!feof($fp))
+				$cntr = 0;
+				while(!feof($fp) && $cntr < 100)
 				{
 					$res .= fgets($fp, 1024);
+					$cntr++;
 				}
 
 				$this->m_paymentTransaction->status_code = $res;
@@ -453,6 +461,7 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->invoice_id = "n/a";
 			$this->m_paymentTransaction->status_code = "Posted Back";
 			$this->m_paymentTransaction->postback_variables = $_POST;
 		}
@@ -543,6 +552,7 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->invoice_id = "n/a";
 			$this->m_paymentTransaction->status_code = "Posted Back";
 			$this->m_paymentTransaction->postback_variables = $_POST;
 		}
