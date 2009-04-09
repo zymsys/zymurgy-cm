@@ -17,6 +17,7 @@
 			$sql = "CREATE TABLE `zcm_form_paymentresponse` (".
 				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 				"`instance` INTEGER UNSIGNED NOT NULL,".
+				"`invoice_id` VARCHAR(50) NOT NULL,".
 				"`response_date` DATETIME NOT NULL,".
 				"`status_code` VARCHAR(50) NOT NULL,".
 				"`post_vars` TEXT NOT NULL,".
@@ -293,16 +294,19 @@
 				$postVarString .= "$key: $value\n";
 			}
 
-			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `response_date`, ".
-				"`status_code`, `post_vars` ) VALUES ( '".
-				mysql_escape_string(date("Y/M/d")).
-				"', '".
+			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `invoice_id`, ".
+				"`response_date`, `status_code`, `post_vars` ) VALUES ( '".
 				mysql_escape_string($this->iid).
+				"', '".
+				mysql_escape_string($transaction->invoice_id).
+				"', '".
+				mysql_escape_string(date("Y/m/d H:i:s")).
 				"', '".
 				mysql_escape_string($transaction->status_code).
 				"', '".
 				mysql_escape_string($postVarString).
 				"' )";
+			//throw(new Exception($sql));
 			Zymurgy::$db->query($sql)
 				or die("Could not insert payment response: ".mysql_error());
 		}
