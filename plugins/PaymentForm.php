@@ -13,7 +13,23 @@
 		function Initialize()
 		{
 			parent::Initialize();
+			$this->CreatePaymentResponseTable();
+		}
 
+		function Upgrade()
+		{
+			$diemsg = "Unable to upgrade PaymentForm plugin: ";
+
+			if ($this->dbrelease < 6)
+			{
+				$this->CreatePaymentResponseTable();
+			}
+
+			parent::Upgrade();
+		}
+
+		private function CreatePaymentResponseTable()
+		{
 			$sql = "CREATE TABLE `zcm_form_paymentresponse` (".
 				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 				"`instance` INTEGER UNSIGNED NOT NULL,".

@@ -311,6 +311,7 @@ class Form extends PluginBase
 
 	function GetRelease()
 	{
+		return 6; // Added support for PaymentForm, which uses the same db schema
 		return 5; //Added capture/export capabilities to db.
 		//return 3; //Added capture/export capabilities to db.
 	}
