@@ -27,7 +27,17 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		switch($type)
 		{
 			case 'attachment':
-				//??
+				if (!empty($_FILES["Config$id"]['type']))
+				{
+					$uploadfolder = "$ZymurgyRoot/zymurgy/uploads";
+					if (!@move_uploaded_file($_FILES["Config$id"]['tmp_name'],"$uploadfolder/zcm_config.value.$id"))
+					{
+						echo "Failed to write $uploadfolder/zcm_config.value.$id<!--";
+						print_r($_FILES["Config$id"]);
+						echo "-->";
+						exit;
+					}
+				}
 				break;
 			case 'image':
 				if (!empty($_FILES["Config$id"]['tmp_name']))
