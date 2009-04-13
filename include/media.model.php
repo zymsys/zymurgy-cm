@@ -529,12 +529,15 @@
 			return $mediaFile;
 		}
 
-		static function GetFilestream($mediaFile)
+		static function GetFilestream(
+			$mediaFile,
+			$suffix = "")
 		{
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$filepath = $uploadfolder.
 				"/".
 				$mediaFile->get_media_file_id().
+				$suffix.
 				".".
 				$mediaFile->get_extension();
 
@@ -616,6 +619,13 @@
 				if(move_uploaded_file($file["tmp_name"], $newPath))
 				{
 					chmod($newPath, 0644);
+
+					if($mediaFile->get_relation() !== null
+						&& strlen($mediaFile->get_relation()->get_thumbnails()) > 0)
+					{
+						MediaFilePopulator::InitializeThumbnails(
+							$mediaFile);
+					}
 				}
 			}
 		}
@@ -665,6 +675,98 @@
 				mysql_escape_string($related_media_file_id)."'";
 
 			Zymurgy::$db->query($sql) or die("Could not delete related media: ".mysql_error().", $sql");
+		}
+
+		public function InitializeThumbnails($mediaFile)
+		{
+			$thumbnails = explode(",", $mediaFile->get_relation()->get_thumbnails());
+
+			foreach($thumbnails as $thumbnail)
+			{
+				MediaFilePopulator::InitializeThumbnail($mediaFile, $thumbnail, true);
+			}
+		}
+
+		public function InitializeThumbnail(
+			$mediaFile,
+			$thumbnail,
+			$forceUpdate = false)
+		{
+			$uploadfolder = Zymurgy::$config["Media File Local Path"];
+			$filepath = $uploadfolder.
+				"/".
+				$mediaFile->get_media_file_id();
+
+			if($forceUpdate || !file_exists($filepath."raw.jpg"))
+			{
+				require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+
+				$dimensions = explode('x',$thumbnail);
+				Thumb::MakeFixedThumb(
+					$dimensions[0],
+					$dimensions[1],
+					$filepath.".".$mediaFile->get_extension(),
+					$filepath."thumb".$thumbnail.".jpg");
+
+				Thumb::MakeQuickThumb(
+					640,
+					480,
+					$filepath.".".$mediaFile->get_extension(),
+					$filepath."aspectcropNormal.jpg");
+
+				system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 {$filepath}aspectcropNormal.jpg {$filepath}aspectcropDark.jpg");
+
+				copy(
+					$filepath.".".$mediaFile->get_extension(),
+					$filepath."raw.jpg");
+			}
+		}
+
+		public function MakeThumbnail($mediaFile, $thumbnail)
+		{
+			require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+
+			$uploadfolder = Zymurgy::$config["Media File Local Path"];
+			$filepath = $uploadfolder.
+				"/".
+				$mediaFile->get_media_file_id();
+
+			list ($width,$height) = explode('x',$thumbnail,2);
+			$work = array();
+			list($work['w'], $work['h'], $type, $attr) = getimagesize($filepath."aspectcropNormal.jpg");
+			$raw = array();
+			list($raw['w'], $raw['h'], $type, $attr) = getimagesize($filepath."raw.jpg");
+
+			$selected = array(
+				'x'=>$_POST['cropX'],
+				'y'=>$_POST['cropY'],
+				'w'=>$_POST['cropWidth'],
+				'h'=>$_POST['cropHeight']);
+
+			//echo "[{$selected['x']},{$selected['y']},{$selected['w']},{$selected['h']}]<br>";
+			//echo "raw [{$raw['w']},{$raw['h']}]<br>";
+
+			//Math time...  Take 640x480 work image coordinates and figure out coordinates on full sized image.
+			$xfactor = $raw['w'] / $work['w'];
+			$yfactor = $raw['h'] / $work['h'];
+
+			//echo "factors: $xfactor $yfactor<br>";
+
+			$x = $selected['x'] * $xfactor;
+			$y = $selected['y'] * $yfactor;
+			$w = $selected['w'] * $xfactor;
+			$h = $selected['h'] * $yfactor;
+
+			$thumbpath = $filepath."thumb".$thumbnail.".jpg";
+			Thumb::MakeThumb(
+				$x,
+				$y,
+				$w,
+				$h,
+				$width,
+				$height,
+				$filepath."raw.jpg",
+				$thumbpath);
 		}
 	}
 

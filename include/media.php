@@ -344,6 +344,15 @@
 			include("header.php");
 			include('datagrid.php');
 
+			echo("<script type=\"text/javascript\">\n");
+			echo("function mf_aspectcrop_popup(media_file_id, thumbnail) {\n");
+			echo("url = 'media.php?action=edit_media_file_thumbnail&media_file_id={0}&thumbnail={1}';\n");
+			echo("url = url.replace(\"{0}\", media_file_id);\n");
+			echo("url = url.replace(\"{1}\", thumbnail);\n");
+			echo("window.open(url, \"thumber\", \"scrollbars=no,width=780,height=500\");\n");
+			echo("}\n");
+			echo("</script>\n");
+
 			DumpDataGridCSS();
 
 			$widget = new InputWidget();
@@ -453,10 +462,41 @@
 			echo("<td>".$mediaFile->get_mimetype()."</td>");
 			echo("</tr>");
 
-			// echo("<tr>");
-			// echo("<td>Owner:</td>");
-			// echo("<td>".$mediaFile->get_member()->get_email()."</td>");
-			// echo("</tr>");
+			if($mediaFile->get_relation() !== null
+				&& strlen($mediaFile->get_relation()->get_thumbnails()) > 0)
+			{
+				echo("<tr>");
+				echo("<td valign=\"bottom\">Thumbnails:</td>");
+				echo("<td>");
+
+				$thumbnails = explode(",", $mediaFile->get_relation()->get_thumbnails());
+
+				foreach($thumbnails as $thumbnail)
+				{
+					$thumbnailItems = explode("x", $thumbnail);
+
+					echo("<a href=\"javascript:mf_aspectcrop_popup(".
+						$mediaFile->get_media_file_id().
+						", '".
+						$thumbnail.
+						"');\">");
+					echo("<img src=\"media.php?action=stream_media_file&amp;media_file_id=".
+						$mediaFile->get_media_file_id().
+						"&suffix=thumb".
+						$thumbnail.
+						"\" width=\"".
+						$thumbnailItems[0].
+						"\" height=\"".
+						$thumbnailItems[1].
+						"\" alt=\"Update ".
+						$thumbnail.
+						" Thumbnail\">");
+					echo("</a>&nbsp;");
+				}
+
+				echo("</td>");
+				echo("</tr>");
+			}
 
 			if($action == "act_edit_media_file")
 			{
@@ -615,6 +655,150 @@
 			echo("<input style=\"width: 80px;\" type=\"button\" value=\"Cancel\" onclick=\"window.location.href='media.php?action=edit_media_file&media_file_id=".$mediaFile->get_media_file_id()."';\">&nbsp;</p>");
 
 			include("footer.php");
+		}
+
+		static function DisplayThumber($mediaFile, $thumbnail)
+		{
+			list ($width,$height) = explode('x', $thumbnail, 2);
+			$minwidth = $initwidth = $width;
+			$minheight = $initheight = $height;
+
+			$uploadfolder = Zymurgy::$config["Media File Local Path"];
+			$filepath = $uploadfolder.
+				"/".
+				$mediaFile->get_media_file_id();
+
+			$work = array();
+			list($work['w'], $work['h'], $type, $attr) = getimagesize($filepath."aspectcropNormal.jpg");
+			$raw = array();
+			list($raw['w'], $raw['h'], $type, $attr) = getimagesize($filepath."raw.jpg");
+
+			//Adjust min's for raw image size
+			$minwidth *= $work['w'] / $raw['w'];
+			$minheight *= $work['h'] / $raw['h'];
+
+			if (($width>$work['w']) || ($height>$work['h']))
+			{
+				//Supplied im,age is too small for thumb size.  Shrink selector and relax minimum size requirement.
+				$xfactor = $yfactor = 1;
+				if ($width>$work['w'])
+					$xfactor = $work['w']/$width;
+				if ($height>$work['h'])
+					$yfactor = $work['h']/$height;
+				$factor = min($xfactor,$yfactor);
+				$minwidth = $initwidth = round($width * $factor);
+				$minheight = $initheight = round($height * $factor);
+				//$minwidth = $minheight = 20;
+			}
+			//Do we have room for a nice 10px gap to start, or will we push right to the edge?
+			//echo "if (min({$work['w']} - $initwidth,{$work['h']} - $initheight) < 0)"; exit;
+			if (min($work['w'] - $initwidth,$work['h'] - $initheight) < 10)
+			{
+				$initx = 0;
+				$inity = 0;
+			}
+			else
+			{
+				$initx = 10;
+				$inity = 10;
+			}
+
+			echo("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ");
+			echo("\"http://www.w3.org/TR/html4/loose.dtd\">\n");
+        	echo("<html>\n");
+ 			echo("<head>\n");
+ 			echo("<title>Zymurgy:CM Thumbnail Selection Tool</title>");
+ 			echo Zymurgy::YUI("yahoo/yahoo-min.js");
+ 			echo Zymurgy::YUI("dom/dom-min.js");
+ 			echo Zymurgy::YUI("event/event-min.js");
+ 			echo Zymurgy::YUI("dragdrop/dragdrop-min.js");
+ 			echo("<script type=\"text/javascript\" src=\"include/aspectCrop.js\"></script>\n");
+ 			echo("<script type=\"text/javascript\" src=\"include/DDResize.js\"></script>\n");
+ 			echo("<style type=\"text/css\">\n");
+ 			echo("body { background: white; font-family: Arial, Helvetica, Sans-Serif; margin: 10px; padding: 0px; }\n");
+ 			echo("div#divForm { position: absolute; left: ".($work['w'] + 20)."px; top: 10px; width: 110px; height: 30px; overflow: crop; z-index: 9; }\n");
+ 			echo("img#imgBackground { width: ".$work['w']."px; height: ".$work['h']."px; }\n");
+ 			echo("#panelDiv { position: absolute; height: 150px; width: 300px; top: 10px; left: 10px; background-color: #F7F7F7; overflow: hidden; z-index: 10; }\n");
+ 			echo("#handleDiv { position: absolute; bottom: 0px; right: 0px; width: 16px; height: 16px; background-image: url(images/resizeHandle.gif); font-size: 1px; z-index: 20; }\n");
+ 			echo("#theimage { position: absolute; top: 10px; left: 10px; }\n");
+ 			echo("img#imgCropped { position: absolute; left: 0px; top: 0px; width: ".$width."px; height: ".$height."px; z-index: 10; }\n");
+ 			echo("</style>\n");
+ 			echo("<script type=\"text/javascript\">\n");
+  			echo("var dd, dd2; // Yahoo! Drag and Drop objects\n");
+ 			echo("var offsetX = 10, offsetY = 10; // position of the background image\n");
+			echo("var initX = $initx, initY = $inity; // initial position of the crop box\n");
+  			echo("var initWidth = $initwidth, initHeight = $initheight; // initial width and height of the crop box\n");
+			echo("var minWidth = $minwidth, minHeight = $minheight; // minimum width and height of the crop box\n");
+ 			echo("var aspectRatio = parseFloat(minWidth) / parseFloat(minHeight);\n");
+ 			echo("var granularity = 1; // granularity of the drag-drop constraint area\n");
+			echo("var borderWidth = 0; // some of the calculations take this into account\n");
+  			echo("function init() {\n");
+ 			echo("//dd is the resize handle\n");
+	        echo("dd = new YAHOO.example.DDResize(\"panelDiv\", \"handleDiv\", \"panelresize\");\n");
+			echo("//dd2 is the selected region of the image\n");
+	        echo("dd2 = new YAHOO.util.DDProxy(\"panelDiv\", \"paneldrag\");\n");
+	        echo("dd2.addInvalidHandleId(\"handleDiv\"); //Don't let the handle drag the image\n");
+			echo("panelDiv = document.getElementById(\"panelDiv\");\n");
+	        echo("panelDiv.style.left = (initX + offsetX) + \"px\";\n");
+	        echo("panelDiv.style.top = (initY + offsetY) + \"px\";\n");
+	        echo("panelDiv.style.width = initWidth + \"px\";\n");
+	        echo("panelDiv.style.height = initHeight + \"px\";\n");
+			echo("// Called when selected thumb area is dragged.\n");
+ 			echo("updateCropArea = function(e) {\n");
+ 			echo("var pd = document.getElementById(\"panelDiv\");\n");
+ 			echo("var imgX = pd.offsetLeft - offsetX + borderWidth;\n");
+ 			echo("var imgY = pd.offsetTop - offsetY + borderWidth;\n");
+ 	  		echo("cropImage('imgCropped', imgX, imgY);\n");
+	 		echo("setConstraints(dd2, dd, \"panelDiv\", \"imgBackground\", initX, initY, imgX, imgY, borderWidth);\n");
+ 			echo("};\n");
+ 			echo("updateCropArea();\n");
+			echo("document.getElementById(\"imgBackground\").style.width =\n");
+ 			echo("document.getElementById(\"imgCropped\").style.width = '".$work['w']."px';\n");
+ 			echo("document.getElementById(\"imgBackground\").style.height =\n");
+ 			echo("document.getElementById(\"imgCropped\").style.height = '".$work['h']."px';\n");
+			echo("dd.onMouseUp = updateCropArea;\n");
+ 			echo("dd2.onMouseUp = updateCropArea;\n");
+			echo("}\n");
+			echo("</script>\n");
+			echo("</head>\n");
+			echo("<body onLoad=\"init();\">\n");
+			echo("<div id=\"divForm\">\n");
+			echo("<form name=\"frmCrop\" method=\"POST\" action=\"".$_SERVER['REQUEST_URI']."\">\n");
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_edit_media_file_thumbnail\">\n");
+ 			echo("<input type=\"hidden\" name=\"cropX\" value=\"10\">\n");
+ 			echo("<input type=\"hidden\" name=\"cropY\" value=\"10\">\n");
+ 			echo("<input type=\"hidden\" name=\"cropWidth\" value=\"200\">\n");
+ 			echo("<input type=\"hidden\" name=\"cropHeight\" value=\"100\">\n");
+ 			echo("<input type=\"hidden\" name=\"cropScale\" value=\"1.0\">\n");
+ 			echo("<input type=\"button\" name=\"cmdSubmit\" value=\"Save Image\" onClick=\"submitForm();\">\n");
+ 			echo("<input type=\"button\" name=\"cmdClear\" value=\"Clear Image\" onClick=\"clearImage();\">\n");
+  			echo("</form>\n");
+    		echo("</div>\n");
+  			echo("<img id=\"imgBackground\" src=\"media.php?action=stream_media_file&media_file_id=".
+  				$mediaFile->get_media_file_id().
+  				"&suffix=aspectcropDark\">\n");
+ 			echo("<div id=\"panelDiv\">\n");
+	 		echo("<img id=\"imgCropped\" src=\"media.php?action=stream_media_file&media_file_id=".
+  				$mediaFile->get_media_file_id().
+  				"&suffix=aspectcropNormal\">\n");
+        	echo("<div id=\"handleDiv\"></div>\n");
+    		echo("</div>\n");
+ 			echo("</body>\n");
+ 			echo("</html>\n");
+		}
+
+		static function DisplayThumbCreated()
+		{
+			echo("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ");
+			echo("\"http://www.w3.org/TR/html4/loose.dtd\">\n");
+        	echo("<html>\n");
+ 			echo("<head>\n");
+ 			echo("<script type=\"text/javascript\">window.opener.location.reload(); window.close();</script>");
+			echo("</head>\n");
+			echo("<body onLoad=\"init();\">\n");
+			echo("&nbsp;");
+ 			echo("</body>\n");
+ 			echo("</html>\n");
 		}
 
 		static function DownloadMediaFile($mediaFile, $fileContent)
@@ -1526,6 +1710,27 @@
 						$_GET["media_file_id"]);
 					return true;
 
+				case "edit_media_file_thumbnail":
+					$mediaFile = MediaFilePopulator::PopulateByID(
+						$_GET["media_file_id"]);
+					MediaFilePopulator::InitializeThumbnail(
+						$mediaFile,
+						$_GET["thumbnail"]);
+					MediaFileView::DisplayThumber(
+						$mediaFile,
+						$_GET["thumbnail"]);
+					return true;
+
+				case "act_edit_media_file_thumbnail":
+					$mediaFile = MediaFilePopulator::PopulateByID(
+						$_GET["media_file_id"]);
+					MediaFilePopulator::MakeThumbnail(
+						$mediaFile,
+						$_GET["thumbnail"]);
+					MediaFileView::DisplayThumbCreated();
+
+					return true;
+
 				case "download_media_file":
 					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_GET["media_file_id"]);
@@ -1538,7 +1743,8 @@
 					$mediaFile = MediaFilePopulator::PopulateByID(
 						$_GET["media_file_id"]);
 					$fileContent = MediaFilePopulator::GetFilestream(
-						$mediaFile);
+						$mediaFile,
+						$_GET["suffix"]);
 					MediaFileView::StreamMediaFile($mediaFile, $fileContent);
 					return true;
 
