@@ -1,5 +1,5 @@
 <?
-class Form extends PluginBase 
+class Form extends PluginBase
 {
 	var $ValidationErrors;
 	var $InputRows;
@@ -7,7 +7,7 @@ class Form extends PluginBase
 	var $SaveID; //Poke id number to save to existing slot instead of insert
 	var $InputDataLoaded = false;
 	var $member = false;
-	
+
 	function Form()
 	{
 		$this->ValidationErrors = array();
@@ -18,17 +18,17 @@ class Form extends PluginBase
 		}
 		parent::PluginBase();
 	}
-	
+
 	function GetTitle()
 	{
 		return 'Form Plugin';
 	}
-	
+
 	function GetUninstallSQL()
 	{
 		return 'drop table zcm_form_capture; drop table zcm_form_input; drop table zcm_form_inputtype';
 	}
-	
+
 	function RemoveInstance()
 	{
 		$sql = "delete from zcm_form_input where instance={$this->iid}";
@@ -41,11 +41,11 @@ class Form extends PluginBase
 		Zymurgy::$db->query($sql) or die("Unable to remove form headers ($sql): ".Zymurgy::$db->error());
 		parent::RemoveInstance();
 	}
-	
+
 	function GetDefaultConfig()
 	{
 		global $ZymurgyConfig;
-		
+
 		$dom = $ZymurgyConfig['sitehome'];
 		if (substr($dom,0,4) == "www.")
 			$dom = substr($dom,4);
@@ -53,7 +53,7 @@ class Form extends PluginBase
 		$this->BuildConfig($r,'Name','My New Form','input.40.60',2);
 		$this->BuildConfig($r,'Email Form Results To Address','you@'.$dom);
 		$this->BuildConfig($r,'Email Form Results From Address','you@'.$dom,'input.50.100');
-		$this->BuildConfig($r,'Email Form Results Subject','Feedback from '.$ZymurgyConfig['defaulttitle'],'input.50.100');	
+		$this->BuildConfig($r,'Email Form Results Subject','Feedback from '.$ZymurgyConfig['defaulttitle'],'input.50.100');
 		$this->BuildConfig($r,'Capture to Database',0,'radio.'.serialize(array(0=>'No',1=>'Yes')));
 		$this->BuildConfig($r,'Submit Button Text','Send','input.80.80');
 		//$this->BuildConfig($r,'Field Name','','input.40.60');
@@ -66,11 +66,11 @@ class Form extends PluginBase
 		$this->BuildConfig($r,'Confirmation Email Contents','','html.500.300');
 		return $r;
 	}
-			
+
 	function GetCommandMenuItems()
 	{
 		$r = array();
-		
+
 		$this->BuildMenuItem(
 			$r,
 			"View form details",
@@ -97,8 +97,8 @@ class Form extends PluginBase
 			"Edit available validators",
 			"pluginadmin.php?ras=regex&pid={pid}&iid={iid}&name={name}",
 			2);
-		$this->BuildDeleteMenuItem($r);		
-		
+		$this->BuildDeleteMenuItem($r);
+
 		return $r;
 	}
 
@@ -155,7 +155,7 @@ class Form extends PluginBase
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`)
 )");
-		
+
 		Zymurgy::$db->query("CREATE TABLE `zcm_form_regex` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
@@ -164,8 +164,8 @@ class Form extends PluginBase
   UNIQUE KEY `id` (`id`),
   KEY `disporder` (`disporder`)
 )");
-		
-		Zymurgy::$db->query("INSERT INTO `zcm_form_inputtype` VALUES 
+
+		Zymurgy::$db->query("INSERT INTO `zcm_form_inputtype` VALUES
 			(1,0,'Short Text (30 characters)','input.30.30'),
 			(2,0,'Medium Text (60 characters)','input.30.60'),
 			(3,0,'Long Text (100 characters)','input.50.100'),
@@ -179,10 +179,10 @@ class Form extends PluginBase
 			(11,0,'Date','unixdate'),
 			(12,0,'File Attachment','attachment'),
 			(13,0,'Verbiage','verbiage')");
-		
+
 			Zymurgy::$db->query($this->getDefaultRegexInsert());
 	}
-	
+
 	private function getDefaultRegexInsert()
 	{
 		$defaultregex = array(
@@ -203,7 +203,7 @@ class Form extends PluginBase
 		$sql .= implode(", ",$v);
 		return $sql;
 	}
-	
+
 	function Upgrade()
 	{
 		$diemsg = "Unable to upgrade Form plugin: ";
@@ -283,21 +283,32 @@ class Form extends PluginBase
 						Zymurgy::$db->query("update zcm_form_input set validator=4 where id=$id");
 						break;
 					default:
-						$unknowncount++;
-						$sql = "INSERT INTO `zcm_form_regex` (`name`, `regex`) VALUES ('Unknown Validator #$unknowncount','".
-							Zymurgy::$db->escape_string($validator)."')";
-						Zymurgy::$db->query($sql);
-						$newregex = Zymurgy::$db->insert_id();
-						Zymurgy::$db->query("update zcm_form_regex set disporder=$newregex where id=$newregex");
-						Zymurgy::$db->query("update zcm_form_input set validator=$newregex where id=$id");
+						if(is_numeric($validatior))
+						{
+							// Validator is already set by ID. The dbrelease for this plugin was
+							// probably set incorrectly.
+							//
+							// Ignore.
+						}
+						else
+						{
+							$unknowncount++;
+							$sql = "INSERT INTO `zcm_form_regex` (`name`, `regex`) VALUES ('Unknown Validator #$unknowncount','".
+								Zymurgy::$db->escape_string($validator)."')";
+							Zymurgy::$db->query($sql);
+							$newregex = Zymurgy::$db->insert_id();
+							Zymurgy::$db->query("update zcm_form_regex set disporder=$newregex where id=$newregex");
+							Zymurgy::$db->query("update zcm_form_input set validator=$newregex where id=$id");
+						}
+
 						break;
 				}
 			}
 			Zymurgy::$db->query("alter table zcm_form_input change validator validator bigint");
 		}
-		$this->CompleteUpgrade();		
+		$this->CompleteUpgrade();
 	}
-	
+
 	function GetRelease()
 	{
 		return 5; //Added capture/export capabilities to db.
@@ -319,7 +330,7 @@ class Form extends PluginBase
 		Zymurgy::$db->free_result($ri);
 		$this->InputDataLoaded = true;
 	}
-	
+
 	function RenderForm()
 	{
 		$postback = ((array_key_exists('formname',$_POST)) && ($_POST['formname']==$this->InstanceName));
@@ -327,7 +338,7 @@ class Form extends PluginBase
 		{
 			$values = $this->xmltoarray($this->XmlValues);
 		}
-		else 
+		else
 			$values = array();
 		// Verbiage renders with colspan 2.  Checkboxes render with caption and input columns reversed.
 		// Or should that reverse be a form config option?  damit.  Here I am.
@@ -346,7 +357,7 @@ class Form extends PluginBase
 			{
 				if (array_key_exists($row['header'],$values))
 					$fieldvalue = $values[$row['header']];
-				else 
+				else
 					$fieldvalue = $row['defaultvalue'];
 			}
 			$code = $widget->JSRender($row['specifier'],$fieldname,$fieldvalue);
@@ -392,7 +403,7 @@ function Validate$name(me) {
 			{
 				echo "<tr><td colspan=\"2\" class=\"VerbiageCell\" id=\"Field{$row['fid']}\">{$row['caption']}</td></tr>\r\n";
 			}
-			else 
+			else
 			{
 				$isvalerr = array_key_exists($row['fid'],$this->ValidationErrors);
 				$fieldname = "Field{$row['fid']}";
@@ -404,12 +415,12 @@ function Validate$name(me) {
 				{
 					if (array_key_exists($row['header'],$values))
 						$fieldvalue = $values[$row['header']];
-					else 
+					else
 						$fieldvalue = $row['defaultvalue'];
 				}
 				if ($isvalerr)
 					echo "<tr class=\"ValidationError\">";
-				else 
+				else
 					echo "<tr>";
 				if ($inputtype=='lookup')
 				{
@@ -426,14 +437,14 @@ function Validate$name(me) {
 				{
 					$widget->Render($row['specifier'],$fieldname,$fieldvalue);
 				}
-				else 
+				else
 				{
 					echo "<th class=\"NormalLabel";
 					if ($row['isrequired']==1)
 					{
 						echo " Required";
 					}
-					else 
+					else
 					{
 						echo " Optional";
 					}
@@ -449,7 +460,7 @@ function Validate$name(me) {
 		echo "</table></form>";
 		return "";
 	}
-	
+
 	function GetValues()
 	{
 		//Build substitution array out of supplied headers/values
@@ -471,7 +482,7 @@ function Validate$name(me) {
 		}
 		return $values;
 	}
-	
+
 	/**
 	 * Parse an email address in the form "First Last <name@example.com>" into an array like
 	 * array("First Last","name@example.com")
@@ -489,7 +500,7 @@ function Validate$name(me) {
 		$email = $ap[0];
 		return array($name,$email);
 	}
-	
+
 	function SendEmail()
 	{
 		//Load PHPMailer class
@@ -589,7 +600,7 @@ function Validate$name(me) {
 				echo " There has been a problem sending email to [$to]. ";
 		}
 	}
-	
+
 	function MakeXML($values)
 	{
 		$xml = array("<formvalues>");
@@ -601,14 +612,14 @@ function Validate$name(me) {
 		$xml[] = "</formvalues>";
 		return implode("\r\n",$xml);
 	}
-	
+
 	function StoreCapture($xml = null)
 	{
 		if ($xml == null)
 			$xml = $this->MakeXML($this->GetValues());
 		if (array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER))
 			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		else 
+		else
 			$ip = $_SERVER['REMOTE_ADDR'];
 		if ($this->SaveID)
 		{
@@ -616,7 +627,7 @@ function Validate$name(me) {
 				Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."', formvalues='".
 				Zymurgy::$db->escape_string($xml)."' where id=".$this->SaveID;
 		}
-		else 
+		else
 		{
 			$sql = "insert into zcm_form_capture (instance,submittime,ip,useragent,formvalues,member) values ({$this->iid},now(),
 				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
@@ -625,7 +636,7 @@ function Validate$name(me) {
 		}
 		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
 	}
-	
+
 	function RenderThanks()
 	{
 		if ($this->GetConfigValue('Email Form Results To Address') != '')
@@ -634,7 +645,7 @@ function Validate$name(me) {
 			$this->StoreCapture();
 		echo $this->GetConfigValue('Thanks');
 	}
-	
+
 	function IsValid()
 	{
 		$validators = array();
@@ -653,7 +664,7 @@ function Validate$name(me) {
 			if (empty($row['validatormsg']))
 				$vmsg = "The field \"{$row['caption']}\" failed to validate.";
 			else
-				$vmsg = $row['validatormsg'];			
+				$vmsg = $row['validatormsg'];
             if (($row['isrequired']==1) && ($input == ''))
 			{
 				$this->ValidationErrors[$row['fid']] = $vmsg;
@@ -666,7 +677,7 @@ function Validate$name(me) {
 		}
 		return (count($this->ValidationErrors)==0);
 	}
-	
+
 	function Render()
 	{
 		if (!$this->InputDataLoaded)
@@ -678,14 +689,14 @@ function Validate$name(me) {
 				//Another form is posting, just render the form as usual.
 				$this->RenderForm();
 			}
-			else 
+			else
 			{
 				if ($this->IsValid())
 				{
 					//This does the send/store and the thanks.
 					$this->RenderThanks();
 				}
-				else 
+				else
 				{
 					$this->RenderForm();
 				}
@@ -696,12 +707,12 @@ function Validate$name(me) {
 			$this->RenderForm();
 		}
 	}
-	
+
 	function AdminMenuText()
 	{
 		return 'Forms';
 	}
-	
+
 	function RenderSuperAdmin()
 	{
 		$ds = new DataSet('zcm_form_inputtype','id');
@@ -716,53 +727,53 @@ function Validate$name(me) {
 		$dg->insertlabel = 'Add new Input Type';
 		$dg->Render();
 	}
-	
+
 	function RenderAdmin()
 	{
 		if (array_key_exists('ras',$_GET))
 		{
 			switch ($_GET['ras'])
 			{
-				case 'export': 
-					$this->RenderAdminExport(); 
+				case 'export':
+					$this->RenderAdminExport();
 					break;
-					
-				case 'datamgmt': 
-					$this->RenderAdminDataManagement(); 
+
+				case 'datamgmt':
+					$this->RenderAdminDataManagement();
 					break;
-				
+
 				case 'doexport':
 					$expid = $this->RenderAdminPrepDownload();
 					$this->RenderAdminDoExport();
 					break;
-					
-				case 'dodownload': 
+
+				case 'dodownload':
 					$expid = 0 + $_GET['expid'];
-					$this->RenderAdminDoDownload($expid); 
+					$this->RenderAdminDoDownload($expid);
 					break;
-					
+
 				case 'regex':
 					$this->RenderAdminRegex();
 					break;
-					
+
 				case 'fields':
-				default: 
-					$this->RenderAdminFields(); 
+				default:
+					$this->RenderAdminFields();
 					break;
 			}
 		}
-		else 
+		else
 		{
 			echo "<h3>Form administration for: ".$this->InstanceName."</h3>\r\n";
 
-			$this->RenderAdminFields(); 
-								
+			$this->RenderAdminFields();
+
 			//echo "<a href=\"pluginadmin.php?ras=fields&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Edit Fields</a><br />\r\n";
 			//echo "<a href=\"pluginadmin.php?ras=export&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Data Exports</a><br />\r\n";
 		}
-		//echo "doexport"; exit;		
+		//echo "doexport"; exit;
 	}
-	
+
 	function xmltoarray($xml)
 	{
 		$xvals = array();
@@ -778,20 +789,20 @@ function Validate$name(me) {
 				$key = $xvals[$idx]['attributes']['HEADER'];
 				if (array_key_exists('value',$xvals[$idx]))
 					$val = $xvals[$idx]['value'];
-				else 
+				else
 					$val = '';
 				$xrow[$key] = $val;
-			}			
+			}
 		}
 		return $xrow;
 	}
-	
+
 	function RenderAdminDoExport()
 	{
 		$this->RenderAdminExport();
 		$this->RenderDownloadCode($_GET['pid'],$_GET['iid'],$_GET['name']);
 	}
-	
+
 	/**
 	 * Generate an export ID and assign all unexported records to it.
 	 *
@@ -807,7 +818,7 @@ function Validate$name(me) {
 		Zymurgy::$db->query($sql) or die("Unable to mark fields as exported ($sql): ".Zymurgy::$db->error());
 		return $expid;
 	}
-	
+
 	function RenderAdminDoDownload($expid)
 	{
 		global $zauth;
@@ -909,7 +920,7 @@ td
 	font-family:Arial, sans-serif;
 	mso-font-charset:0;}
 -->
-</style>	
+</style>
 <!--[if gte mso 9]><xml>
  <x:ExcelWorkbook>
   <x:ExcelWorksheets>
@@ -957,7 +968,7 @@ td
 			{
 				if (array_key_exists($key,$xrow))
 					$val = $xrow[$key];
-				else 
+				else
 					$val = '';
 				echo "<td>".htmlentities($val)."</td>";
 			}
@@ -984,7 +995,7 @@ function DownloadExport(pid,iid,name) {
 //-->\r\n";*/
 		//echo "</script>\r\n";
 	}
-	
+
 	function RenderAdminExport()
 	{
 		$sql = "select count(*) from zcm_form_capture where export is null";
@@ -1000,7 +1011,7 @@ function DownloadExport(pid,iid,name) {
 		$ds = new DataSet('zcm_form_export','id');
 		$ds->AddColumns('id','exptime','expuser','instance');
 		$ds->AddDataFilter('instance',$this->iid);
-		
+
 		$dg = new DataGrid($ds);
 		$dg->AddColumn('Export Time','exptime');
 		$dg->AddColumn('Exported By','expuser');
@@ -1009,19 +1020,19 @@ function DownloadExport(pid,iid,name) {
 		$dg->insertlabel = '';
 		$dg->Render();
 	}
-	
+
 	private function RenderCalendarControl($name,$value)
 	{
 		$iw = new InputWidget();
 		$iw->Render('datetime',$name,$value);
 	}
-	
+
 	private function GetCalendarControlValue($name)
 	{
 		$iw = new InputWidget();
 		return $iw->PostValue('unixdatetime',$name);
 	}
-	
+
 	function RenderAdminDataManagement()
 	{
 		if ($_SERVER['REQUEST_METHOD']=='POST')
@@ -1034,7 +1045,7 @@ function DownloadExport(pid,iid,name) {
 		else
 			$this->RenderAdminDataManagementQuery();
 	}
-	
+
 	function RenderAdminDataManagementDownload()
 	{
 		$sql = "select count(*) from zcm_form_capture where member is not null and instance={$this->iid}";
@@ -1054,8 +1065,8 @@ function DownloadExport(pid,iid,name) {
 		$to = $this->GetCalendarControlValue('to');
 		$top = explode(' ',strftime('%Y %m %d %H %M',$to+60));
 		$to = mktime($top[3],$top[4],0,$top[1],$top[2],$top[0]);
-		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,zcm_member.email 
-			from zcm_form_capture left join zcm_member on (zcm_form_capture.member=zcm_member.id) 
+		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,zcm_member.email
+			from zcm_form_capture left join zcm_member on (zcm_form_capture.member=zcm_member.id)
 			where (instance={$this->iid}) and (unix_timestamp(submittime)>='$from') and (unix_timestamp(submittime)<'$to')";
 		//Change from and to into values that can be used to identify the xls file.
 		$from = strftime('%Y%m%d%H%M',$from);
@@ -1144,7 +1155,7 @@ td
 	font-family:Arial, sans-serif;
 	mso-font-charset:0;}
 -->
-</style>	
+</style>
 <!--[if gte mso 9]><xml>
  <x:ExcelWorkbook>
   <x:ExcelWorksheets>
@@ -1192,7 +1203,7 @@ td
 			{
 				if (array_key_exists($key,$xrow))
 					$val = $xrow[$key];
-				else 
+				else
 					$val = '';
 				echo "<td>".htmlentities($val)."</td>";
 			}
@@ -1202,7 +1213,7 @@ td
 		echo "</body></html>";
 		exit;
 	}
-	
+
 	function RenderAdminDataManagementDelete()
 	{
 		$from = $this->GetCalendarControlValue('from');
@@ -1214,7 +1225,7 @@ td
 		Zymurgy::$db->run($sql);
 		echo "The selected range of data has been removed from the database.";
 	}
-	
+
 	function RenderAdminDataManagementQuery()
 	{
 		list($from,$to) = Zymurgy::$db->get("select min(submittime),max(submittime) from zcm_form_capture where instance=".$this->iid);
@@ -1248,7 +1259,7 @@ td
 				btn.value = 'Download Selected Form Data';
 			else
 				btn.value = 'Delete Selected Form Data';
-		} 
+		}
 
 		function checkAction() {
 			var sel = document.getElementById('action');
@@ -1262,7 +1273,7 @@ td
 		</script>
 		<?php
 	}
-	
+
 	function RenderAdminFields()
 	{
 		$ds = new DataSet('zcm_form_input','id');
@@ -1286,7 +1297,7 @@ td
 		$dg->AddConstant('instance',$this->iid);
 		$dg->Render();
 	}
-	
+
 	function RenderAdminRegex()
 	{
 		$ds = new DataSet('zcm_form_regex','id');
