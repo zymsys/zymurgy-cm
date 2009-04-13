@@ -1743,6 +1743,7 @@
 		private $m_media_relation_id;
 		private $m_relation_type;
 		private $m_relation_label;
+		private $m_thumbnails;
 		private $m_allowed_mimetypes = "";
 
 		private $m_errors = array();
@@ -1775,6 +1776,16 @@
 		public function set_relation_label($newValue)
 		{
 			$this->m_relation_label = $newValue;
+		}
+
+		public function get_thumbnails()
+		{
+			return $this->m_thumbnails;
+		}
+
+		public function set_thumbnails($newValue)
+		{
+			$this->m_thumbnails = $newValue;
 		}
 
 		public function get_allowed_mimetypes()
@@ -1829,8 +1840,8 @@
 	{
 		static function PopulateAll()
 		{
-			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label`, `allowed_mimetypes` ".
-				"FROM `zcm_media_relation` ORDER BY `relation_type_label`";
+			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label`, `thumbnails`, ".
+				"`allowed_mimetypes` FROM `zcm_media_relation` ORDER BY `relation_type_label`";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve relation types: ".mysql_error().", $sql");
 
@@ -1843,6 +1854,7 @@
 				$mediaRelation->set_media_relation_id($row["media_relation_id"]);
 				$mediaRelation->set_relation_type($row["relation_type"]);
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
+				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
 
 				$mediaRelations[] = $mediaRelation;
@@ -1853,7 +1865,7 @@
 
 		static function PopulateByID($media_relation_id)
 		{
-			$sql = "SELECT `relation_type`, `relation_type_label`, `allowed_mimetypes` ".
+			$sql = "SELECT `relation_type`, `relation_type_label`, `thumbnails`, `allowed_mimetypes` ".
 				"FROM `zcm_media_relation` WHERE `media_relation_id` = '".
 				mysql_escape_string($media_relation_id)."'";
 			$ri = Zymurgy::$db->query($sql)
@@ -1867,6 +1879,7 @@
 				$mediaRelation->set_media_relation_id($media_relation_id);
 				$mediaRelation->set_relation_type($row["relation_type"]);
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
+				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
 
 				return $mediaRelation;
@@ -1876,7 +1889,8 @@
 		static function PopulateByType($relation_type)
 		{
 			$sql = "SELECT `media_relation_id`,  `relation_type`, `relation_type_label`, ".
-				"`allowed_mimetypes` FROM `zcm_media_relation` WHERE `relation_type` = '".
+				"`thumbnails`, `allowed_mimetypes` FROM `zcm_media_relation` ".
+				"WHERE `relation_type` = '".
 				mysql_escape_string($relation_type)."'";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve relation: ".mysql_error().", $sql");
@@ -1893,6 +1907,7 @@
 				$mediaRelation->set_media_relation_id($row["media_relation_id"]);
 				$mediaRelation->set_relation_type($row["relation_type"]);
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
+				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
 
 				return $mediaRelation;
@@ -1906,6 +1921,7 @@
 			$mediaRelation->set_media_relation_id($_POST["media_relation_id"]);
 			$mediaRelation->set_relation_type($_POST["relation_type"]);
 			$mediaRelation->set_relation_label($_POST["relation_label"]);
+			$mediaRelation->set_thumbnails($_POST["thumbnails"]);
 			$mediaRelation->set_allowed_mimetypes($_POST["allowed_mimetypes"]);
 
 			return $mediaRelation;
@@ -1918,9 +1934,10 @@
 			if($mediaRelation->get_media_relation_id() <= 0)
 			{
 				$sql = "INSERT INTO `zcm_media_relation` ( `relation_type`, ".
-					"`relation_type_label`, `allowed_mimetypes` ) VALUES ( '".
+					"`relation_type_label`, `thumbnails`, `allowed_mimetypes` ) VALUES ( '".
 					mysql_escape_string($mediaRelation->get_relation_type())."', '".
 					mysql_escape_string($mediaRelation->get_relation_label())."', '".
+					mysql_escape_string($mediaRelation->get_thumbnails())."', '".
 					mysql_escape_string($mediaRelation->get_allowed_mimetypes())."')";
 
 				Zymurgy::$db->query($sql) or die("Could not insert relation record: ".mysql_error());
@@ -1935,6 +1952,7 @@
 				$sql = "UPDATE `zcm_media_relation` SET ".
 					"`relation_type` = '".mysql_escape_string($mediaRelation->get_relation_type())."', ".
 					"`relation_type_label` = '".mysql_escape_string($mediaRelation->get_relation_label())."', ".
+					"`thumbnails` = '".mysql_escape_string($mediaRelation->get_thumbnails())."', ".
 					"`allowed_mimetypes` = '".mysql_escape_string($mediaRelation->get_allowed_mimetypes())."' ".
 					"WHERE `media_relation_id` = '".mysql_escape_string($mediaRelation->get_media_relation_id())."'";
 

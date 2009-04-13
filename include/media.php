@@ -76,6 +76,10 @@
 
 				// If none of the columns are found, return as version 1.
 
+				$sql = "show columns from `zcm_media_relation` like 'thumbnails'";
+				$fieldExists = Zymurgy::$db->get($sql);
+				if(isset($fieldExists[0]) && $fieldExists[0] == 'thumbnails') return 5;
+
 				$sql = "show columns from `zcm_media_file` like 'price'";
 				$fieldExists = Zymurgy::$db->get($sql);
 				if(isset($fieldExists[0]) && $fieldExists[0] == 'price') return 4;
@@ -94,7 +98,7 @@
 
 		static function Version()
 		{
-			return 4;
+			return 5;
 		}
 
 		static function Install()
@@ -229,6 +233,13 @@
 							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
 						Zymurgy::$db->query($sql)
 							or die("Could not upgrade zcm_media_package table: ".mysql_error());
+						break;
+
+					case 5:
+						$sql = "ALTER TABLE `zcm_media_relation` ".
+							"ADD COLUMN `thumbnails` VARCHAR(50) AFTER `relation_type_label`;";
+						Zymurgy::$db->query($sql)
+							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
 						break;
 
 					default:
@@ -1300,6 +1311,8 @@
 			echo("</td>");
 			echo("</tr>");
 
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
 			echo("<tr>");
 			echo("<td>Allowed mimetypes:</td>");
 			echo("<td>");
@@ -1307,6 +1320,18 @@
 			echo("</td>");
 			echo("</tr>");
 
+			echo("<tr><td>&nbsp;</td><td colspan=\"2\">i.e. image/jpeg, audio/mpeg</td></tr>");
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
+			echo("<tr>");
+			echo("<td>Thumbnails to Generate:</td>");
+			echo("<td>");
+			$widget->Render("input.30.50", "thumbnails", $mediaRelation->get_thumbnails());
+			echo("</td>");
+			echo("</tr>");
+
+			echo("<tr><td>&nbsp;</td><td colspan=\"2\">i.e. 120x90,800x600</td></tr>");
+			echo("<tr><td>&nbsp;</td><td colspan=\"2\">Provide for image formats that will be displayed at a specified size</td></tr>");
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 
 			echo("<tr>");
