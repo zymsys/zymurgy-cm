@@ -1,4 +1,6 @@
 <?
+require_once("include/payment.php");
+
 if (!class_exists('Zymurgy'))
 {
 	class Zymurgy
@@ -9,89 +11,89 @@ if (!class_exists('Zymurgy'))
 		 * @var string
 		 */
 		static $root;
-		
+
 		/**
 		 * A Zymurgy_DB instance for database access
 		 *
 		 * @var Zymurgy_DB
 		 */
-		static $db; 
-		
+		static $db;
+
 		/**
 		 * Config values from the config/config.php file
 		 *
 		 * @var array
 		 */
-		static $config; 
-		
+		static $config;
+
 		/**
 		 * User supplied site config values from within the Zymurgy:CM control panel front-end
 		 *
 		 * @var array
 		 */
 		static $userconfig;
-		
+
 		/**
 		 * Site Color Theme cache.
 		 *
 		 * @var unknown_type
 		 */
 		static $colorThemes = array();
-		
+
 		/**
 		 * Zymurgy:CM release number
 		 *
 		 * @var int
 		 */
 		static $build = 1987;
-		
+
 		/**
 		 * member info available if the user is logged in.
 		 *
 		 * @var array
 		 */
 		static $member;
-		
+
 		/**
 		 * If set to true, included YUI assets will be stripped of '-min' to facilitate debugging.
 		 *
 		 * @var boolean
 		 */
 		public static $yuitest = false;
-		
+
 		/**
 		 * Array of loaded YUI javascript & css files
 		 *
 		 * @var array
 		 */
 		private static $yuiloaded = array();
-		
+
 		/**
 		 * Array of loaded non-YUI javascript & css files
 		 *
 		 * @var array
 		 */
 		private static $otherloaded = array();
-		
+
 		/**
 		 * Instance of a ZymurgyMember class, or a decendent which provides membership features
 		 *
 		 * @var ZymurgyMember
 		 */
 		private static $MemberProvider = null;
-		
+
 		private static $pageid;
 		private static $title;
-			
+
 		public static $ThemeColor = array(
 			"Header Background" => 1,
 			"Menu Background" => 2,
 			"Menu Highlight" => 3,
 			"Page Background" => 4,
 			"Text Color" => 5,
-			"Link Color" => 6			
+			"Link Color" => 6
 		);
-		
+
 		public static $defaulttheme = null;
 
 		/**
@@ -133,7 +135,7 @@ if (!class_exists('Zymurgy'))
 					return "<!-- Request for non supported resource: $src -->\r\n";
 			}
 		}
-		
+
 		/**
 		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
 		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
@@ -156,7 +158,7 @@ if (!class_exists('Zymurgy'))
 			$r[] = Zymurgy::RequireOnceCore(true,$src);
 			return implode($r);
 		}
-		
+
 		/**
 		 * Return javascript or CSS tags to load the supplied source file if it has not already been loaded by this method.
 		 *
@@ -167,18 +169,18 @@ if (!class_exists('Zymurgy'))
 		{
 			return Zymurgy::RequireOnceCore(false,$src);
 		}
-		
+
 		/**
 		 * Defines the base URL for the YUI framework.
 		 *
 		 * @return The base URL for the YUI framework.
 		 */
-		
+
 		static function YUIBaseURL()
 		{
 			return "http://yui.yahooapis.com/2.7.0/build/";
 		}
-		
+
 		/**
 		 * Given a table name from Custom Tables, output XML for the table's contents and all detail tables.
 		 *
@@ -192,26 +194,26 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::buildEasyXML($tableName);
 			echo "</$rootName>\r\n";
 		}
-		
+
 		static private function XMLvalue($value)
 		{
 			$sc = htmlentities($value);
 			if ($sc == $value)
 				return $value;
 			else
-				return "<![CDATA[$value]]>"; 
+				return "<![CDATA[$value]]>";
 		}
-		
+
 		static private function buildEasyXML($tableName,$detailTable='',$parentID=0,$level = 1)
 		{
 			//Get meta data about this table, especially detail tables.
-			$sql = "select id from customtable where tname='".
+			$sql = "select id from zcm_customtable where tname='".
 				Zymurgy::$db->escape_string($tableName)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table info ($sql): ".Zymurgy::$db->error());
 			$row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC) or die("Table $tableName doesn't exist.");
 			$tid = $row['id'];
 			Zymurgy::$db->free_result($ri);
-			$sql = "select * from customtable where detailfor=$tid";
+			$sql = "select * from zcm_customtable where detailfor=$tid";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table detail info ($sql): ".Zymurgy::$db->error());
 			$details = array();
 			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)
@@ -251,16 +253,16 @@ if (!class_exists('Zymurgy'))
 				echo "{$mytabs}</$tableName>\r\n";
 			}
 		}
-		
+
 		static function stripslashes_deep($value)
 		{
 			$value = is_array($value) ?
 				array_map('Zymurgy::stripslashes_deep', $value) :
 				stripslashes($value);
-			
+
 			return $value;
 		}
-		
+
 		/**
 		 * Get general site content.  Create new tag if this one doesn't exist.
 		 *
@@ -323,26 +325,26 @@ if (!class_exists('Zymurgy'))
 					Zymurgy::$db->query("update zcm_sitetext set inputspec='".Zymurgy::$db->escape_string($type)."' where id={$row['id']}");
 				}
 				$widget = new InputWidget();
-				
+
 				$_GET['editkey'] = $row['id'];
 				$t = $widget->Display("$type","{0}",$row['body']);
 				if (array_key_exists('zymurgy',$_COOKIE) && $adminui)
 				{
 					//Render extra goop to allow in place editing.
 					global $Zymurgy_tooltipcount;
-					
+
 					$Zymurgy_tooltipcount++;
 					if ($isImage)
 						$extra = $requestedSize;
-					else 
+					else
 						$extra = '';
 					$jstag = str_replace('"','\"',$tag);
 					$urltag = urlencode($jstag);
 					$tag = htmlentities($tag);
 					$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
 					$t = "<span id=\"ST$tag\">$t</span><script type=\"text/javascript\">
-		YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\", 
-												{ context:\"ST$jstag\", 
+		YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
+												{ context:\"ST$jstag\",
 												  hidedelay: 10000,
 												  autodismissdelay: 10000,
 												  text:\"<a href='javascript:ShowEditWindow(\\\"$link\\\")'>Edit &quot;$tag&quot; with Zymurgy:CM</a>\" });
@@ -351,7 +353,7 @@ if (!class_exists('Zymurgy'))
 					/*$jstag = str_replace("'","''",$tag);
 					if ($isImage)
 						$extra = ",'$requestedSize'";
-					else 
+					else
 						$extra = ",''";
 					$t = "<span id=\"ST$tag\" onClick=\"cmsContentClick('$jstag'$extra)\" onMouseOver=\"cmsHighlightContent('$jstag')\" onMouseOut=\"cmsRestoreContent('$jstag')\">$t</span>";*/
 				}
@@ -370,7 +372,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$db->free_result($ri);
 			return $t;
 		}
-	
+
 		/**
 		 * Get header tags such as title, meta tags, and admin javascript for in-place editing.
 		 * @param $ispage boolean Is this a page in the context of the site?  CSS for example is not a page.
@@ -418,7 +420,7 @@ if (!class_exists('Zymurgy'))
 					$orphan = 0;
 					$userid = $_COOKIE['zcmtracking'];
 				}
-				else 
+				else
 				{
 					$orphan = 1;
 					$userid = uniqid(true);
@@ -438,7 +440,7 @@ if (!class_exists('Zymurgy'))
 			$r = implode("\r\n",$r)."\r\n";
 			return $r;
 		}
-		
+
 		static function siteimage($tag,$width,$height,$alt='')
 		{
 			$img = Zymurgy::sitetext($tag,"image.$width.$height");
@@ -447,7 +449,7 @@ if (!class_exists('Zymurgy'))
 				$img = substr($img,0,$ipos)."alt=\"$alt\" ".substr($img,$ipos);
 			return $img;
 		}
-		
+
 		static function sitemap()
 		{
 			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
@@ -460,7 +462,7 @@ if (!class_exists('Zymurgy'))
 			}
 			$sm->Render();
 		}
-	
+
 		static function LoadPluginConfig(&$pi)
 		{
 			$iid = 0 + $pi->iid;
@@ -478,7 +480,7 @@ if (!class_exists('Zymurgy'))
 			}
 			Zymurgy::$db->free_result($ri);
 		}
-		
+
 		/**
 		 * Create a plugin object for the named plugin (same as the file name without the extension) and
 		 * instance name.  Extra is used to pass extra plugin-specific stuff to a plugin, and private
@@ -526,7 +528,7 @@ if (!class_exists('Zymurgy'))
 			{
 				Zymurgy::LoadPluginConfig($pi);
 			}
-			else 
+			else
 			{
 				//New instance...  Load 'er up!
 				$sql = "select id,enabled from zcm_plugin where name='".
@@ -561,7 +563,7 @@ if (!class_exists('Zymurgy'))
 			}
 			return $pi;
 		}
-		
+
 		static function plugin($plugin,$instance,$extra='')
 		{
 			$pi = Zymurgy::mkplugin($plugin,$instance,$extra,0);
@@ -571,7 +573,7 @@ if (!class_exists('Zymurgy'))
 			}
 			return $pi->Render();
 		}
-		
+
 		static function adminhead()
 		{
 			return Zymurgy::YUI("container/assets/container.css").
@@ -588,7 +590,7 @@ if (!class_exists('Zymurgy'))
 		</script>
 		";
 		}
-	
+
 		/**
 		 * Emit javascript to redirect the user to the supplied URL.  Aborts the running script/page.
 		 *
@@ -604,7 +606,7 @@ if (!class_exists('Zymurgy'))
 			</script></head><body><noscript>Javascript is required to view this page.</noscript></body></html>";
 			exit;
 		}
-		
+
 		/**
 		 * Emit javascript to set the innerHTML of the privided element (by ID) to the supplied HTML content.
 		 *
@@ -634,14 +636,14 @@ if (!class_exists('Zymurgy'))
 				{
 					Zymurgy::$MemberProvider = new ZymurgyMember();
 				}
-				else 
+				else
 				{
 					require_once(Zymurgy::$root."/zymurgy/memberp/".Zymurgy::$config['MemberProvider'].".php");
 					Zymurgy::$MemberProvider = new Zymurgy::$config['MemberProvider'];
 				}
 			}
 		}
-		
+
 		/**
 		 * Is member authenticated?  If yes then loads auth info into global $member array.
 		 *
@@ -652,7 +654,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberauthenticate();
 		}
-		
+
 		/**
 		 * Is member authorized (by group name) to view this page?
 		 *
@@ -664,7 +666,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberauthorize($groupname);
 		}
-		
+
 		/**
 		 * Log member activity
 		 *
@@ -675,7 +677,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			Zymurgy::$MemberProvider->memberaudit($activity);
 		}
-		
+
 		/**
 		 * Use in the header with the include and metatags().
 		 * Verify that the user is a member of the required group to view this page.
@@ -688,7 +690,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			Zymurgy::$MemberProvider->memberpage($groupname);
 		}
-		
+
 		/**
 		 * Attempt to log into the membership system with the provided user ID and password.  Returns true
 		 * if the login was successful or false if it was not.
@@ -702,7 +704,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberdologin($userid,$password);
 		}
-		
+
 		/**
 		 * Clear existing credentials and go to the supplied URL.
 		 *
@@ -728,12 +730,12 @@ if (!class_exists('Zymurgy'))
 		static function membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect)
 		{
 			Zymurgy::initializemembership();
-			
-			die("membersignup: ".gettype(Zymurgy::$MemberProvider));
-			
+
+			// die("membersignup: ".gettype(Zymurgy::$MemberProvider));
+
 			return Zymurgy::$MemberProvider->membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
 		}
-		
+
 		/**
 		 * Render login interface.  Uses reg GET variable, which can be:
 		 * 	- username: create a new username/account
@@ -745,12 +747,12 @@ if (!class_exists('Zymurgy'))
 		static function memberlogin()
 		{
 			// die("memberlogin: ".gettype(Zymurgy::$MemberProvider));
-			die(var_dump(debug_backtrace()));
+			// die(var_dump(debug_backtrace()));
 
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberlogin();
 		}
-		
+
 		/**
 		 * Render data entry form for user data using the navigation name for the Custom Table used for user data.
 		 *
@@ -785,7 +787,7 @@ if (!class_exists('Zymurgy'))
 			$mail->AddCustomHeader("X-WebmailSrc: $ip");
 			return $mail;
 		}
-		
+
 		/**
 		 * Make thumbnails from an uploaded file.  $targets is an array of csv strings, each of which contains WIDTHxHIEGHT values.
 		 *
@@ -803,16 +805,16 @@ if (!class_exists('Zymurgy'))
 		{
 			$ZymurgyRoot = Zymurgy::$root;
 			$ZymurgyConfig = Zymurgy::$config;
-			
+
 			@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
 			$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
 			@mkdir($thumbdest);
-			
+
 			$rawimage = "$thumbdest/{$id}raw.$ext";
-			
+
 			if ($uploadpath!=='')
 				move_uploaded_file($uploadpath,$rawimage);
-				
+
 			/* Supports non-jpg now, so this isn't needed.
 			if ((function_exists('mime_content_type')) && (mime_content_type($rawimage)!='image/jpeg'))
 			{
@@ -820,29 +822,29 @@ if (!class_exists('Zymurgy'))
 				system("{$ZymurgyConfig['ConvertPath']}convert $rawimage $thumbdest/{$id}jpg.jpg");
 				rename("$thumbdest/{$id}jpg.jpg",$rawimage);
 			}*/
-			
+
 			require_once("$ZymurgyRoot/zymurgy/include/Thumb.php");
-			
+
 			//echo "[Targets: "; print_r($targets); echo "]";
 			foreach($targets as $targetsizes)
 			{
 				$targetsizes = explode(',',$targetsizes);
-				
+
 				foreach ($targetsizes as $targetsize)
 				{
 					$dimensions = explode('x',$targetsize);
 					Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.$ext");
 				}
 			}
-			
+
 			Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.$ext");
-			
+
 			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.$ext $thumbdest/{$id}aspectcropDark.$ext");
 		}
-		
+
 		/**
 		 * Return a color value in #RRGGBB format, as set in a color theme.
-		 * 
+		 *
 		 * The standard theme color indexes are:
 		 *  - Header Background
 		 *  - Menu Background
@@ -851,7 +853,7 @@ if (!class_exists('Zymurgy'))
 		 *  - Text Color
 		 *  - Link Color
 		 *
-		 * @param mixed $index The index of the color within the theme, either as a 
+		 * @param mixed $index The index of the color within the theme, either as a
 		 * number, or as a text value set in the $ThemeColor static array.
 		 * @param string $theme The theme definition, either as a comma-delimited list
 		 * of color values, or as a reference to an item in the site config.
@@ -871,42 +873,42 @@ if (!class_exists('Zymurgy'))
 			{
 				$index = Zymurgy::$ThemeColor[$index];
 			}
-			
-			// If the theme was passed in hard-coded, use it as-is. Otherwise, 
-			// assume that the theme is actually a reference to an item in 
+
+			// If the theme was passed in hard-coded, use it as-is. Otherwise,
+			// assume that the theme is actually a reference to an item in
 			// the site config.
 			if(substr($theme, 0, 1) !== "#")
 			{
 				$theme = Zymurgy::$userconfig[$theme];
 			}
-			
-			// If the theme is being used for the first time, add it to the 
-			// look-up cache. This cache is used to prevent the explode() 
+
+			// If the theme is being used for the first time, add it to the
+			// look-up cache. This cache is used to prevent the explode()
 			// method from running too often.
 			if(!array_key_exists($theme, Zymurgy::$colorThemes))
 			{
 				Zymurgy::$colorThemes[$theme] = explode(",", $theme);
 			}
-			
+
 			$color = Zymurgy::$colorThemes[$theme][$index];
-			
+
 			return substr($color, 1);
 		}
-		
+
 		function sitenav($ishorizontal = true,$baseurl = 'pages')
 		{
 			require_once('sitenav.php');
 			$nav = new ZymurgySiteNav();
 			$nav->render($ishorizontal,$baseurl);
 		}
-		
+
 		function pagetext($navpath)
 		{
 			if (empty($navpath))
 			{
 				$row=Zymurgy::$db->get("select id,body from zcm_sitepage where parent=0 order by disporder limit 1");
 			}
-			else 
+			else
 			{
 				$np = explode('/',$navpath);
 				$parent = 0;
@@ -938,23 +940,23 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$db->free_result($ri);
 		}
 	}
-		
+
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 		Zymurgy::$root = $_SERVER["APPL_PHYSICAL_PATH"];
-	else 
+	else
 		Zymurgy::$root = $_SERVER['DOCUMENT_ROOT'];
-	
+
 	Zymurgy::$build = 1987;
 	include(Zymurgy::$root."/zymurgy/config/config.php");
 	Zymurgy::$config = $ZymurgyConfig;
 	unset($ZymurgyConfig);
-	
+
 	if ((array_key_exists('FixSlashes',Zymurgy::$config)) && (Zymurgy::$config['FixSlashes']) && (get_magic_quotes_gpc())) {
 	   $_POST = array_map('Zymurgy::stripslashes_deep', $_POST);
 	   $_GET = array_map('Zymurgy::stripslashes_deep', $_GET);
 	   $_COOKIE = array_map('Zymurgy::stripslashes_deep', $_COOKIE);
 	}
-	
+
 	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 
 	//Initialize database provider
@@ -964,7 +966,7 @@ if (!class_exists('Zymurgy'))
 	}
 	require_once(Zymurgy::$root."/zymurgy/db/".Zymurgy::$config['database'].".php");
 	Zymurgy::$db = new Zymurgy_DB();
-	
+
 	Zymurgy::$userconfig = array();
 	$ri = Zymurgy::$db->query("select * from zcm_config order by disporder");
 	if ($ri)
