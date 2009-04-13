@@ -297,7 +297,7 @@
 
 		public function Callback()
 		{
-			$this->m_paymentTransaction->invoice_id = $_POST["invoice"];
+			$this->m_paymentTransaction->invoice_id = $_POST["transaction_subject"];
 			$this->m_paymentTransaction->status_code = "UNCONFIRMED";
 			$this->m_paymentTransaction->postback_variables = $_POST;
 			return;
@@ -394,7 +394,7 @@
 
 		public function GetCallbackQueryParameter()
 		{
-			return "nocallback";
+			return "response_order_id";
 		}
 
 		public function Process()
@@ -461,8 +461,9 @@
 
 		public function Callback()
 		{
-			$this->m_paymentTransaction->invoice_id = "n/a";
-			$this->m_paymentTransaction->status_code = "Posted Back";
+			$this->m_paymentTransaction->invoice_id = $_POST["response_order_id"];
+			$message = explode(" ", $_POST["message"]);
+			$this->m_paymentTransaction->status_code = $message[0];
 			$this->m_paymentTransaction->postback_variables = $_POST;
 		}
 	}
