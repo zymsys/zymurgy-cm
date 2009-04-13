@@ -247,7 +247,9 @@
 				$paymentProcessor->Callback();
 				$this->SavePostbackData($paymentProcessor->GetPaymentTransaction());
 
-				// IPN-style operations don't require any output
+				// Paypal IPN does not require any output, but
+				// Moneris eSELECT does
+				$this->RenderThanks($paymentProcessor);
 			}
 			else
 			{
