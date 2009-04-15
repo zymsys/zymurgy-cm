@@ -17,6 +17,7 @@
 
 	class PaymentTransaction
 	{
+		public $processor = "";
 		public $invoice_id = "";
 		public $status_code = "";
 		public $postback_variables = array();
@@ -47,6 +48,8 @@
 		public function SetBillingInformation($newValue);
 
 		public function GetPaymentTransaction();
+
+		public function IsReportedPostVar($var);
 
 		public function Process();
 		public function Callback();
@@ -297,6 +300,7 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->processor = $this->GetPaymentProcessorName();
 			$this->m_paymentTransaction->invoice_id = $_POST["transaction_subject"];
 			$this->m_paymentTransaction->status_code = "UNCONFIRMED";
 			$this->m_paymentTransaction->postback_variables = $_POST;
@@ -347,6 +351,11 @@
 				$this->m_paymentTransaction->status_code = $res;
 				$this->m_paymentTransaction->postback_variables = $_POST;
 			}
+		}
+
+		public function IsReportedPostVar($var)
+		{
+			return true;
 		}
 	}
 
@@ -461,10 +470,22 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->processor = $this->GetPaymentProcessorName();
 			$this->m_paymentTransaction->invoice_id = $_POST["response_order_id"];
 			$message = explode(" ", $_POST["message"]);
 			$this->m_paymentTransaction->status_code = $message[0];
 			$this->m_paymentTransaction->postback_variables = $_POST;
+		}
+
+		private $m_invalidVars = array(
+				"response_order_id",
+				"date_stamp",
+				"time_stamp",
+				"message");
+
+		public function IsReportedPostVar($var)
+		{
+			return !in_array($var, $this->m_invalidVars);
 		}
 	}
 
@@ -553,9 +574,15 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->processor = $this->GetPaymentProcessorName();
 			$this->m_paymentTransaction->invoice_id = "n/a";
 			$this->m_paymentTransaction->status_code = "Posted Back";
 			$this->m_paymentTransaction->postback_variables = $_POST;
+		}
+
+		public function IsReportedPostVar($var)
+		{
+			return true;
 		}
 	}
 ?>
