@@ -1,4 +1,5 @@
 <?php
+	ini_set("display_errors", 1);
 	require_once("Form.php");
 
 	class PaymentForm extends Form
@@ -34,7 +35,9 @@
 				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 				"`instance` INTEGER UNSIGNED NOT NULL,".
 				"`invoice_id` VARCHAR(50) NOT NULL,".
+				"`capture_id` INTEGER UNSIGNED NOT NULL,".
 				"`response_date` DATETIME NOT NULL,".
+				"`processor` VARCHAR(50) NOT NULL,".
 				"`status_code` VARCHAR(50) NOT NULL,".
 				"`post_vars` TEXT NOT NULL,".
 				"PRIMARY KEY (`id`)".
@@ -131,8 +134,9 @@
 			}
 
 			// Add the invoice ID
-			if(!isset($this->m_invoiceID)) $this->SetInvoiceID();
-			$values["Invoice ID"] = $this->m_invoiceID;
+			// ZK: Removing - Invoice ID now based on capture record's ID
+			// if(!isset($this->m_invoiceID)) $this->SetInvoiceID();
+			// $values["Invoice ID"] = $this->m_invoiceID;
 
 			return $values;
 		}
@@ -145,11 +149,15 @@
 
 		function RenderPaymentForm()
 		{
+			$id = 0;
+
 			if ($this->GetConfigValue('Email Form Results To Address') != '')
 				$this->SendEmail();
 
-			if ($this->GetConfigValue('Capture to Database') == 1)
-				$this->StoreCapture();
+			// ZK: PaymentForm always captures to the database
+			// TODO: Remove the option from the config
+			//if ($this->GetConfigValue('Capture to Database') == 1)
+			$id = $this->StoreCapture();
 
 			$paymentProcessor = $this->GetPaymentProcessor();
 			$values = $this->GetValues();
@@ -161,7 +169,10 @@
 			$paymentProcessor->SetAmount(
 				$this->GetConfigValue("Item Amount"));
 
-			if(!isset($this->m_invoiceID)) $this->SetInvoiceID();
+			// ZK: Removing - Invoice ID now based on capture record's ID
+			// if(!isset($this->m_invoiceID)) $this->SetInvoiceID();
+			$this->m_invoiceID = $this->GetConfigValue("Invoice Prefix") . $id;
+
 			$paymentProcessor->SetInvoiceID(
 				$this->m_invoiceID);
 
@@ -213,9 +224,15 @@
 			$paymentProcessor->Process();
 		}
 
-		private function GetPaymentProcessor()
+		private function GetPaymentProcessor(
+			$processorName = '')
 		{
-			switch(trim($this->GetConfigValue("Payment Gateway")))
+			if($processorName == '')
+			{
+				$processorName = $this->GetConfigValue("Payment Gateway");
+			}
+
+			switch(trim($processorName))
 			{
 				case "Paypal IPN":
 					return new PaypalIPNProcessor();
@@ -313,12 +330,19 @@
 			}
 
 			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `invoice_id`, ".
-				"`response_date`, `status_code`, `post_vars` ) VALUES ( '".
+				"`capture_id`, `response_date`, `processor`, `status_code`, `post_vars` ) VALUES ( '".
 				mysql_escape_string($this->iid).
 				"', '".
 				mysql_escape_string($transaction->invoice_id).
-				"', '".
+				"', ".
+				mysql_escape_string(str_replace(
+					$this->GetConfigValue("Invoice Prefix"),
+					"",
+					$transaction->invoice_id)).
+				", '".
 				mysql_escape_string(date("Y/m/d H:i:s")).
+				"', '".
+				mysql_escape_string($transaction->processor).
 				"', '".
 				mysql_escape_string($transaction->status_code).
 				"', '".
@@ -326,7 +350,123 @@
 				"' )";
 			//throw(new Exception($sql));
 			Zymurgy::$db->query($sql)
-				or die("Could not insert payment response: ".mysql_error());
+				or die("Could not insert payment response: ".mysql_error().", $sql");
+		}
+
+		function RenderAdminDataManagementDownload()
+		{
+			$exported = array();
+			$headers = array();
+			$rows = array();
+
+			$from = "";
+			$to = "";
+
+			$this->RenderAdminDoDownload_GetCaptureArrays(
+				$this->RenderAdminDataManagementDownload_Query($from, $to),
+				$exported,
+				$headers,
+				$rows);
+			$this->RenderAdminDoDownload_PaymentResponses(
+				$exported,
+				$headers,
+				$rows);
+			$this->RenderAdminDoDownload_OutputExcel(
+				$headers,
+				$rows,
+				$this->InstanceName."-$from-$to");
+		}
+
+		function RenderAdminDoDownload($expid)
+		{
+			// die("Using PaymentForm RenderAdminDoDownload");
+
+			$exported = array();
+			$headers = array();
+			$rows = array();
+
+			$this->RenderAdminDoDownload_GetCaptureArrays(
+				$this->RenderAdminDoDownload_Query($expid),
+				$exported,
+				$headers,
+				$rows);
+			$this->RenderAdminDoDownload_PaymentResponses(
+				$exported,
+				$headers,
+				$rows);
+			$this->RenderAdminDoDownload_OutputExcel(
+				$headers,
+				$rows,
+				"formrecords".$expid);
+		}
+
+		function RenderAdminDoDownload_PaymentResponses(
+			&$exported,
+			&$headers,
+			&$rows)
+		{
+			$sql = "SELECT `invoice_id`, `capture_id`, `processor`, `status_code`, ".
+				"`response_date`, `post_vars` FROM `zcm_form_paymentresponse` ".
+				"WHERE `instance` = ".
+				mysql_escape_string($this->iid);
+
+			// die($sql);
+
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve payment responses: ".mysql_error().", $sql");
+
+			if(Zymurgy::$db->num_rows($ri) > 0)
+			{
+				$headers[] = "invoice_id";
+				$headers[] = "payment_processor";
+				$headers[] = "status_code";
+				$headers[] = "response_date";
+
+				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+				{
+					if(($exportedIndex = array_search($row["capture_id"], $exported)) !== FALSE)
+					{
+						$baseRow = $rows[$exportedIndex];
+
+						$baseRow["invoice_id"] = $row["invoice_id"];
+						$baseRow["payment_processor"] = $row["processor"];
+						$baseRow["status_code"] = $row["status_code"];
+						$baseRow["response_date"] = $row["response_date"];
+
+						$paymentProcessor = $this->GetPaymentProcessor($row["processor"]);
+
+						$responseFields = explode("\n", $row["post_vars"]);
+
+						foreach($responseFields as $responseField)
+						{
+							$keyValue = explode(":", $responseField);
+
+							if(trim($keyValue[0]) !== "" && $paymentProcessor->IsReportedPostVar($keyValue[0]))
+							{
+								if(!in_array($keyValue[0], $headers))
+								{
+									$sql = "insert into zcm_form_header (instance,header) values (".
+										"{$this->iid},'".Zymurgy::$db->escape_string($keyValue[0])."')";
+									Zymurgy::$db->query($sql)
+										or die ("Unable to create new header [{$keyValue[0]}] ($sql): ".Zymurgy::$db->error());
+									$headers[] = $keyValue[0];
+								}
+
+								$baseRow[$keyValue[0]] = $keyValue[1];
+							}
+						}
+
+						$rows[$exportedIndex] = $baseRow;
+					}
+				}
+			}
+
+			// echo("<pre>");
+			// print_r($rows);
+			// print_r($headers);
+			// echo("<pre>");
+
+			// die();
 		}
 	}
 

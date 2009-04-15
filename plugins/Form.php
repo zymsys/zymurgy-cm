@@ -636,6 +636,8 @@ function Validate$name(me) {
 				($this->member === false ? 'NULL' : $this->member['id']).")";
 		}
 		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
+
+		return Zymurgy::$db->insert_id();
 	}
 
 	function RenderThanks()
@@ -822,6 +824,37 @@ function Validate$name(me) {
 
 	function RenderAdminDoDownload($expid)
 	{
+		// die("Using Form RenderAdminDoDownload");
+
+		$exported = array();
+		$headers = array();
+		$rows = array();
+
+		$this->RenderAdminDoDownload_GetCaptureArrays(
+			$this->RenderAdminDoDownload_Query($expid),
+			$exported,
+			$headers,
+			$rows);
+		$this->RenderAdminDoDownload_OutputExcel(
+			$headers,
+			$rows,
+			"formrecords".$expid);
+	}
+
+	function RenderAdminDoDownload_Query($expid)
+	{
+		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,member.email from zcm_form_capture left join member on (zcm_form_capture.member=member.id) where (instance={$this->iid}) and export=$expid";
+		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
+
+		return $ri;
+	}
+
+	function RenderAdminDoDownload_GetCaptureArrays(
+		$exportRecordset,
+		&$exported,
+		&$headers,
+		&$rows)
+	{
 		global $zauth;
 
 		//Get form's headers which will include headers from previous runs, even those no longer in use so that exports line up.
@@ -836,9 +869,10 @@ function Validate$name(me) {
 			$headers[] = $row['header'];
 		}
 		Zymurgy::$db->free_result($ri);
+
 		//Now get actual data for this export
-		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,member.email from zcm_form_capture left join member on (zcm_form_capture.member=member.id) where (instance={$this->iid}) and export=$expid";
-		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
+		$ri = $exportRecordset;
+
 		$exported = array();
 		$rows = array();
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -866,11 +900,16 @@ function Validate$name(me) {
 			print_r($xrow);
 			echo "</pre>";
 		}
-		//exit;
-		//Now actually dump the data
+	}
+
+	function RenderAdminDoDownload_OutputExcel(
+		$headers,
+		$rows,
+		$reportName = "formrecords")
+	{
 		ob_clean();
 		header("Content-Type: application/vnd.ms-excel");
-		header("Content-Disposition: attachment;filename=formrecords$expid.xls");
+		header("Content-Disposition: attachment;filename=".urlencode($reportName).".xls");
 		echo "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\"
 xmlns:x=\"urn:schemas-microsoft-com:office:excel\"
 xmlns=\"http://www.w3.org/TR/REC-html40\">
@@ -1049,17 +1088,26 @@ function DownloadExport(pid,iid,name) {
 
 	function RenderAdminDataManagementDownload()
 	{
-		$sql = "select count(*) from zcm_form_capture where member is not null and instance={$this->iid}";
-		$ri = Zymurgy::$db->query($sql) or die("Can't check member records ($sql): ".Zymurgy::$db->error());
-		$membercount = Zymurgy::$db->result($ri,0,0);
-		$headers = $membercount ? array('Member ID','Member Email') : array();
-		$sql = "select * from zcm_form_header where instance={$this->iid}";
-		$ri = Zymurgy::$db->query($sql) or die("Unable to get export headers ($sql): ".Zymurgy::$db->error());
-		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-		{
-			$headers[] = $row['header'];
-		}
-		Zymurgy::$db->free_result($ri);
+		$exported = array();
+		$headers = array();
+		$rows = array();
+
+		$from = "";
+		$to = "";
+
+		$this->RenderAdminDoDownload_GetCaptureArrays(
+			$this->RenderAdminDataManagementDownload_Query($from, $to),
+			$exported,
+			$headers,
+			$rows);
+		$this->RenderAdminDoDownload_OutputExcel(
+			$headers,
+			$rows,
+			$this->InstanceName."-$from-$to");
+	}
+
+	function RenderAdminDataManagementDownload_Query(&$from, &$to)
+	{
 		//Now get actual data for this export
 		$from = $this->GetCalendarControlValue('from');
 		//Round to up to the next minute so we search under it, and including the full minute selected by the user.
@@ -1074,145 +1122,8 @@ function DownloadExport(pid,iid,name) {
 		$to = strftime('%Y%m%d%H%M',$to);
 		//echo $sql; exit;
 		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
-		$exported = array();
-		$rows = array();
-		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-		{
-			//Mark this row for update at the end to show it is part of this export
-			$exported[] = $row['id'];
-			$xrow = $this->xmltoarray($row['formvalues']);
-			//Ensure the headers are registered
-			$keys = array_keys($xrow);
-			foreach ($keys as $key)
-			{
-				if (!in_array($key,$headers))
-				{
-					$sql = "insert into zcm_form_header (instance,header) values ({$this->iid},'".Zymurgy::$db->escape_string($key)."')";
-					Zymurgy::$db->query($sql) or die ("Unable to create new header [$key] ($sql): ".Zymurgy::$db->error());
-					$headers[] = $key;
-				}
-			}
-			if ($membercount)
-			{
-				$xrow = array_merge(array('Member ID'=>$row['member'],'Member Email'=>$row['email']),$xrow);
-			}
-			$rows[] = $xrow;
-			echo "<pre>";
-			print_r($xrow);
-			echo "</pre>";
-		}
-		//exit;
-		//Now actually dump the data
-		ob_clean();
-		header("Content-Type: application/vnd.ms-excel");
-		header("Content-Disposition: attachment;filename=".urlencode($this->InstanceName)."-$from-$to.xls");
-		echo "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\"
-xmlns:x=\"urn:schemas-microsoft-com:office:excel\"
-xmlns=\"http://www.w3.org/TR/REC-html40\">
-<head>
-<meta http-equiv=Content-Type content=\"text/html; charset=windows-1252\">
-<meta name=ProgId content=Excel.Sheet>
-<meta name=Generator content=\"Zymurgy:CM Form Plugin\">
-<style>
-<!--table
-	{mso-displayed-decimal-separator:\"\\.\";
-	mso-displayed-thousand-separator:\"\\,\";}
-@page
-	{margin:1.0in .75in 1.0in .75in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;}
-tr
-	{mso-height-source:auto;}
-col
-	{mso-width-source:auto;}
-br
-	{mso-data-placement:same-cell;}
-td
-	{mso-style-parent:style0;
-	padding-top:1px;
-	padding-right:1px;
-	padding-left:1px;
-	mso-ignore:padding;
-	color:windowtext;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:none;
-	font-family:Arial;
-	mso-generic-font-family:auto;
-	mso-font-charset:0;
-	mso-number-format:General;
-	text-align:general;
-	vertical-align:bottom;
-	border:none;
-	mso-background-source:auto;
-	mso-pattern:auto;
-	mso-protection:locked visible;
-	white-space:nowrap;
-	mso-rotate:0;}
-.xl24
-	{mso-style-parent:style0;
-	font-weight:700;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <x:ExcelWorkbook>
-  <x:ExcelWorksheets>
-   <x:ExcelWorksheet>
-    <x:Name>{$this->InstanceName} Export</x:Name>
-    <x:WorksheetOptions>
-     <x:Print>
-      <x:ValidPrinterInfo/>
-      <x:HorizontalResolution>-3</x:HorizontalResolution>
-      <x:VerticalResolution>0</x:VerticalResolution>
-     </x:Print>
-     <x:Selected/>
-     <x:Panes>
-      <x:Pane>
-       <x:Number>1</x:Number>
-       <x:ActiveRow>2</x:ActiveRow>
-       <x:ActiveCol>1</x:ActiveCol>
-      </x:Pane>
-     </x:Panes>
-     <x:ProtectContents>False</x:ProtectContents>
-     <x:ProtectObjects>False</x:ProtectObjects>
-     <x:ProtectScenarios>False</x:ProtectScenarios>
-    </x:WorksheetOptions>
-   </x:ExcelWorksheet>
-  </x:ExcelWorksheets>
-  <x:WindowHeight>11760</x:WindowHeight>
-  <x:WindowWidth>15315</x:WindowWidth>
-  <x:WindowTopX>360</x:WindowTopX>
-  <x:WindowTopY>75</x:WindowTopY>
-  <x:ProtectStructure>False</x:ProtectStructure>
-  <x:ProtectWindows>False</x:ProtectWindows>
- </x:ExcelWorkbook>
-</xml><![endif]-->
-		</head>
-		<body>";
-		echo "<table x:str border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:
- collapse;table-layout:fixed\">";
-		echo "<tr>";
-		echo "<td class=\"xl24\">".implode("</td><td class=\"xl24\">",$headers)."</td>";
-		echo "</tr>";
-		foreach($rows as $xrow)
-		{
-			echo "<tr>";
-			foreach($headers as $key)
-			{
-				if (array_key_exists($key,$xrow))
-					$val = $xrow[$key];
-				else
-					$val = '';
-				echo "<td>".htmlentities($val)."</td>";
-			}
-			echo "</tr>";
-		}
-		echo "</table>";
-		echo "</body></html>";
-		exit;
+
+		return $ri;
 	}
 
 	function RenderAdminDataManagementDelete()
