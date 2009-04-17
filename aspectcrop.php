@@ -9,9 +9,9 @@ if (!Zymurgy::memberauthenticate())
 
 if (array_key_exists('fixedar',$_GET))
 	$fixedar = ($_GET['fixedar'] == 1);
-else 
+else
 	$fixedar = false;
-	
+
 $ds = $_GET['ds'];
 $d = $_GET['d'];
 $id = 0 + $_GET['id'];
@@ -24,6 +24,9 @@ $work = array();
 list($work['w'], $work['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}aspectcropNormal.jpg");
 $raw = array();
 list($raw['w'], $raw['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}raw.jpg");
+
+$xfactor = $raw['w'] / $work['w'];
+$yfactor = $raw['h'] / $work['h'];
 
 //Adjust min's for raw image size
 $minwidth *= $work['w'] / $raw['w'];
@@ -49,7 +52,7 @@ if (min($work['w'] - $initwidth,$work['h'] - $initheight) < 10)
 	$initx = 0;
 	$inity = 0;
 }
-else 
+else
 {
 	$initx = 10;
 	$inity = 10;
@@ -57,6 +60,26 @@ else
 
 /*if ($minwidth >= $work['w']) $minwidth = $initwidth = $work['w'];
 if ($minheight >= $work['h']) $minheight = $initheight = $work['h'];*/
+
+	//Try to load previous cropping area
+	$shfn = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg.sh";
+	if (file_exists($shfn))
+	{
+		$fc = file_get_contents($shfn);
+		$fc = explode("\n",$fc);
+		$fc = explode('(',$fc[0]);
+		$fc = explode(',',$fc[1]);
+		$lastcrop = array();
+		for ($n = 0; $n < 6; $n++)
+		{
+			$lc = explode(':',$fc[$n]);
+			$lastcrop[$lc[0]] = $lc[1];
+		}
+		$initx = round($lastcrop['sx'] / $xfactor);
+		$inity = round($lastcrop['sy'] / $yfactor);
+		$initwidth = round($lastcrop['sw'] / $xfactor);
+		$initheight = round($lastcrop['sh'] / $yfactor);
+	}
 
 if ($_SERVER['REQUEST_METHOD']=='POST')
 {
@@ -73,30 +96,30 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			@unlink($thumb);
 		}
 	}
-	else 
+	else
 	{
 		require_once('include/Thumb.php');
-		
+
 		$selected = array(
 			'x'=>$_POST['cropX'],
 			'y'=>$_POST['cropY'],
 			'w'=>$_POST['cropWidth'],
 			'h'=>$_POST['cropHeight']);
-			
+
 		//echo "[{$selected['x']},{$selected['y']},{$selected['w']},{$selected['h']}]<br>";
 		//echo "raw [{$raw['w']},{$raw['h']}]<br>";
-		
+
 		//Math time...  Take 640x480 work image coordinates and figure out coordinates on full sized image.
 		$xfactor = $raw['w'] / $work['w'];
 		$yfactor = $raw['h'] / $work['h'];
-		
+
 		//echo "factors: $xfactor $yfactor<br>";
-		
+
 		$x = $selected['x'] * $xfactor;
 		$y = $selected['y'] * $yfactor;
 		$w = $selected['w'] * $xfactor;
 		$h = $selected['h'] * $yfactor;
-		
+
 		//echo "Selected [x:$x,y:$y,w:$w,h:$h]<br>";
 		if (!$fixedar)
 		{
@@ -139,7 +162,7 @@ window.close();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
-        
+
  <html>
  	<head>
  		<title>Zymurgy:CM Thumbnail Selection Tool</title>
@@ -147,7 +170,7 @@ window.close();
  		<?php echo Zymurgy::YUI("dom/dom-min.js"); ?>
  		<?php echo Zymurgy::YUI("event/event-min.js"); ?>
  		<?php echo Zymurgy::YUI("dragdrop/dragdrop-min.js"); ?>
- 		<script 
+ 		<script
 	 			language="javascript"
 	 			type="text/javascript"
 	 			src="include/aspectCrop.js">
@@ -169,7 +192,7 @@ body {
 div#divForm {
 	position: absolute;
 	left: <?=$work['w']+10?>px;
-	top: 10px;	
+	top: 10px;
 	padding: 10px;
 	width: 110px;
 	height: 30px;
@@ -185,9 +208,9 @@ img#imgBackground {
 #panelDiv {
 	position: absolute;
     /* position:relative;  */
-    height: 150px; 
+    height: 150px;
     width: 300px;
-    top:10px; 
+    top:10px;
     left:10px;
     background-color: #f7f7f7;
     overflow: hidden;
@@ -195,10 +218,10 @@ img#imgBackground {
 }
 
 #handleDiv {
-    position: absolute; 
-    bottom:0px; 
-    right: 0px; 
-    width:16px; 
+    position: absolute;
+    bottom:0px;
+    right: 0px;
+    width:16px;
     height:16px;
     background-image: url(images/resizeHandle.gif);
     font-size: 1px;
@@ -228,54 +251,54 @@ img#imgCropped {
  				type="text/javascript">
  			// Yahoo! Drag and Drop objects
  			var dd, dd2;
- 			
+
  			// position of the background image
  			var offsetX = 10;
  			var offsetY = 10;
- 			
- 			// initial position of the crop box 
+
+ 			// initial position of the crop box
  			var initX = <?=$initx?>;
  			var initY = <?=$inity?>;
- 			
+
  			// initial width and height of the crop box
   			var initWidth = <?=$initwidth?>;
  			var initHeight = <?=$initheight?>;
- 			
+
  			// minimum width and height of the crop box
  			var minWidth = <?=$minwidth?>;
  			var minHeight = <?=$minheight?>;
- 			var aspectRatio = <?= $fixedar ? "parseFloat(minWidth) / parseFloat(minHeight)" : 0 ?>; 
- 			
+ 			var aspectRatio = <?= $fixedar ? "parseFloat(minWidth) / parseFloat(minHeight)" : 0 ?>;
+
  			// granularity of the drag-drop constraint area
  			var granularity = 1;
- 			
+
  			// the width of the border of the panel used to create the crop
- 			// area - some of the calculations are adjusted to take this 
+ 			// area - some of the calculations are adjusted to take this
  			// border into account.
  			var borderWidth = 0;
- 				
+
  			function init() {
  				//dd is the resize handle
 	            dd = new YAHOO.example.DDResize(
-			            "panelDiv", 
-			            "handleDiv", 
+			            "panelDiv",
+			            "handleDiv",
 			            "panelresize");
-			            
+
 			    //dd2 is the selected region of the image
 	            dd2 = new YAHOO.util.DDProxy(
-			            "panelDiv", 
+			            "panelDiv",
 			            "paneldrag");
 	            dd2.addInvalidHandleId("handleDiv"); //Don't let the handle drag the image
 
-	            document.getElementById("panelDiv").style.left = 
+	            document.getElementById("panelDiv").style.left =
 	            		(initX + offsetX) + "px";
-	            document.getElementById("panelDiv").style.top = 
+	            document.getElementById("panelDiv").style.top =
 	            		(initY + offsetY) + "px";
 	            document.getElementById("panelDiv").style.width =
 	            		initWidth + "px";
 	            document.getElementById("panelDiv").style.height =
 	            		initHeight + "px";
-	            
+
  				//Called when selected thumb area is dragged.
  				updateCropArea = function(e) {
  					var pd = document.getElementById("panelDiv");
@@ -290,13 +313,13 @@ img#imgCropped {
 	 					"imgBackground",
 	 					initX,
 	 					initY,
-	 					imgX, 
-	 					imgY, 
-	 					borderWidth); 	
+	 					imgX,
+	 					imgY,
+	 					borderWidth);
  				};
- 				
+
  				updateCropArea();
- 				
+
  				document.getElementById("imgBackground").style.width =
  					document.getElementById("imgCropped").style.width = '<?= "{$work['w']}px" ?>';
  				document.getElementById("imgBackground").style.height =
@@ -338,7 +361,7 @@ img#imgCropped {
  					type="hidden"
  					name="returnurl"
  					value="<?=$_GET['returnurl']?>">
- 				
+
  				<input
  					type="button"
  					name="cmdSubmit"
@@ -352,16 +375,16 @@ img#imgCropped {
   			</form>
   			<div id="debug"></div>
  		</div>
- 	
+
  		<img
  			id="imgBackground"
  		 	src="<?= "$imgdir/{$id}aspectcropDark.jpg" ?>">
- 			
+
  		<div id="panelDiv">
 	 		<img
 	 			id="imgCropped"
 	 			src="<?= "$imgdir/{$id}aspectcropNormal.jpg" ?>">
         	<div id="handleDiv"></div>
-    	</div> 			
+    	</div>
  	</body>
  </html>
