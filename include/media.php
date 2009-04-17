@@ -673,6 +673,9 @@
 			$raw = array();
 			list($raw['w'], $raw['h'], $type, $attr) = getimagesize($filepath."raw.jpg");
 
+			$xfactor = $raw['w'] / $work['w'];
+			$yfactor = $raw['h'] / $work['h'];
+
 			//Adjust min's for raw image size
 			$minwidth *= $work['w'] / $raw['w'];
 			$minheight *= $work['h'] / $raw['h'];
@@ -701,6 +704,26 @@
 			{
 				$initx = 10;
 				$inity = 10;
+			}
+
+			//Try to load previous cropping area
+			$shfn = $filepath."thumb".$thumbnail.".jpg.sh";
+			if (file_exists($shfn))
+			{
+				$fc = file_get_contents($shfn);
+				$fc = explode("\n",$fc);
+				$fc = explode('(',$fc[0]);
+				$fc = explode(',',$fc[1]);
+				$lastcrop = array();
+				for ($n = 0; $n < 6; $n++)
+				{
+					$lc = explode(':',$fc[$n]);
+					$lastcrop[$lc[0]] = $lc[1];
+				}
+				$initx = round($lastcrop['sx'] / $xfactor);
+				$inity = round($lastcrop['sy'] / $yfactor);
+				$initwidth = round($lastcrop['sw'] / $xfactor);
+				$initheight = round($lastcrop['sh'] / $yfactor);
 			}
 
 			echo("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ");

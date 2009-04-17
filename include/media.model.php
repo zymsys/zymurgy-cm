@@ -699,6 +699,8 @@
 
 			if($forceUpdate || !file_exists($filepath."raw.jpg"))
 			{
+				// echo(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+				// echo("<br>");
 				require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
 
 				$dimensions = explode('x',$thumbnail);
@@ -724,7 +726,7 @@
 
 		public function MakeThumbnail($mediaFile, $thumbnail)
 		{
-			require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+			require_once('include/Thumb.php');
 
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$filepath = $uploadfolder.
@@ -942,12 +944,21 @@
 				"1 = 1");
 		}
 
-		static function PopulateByOwner($member_id)
+		static function PopulateByOwner(
+			$member_id,
+			$packageType = "")
 		{
+			$typeCriteria = "1 = 1";
+
+			if($packageType !== "")
+			{
+				$typeCriteria = "EXISTS(SELECT 1 FROM `zcm_media_package_type` WHERE `zcm_media_package_type`.`media_package_type_id` = `zcm_media_package`.`media_package_type_id` AND `zcm_media_package_type`.`package_type` = '".$packageType."')";
+			}
+
 			return MediaPackagePopulator::PopulateMultiple(
 				"`zcm_media_package`.`member_id` = '".
 				mysql_escape_string($member_id).
-				"'");
+				"' AND $typeCriteria");
 		}
 
 		static function PopulateMultiple($criteria)
@@ -955,7 +966,8 @@
 			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`,".
 				" `display_name`, `price`, `media_package_type_id` ".
 				"FROM `zcm_media_package` WHERE $criteria";
-			$ri = Zymurgy::$db->query($sql) or die("Could not retrieve list of packages: ".mysql_error());
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve list of packages: ".mysql_error().", $sql");
 
 			$mediaPackages = array();
 
