@@ -94,7 +94,9 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $hrefroot ?>", function () {
 		echo "$dtabs<ul";
 		if ($horizontal)
 		{
-			echo " class=\"first-of-type\"";
+			echo " class=\"first-of-type";
+			if ($depth == 0) echo " zymurgy-horizontal-menu";
+			echo "\"";
 			$fot = true;
 		}
 		else 
