@@ -63,18 +63,20 @@ function setConstraints(
 }
 
 function submitForm() {
-	document.frmCrop.cropX.value = 
-		document.getElementById("panelDiv").offsetLeft - initX + borderWidth;
-	document.frmCrop.cropY.value =
-		document.getElementById("panelDiv").offsetTop - initY + borderWidth;
-	/*alert('offsettop: '+document.getElementById("panelDiv").offsetTop+'\ninitY: '+initY+'\nborderWidth: '+borderWidth+'\ncropY: '+document.frmCrop.cropY.value);
-	return;*/
-		
-	document.frmCrop.cropWidth.value = 
-		document.getElementById("panelDiv").clientWidth;
-		
-	document.frmCrop.cropHeight.value = 
-		document.getElementById("panelDiv").clientHeight;
+	var elpd = document.getElementById("panelDiv");
+	var elbg = document.getElementById("imgBackground");
+	
+	var bgol = elbg.offsetLeft;
+	var bgot = elbg.offsetTop;
+	var pdol = elpd.offsetLeft;
+	var pdot = elpd.offsetTop;
+	var pdcw = elpd.clientWidth;
+	var pdch = elpd.clientHeight;
+	
+	document.frmCrop.cropX.value = pdol - bgol + borderWidth;
+	document.frmCrop.cropY.value = pdot - bgot + borderWidth;
+	document.frmCrop.cropWidth.value = pdcw;
+	document.frmCrop.cropHeight.value = pdch;
 	
 	document.frmCrop.submit();
 }
