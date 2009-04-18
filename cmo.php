@@ -53,6 +53,13 @@ if (!class_exists('Zymurgy'))
 		 * @var array
 		 */
 		static $member;
+		
+		/**
+		 * Image handler for resizing images
+		 *
+		 * @var ZymurgyImageHandler
+		 */
+		static $imagehandler;
 
 		/**
 		 * If set to true, included YUI assets will be stripped of '-min' to facilitate debugging.
@@ -803,43 +810,8 @@ if (!class_exists('Zymurgy'))
 			$uploadpath = '',
 			$ext = 'jpg')
 		{
-			$ZymurgyRoot = Zymurgy::$root;
-			$ZymurgyConfig = Zymurgy::$config;
-
-			@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
-			$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
-			@mkdir($thumbdest);
-
-			$rawimage = "$thumbdest/{$id}raw.$ext";
-
-			if ($uploadpath!=='')
-				move_uploaded_file($uploadpath,$rawimage);
-
-			/* Supports non-jpg now, so this isn't needed.
-			if ((function_exists('mime_content_type')) && (mime_content_type($rawimage)!='image/jpeg'))
-			{
-				//Supplied image isn't a jpeg.  Convert raw into one (best effort!).
-				system("{$ZymurgyConfig['ConvertPath']}convert $rawimage $thumbdest/{$id}jpg.jpg");
-				rename("$thumbdest/{$id}jpg.jpg",$rawimage);
-			}*/
-
-			require_once("$ZymurgyRoot/zymurgy/include/Thumb.php");
-
-			//echo "[Targets: "; print_r($targets); echo "]";
-			foreach($targets as $targetsizes)
-			{
-				$targetsizes = explode(',',$targetsizes);
-
-				foreach ($targetsizes as $targetsize)
-				{
-					$dimensions = explode('x',$targetsize);
-					Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.$ext");
-				}
-			}
-
-			Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.$ext");
-
-			system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.$ext $thumbdest/{$id}aspectcropDark.$ext");
+			require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+			Thumb::MakeThumbs($datacolumn,$id,$targets,$uploadpath,$ext);
 		}
 
 		/**
@@ -979,5 +951,16 @@ if (!class_exists('Zymurgy'))
 		}
 		Zymurgy::$db->free_result($ri);
 	} //Else this is init so we don't care.
+	
+	switch (Zymurgy::$config['ConvertToolset'])
+	{
+		case 'GD':
+			Zymurgy::$imagehandler = new ZymurgyImageHandlerGD();
+			break;
+		default:
+			require_once(Zymurgy::$root."/zymurgy/include/ImageHandlerIM.php");
+			Zymurgy::$imagehandler = new ZymurgyImageHandlerImageMagick();
+			break;
+	}
 }
 ?>

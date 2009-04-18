@@ -12,39 +12,56 @@ if (array_key_exists('fixedar',$_GET))
 else
 	$fixedar = false;
 
-$ds = $_GET['ds'];
-$d = $_GET['d'];
-$id = 0 + $_GET['id'];
+$debugmsg = array(); //Debug messages - Comment out output near the bottom of this script for production.
+$stats = array(); //Key: name, Value: array(width, height) - used for making stats table for troubleshooting purposes.
+
+$ds = $_GET['ds']; //Dataset - table.field
+$d = $_GET['d']; //Dimensions - WIDTHxHEIGHT
+$gd = $_GET['gd']; //Dimensions of the image in the grid on the parent window
+$id = 0 + $_GET['id']; //Database row ID
 $imgdir = "/UserFiles/DataGrid/$ds/";
 list ($width,$height) = explode('x',$d,2);
-$minwidth = $initwidth = $width;
-$minheight = $initheight = $height;
+$stats['Requested'] = array($width,$height);
+$minwidth = $width;
+$minheight = $height;
+$stats['Min (Initial)'] = array($minwidth,$minheight);
 
 $work = array();
 list($work['w'], $work['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}aspectcropNormal.jpg");
+$stats['Work Image'] = array($work['w'],$work['h']);
 $raw = array();
 list($raw['w'], $raw['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}raw.jpg");
+$stats['Raw Image'] = array($raw['w'],$raw['h']);
 
 $xfactor = $raw['w'] / $work['w'];
 $yfactor = $raw['h'] / $work['h'];
 
+$debugmsg[] = "xfactor/yfactor: $xfactor/$yfactor";
+
 //Adjust min's for raw image size
 $minwidth *= $work['w'] / $raw['w'];
 $minheight *= $work['h'] / $raw['h'];
+$stats['Min (Adj. for Work)'] = array($minwidth,$minheight);
 
-if (($width>$work['w']) || ($height>$work['h']))
+//Here $width is the requested width, and $work['w'] is the working image for the thumber (aspectcropNormal.jpg)
+if (($minwidth>$work['w']) || ($minheight>$work['h']))
 {
-	//Supplied im,age is too small for thumb size.  Shrink selector and relax minimum size requirement.
+	$debugmsg[] = "Adjusting restrictions for small work image.  ([rw:$width>ww{$work['w']}] || [rh:$height>wh:{$work['h']}])";
+	//Working image is too small for thumb size.  Shrink selector and adjust minimum size requirement.
 	$xfactor = $yfactor = 1;
 	if ($width>$work['w'])
 		$xfactor = $work['w']/$width;
 	if ($height>$work['h'])
 		$yfactor = $work['h']/$height;
 	$factor = min($xfactor,$yfactor);
-	$minwidth = $initwidth = round($width * $factor);
-	$minheight = $initheight = round($height * $factor);
-	//$minwidth = $minheight = 20;
+	$minwidth = round($width * $factor);
+	$minheight = round($height * $factor);
+	$stats['Min (Adj. for Sm. Wrk.)'] = array($minwidth,$minheight);
 }
+
+$initheight = $minheight;
+$initwidth = $minwidth;
+
 //Do we have room for a nice 10px gap to start, or will we push right to the edge?
 //echo "if (min({$work['w']} - $initwidth,{$work['h']} - $initheight) < 0)"; exit;
 if (min($work['w'] - $initwidth,$work['h'] - $initheight) < 10)
@@ -79,6 +96,7 @@ if ($minheight >= $work['h']) $minheight = $initheight = $work['h'];*/
 		$inity = round($lastcrop['sy'] / $yfactor);
 		$initwidth = round($lastcrop['sw'] / $xfactor);
 		$initheight = round($lastcrop['sh'] / $yfactor);
+		$debugmsg[] = "<div>Loaded from previous thumb: initx:$initx, inity:$inity, initwidth:$initwidth, initheight:$initheight</div>";
 	}
 
 if ($_SERVER['REQUEST_METHOD']=='POST')
@@ -143,16 +161,22 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		}
 		$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg";
 		Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.jpg",$thumbpath);
+		
+		//Make smaller grid thumb, if required
+		if ($gd != $d)
+		{
+			list($gw,$gh) = explode('x',$gd);
+			Thumb::MakeThumb($x,$y,$w,$h,$gw,$gh,"$ZymurgyRoot$imgdir{$id}raw.jpg","$ZymurgyRoot$imgdir{$id}thumb$gd.jpg");
+		}
 	}
 ?>
 <script type="text/JavaScript">
 <!--
-var srcimg = window.opener.document.getElementById('<?=$_POST['returnurl'].".$d"?>');
+var srcimg = window.opener.document.getElementById('<?=$_POST['imgid'].".$d"?>');
 if (srcimg) {
-	var newsrc='<?= "{$imgdir}{$id}thumb$d.jpg?" ?>' + Math.random();
+	var newsrc='<?= "{$imgdir}{$id}thumb$gd.jpg?" ?>' + Math.random();
 	srcimg.src=newsrc;
 }
-//window.opener.location.href='<?=$_POST['returnurl']?>';
 window.close();
 //-->
 </script>
@@ -340,27 +364,27 @@ img#imgCropped {
  				<input
  					type="hidden"
  					name="cropX"
- 					value="10">
+ 					value="<?= $initx ?>">
  				<input
  					type="hidden"
  					name="cropY"
- 					value="10">
+ 					value="<?= $inity ?>">
  				<input
  					type="hidden"
  					name="cropWidth"
- 					value="200">
+ 					value="<?= $initwidth ?>">
  				<input
  					type="hidden"
  					name="cropHeight"
- 					value="100">
+ 					value="<?= $initheight ?>">
  				<input
  					type="hidden"
  					name="cropScale"
  					value="1.0">
  				<input
  					type="hidden"
- 					name="returnurl"
- 					value="<?=$_GET['returnurl']?>">
+ 					name="imgid"
+ 					value="<?=$_GET['imgid']?>">
 
  				<input
  					type="button"
@@ -373,7 +397,22 @@ img#imgCropped {
  					value="Clear Image"
  					onClick="clearImage();">
   			</form>
-  			<div id="debug"></div>
+  			<div id="debug">
+  			<?
+if (false) //Set to false when not debugging
+{  			
+	echo "<table border=\"1\">";
+	foreach ($stats as $caption=>$sz)
+	{
+		echo "<tr><td>$caption</td><td>{$sz[0]}</td><td>{$sz[1]}</td></tr>";
+	}
+	echo "</table>";
+	if (isset($debugmsg)) 
+	{
+		echo implode('<hr />',$debugmsg);
+	}
+}
+			?></div>
  		</div>
 
  		<img

@@ -18,6 +18,8 @@ if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 else 
 	$root = $_SERVER['DOCUMENT_ROOT'];
 
+require_once("$root/zymurgy/cmo.php");
+	
 function get_http_mdate($fname)
 {
    return gmdate("D, d M Y H:i:s",filemtime($fname))." GMT";

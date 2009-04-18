@@ -20,12 +20,17 @@ class Thumb
 	
 	function ThumbFolder($galleryname)
 	{
-		global $ZymurgyRoot;
-		$thumbs = $ZymurgyRoot.'/UserFiles/DataGrid';
+		$thumbs = Zymurgy::$root.'/UserFiles/DataGrid';
 		@mkdir($thumbs);
-		$thumbs .= '/'.str_replace(
-			array('/','.','$','\\',' '),
-			array('', '', '', '',  '_'),$$galleryname);
+		$oldgn = false;
+		while ($galleryname != $oldgn)
+		{
+			$oldgn = $galleryname;
+			$galleryname = str_replace(
+				array('/','..','$','\\',' '),
+				array('', '.', '', '',  '_'),$galleryname);
+		}
+		$thumbs .= '/'.$galleryname;
 		@mkdir($thumbs);
 		return $thumbs;
 	}
@@ -53,11 +58,13 @@ class Thumb
 		$swidth = floor($width * $wrat);
 		$sheight =floor($height* $hrat);
 		fwrite($fd,"# Calculated: wrat: $wrat hrat: $hrat sxs: $sxs sys: $sys swidth: $swidth sheight: $sheight\n");
-		$cmd = "{$ZymurgyConfig['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
+		$cmd = Zymurgy::$imagehandler->ResizeWithCropCmd($swidth,$sheight,$dw,$dh,$sxs,$sys,$srcfile,$destfile);
+		//$cmd = "{$ZymurgyConfig['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
 		fwrite($fd,"$cmd\n");
 		fclose($fd);
-		$out = system($cmd,$r);
-		return $r;
+		//$out = system($cmd,$r);
+		//return $r;
+		return Zymurgy::$imagehandler->ResizeWithCrop($swidth,$sheight,$dw,$dh,$sxs,$sys,$srcfile,$destfile);
 	}
 
 	function MakeFixedThumb($w,$h,$srcfile,$destfile)
@@ -131,12 +138,42 @@ class Thumb
 			$h = $maxh;
 			$w = floor($w * $ratio);
 		}
-		//Now run ImageMagick
-		$cmd = "{$ZymurgyConfig['ConvertPath']}convert -geometry $w x $h $srcfile $destfile";
-		//echo "$cmd<br>";
-		$out = system($cmd,$r);
-		//echo "[$out,$r]<br>";
-		return $r;
+		return Zymurgy::$imagehandler->Resize($w,$h,$srcfile,$destfile);
+	}
+	
+	/**
+	 * Make thumbnails from an uploaded file.  $targets is an array of csv strings, each of which contains WIDTHxHIEGHT values.
+	 *
+	 * @param string $datacolumn
+	 * @param integer $id
+	 * @param array $targets
+	 * @param string $uploadpath
+	 */
+	static function MakeThumbs(
+		$datacolumn,
+		$id,
+		$targets,
+		$uploadpath = '',
+		$ext = 'jpg')
+	{
+		$thumbdest = Thumb::ThumbFolder($datacolumn);
+		$rawimage = "$thumbdest/{$id}raw.$ext";
+		if ($uploadpath!=='')
+			move_uploaded_file($uploadpath,$rawimage);
+
+		foreach($targets as $targetsizes)
+		{
+			$targetsizes = explode(',',$targetsizes);
+
+			foreach ($targetsizes as $targetsize)
+			{
+				$dimensions = explode('x',$targetsize);
+				Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.$ext");
+			}
+		}
+
+		Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.$ext");
+		Zymurgy::$imagehandler->Darken(75,"$thumbdest/{$id}aspectcropNormal.$ext","$thumbdest/{$id}aspectcropDark.$ext");
 	}
 }
 ?>

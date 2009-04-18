@@ -165,6 +165,8 @@ class vtigerMember extends ZymurgyMember
 				$userid, 
 				$password,
 				$confirm,
+				$firstname,
+				$lastname,
 				$useridfield,
 				$passwordfield,
 				$confirmfield,

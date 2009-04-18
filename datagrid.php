@@ -75,14 +75,22 @@ if(!isset($suppressDatagridJavascript))
 			return false;
 		}
 		
-		function aspectcrop_popup(ds, d, id, returnurl, fixedratio)
+		/*
+		ds = dataset; table.field
+		d = requested dimensions WIDTHxHEIGHT
+		id = row ID in the datagrid
+		imgid = element ID of the image to update after thumbing
+		fixedratio = is this a fixed aspect ratio?
+		gd = grid image dimensions WIDTHxHEIGHT to support small images in grid
+		*/
+		function aspectcrop_popup(ds, d, id, imgid, fixedratio, gd)
 		{
 			var fixedar;
 			if (fixedratio)
 				fixedar = '&fixedar=1';
 			else
 				fixedar = '';
-			window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&id='+id+'&returnurl='+returnurl+fixedar,'','scrollbars=no,width=780,height=500');
+			window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&gd='+gd+'&id='+id+'&imgid='+imgid+fixedar,'','scrollbars=no,width=780,height=500');
 		}
 //-->
 </script>
@@ -632,17 +640,36 @@ class DataGrid
 			$this->thumbs[$datacolumn][] = $targetsize;
 		else
 			$this->thumbs[$datacolumn] = array($targetsize);
-		//$imgsrc = "/UserFiles/DataGrid/$datacolumn/{ID}thumb$targetsize.jpg";
+
+		//Tweak Width and Height for Thumb
+		$shrink = 1;
+		$twidth = $width;
+		$theight = $height;
+		$maxw = array_key_exists('MaxGridImageWidth',Zymurgy::$config) ? Zymurgy::$config['MaxGridImageWidth'] : 100;
+		$maxh = array_key_exists('MaxGridImageHeight',Zymurgy::$config) ? Zymurgy::$config['MaxGridImageHeight'] : 100;
+		if ($twidth > $maxw)
+		{
+			$shrink = $maxw/$twidth;
+			$theight = round($shrink * $theight);
+			$twidth = $maxw;
+		}
+		if ($theight > $maxh)
+		{
+			$shrink = $maxh/$theight;
+			$twidth = round($shrink * $twidth);
+			$theight = $maxh;
+		}
 		list($ds,$dc) = explode('.',$datacolumn,2);
 		$imgsrc = "/zymurgy/file.php?mime=image/jpeg&dataset=".urlencode($ds)."&datacolumn=".
-			urlencode($dc)."&id={ID}&w=$width&h=$height";
+			urlencode($dc)."&id={ID}&w=$twidth&h=$theight";
 		//$returnurl = urlencode($this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection')));
 		if ($fixedratio)
 			$fixedratio = 'true';
 		else
 			$fixedratio = 'false';
-		$thumb = "<a onclick=\"aspectcrop_popup('$datacolumn','$targetsize',{ID},'{ID}$datacolumn',$fixedratio)\">".
-			"<img id=\"{ID}$datacolumn.{$width}x{$height}\" src=\"$imgsrc\" alt=\"$headertxt\" /></a>";
+			
+		$thumb = "<a onclick=\"aspectcrop_popup('$datacolumn','$targetsize',{ID},'{ID}$datacolumn',$fixedratio,'{$twidth}x{$theight}')\">".
+			"<img id=\"{ID}$datacolumn.{$width}x{$height}\" src=\"$imgsrc\" alt=\"$headertxt\" style=\"cursor: pointer\" /></a>";
 		return $this->AddColumn($headertxt,$this->DataSet->masterkey,$thumb);
 	}
 
@@ -1126,6 +1153,7 @@ class DataGrid
 				{
 					if (array_key_exists($dc,$this->thumbs))
 					{
+						require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
 						$ext = Thumb::mime2ext($file['type']);
 						$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$this->thumbs[$dc],$upload,Thumb::mime2ext($file['type']));
 					}
