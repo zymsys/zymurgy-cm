@@ -994,36 +994,6 @@ class DataGrid
 	function MakeThumbs($datacolumn,$id,$targets,$uploadpath = '',$ext = 'jpg')
 	{
 		Zymurgy::MakeThumbs($datacolumn, $id, $targets, $uploadpath,$ext);
-		
-		/*
-		global $ZymurgyRoot, $ZymurgyConfig;
-		
-		@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
-		$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
-		@mkdir($thumbdest);
-		$rawimage = "$thumbdest/{$id}raw.jpg";
-		if ($uploadpath!=='')
-			move_uploaded_file($uploadpath,$rawimage);
-		if ((function_exists('mime_content_type')) && (mime_content_type($rawimage)!='image/jpeg'))
-		{
-			//Supplied image isn't a jpeg.  Convert raw into one (best effort!).
-			system("{$ZymurgyConfig['ConvertPath']}convert $rawimage $thumbdest/{$id}jpg.jpg");
-			rename("$thumbdest/{$id}jpg.jpg",$rawimage);
-		}
-		require_once("$ZymurgyRoot/zymurgy/include/Thumb.php");
-		//echo "[Targets: "; print_r($targets); echo "]";
-		foreach($targets as $targetsizes)
-		{
-			$targetsizes = explode(',',$targetsizes);
-			foreach ($targetsizes as $targetsize)
-			{
-				$dimensions = explode('x',$targetsize);
-				Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,"$thumbdest/{$id}thumb$targetsize.jpg");
-			}
-		}
-		Thumb::MakeQuickThumb(640,480,$rawimage,"$thumbdest/{$id}aspectcropNormal.jpg");
-		system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 $thumbdest/{$id}aspectcropNormal.jpg $thumbdest/{$id}aspectcropDark.jpg");
-		*/
 	}
 	
 	function RegenerateThumbs($ext='jpg')
