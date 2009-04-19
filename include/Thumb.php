@@ -37,16 +37,15 @@ class Thumb
 
 	function MakeThumb($sx,$sy,$sw,$sh,$dw,$dh,$srcfile,$destfile)
 	{
-		global $ZymurgyConfig;
-		
+		//Save parameters so we can restore the thumber for the next run.
 		$fd = fopen("$destfile.sh","w");
-		fwrite($fd,"# MakeThumb(sx:$sx,sy:$sy,sw:$sw,sh:$sh,dw:$dw,dh:$dh,srcfile:$srcfile,destfile:$destfile)\n");
+		fwrite($fd,"MakeThumb(sx:$sx,sy:$sy,sw:$sw,sh:$sh,dw:$dw,dh:$dh,srcfile:$srcfile,destfile:$destfile)\n");
+		//echo "<div>MakeThumb(sx:$sx,sy:$sy,sw:$sw,sh:$sh,dw:$dw,dh:$dh,srcfile:$srcfile,destfile:$destfile);</div>";
+		fclose($fd);
 
+		return Zymurgy::$imagehandler->ResizeWithCrop($sx,$sy,$sw,$sh,$dw,$dh,$srcfile,$destfile);
+		return Zymurgy::$imagehandler->ResizeWithCrop($swidth,$sheight,$dw,$dh,$sxs,$sys,$srcfile,$destfile);
 		list($width, $height, $type, $attr) = getimagesize($srcfile);
-		fwrite($fd,"# source image size: $width x $height");
-		//Now run ImageMagick.  Need to figure out options for thumbs that extract only a portion of the original.
-		//Resize first and then crop resized image:
-		//convert -crop 100x100+50+60 030101024026.JPG[400x200] out2.jpg
 		
 		//Determine ratio of change
 		$wrat = $dw/$sw;
@@ -57,14 +56,7 @@ class Thumb
 		//Determine resized full width and height
 		$swidth = floor($width * $wrat);
 		$sheight =floor($height* $hrat);
-		fwrite($fd,"# Calculated: wrat: $wrat hrat: $hrat sxs: $sxs sys: $sys swidth: $swidth sheight: $sheight\n");
-		$cmd = Zymurgy::$imagehandler->ResizeWithCropCmd($swidth,$sheight,$dw,$dh,$sxs,$sys,$srcfile,$destfile);
-		//$cmd = "{$ZymurgyConfig['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
-		fwrite($fd,"$cmd\n");
-		fclose($fd);
-		//$out = system($cmd,$r);
-		//return $r;
-		return Zymurgy::$imagehandler->ResizeWithCrop($swidth,$sheight,$dw,$dh,$sxs,$sys,$srcfile,$destfile);
+		
 	}
 
 	function MakeFixedThumb($w,$h,$srcfile,$destfile)

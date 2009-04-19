@@ -1,5 +1,6 @@
 <?
 require_once('cms.php');
+//Zymurgy::$yuitest = true;
 if (!Zymurgy::memberauthenticate())
 {
 	require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
@@ -133,12 +134,12 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 
 		//echo "factors: $xfactor $yfactor<br>";
 
-		$x = $selected['x'] * $xfactor;
-		$y = $selected['y'] * $yfactor;
-		$w = $selected['w'] * $xfactor;
-		$h = $selected['h'] * $yfactor;
+		$x = round($selected['x'] * $xfactor);
+		$y = round($selected['y'] * $yfactor);
+		$w = round($selected['w'] * $xfactor);
+		$h = round($selected['h'] * $yfactor);
 
-		//echo "Selected [x:$x,y:$y,w:$w,h:$h]<br>";
+		$debugmsg[] = "Selected [x:$x,y:$y,w:$w,h:$h]";
 		if (!$fixedar)
 		{
 			$maxwidth = $width;
@@ -190,10 +191,12 @@ window.close();
  <html>
  	<head>
  		<title>Zymurgy:CM Thumbnail Selection Tool</title>
- 		<?php echo Zymurgy::YUI("yahoo/yahoo-min.js"); ?>
- 		<?php echo Zymurgy::YUI("dom/dom-min.js"); ?>
- 		<?php echo Zymurgy::YUI("event/event-min.js"); ?>
- 		<?php echo Zymurgy::YUI("dragdrop/dragdrop-min.js"); ?>
+ 		<?php
+ 		if (Zymurgy::$yuitest) echo Zymurgy::YUI("logger/assets/skins/sam/logger.css");
+ 		echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+ 		echo Zymurgy::YUI("dragdrop/dragdrop-min.js"); 
+ 		if (Zymurgy::$yuitest) echo Zymurgy::YUI("logger/logger-min.js");
+ 		?>
  		<script
 	 			language="javascript"
 	 			type="text/javascript"
@@ -293,43 +296,26 @@ img#imgCropped {
  			var minHeight = <?=$minheight?>;
  			var aspectRatio = <?= $fixedar ? "parseFloat(minWidth) / parseFloat(minHeight)" : 0 ?>;
 
- 			// granularity of the drag-drop constraint area
- 			var granularity = 1;
-
- 			// the width of the border of the panel used to create the crop
- 			// area - some of the calculations are adjusted to take this
- 			// border into account.
- 			var borderWidth = 0;
-
  			function init() {
  				//dd is the resize handle
-	            dd = new YAHOO.example.DDResize(
-			            "panelDiv",
-			            "handleDiv",
-			            "panelresize");
+ 				var pd = document.getElementById("panelDiv");
+	            dd = new YAHOO.example.DDResize("panelDiv", "handleDiv", "panelresize");
 
 			    //dd2 is the selected region of the image
-	            dd2 = new YAHOO.util.DDProxy(
-			            "panelDiv",
-			            "paneldrag");
+	            dd2 = new YAHOO.util.DDProxy("panelDiv", "paneldrag");
 	            dd2.addInvalidHandleId("handleDiv"); //Don't let the handle drag the image
 
-	            document.getElementById("panelDiv").style.left =
-	            		(initX + offsetX) + "px";
-	            document.getElementById("panelDiv").style.top =
-	            		(initY + offsetY) + "px";
-	            document.getElementById("panelDiv").style.width =
-	            		initWidth + "px";
-	            document.getElementById("panelDiv").style.height =
-	            		initHeight + "px";
+	            pd.style.left = (initX + offsetX) + "px";
+	            pd.style.top = (initY + offsetY) + "px";
+	            pd.style.width = initWidth + "px";
+	            pd.style.height = initHeight + "px";
 
  				//Called when selected thumb area is dragged.
  				updateCropArea = function(e) {
- 					var pd = document.getElementById("panelDiv");
- 					var imgX = pd.offsetLeft - offsetX + borderWidth;
- 					var imgY = pd.offsetTop - offsetY + borderWidth;
- 					//setDebug('updating ix: '+initX+' bw: '+borderWidth+' imgX: '+imgX+' imgY: '+imgY);
-	  				cropImage('imgCropped', imgX, imgY);
+ 					//var pd = document.getElementById("panelDiv");
+ 					var imgX = pd.offsetLeft - offsetX;
+ 					var imgY = pd.offsetTop - offsetY;
+ 					cropImage('imgCropped', imgX, imgY);
 	 				setConstraints(
 	 					dd2,
 	 					dd,
@@ -338,8 +324,7 @@ img#imgCropped {
 	 					initX,
 	 					initY,
 	 					imgX,
-	 					imgY,
-	 					borderWidth);
+	 					imgY);
  				};
 
  				updateCropArea();
@@ -399,7 +384,7 @@ img#imgCropped {
   			</form>
   			<div id="debug">
   			<?
-if (false) //Set to false when not debugging
+if (Zymurgy::$yuitest) //Set to false when not debugging
 {  			
 	echo "<table border=\"1\">";
 	foreach ($stats as $caption=>$sz)
@@ -411,6 +396,10 @@ if (false) //Set to false when not debugging
 	{
 		echo implode('<hr />',$debugmsg);
 	}
+	echo '<div id="myLogger"></div>
+<script type="text/javascript">
+var myLogReader = new YAHOO.widget.LogReader("myLogger");
+</script>';
 }
 			?></div>
  		</div>

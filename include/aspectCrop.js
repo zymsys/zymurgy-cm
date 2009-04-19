@@ -22,44 +22,25 @@ function setConstraints(
 		panelOffsetX,
 		panelOffsetY,	
 		borderThickness) {
-	var handleXConstraint = document.getElementById(imgBackground).width;
-	handleXConstraint -= panelOffsetX;
-	handleXConstraint -= borderThickness * 2;
+	//Get elements and their position info
+	var elbg = document.getElementById(imgBackground);
+	var elpn = document.getElementById(panelDiv);
+	var rgbg = YAHOO.util.Dom.getRegion(elbg);
+	var rgpn = YAHOO.util.Dom.getRegion(elpn);
 	
-	var handleYConstraint = document.getElementById(imgBackground).height;
-	handleYConstraint -= panelOffsetY;
-	handleYConstraint -= borderThickness * 2;
-    		
-    handleObject.setXConstraint(
-    	panelOffsetX,
-    	handleXConstraint,
-    	granularity);
-    handleObject.setYConstraint(
-    	panelOffsetX,
-    	handleYConstraint,
-    	granularity);
-    	
-	var panelXConstraint = document.getElementById(imgBackground).width;
-	panelXConstraint -= initOffsetX;
-	panelXConstraint -= document.getElementById(panelDiv).clientWidth; 	
-	//panelXConstraint -= borderThickness * 2;
-	if (panelXConstraint < 0) panelXConstraint = 0;
+	//Determine handle constraints
+	var handleXConstraint = rgbg.width - panelOffsetX;
+	var handleYConstraint = rgbg.height - panelOffsetY;
+	//Apply handle constraints
+	handleObject.setXConstraint(panelOffsetX,handleXConstraint);
+	handleObject.setYConstraint(panelOffsetY,handleYConstraint);
 	
-	var panelYConstraint = document.getElementById(imgBackground).height;
-	panelYConstraint -= initOffsetY;
-	panelYConstraint -= document.getElementById(panelDiv).clientHeight; 	
-	//panelYConstraint -= borderThickness * 2;
-	if (panelYConstraint < 0) panelYConstraint = 0;
-	
-//setDebug('oy: '+offsetY+' pyc: '+panelYConstraint+' g:'+granularity);
-    ddObject.setXConstraint(
-    		(panelXConstraint == 0) ? 0 : initX,
-    		panelXConstraint,
-    		granularity);
-    ddObject.setYConstraint(
-    		(panelYConstraint == 0) ? 0 : initY,
-    		panelYConstraint,
-    		granularity);
+	//Determine panel constraings
+	var panelXConstraint = parseInt(rgbg.width) - initX - parseInt(rgpn.width);
+	var panelYConstraint = parseInt(rgbg.height) - initY - parseInt(rgpn.height);
+	//Apply panel constraints
+	ddObject.setXConstraint(initOffsetX, panelXConstraint);
+	ddObject.setYConstraint(initOffsetY, panelYConstraint);
 }
 
 function submitForm() {
@@ -73,8 +54,8 @@ function submitForm() {
 	var pdcw = elpd.clientWidth;
 	var pdch = elpd.clientHeight;
 	
-	document.frmCrop.cropX.value = pdol - bgol + borderWidth;
-	document.frmCrop.cropY.value = pdot - bgot + borderWidth;
+	document.frmCrop.cropX.value = pdol - bgol;
+	document.frmCrop.cropY.value = pdot - bgot;
 	document.frmCrop.cropWidth.value = pdcw;
 	document.frmCrop.cropHeight.value = pdch;
 	

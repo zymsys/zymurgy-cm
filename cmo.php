@@ -955,6 +955,7 @@ if (!class_exists('Zymurgy'))
 	switch (Zymurgy::$config['ConvertToolset'])
 	{
 		case 'GD':
+			require_once(Zymurgy::$root."/zymurgy/include/ImageHandlerGD.php");
 			Zymurgy::$imagehandler = new ZymurgyImageHandlerGD();
 			break;
 		default:
