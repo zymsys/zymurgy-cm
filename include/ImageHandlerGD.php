@@ -56,7 +56,6 @@ class ZymurgyImageHandlerGD extends ZymurgyImageHandler
 	{
 		$src = $this->getImage($srcfile);
 		$dst = $this->createBlankThumb($dw,$dh);
-		//echo "<div>imagecopyresampled(dst_im,src_im,0,0,src_x:$sx,src_y:$sy,dst_w:$dw,dst_h:$dh,src_w:$sw,src_h:$sh);</div>";
 		imagecopyresampled($dst,$src,0,0,$sx,$sy,$dw,$dh,$sw,$sh);
 		$this->writeImage($dst,$destfile);
 		imagedestroy($img);
@@ -66,16 +65,27 @@ class ZymurgyImageHandlerGD extends ZymurgyImageHandler
 	
 	function Resize($width,$height,$srcfile,$dstfile)
 	{
-		$cmd = Zymurgy::$config['ConvertPath']."convert -geometry $width x $height $srcfile $dstfile";
-		$out = system($cmd,$r);
-		return $r;
+		$src = $this->getImage($srcfile);
+		$dst = $this->createBlankThumb($width,$height);
+		$sw = imagesx($src);
+		$sh = imagesy($src);
+		imagecopyresampled($dst,$src,0,0,0,0,$width,$height,$sw,$sh);
+		$this->writeImage($dst,$dstfile);
+		imagedestroy($img);
+		imagedestroy($dst);
+		return;
 	}
 	
 	function Darken($amount,$srcfile,$dstfile)
 	{
-		$cmd = Zymurgy::$config['ConvertPath']."convert -modulate $amount $srcfile $dstfile";
-		$out = system($cmd,$r);
-		return $r;
+		$src = $this->getImage($srcfile);
+		$sw = imagesx($src);
+		$sh = imagesy($src);
+		imagealphablending($src,true);
+		imagefilledrectangle($src,0,0,$sw,$sh,imagecolorallocatealpha($src,0,0,0,$amount)); //Make drk image all black, same size as source
+		$this->writeImage($src,$dstfile);
+		imagedestroy($img);
+		return;
 	}
 }
 ?>
