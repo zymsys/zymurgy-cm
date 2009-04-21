@@ -278,12 +278,73 @@
 
 	class MediaFileView
 	{
-		static function DisplayList($mediaFiles)
+		static function DisplayList(
+			$mediaFiles,
+			$mediaRelations,
+			$selectedMediaRelationType,
+			$members,
+			$selectedMemberID)
 		{
+			$breadcrumbTrail = "Media Files";
+
 			include("header.php");
 			include('datagrid.php');
 
 			DumpDataGridCSS();
+
+			echo("<form name=\"filter\" action=\"media.php\" method=\"POST\">\n");
+			echo("<input type=\"hidden\" name=\"action\" value=\"list_media_files\">\n");
+			echo("<table>\n");
+
+			echo("<tr>\n");
+			echo("<td>Content Type:</td>\n");
+			echo("<td><select name=\"relation_type\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($mediaRelations as $mediaRelation)
+			{
+				echo("<option value=\"".
+					$mediaRelation->get_relation_type().
+					"\"".
+					($mediaRelation->get_relation_type() == $selectedMediaRelationType
+						? " SELECTED"
+						: "").
+					">".
+					$mediaRelation->get_relation_label().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>Owner:</td>\n");
+			echo("<td><select name=\"member_id\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($members as $member)
+			{
+				echo("<option value=\"".
+					$member->get_member_id().
+					"\"".
+					($member->get_member_id() == $selectedMemberID
+						? " SELECTED"
+						: "").
+					">".
+					$member->get_email().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>&nbsp;</td>\n");
+			echo("<td><input type=\"submit\" value=\"Filter\"></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("</table>\n");
+			echo("</form>\n");
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
@@ -1623,8 +1684,19 @@
 			switch($action)
 			{
 				case "list_media_files":
-					$mediaFiles = MediaFilePopulator::PopulateAll();
-					MediaFileView::DisplayList($mediaFiles);
+					$mediaFiles = MediaFilePopulator::PopulateByOwner(
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
+						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "");
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					$members = MediaMemberPopulator::PopulateAll();
+
+					MediaFileView::DisplayList(
+						$mediaFiles,
+						$mediaRelations,
+						isset($_POST["relation_type"]) ? $_POST["relation_type"] : 0,
+						$members,
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+
 					return true;
 
 				case "add_media_file":

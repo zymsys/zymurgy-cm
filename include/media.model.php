@@ -259,10 +259,18 @@
 		}
 
 		static function PopulateByOwner(
-			$member_id,
+			$member_id = 0,
 			$mediaRelationType = "")
 		{
+			$ownerCriteria = "1 = 1";
 			$relationCriteria = "1 = 1";
+
+			if($member_id > 0)
+			{
+				$ownerCriteria = "`member_id` = '".
+					mysql_escape_string($member_id).
+					"'";
+			}
 
 			if($mediaRelationType !== "")
 			{
@@ -271,9 +279,7 @@
 					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
-			$criteria = "`zcm_media_file`.`member_id` = '".
-				mysql_escape_string($member_id).
-				"' AND $relationCriteria";
+			$criteria = "$ownerCriteria AND $relationCriteria";
 
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
