@@ -19,12 +19,12 @@ class InputWidget
 	var $lookups = array();
 	var $editkey = 0;
 	var $datacolumn = 'sitetext.body';
-	
+
 	function InputWidget()
 	{
 		$this->fckeditorpath = '/zymurgy/fckeditor/';
 	}
-	
+
 	/**
 	 * Unserialize source if it begins a: and ends } for items that take arrays.
 	 * For simpler population outside of PHP fall back to CSV with an associative array of values to themselves.
@@ -35,7 +35,7 @@ class InputWidget
 	{
 		if ((substr($source,0,2)=='a:') && (substr($source,-1)=='}'))
 			$r = unserialize($source);
-		else 
+		else
 		{
 			$r = array();
 			$sp = explode(',',$source);
@@ -45,7 +45,7 @@ class InputWidget
 		}
 		return $r;
 	}
-	
+
 	function PostValue($type,$postname)
 	{
 		$postname = str_replace(' ','_',$postname);
@@ -76,20 +76,20 @@ class InputWidget
 				$dp = explode("-",$pp[0]);
 				$tp = explode(":",$pp[1]);
 				$tp[0] = substr($tp[0],1);
-				if ($pp[2]=='PM]') 
+				if ($pp[2]=='PM]')
 				{
 					if ($tp[0] < 12)
 						$tp[0] += 12;
 				}
-				else 
+				else
 				{
-					if ($tp[0]==12) 
+					if ($tp[0]==12)
 						$tp[0] = 0;
 				}
 				$tm = mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 				if ($ep[0]=='unixdatetime')
 					return $tm;
-				else 
+				else
 					return strftime('%Y-%m-%d %H:%M:%S',$tm);
 				break;
 			case "time":
@@ -102,11 +102,11 @@ class InputWidget
 				{
 					return $_POST[$postname];
 				}
-				else 
+				else
 					return '';
 		}
 	}
-	
+
 	function Display($type,$template,$value,$masterkey='')
 	{
 		if ($template == '') return '';
@@ -157,7 +157,7 @@ class InputWidget
 		}
 		return $display;
 	}
-	
+
 	static function GetPretext($type)
 	{
 		$tp = explode('.',$type,2);
@@ -174,21 +174,21 @@ class InputWidget
 					Zymurgy::YUI("colorpicker/colorpicker-min.js").
 					ColorPicker_JavaScript().
 					ColorPicker_DialogHTML();
-					
+
 				break;
-				
+
 			case "theme":
 				return Zymurgy::YUI("container/assets/container.css").
 					Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js").
 					Zymurgy::YUI("animation/animation-min.js").
 					Zymurgy::YUI("container/container-min.js").
 					Theme_JavaScript();
-				
+
 				break;
 		}
 		return '';
 	}
-	
+
 	function JSRender($type,$name,$value)
 	{
 		$ep = explode('.',$type);
@@ -221,7 +221,7 @@ passThroughFormSubmit = false;
 				break;
 		}
 	}
-	
+
 	function Render(
 		$type,
 		$name,
@@ -241,23 +241,27 @@ passThroughFormSubmit = false;
 				echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
-				
+
+			case "hidden":
+				echo "<input type=\"hidden\" id=\"$name\" name=\"$name\" value=\"$value\" />";
+				break;
+
 			case "password":
 				echo "<input type=\"password\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" />";
 				break;
-			
+
 			case "checkbox":
 				echo "<input type=\"checkbox\" id=\"$name\" name=\"$name\"";
-				if (($ep[1]=='checked') || ($value!='')) echo " checked=\"checked\"";
+				if (isset($ep[1]) && ($ep[1]=='checked') || ($value!='')) echo " checked=\"checked\"";
 				echo " />";
 				break;
-				
+
 			case "textarea":
 				echo "<textarea id=\"$name\" name=\"".
 					"$name\" rows=\"{$ep[2]}\" cols=\"{$ep[1]}\">$value</textarea>";
 				break;
-				
+
 			case "money":
 				$m = $value;
 				if ($this->UsePennies)
@@ -265,14 +269,14 @@ passThroughFormSubmit = false;
 				$m = '$'.number_format($m,2,'.',',');
 				echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 				break;
-				
+
 			case "inputspec":
 				require_once(Zymurgy::$root."/zymurgy/include/inputspec.php");
 				echo "<script>makeInputSpecifier('".
 					str_replace("'","\'",$name)."','".
 					str_replace("'","\'",$value)."');</script>";
 				break;
-				
+
 			case "plugin":
 				global $ZymurgyAutocompleteZIndex;
 				$ep = explode('&',$value);
@@ -350,7 +354,7 @@ passThroughFormSubmit = false;
 				';
 				$ZymurgyAutocompleteZIndex++;
 				break;
-				
+
 			case "radio":
 				$rp = $ep;
 				array_shift($rp);
@@ -362,7 +366,7 @@ passThroughFormSubmit = false;
 					echo " />$rcaption</label><br />\r\n";
 				}
 				break;
-				
+
 			case "drop":
 				$rp = $ep;
 				array_shift($rp);
@@ -376,13 +380,13 @@ passThroughFormSubmit = false;
 				}
 				echo "</select>\r\n";
 				break;
-				
+
 			case "time":
 				$value = date("g:i a",strtotime($value));
 				echo "<input type=\"text\" size=\"8\" maxlength=\"8\" id=\"$name\" name=\"".
 					"$name\" value=\"$value\" /> <i>hh:mm am/pm</i>";
 				break;
-				
+
 			case "unixdate":
 			case "date":
 				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
@@ -390,21 +394,20 @@ passThroughFormSubmit = false;
 				{
 					$date = $value;
 				}
-				else 
+				else
 				{
 					$date = strtotime($value);
 				}
-				//if ($date == 0) $date=time();
-							
+				if ($date == 0) $date=time();
 				$cal = new DHTML_Calendar(
 					"/zymurgy/jscalendar/",
 					'en',
-					'calendar-win2k-2', 
+					'calendar-win2k-2',
 					false);
 
 				$cal->SetFieldPrefix($name);
 				$cal->SetIncludeID(false);
-				
+
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
@@ -414,10 +417,9 @@ passThroughFormSubmit = false;
 		           // field attributes go here
 		           array('style'       => 'width: 15em; color: #840; background-color: #ff8; border: 1px solid #000; text-align: center',
 		                 'name'        => $name,
-		                 'value'       => ($date == 0) ? '' : strftime('%Y-%m-%d', $date)));		                 
-		                 
+		                 'value'       => strftime('%Y-%m-%d', $date)));
 				break;
-				
+
 			case "unixdatetime":
 			case "datetime":
 				require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
@@ -425,17 +427,17 @@ passThroughFormSubmit = false;
 					$date = $value;
 				else
 					$date = strtotime($value);
-				//if ($date == 0) $date=time();
-							
+				if ($date == 0) $date=time();
+
 				$cal = new DHTML_Calendar(
 					"/zymurgy/jscalendar/",
 					'en',
-					'calendar-win2k-2', 
+					'calendar-win2k-2',
 					false);
 
 				$cal->SetFieldPrefix($name);
 				$cal->SetIncludeID(false);
-				
+
 				$cal->load_files();
 				$cal->make_input_field(
 		           array('firstDay'       => 0, // show Monday first
@@ -448,11 +450,11 @@ passThroughFormSubmit = false;
 		                 'name'        => $name,
 		                 'value'       => ($date == 0) ? '' : strftime('%Y-%m-%d [%I:%M %p]', $date)));
 				break;
-				
+
 			case "lookup":
 				echo $this->lookups[$ep[1]]->RenderDropList($name,$value);
 				break;
-				
+
 			case "image":
 				array_shift($ep); //Remove type
 				$ep = explode(',',implode('.',$ep)); //Re-explode on ,
@@ -473,78 +475,82 @@ passThroughFormSubmit = false;
 				}
 				echo "<table><tr><td valign=\"center\"><input type=\"file\" id=\"$name\" name=\"$name\" /></td><td>".implode($thumbs,"</td><td>")."</td></tr></table>";
 				break;
-				
+
 			case "attachment":
 				echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
 				break;
-				
+
 			case "yuihtml":
 				echo Zymurgy::YUI("assets/skins/sam/skin.css");
 				echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 				echo Zymurgy::YUI("element/element-min.js");
 				echo Zymurgy::YUI("container/container_core-min.js");
 				echo Zymurgy::YUI("editor/editor-min.js");
-				
+
 				if($dialogName !== "")
 				{
-					echo("<div id=\"{$name}_div\"></div>");
+					echo("<div id=\"".
+						str_replace(".", "_", $name).
+						"_div\"></div>");
 				}
-				
-				echo("<textarea id=\"$name\" name=\"$name\" cols=\"60\" rows=\"10\">$value</textarea>\r\n");
-					
-				?>					
+
+				echo("<textarea id=\"".
+					str_replace(".", "_", $name).
+					"\" name=\"$name\" cols=\"60\" rows=\"10\">$value</textarea>\r\n");
+
+				?>
 					<script type="text/javascript">
-						var Display<?= $name ?>Exists = true;
-						var <?= $name ?>Editor;
-					
-						function Display<?= $name ?>() {
+						var Display<?= str_replace(".", "_", $name) ?>Exists = true;
+						var <?= str_replace(".", "_", $name) ?>Editor;
+
+						function Display<?= str_replace(".", "_", $name) ?>() {
 							var myConfig = {
 								height: '<?= $ep[2] ?>px',
 								width: '<?= $ep[1] ?>px',
 								dompath: true,
 								focusAtStart: false
 							};
-							
-							<?= $name ?>Editor = new YAHOO.widget.Editor(
-								'<?= $name ?>',
+
+							<?= str_replace(".", "_", $name) ?>Editor = new YAHOO.widget.Editor(
+								'<?= str_replace(".", "_", $name) ?>',
 								myConfig);
-							
+
 							<? if($dialogName !== "") { ?>
-							<?= $name ?>Editor.on('windowRender', function() {
+							<?= str_replace(".", "_", $name) ?>Editor.on('windowRender', function() {
 								document.getElementById('<?= $name ?>_div').appendChild(this.get('panel').element);
 							});
-							
+
 							if(typeof <?= $dialogName ?> == "Dialog")
 							{
-								Link<?= $name ?>ToDialog();
+								Link<?= str_replace(".", "_", $name) ?>ToDialog();
 							}
 							<? } ?>
-								
-							<?= $name ?>Editor.render();								
+
+							<?= str_replace(".", "_", $name) ?>Editor.render();
 						}
-						
-						function Link<?= $name ?>ToDialog()
+
+						function Link<?= str_replace(".", "_", $name) ?>ToDialog()
 						{
 							<? if($dialogName !== '') { ?>
 							<?= $dialogName ?>.showEvent.subscribe(
-								<?= $name ?>Editor.show,
-								<?= $name ?>Editor,
+								<?= str_replace(".", "_", $name) ?>Editor.show,
+								<?= str_replace(".", "_", $name) ?>Editor,
 								true);
 							<?= $dialogName ?>.hideEvent.subscribe(
-								<?= $name ?>Editor.hide,
-								<?= $name ?>Editor,
+								<?= str_replace(".", "_", $name) ?>Editor.hide,
+								<?= str_replace(".", "_", $name) ?>Editor,
 								true);
 							<? } ?>
 						}
-						
+
 						<? if($dialogName == '') { ?>
-							YAHOO.util.Event.onDOMReady(Display<?= $name ?>);
+							YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
 						<? } ?>
 					</script>
 				<?
-				
+
 				break;
-				
+
 			case "html":
 				require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
 				$fck = new FCKeditor($name);
@@ -556,42 +562,42 @@ passThroughFormSubmit = false;
 				$fck->Config['EditorAreaCSS'] = $this->fckeditorcss;
 				$fck->Create();
 				break;
-				
+
 			case "colour":
 			case "color":
 				$matchJS = "";
-				
+
 				echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
 				echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				break;
 
 			case "theme":
 				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"$value\">";
-				
+
 				$colors = explode(",", $value);
-				
+
 				echo "<span style=\"border: 1px solid black; padding-top: 1px; padding-bottom: 1px;\">";
-				
+
 				for($cntr = 1; $cntr < count($colors); $cntr++)
 				{
 					$hex = substr($colors[$cntr], 1);
 					$lockedStyle = " border: 1px solid #$hex;";
-					
+
 					if(substr($colors[$cntr], 0, 1) == "L")
 					{
 						$lockedStyle = " border: 1px inset black;";
 					}
-					
-					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#$hex; cursor:pointer;$lockedStyle\" onClick=\"OpenThemeWindow('$name');\">&nbsp;&nbsp;&nbsp;</span>";			
+
+					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#$hex; cursor:pointer;$lockedStyle\" onClick=\"OpenThemeWindow('$name');\">&nbsp;&nbsp;&nbsp;</span>";
 				}
-				
+
 				for($cntr = count($colors); $cntr <= 6; $cntr++)
 				{
-					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#FFFFFF; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";			
+					echo "<span id=\"swatch{$name}{$cntr}\" style=\"width:15px; height:15px; background-color:#FFFFFF; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 				}
-				
+
 				echo "</span>&nbsp;<input type=\"button\" onClick=\"OpenThemeWindow('$name');\" value=\"Edit theme...\">";
-				
+
 				$themenames = array();
 				foreach(Zymurgy::$ThemeColor as $cname=>$index)
 				{
@@ -600,16 +606,16 @@ passThroughFormSubmit = false;
 				echo "<script type=\"text/javascript\">\r\n";
 				for($cntr = 1; $cntr < count($colors); $cntr++)
 				{
-					echo "swatchTT{$name}{$cntr} = new YAHOO.widget.Tooltip(\"swatchTT{$name}{$cntr}\", { 
-						context:\"swatch{$name}{$cntr}\", 
+					echo "swatchTT{$name}{$cntr} = new YAHOO.widget.Tooltip(\"swatchTT{$name}{$cntr}\", {
+						context:\"swatch{$name}{$cntr}\",
 						text:\"".addslashes($themenames[$cntr])."\",
 						showDelay:0,
 						hidedelay:0 } );\r\n";
 				}
 				echo "</script>\r\n";
-				
+
 				break;
-				
+
 			case "hip":
 				switch ($ep[1])
 				{
@@ -636,7 +642,7 @@ class DataGridLookup
 {
 	var $values;
 	var $keys; //In the correct display order
-	
+
 	function DataGridLookup($table,$idcolumn,$valcolumn,$ordercolumn = '')
 	{
 		$sql = "select $idcolumn,$valcolumn from $table";
@@ -655,7 +661,7 @@ class DataGridLookup
 		}
 		mysql_free_result($ri);
 	}
-	
+
 	function RenderDropList($name,$selected)
 	{
 		$r = array();

@@ -1,4 +1,4 @@
-<? 
+<?
 /* DataGrid classes
  * Copyright(c) 2006 by Zymurgy Systems Inc. http://www.zymsys.com/
  * All rights reserved.
@@ -8,7 +8,7 @@
  *	sortorder: ASC or DESC
  *	page: Current page of datagrid
  *  editkey: Key of the column being edited, -1 for insert (not set when not in edit mode)
-*/ 
+*/
 
 $datagridexpertmode = false;
 
@@ -52,13 +52,13 @@ if (!function_exists('getapplpath'))
 	function getapplpath($scriptname)
 	{
 		global $ZymurgyRoot;
-		
+
 		if (substr($scriptname,0,strlen($ZymurgyRoot)) != $ZymurgyRoot)
 			return false;
 		$lastslash = strrpos($scriptname,'/');
 		$start = strlen($ZymurgyRoot)-1;
 		$lenth = $lastslash-$start;
-		return substr($scriptname,$start+1,$lenth);	
+		return substr($scriptname,$start+1,$lenth);
 	}
 }
 
@@ -74,7 +74,7 @@ if(!isset($suppressDatagridJavascript))
 		else
 			return false;
 		}
-		
+
 		/*
 		ds = dataset; table.field
 		d = requested dimensions WIDTHxHEIGHT
@@ -116,7 +116,7 @@ class DataColumn
 {
 	var $name;
 	var $quoted;
-	
+
 	function DataColumn($name,$quoted)
 	{
 		$this->name = $name;
@@ -133,7 +133,7 @@ class DataSetRow
 	var $state; //NORMAL or EDITING
 	var $edittype; //Blank, INSERT or UPDATE
 	var $invalidmsg; //Set when OnBeforeInsert or OnBeforeUpdate fail with an error or validation message
-	
+
 	function DataSetRow()
 	{
 		$this->dirty = false;
@@ -142,7 +142,7 @@ class DataSetRow
 		$this->state = 'NORMAL';
 		$this->edittype = '';
 	}
-	
+
 	function SetValue($columnname,$value)
 	{
 		if ($this->state != 'EDITING')
@@ -153,26 +153,26 @@ class DataSetRow
 		$this->values[$columnname] = $value;
 		$this->dirty = true;
 	}
-	
+
 	function Cancel()
 	{
 		$this->values = $this->originalvalues;
 		$this->state = 'NORMAL';
 		$this->edittype = '';
 	}
-	
+
 	function Edit()
 	{
 		$this->state = 'EDITING';
 		$this->edittype = 'UPDATE';
 	}
-	
+
 	function Insert()
 	{
 		$this->state = 'EDITING';
 		$this->edittype = 'INSERT';
 	}
-	
+
 	function GetMyTables()
 	{
 		$tables = array();
@@ -193,12 +193,12 @@ class DataSetRow
 		}
 		return array($tables,$tablekeys);
 	}
-	
+
 	function Delete()
 	{
 		if (isset($this->DataSet->OnDelete))
 		{
-			if (call_user_func($this->DataSet->OnDelete,$this->values) === false) 
+			if (call_user_func($this->DataSet->OnDelete,$this->values) === false)
 				return false; //Callback can abort delete
 		}
 		list($tables,$tablekeys) = $this->GetMyTables();
@@ -209,7 +209,7 @@ class DataSetRow
 		}
 		return $ri;
 	}
-	
+
 	function Update()
 	{
 		$rid = 0;
@@ -224,16 +224,16 @@ class DataSetRow
 			if (isset($this->DataSet->OnBeforeUpdate))
 				$newvalues = call_user_func($this->DataSet->OnBeforeUpdate,$this->values);
 		}
-		else 
+		else
 		{
 			if (isset($this->DataSet->OnBeforeInsert))
 				$newvalues = call_user_func($this->DataSet->OnBeforeInsert,$this->values);
 		}
 		if ($newvalues===false)
-			return false; //Allow before events to abort the insert or update 
+			return false; //Allow before events to abort the insert or update
 		if (is_array($newvalues)) //Allow updates to content of data before edit/insert
 			$this->values = $newvalues;
-		else 
+		else
 		{
 			$this->invalidmsg = $newvalues;
 			return false;
@@ -256,7 +256,7 @@ class DataSetRow
 					$vlist[] = "'".Zymurgy::$db->escape_string($val)."'";
 					$alist[] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
 				}
-				else 
+				else
 				{
 					$vlist[] = $val;
 					$alist[] = "`$cname`=$val";
@@ -269,10 +269,10 @@ class DataSetRow
 				else
 					$keyval = $this->values["$tname.{$tablekeys[$tname]}"];
 				$sql = "update $tname set ".implode(',',$alist)." where {$tablekeys[$tname]}=$keyval";
-				if ($rid==0) 
+				if ($rid==0)
 					$rid = $this->values["$tname.{$tablekeys[$tname]}"];
 			}
-			else 
+			else
 			{
 				$sql = "insert into $tname (".implode(",",$clist).") values (".
 					implode(",",$vlist).")";
@@ -284,7 +284,7 @@ class DataSetRow
 				echo "Error updating record: ".Zymurgy::$db->error()." [$sql]";
 				exit;
 			}
-			if ($rid==0) 
+			if ($rid==0)
 			{
 				$rid = Zymurgy::$db->insert_id();
 			}
@@ -309,7 +309,7 @@ class DataSetRow
 			if (isset($this->DataSet->OnUpdate))
 				call_user_func($this->DataSet->OnUpdate,@$this->values);
 		}
-		else 
+		else
 		{
 			if (isset($this->DataSet->OnInsert))
 				call_user_func($this->DataSet->OnInsert,@$this->values);
@@ -326,7 +326,7 @@ class DataRelationship
 	var $mastercolumn;
 	var $detailtable;
 	var $detailcolumn;
-	
+
 	function DataRelationship($mastertable,$mastercolumn,$detailtable,$detailcolumn)
 	{
 		$this->mastertable = $mastertable;
@@ -341,7 +341,7 @@ class DataSetFilter
 	var $columnname;
 	var $value;
 	var $operator;
-	
+
 	function DataSetFilter($columnname,$value,$operator="=")
 	{
 		$this->columnname = $columnname;
@@ -353,7 +353,7 @@ class DataSetFilter
 class DataSet
 {
 	var $masterkey;
-	
+
 	/**
 	 * Array of tables used by this dataset
 	 *
@@ -368,11 +368,11 @@ class DataSet
 	var $DisplayOrder;
 	var $Filters;
 	var $ExtraSQL; //Used for full text queries
-	
+
 	//Define these events to hook into them
 	//var $OnInsert($dataset)
 	//var $OnUpdate($dataset)
-	
+
 	function DataSet($mastertable,$masterkey)
 	{
 		$this->tables = array($mastertable);
@@ -391,41 +391,41 @@ class DataSet
 			$columnname = $this->tables[0].".$columnname";
 		$this->Filters[] = new DataSetFilter($columnname,$value,$operator);
 	}
-	
+
 	function Clear()
 	{
 		//$this->columns = array();
 		$this->rows = array();
 	}
-	
+
 	function AddTable($detailtable,$detailcolumn)
 	{
 		$this->tables[] = $detailtable;
 		$kp = explode(".",$this->masterkey,2);
 		$this->relationships[$detailtable] = new DataRelationship($kp[0],$kp[1],$detailtable,$detailcolumn);
 	}
-	
+
 	function AddColumn($name,$quoted)
 	{
 		if (!(strpos($name,'.')!==false))
 			$name = $this->tables[0].".$name";
 		$this->columns[$name] = new DataColumn($name,$quoted);
 	}
-	
+
 	function AddColumns()
 	{
 		$args = func_get_args();
 		foreach ($args as $colname)
 			$this->AddColumn($colname,true);
 	}
-	
+
 	function GetBlankRow()
 	{
 		$r = new DataSetRow();
 		$r->DataSet = &$this;
 		return $r;
 	}
-	
+
 	function getwhere()
 	{
 		$where = array();
@@ -443,7 +443,7 @@ class DataSet
 		}
 		return $where;
 	}
-	
+
 	function fill($start=0,$length=0)
 	{
 		$selectcols = array();
@@ -472,7 +472,7 @@ class DataSet
 			if (key_exists('sortorder',$_GET) && ($_GET['sortorder'] == 'DESC'))
 				$order .= " desc";
 		}
-		else 
+		else
 		{
 			$order = '';
 		}
@@ -490,7 +490,7 @@ class DataSet
 		$count = Zymurgy::$db->result($ri,0,0);
 
 		$rsql = "select ".implode(",",$selectcols)."$sql $order";
-		if (($start!=0) || ($length!=0)) 
+		if (($start!=0) || ($length!=0))
 			$rsql .= " limit $start,$length";
 		//echo "[$rsql]<br>";
 		$ri = Zymurgy::$db->query($rsql);
@@ -526,7 +526,7 @@ class DataGridValidator
 	var $function;
 	var $message;
 	var $parameter;
-	
+
 	function DataGridValidator($function,$message,$parameter='')
 	{
 		$this->function = $function;
@@ -544,7 +544,7 @@ class DataGridColumn
 	var $editor;
 	var $editortype;
 	var $validator;
-	
+
 	function DataGridColumn($headertxt,$datacolumn,$template="{0}")
 	{
 		$this->headertxt=$headertxt;
@@ -579,7 +579,7 @@ class DataGrid
 	var $CurrentEditRow = false;
 	var $thumbs = array();
 	var $pretext = array();
-	
+
 	function DataGrid(&$dataset,$name='')
 	{
 		$this->DataSet = &$dataset;
@@ -593,11 +593,11 @@ class DataGrid
 		$this->insertlabel = "Insert a new Record";
 		$this->editlabel = "Edit";
 		$this->deletelabel = "Delete";
-		
+
 		//Set default fckeditorpath
 		$this->fckeditorpath = getapplpath(__FILE__).'fckeditor/';
 	}
-	
+
 	function &AddColumn($headertxt,$datacolumn,$template="{0}")
 	{
 		//If $datacolumn is the key then I can't use it for both edit and delete, not
@@ -609,18 +609,18 @@ class DataGrid
 		$this->columns[] = &$col;
 		return $col;
 	}
-	
+
 	function AddButton($linktext, $link, $action='')
 	{
 		$link = "<a $action href=\"$link\">$linktext</a>";
 		$this->buttons[] = $link;
 	}
-	
+
 	function &AddScrollingColumn($headertxt,$datacolumn,$width=300,$height=100)
 	{
 		return $this->AddColumn($headertxt,$datacolumn,"<div style='Overflow: auto; Width: $width; Height:$height'>{0}</div>");
 	}
-	
+
 	/**
 	 * Add a thumbnail column.  Automatically generates thumbs for uploaded images.
 	 *
@@ -667,23 +667,23 @@ class DataGrid
 			$fixedratio = 'true';
 		else
 			$fixedratio = 'false';
-			
+
 		$thumb = "<a onclick=\"aspectcrop_popup('$datacolumn','$targetsize',{ID},'{ID}$datacolumn',$fixedratio,'{$twidth}x{$theight}')\">".
 			"<img id=\"{ID}$datacolumn.{$width}x{$height}\" src=\"$imgsrc\" alt=\"$headertxt\" style=\"cursor: pointer\" /></a>";
 		return $this->AddColumn($headertxt,$this->DataSet->masterkey,$thumb);
 	}
 
-	function AddEditColumn() 
+	function AddEditColumn()
 	{
 		$this->AddButton($this->editlabel,$this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection'))."&editkey={0}");
 	}
-	
+
 	function AddDeleteColumn()
 	{
 		$action = "onclick=\"return confirm_delete();\"";
 		$this->AddButton($this->deletelabel,$this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection'))."&deletekey={0}",$action);
 	}
-	
+
 	function AddUpDownColumn($datacolumn)
 	{
 		if ($this->DataSet->DisplayOrder!='')
@@ -696,13 +696,13 @@ class DataGrid
 		/*return $this->AddColumn("",$datacolumn,
 			"<a href=\"".$this->BuildSelfReference(array(),array('editkey','deletekey','action','movefrom','movedirection'))."&movefrom={0}&movedirection=-1\">Up</a> <a href=\"".$this->BuildSelfReference(array(),array('editkey','action','movefrom','movedirection','deletekey'))."&movefrom={0}&movedirection=1\">Down</a>");*/
 	}
-	
+
 	function &AddImageColumn($headertxt,$datacolumn)
 	{
 		return $this->AddColumn($headertxt,$datacolumn,"<img src='datagrid.php?datacolumn=".
 			urlencode($datacolumn)."&mime={0}&id={ID}&dataset=".urlencode($this->DataSet->tables[0])."'>");
 	}
-	
+
 	function AddEditor($datacolumn,$caption,$type)
 	{
 		if (!(strpos($datacolumn,'.') !== false))
@@ -740,7 +740,7 @@ class DataGrid
 					$this->thumbs[$datacolumn] = array($targetsize);
 				break;
 			case 'lookup':
-				if (!array_key_exists($table,$this->lookups)) 
+				if (!array_key_exists($table,$this->lookups))
 				{
 					$this->lookups[$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
 				}
@@ -762,52 +762,60 @@ class DataGrid
 		$v = new DataGridValidator($validator,$message,$parameter);
 		$this->columns[$n]->validator = $v;
 	}
-	
+
 	function AddConstant($datacolumn,$value)
 	{
 		if (!(strpos($datacolumn,'.') !== false))
 			$datacolumn = $this->DataSet->tables[0].".$datacolumn";
 		$this->constants[$datacolumn] = $value;
 	}
-	
+
 	function AddInput($datacolumn,$caption,$maxlength=255,$size=15)
 	{
 		$this->AddEditor($datacolumn,$caption,"input.$size.$maxlength");
 	}
-	
+
 	function AddPasswordInput($datacolumn,$caption,$maxlength=255,$size=15)
 	{
 		$this->AddEditor($datacolumn,$caption,"password.$size.$maxlength");
 	}
-	
+
 	function AddTextArea($datacolumn,$caption,$width=50,$height=5)
 	{
 		$this->AddEditor($datacolumn,$caption,"textarea.$width.$height");
 	}
-	
+
 	function AddHtmlEditor($datacolumn,$caption,$widthpx=600,$heightpx=400)
 	{
 		if ((array_key_exists('expert',$_GET)) && ($_GET['expert']==1))
 			$this->AddEditor($datacolumn,$caption,"textarea.60.15");
-		else 
+		else
 			$this->AddEditor($datacolumn,$caption,"html.$widthpx.$heightpx");
 	}
-	
+
+	function AddYuiHtmlEditor($datacolumn,$caption,$widthpx=600,$heightpx=400)
+	{
+		if ((array_key_exists('expert',$_GET)) && ($_GET['expert']==1))
+			$this->AddEditor($datacolumn,$caption,"textarea.60.15");
+		else
+			$this->AddEditor($datacolumn,$caption,"yuihtml.$widthpx.$heightpx");
+	}
+
 	function AddColorEditor($datacolumn,$caption)
 	{
 		$this->AddColourEditor($datacolumn,$caption);
 	}
-	
+
 	function AddColourEditor($datacolumn,$caption)
 	{
 		$this->AddEditor($datacolumn,$caption,'colour');
 	}
-	
+
 	function AddRadioEditor($datacolumn,$caption,$optionarray)
 	{
 		$this->AddEditor($datacolumn,$caption,"radio.".serialize($optionarray));
 	}
-	
+
 	function AddDropListEditor($datacolumn,$caption,$optionarray)
 	{
 		$this->AddEditor($datacolumn,$caption,"drop.".serialize($optionarray));
@@ -817,21 +825,21 @@ class DataGrid
 	{
 		$this->AddEditor($datacolumn,$caption,"attachment");
 	}
-	
+
 	function AddMoneyEditor($datacolumn,$caption)
 	{
 		$this->AddEditor($datacolumn,$caption,"money");
 	}
-	
+
 	function AddUnixDateEditor($datacolumn,$caption,$time = false)
 	{
 		if (array_key_exists('expert',$_GET))
 			$this->AddEditor($datacolumn,$caption,"input.15.255");
-		else 
+		else
 		{
 			if ($time)
 				$this->AddEditor($datacolumn,$caption,"unixdatetime");
-			else 
+			else
 				$this->AddEditor($datacolumn,$caption,"unixdate");
 		}
 	}
@@ -840,7 +848,7 @@ class DataGrid
 	{
 		$this->AddEditor($datacolumn,$caption,"lookup.$table.$idcolumn.$valcolumn.$ordercolumn");
 	}
-	
+
 	function BuildSelfReference($getvars,$removevars=array())
 	{
 		$getvars = array_merge($_GET,$getvars);
@@ -853,10 +861,10 @@ class DataGrid
 		}
 		return $_SERVER['PHP_SELF']."?".implode("&",$newkeys);
 	}
-	
+
 	function RenderType()
 	{
-		if ((isset($_GET['editkey'])) || 
+		if ((isset($_GET['editkey'])) ||
 			((array_key_exists('action',$_GET)) && ($_GET['action']=='insert')))
 			return 'Edit';
 		elseif (isset($_GET['deletekey']))
@@ -866,19 +874,19 @@ class DataGrid
 		else
 			return 'Grid';
 	}
-	
+
 	function Render()
 	{
 		if (array_key_exists('page',$_GET))
 			$page = trim($_GET['page']);
-		else 
+		else
 			$page = 1;
 		$rt = $this->RenderType();
 		if (($rt == 'Edit') || ($rt=='Delete'))
 		{
 			if ($rt=='Edit')
 				$keyname = 'editkey';
-			else 
+			else
 				$keyname = 'deletekey';
 			//Limit dataset fill to record in question
 			//Also solves pagination problem when linking directly to editor
@@ -887,7 +895,7 @@ class DataGrid
 				$editkey = 0 + $_GET[$keyname];
 				$this->DataSet->AddDataFilter($this->DataSet->masterkey,$editkey);
 			}
-			else 
+			else
 				$editkey = '';
 			$page = 1;
 		}
@@ -909,11 +917,11 @@ class DataGrid
 				break;
 		}
 	}
-	
+
 	function DeleteThumbs($datacolumn,$id)
 	{
 		global $ZymurgyRoot;
-		
+
 		//Delete associated thumb stuff
 		$path = "$ZymurgyRoot/UserFiles/DataGrid/$datacolumn";
 		$thumbs = glob("$path/{$id}thumb*");
@@ -925,11 +933,11 @@ class DataGrid
 			@unlink($thumb);
 		}
 	}
-	
+
 	function RenderDelete($page)
 	{
 		global $ZymurgyRoot;
-		
+
 		$id = 0 + $_GET['deletekey'];
 		$dsr = &$this->DataSet->rows[$id];
 		//Set constants for the benifit of any attached OnDelete events.
@@ -951,7 +959,7 @@ class DataGrid
 					{
 						$this->DeleteThumbs($datacolumn,$id);
 					}
-					else 
+					else
 					{
 						$path = "$ZymurgyRoot/zymurgy/uploads";
 						@unlink("$path/$datacolumn.$id");
@@ -961,7 +969,7 @@ class DataGrid
 		}
 		header("Location: ".$this->BuildSelfReference($_GET,array('deletekey')));
 	}
-	
+
 	function RenderMove($page,$count)
 	{
 		list ($tname,$column) = explode('.',$this->DataSet->DisplayOrder,2);
@@ -981,7 +989,7 @@ class DataGrid
 				$sign = ">";
 				$sort = "asc";
 			}
-			else 
+			else
 			{
 				$sign = "<";
 				$sort = "desc";
@@ -991,12 +999,12 @@ class DataGrid
 			$ri = Zymurgy::$db->query($sql);
 			if (Zymurgy::$db->num_rows($ri) == 1)
 				$newdo = Zymurgy::$db->result($ri,0,0);
-			else 
+			else
 				$newdo = 0;
 		}
-		else 
+		else
 			$newdo = $olddo + $direction;
-		if (($newdo > 0) && ($newdo <= $count)) 
+		if (($newdo > 0) && ($newdo <= $count))
 		{
 			Zymurgy::$db->query("update $tname set $column=0 where $column=$olddo");
 			Zymurgy::$db->query("update $tname set $column=$olddo where $column=$newdo");
@@ -1009,7 +1017,7 @@ class DataGrid
 		unset($_GET['movedirection']);
 		$this->RenderGrid($page,$count);
 	}
-	
+
 	function Exception($string)
 	{
 		if (ob_get_level()>0)
@@ -1017,12 +1025,12 @@ class DataGrid
 		echo "An unexpected error has occured:  $string";
 		exit;
 	}
-	
+
 	function MakeThumbs($datacolumn,$id,$targets,$uploadpath = '',$ext = 'jpg')
 	{
 		Zymurgy::MakeThumbs($datacolumn, $id, $targets, $uploadpath,$ext);
 	}
-	
+
 	function RegenerateThumbs($ext='jpg')
 	{
 		$this->DataSet->fill();
@@ -1034,18 +1042,18 @@ class DataGrid
 			}
 		}
 	}
-	
+
 	function RenderEdit($page,$editkey)
 	{
 		global $datagridexpertmode, $ZymurgyRoot;
-		
+
 		if ((array_key_exists('action',$_GET)) && ($_GET['action'] == 'insert'))
 			$dsr = $this->DataSet->GetBlankRow();
 		else
 			$dsr = &$this->DataSet->rows[$editkey];
 		$validmsg = '';
 		if ($_SERVER['REQUEST_METHOD'] == 'POST')
-		{ 
+		{
 			//Check the validators first
 			$valids = array();
 			foreach ($this->columns as $c)
@@ -1090,7 +1098,7 @@ class DataGrid
 					}
 				}
 			}
-			else 
+			else
 			{
 				unset($validmsg);
 				//Save the data, remove editkey from $_GET and render the grid
@@ -1136,7 +1144,7 @@ class DataGrid
 							}
 							if ($file['type']!='')
 								$uploads[$c->datacolumn] = $file['tmp_name'];
-							else 
+							else
 								$postvalue = $dsr->originalvalues[$c->datacolumn];
 						}
 						$dsr->SetValue($c->datacolumn,$postvalue);
@@ -1198,7 +1206,7 @@ class DataGrid
 						$this->customSaveLocation = $this->BuildSelfReference(array(),array('action','editkey'));
 					header('Location: '.$this->customSaveLocation);
 				}
-				else 
+				else
 					$validmsg = $dsr->invalidmsg;
 			}
 		}
@@ -1228,9 +1236,9 @@ class DataGrid
 						$fckcount++;
 					}
 				}
-				
+
 				echo Zymurgy::YUI("yuiloader/yuiloader-min.js");
-				
+
 				echo "<script src=\"/zymurgy/include/autosave.js\"></script>\r\n";
 				echo "<script>InitializeAutoSave('$formid',$fckcount);</script>\r\n";
 			}
@@ -1238,8 +1246,10 @@ class DataGrid
 			echo "<table>\r\n";
 			$donecalcs = false;
 			$fck = array();
-			if (isset($dsr->DataSet->OnPreRenderEdit)) 
+			if (isset($dsr->DataSet->OnPreRenderEdit))
 				$dsr->values = call_user_func($dsr->DataSet->OnPreRenderEdit,$dsr->values);
+			$yuihtml = array();
+
 			foreach ($this->columns as $c)
 			{
 				if (isset($c->editcaption))
@@ -1253,9 +1263,29 @@ class DataGrid
 					$widget->Render($c->editor,$c->datacolumn,
 						array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : '');
 					echo "</td></tr>\r\n";
+
+					if(strpos($c->editor, "yuihtml") === 0)
+					{
+						$yuihtml[] = $c->datacolumn;
+					}
 				}
 			}
-			echo "<tr><td align=\"middle\" colspan=\"2\"><input type=\"submit\" value=\"Save\">";
+
+			if(count($yuihtml) > 0)
+			{
+				echo("<script type=\"text/javascript\">\n");
+				foreach($yuihtml as $yuihtmlelement)
+				{
+					echo("YAHOO.util.Event.on('submit', 'click', function() { ".
+						str_replace(".", "_", $yuihtmlelement).
+						"Editor.saveHTML(); });\n");
+				}
+				echo("</script>\n");
+			}
+
+			echo "<tr><td align=\"middle\" colspan=\"2\"><input id=\"submit\" type=\"submit\" value=\"Save\">";
+
+
 			if (!isset($this->customCancelLocation))
 				$this->customCancelLocation = $this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection'));
 			$cancellink = $this->customCancelLocation;
@@ -1263,12 +1293,12 @@ class DataGrid
 			echo "</table>\r\n</form>\r\n";
 		}
 	}
-	
+
 
 	function RenderGrid($page,$count)
 	{
 		global $hasdumpeddatagridcss;
-		
+
 		if (!$hasdumpeddatagridcss) DumpDataGridCSS();
 		echo "<table cellspacing=\"0\" cellpadding=\"3\" rules=\"cols\" bordercolor=\"#999999\" border=\"1\" class=\"DataGrid\"";
 		if (isset($this->width)) echo " width=\"{$this->width}\"";
@@ -1281,7 +1311,7 @@ class DataGrid
 			$sa = array('sortcolumn'=>$c->datacolumn);
 			if ($this->DataSet->DisplayOrder != '')
 				echo "<td>{$c->headertxt}</td>";
-			else 
+			else
 			{
 				if (array_key_exists('sortcolumn',$_GET))
 				{
@@ -1312,7 +1342,7 @@ class DataGrid
 			echo "<tr class=\"$trclass\">";
 			foreach ($this->columns as $c)
 			{
-				if ($c->template != '') 
+				if ($c->template != '')
 				{
 					$widget = new InputWidget();
 					$widget->lookups = $this->lookups;
@@ -1378,14 +1408,14 @@ $hasdumpeddatagridcss = false;
 function DumpDataGridCSS($schemename='')
 {
 	global $ZymurgyConfig;
-	
+
 	if (is_array($ZymurgyConfig) && (array_key_exists('gridcss',$ZymurgyConfig)))
 		$gridcss = $ZymurgyConfig['gridcss'];
-		
+
 	echo '<style type="text/css">
 <!--
 ';
-	switch ($schemename) 
+	switch ($schemename)
 	{
 		case 'blank':
 			break;
@@ -1432,7 +1462,7 @@ function ValidatorMoney($input,$parameter)
 {
 	$m = str_replace(array('$',','),'',$input);
 	$data=split('[.]',$m);
-	
+
 	if ( count($data) != 2 )
 	{
 		return false;
@@ -1454,7 +1484,7 @@ function ValidateTitle($input,$parameter)
 	{
 		return false;
 	}
-	else 
+	else
 	{
 		return true;
 	}
