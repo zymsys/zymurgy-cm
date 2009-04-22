@@ -402,6 +402,8 @@
 
 		static function DisplayEditForm($mediaFile, $mediaRelations, $members, $action)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; Add/Edit Media File";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -628,6 +630,8 @@
 
 		static function DisplayDeleteFrom($mediaFile)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; Delete Media File";
+
 			include("header.php");
 
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
@@ -651,6 +655,10 @@
 
 		static function DisplayListOfFilesToAdd($mediaFile, $mediaFiles, $mediaRelations)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; <a href=\"media.php?action=edit_media_file&amp;media_file_id=".
+				$mediaFile->get_media_file_id().
+				"\">Add/Edit Media File</a> &gt; Add Related Media File";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -922,12 +930,72 @@
 
 	class MediaPackageView
 	{
-		static function DisplayList($mediaPackages)
+		static function DisplayList(
+			$mediaPackages,
+			$mediaPackageTypes,
+			$selectedMediaPackageType,
+			$members,
+			$selectedMember)
 		{
+			$breadcrumbTrail = "Media Packages";
+
 			include("header.php");
 			include('datagrid.php');
 
 			DumpDataGridCSS();
+			echo("<form name=\"filter\" action=\"media.php\" method=\"POST\">\n");
+			echo("<input type=\"hidden\" name=\"action\" value=\"list_media_packages\">\n");
+			echo("<table>\n");
+
+			echo("<tr>\n");
+			echo("<td>Package Type:</td>\n");
+			echo("<td><select name=\"relation_type\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($mediaRelations as $mediaRelation)
+			{
+				echo("<option value=\"".
+					$mediaRelation->get_relation_type().
+					"\"".
+					($mediaRelation->get_relation_type() == $selectedMediaRelationType
+						? " SELECTED"
+						: "").
+					">".
+					$mediaRelation->get_relation_label().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>Owner:</td>\n");
+			echo("<td><select name=\"member_id\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($members as $member)
+			{
+				echo("<option value=\"".
+					$member->get_member_id().
+					"\"".
+					($member->get_member_id() == $selectedMemberID
+						? " SELECTED"
+						: "").
+					">".
+					$member->get_email().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>&nbsp;</td>\n");
+			echo("<td><input type=\"submit\" value=\"Filter\"></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("</table>\n");
+			echo("</form>\n");
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
@@ -978,6 +1046,8 @@
 			$packageTypes,
 			$action)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">Media Packages</a> &gt; Add/Edit Media Package";
+
 			include("header.php");
 			$widget = new InputWidget();
 
@@ -1085,6 +1155,8 @@
 
 		static function DisplayDeleteFrom($mediaPackage)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">Media Packages</a> &gt; Delete Media Package";
+
 			include("header.php");
 
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
@@ -1108,6 +1180,10 @@
 
 		static function DisplayRelatedMedia($mediaPackage)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">Media Packages</a> &gt; <a href=\"media.php?action=edit_media_package&amp;media_package_id=".
+				$mediaPackage->get_media_package_id().
+				"\">Add/Edit Media Package</a> &gt; Related Media Files";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -1160,12 +1236,81 @@
 			include("footer.php");
 		}
 
-		static function DisplayListOfFilesToAdd($mediaPackage, $mediaFiles, $mediaRelations)
+		static function DisplayListOfFilesToAdd(
+			$mediaPackage,
+			$mediaFiles,
+			$mediaRelations,
+			$selectedMediaRelationType,
+			$members,
+			$selectedMemberID)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">Media Packages</a> &gt; <a href=\"media.php?action=edit_media_package&amp;media_package_id=".
+				$mediaPackage->get_media_package_id().
+				"\">Add/Edit Media Package</a> &gt; <a href=\"media.php?action=list_media_package_files&amp;media_package_id=".
+				$mediaPackage->get_media_package_id().
+				"\">Related Media Files</a> &gt; Add Media File";
+
 			include("header.php");
 			include('datagrid.php');
 
 			DumpDataGridCSS();
+
+			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
+
+			echo("<input type=\"hidden\" name=\"action\" value=\"add_media_package_file\">");
+			echo("<input type=\"hidden\" name=\"media_package_id\" value=\"".
+				$mediaPackage->get_media_package_id()."\">");
+			echo("<table>\n");
+
+			echo("<tr>\n");
+			echo("<td>Package Type:</td>\n");
+			echo("<td><select name=\"relation_type\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($mediaRelations as $mediaRelation)
+			{
+				echo("<option value=\"".
+					$mediaRelation->get_relation_type().
+					"\"".
+					($mediaRelation->get_relation_type() == $selectedMediaRelationType
+						? " SELECTED"
+						: "").
+					">".
+					$mediaRelation->get_relation_label().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>Owner:</td>\n");
+			echo("<td><select name=\"member_id\">\n");
+			echo("<option value=\"\">(all)</option>\n");
+			foreach($members as $member)
+			{
+				echo("<option value=\"".
+					$member->get_member_id().
+					"\"".
+					($member->get_member_id() == $selectedMemberID
+						? " SELECTED"
+						: "").
+					">".
+					$member->get_email().
+					"</option>\n");
+			}
+			echo("</select></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>&nbsp;</td>\n");
+			echo("<td><input type=\"submit\" value=\"Filter\"></td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
+
+			echo("</table>\n");
+			echo("</form>\n");
 
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
 
@@ -1251,6 +1396,8 @@
 	{
 		static function DisplayList($mediaPackageTypes)
 		{
+			$breadcrumbTrail = "Media Package Types";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -1288,6 +1435,8 @@
 
 		public static function DisplayEditForm($mediaPackageType, $action)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_package_types\">Media Package Types</a> &gt; Add/Edit Media Package Type";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -1402,6 +1551,10 @@
 			$mediaRelations,
 			$action)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_package_types\">Media Package Types</a> &gt; <a href=\"media.php?action=edit_media_package_type&amp;media_package_type_id=".
+				$packageType->get_media_package_type_id().
+				"\">Add/Edit Media Package Type</a> &gt; Add/Edit Allowed Relation";
+
 			include("header.php");
 			$widget = new InputWidget();
 
@@ -1471,6 +1624,8 @@
 
 		public static function DisplayDeleteForm($packageType)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_package_types\">Media Package Types</a> &gt; Delete Media Package Type";
+
 			include("header.php");
 
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
@@ -1498,6 +1653,8 @@
 	{
 		static function DisplayList($mediaRelations)
 		{
+			$breadcrumbTrail = "Media Relations";
+
 			include("header.php");
 			include('datagrid.php');
 
@@ -1536,6 +1693,8 @@
 
 		static function DisplayEditForm($mediaRelation, $action)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_relations\">Media Relations</a> &gt; Add/Edit Relation";
+
 			include("header.php");
 			$widget = new InputWidget();
 
@@ -1615,6 +1774,8 @@
 
 		static function DisplayDeleteFrom($mediaRelation)
 		{
+			$breadcrumbTrail = "<a href=\"media.php?action=list_relations\">Media Relations</a> &gt; Delete Relation";
+
 			include("header.php");
 
 			echo("<form name=\"frm\" action=\"media.php\" method=\"POST\">");
@@ -1853,8 +2014,18 @@
 			switch($action)
 			{
 				case "list_media_packages":
-					$mediaPackages = MediaPackagePopulator::PopulateAll();
-					MediaPackageView::DisplayList($mediaPackages);
+					$mediaPackages = MediaPackagePopulator::PopulateByOwner(
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
+						isset($_POST["package_type"]) ? $_POST["package_type"] : "");
+					$packageTypes = MediaPackageTypePopulator::PopulateAll();
+					$members = MediaMemberPopulator::PopulateAll();
+
+					MediaPackageView::DisplayList(
+						$mediaPackages,
+						$packageTypes,
+						isset($_POST["package_type"]) ? $_POST["package_type"] : 0,
+						$members,
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
 					return true;
 
 				case "add_media_package":
@@ -1944,11 +2115,22 @@
 
 				case "add_media_package_file":
 					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
+						isset($_POST["media_package_id"]) ? $_POST["media_package_id"] : $_GET["media_package_id"]);
 					$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
-						$mediaPackage);
+						$mediaPackage,
+						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
 					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					MediaPackageView::DisplayListOfFilesToAdd($mediaPackage, $mediaFiles, $mediaRelations);
+					$members = MediaMemberPopulator::PopulateAll();
+
+					MediaPackageView::DisplayListOfFilesToAdd(
+						$mediaPackage,
+						$mediaFiles,
+						$mediaRelations,
+						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
+						$members,
+						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+
 					return true;
 
 				case "act_add_media_package_file":

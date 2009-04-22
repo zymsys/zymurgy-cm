@@ -951,10 +951,18 @@
 		}
 
 		static function PopulateByOwner(
-			$member_id,
+			$member_id = 0,
 			$packageType = "")
 		{
+			$ownerCriteria = "1 = 1";
 			$typeCriteria = "1 = 1";
+
+			if($member_id > 0)
+			{
+				$ownerCriteria = "`zcm_media_package`.`member_id` = '".
+					mysql_escape_string($member_id).
+					"'";
+			}
 
 			if($packageType !== "")
 			{
@@ -962,9 +970,7 @@
 			}
 
 			return MediaPackagePopulator::PopulateMultiple(
-				"`zcm_media_package`.`member_id` = '".
-				mysql_escape_string($member_id).
-				"' AND $typeCriteria");
+				"$ownerCriteria AND $typeCriteria");
 		}
 
 		static function PopulateMultiple($criteria)
