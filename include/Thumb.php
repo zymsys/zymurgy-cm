@@ -5,16 +5,13 @@ class Thumb
 	{
 		switch($mime)
 		{
-			case 'image/jpeg':
-			case 'image/pjpeg':
-				return 'jpg';
 			case 'image/gif':
 				return 'gif';
 			case 'image/png':
 			case 'image/x-png':
 				return 'png';
 			default:
-				return '';
+				return 'jpg';
 		}
 	}
 	

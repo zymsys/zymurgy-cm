@@ -406,12 +406,12 @@ var myLogReader = new YAHOO.widget.LogReader("myLogger");
 
  		<img
  			id="imgBackground"
- 		 	src="<?= "$imgdir/{$id}aspectcropDark.jpg" ?>">
+ 		 	src="<?= "$imgdir/{$id}aspectcropDark.jpg".'?'.time() ?>">
 
  		<div id="panelDiv">
 	 		<img
 	 			id="imgCropped"
-	 			src="<?= "$imgdir/{$id}aspectcropNormal.jpg" ?>">
+	 			src="<?= "$imgdir/{$id}aspectcropNormal.jpg".'?'.time() ?>">
         	<div id="handleDiv"></div>
     	</div>
  	</body>

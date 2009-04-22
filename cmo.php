@@ -951,8 +951,8 @@ if (!class_exists('Zymurgy'))
 		}
 		Zymurgy::$db->free_result($ri);
 	} //Else this is init so we don't care.
-	
-	switch (Zymurgy::$config['ConvertToolset'])
+
+	switch (array_key_exists('ConvertToolset',Zymurgy::$config) ? Zymurgy::$config['ConvertToolset'] : 'ImageMagick')
 	{
 		case 'GD':
 			require_once(Zymurgy::$root."/zymurgy/include/ImageHandlerGD.php");
