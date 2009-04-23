@@ -547,6 +547,14 @@
 				".".
 				$mediaFile->get_extension();
 
+			if(!file_exists($filepath) && $suffix !== "")
+			{
+				MediaFilePopulator::InitializeThumbnail(
+					$mediaFile,
+					str_replace("thumb", "", $suffix),
+					true);
+			}
+
 			$file = fopen($filepath, "r");
 			$content = "";
 			while(!feof($file))
