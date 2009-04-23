@@ -160,33 +160,56 @@ class InputWidget
 
 	static function GetPretext($type)
 	{
+		$output = "";
+
 		$tp = explode('.',$type,2);
 		switch($tp[0])
 		{
 			case "colour":
 			case "color":
-				return Zymurgy::YUI("fonts/fonts-min.css").
-					Zymurgy::YUI("container/assets/skins/sam/container.css").
-					Zymurgy::YUI("colorpicker/assets/skins/sam/colorpicker.css").
-					Zymurgy::YUI("utilities/utilities.js").
-					Zymurgy::YUI("container/container-min.js").
-					Zymurgy::YUI("slider/slider-min.js").
-					Zymurgy::YUI("colorpicker/colorpicker-min.js").
-					ColorPicker_JavaScript().
-					ColorPicker_DialogHTML();
+				$output .= Zymurgy::YUI("fonts/fonts-min.css");
+				$output .= Zymurgy::YUI("container/assets/skins/sam/container.css");
+				$output .= Zymurgy::YUI("colorpicker/assets/skins/sam/colorpicker.css");
+				$output .= Zymurgy::YUI("utilities/utilities.js");
+				$output .= Zymurgy::YUI("container/container-min.js");
+				$output .= Zymurgy::YUI("slider/slider-min.js");
+				$output .= Zymurgy::YUI("colorpicker/colorpicker-min.js");
+				$output .= ColorPicker_JavaScript();
+				$output .= ColorPicker_DialogHTML();
 
 				break;
 
 			case "theme":
-				return Zymurgy::YUI("container/assets/container.css").
-					Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js").
-					Zymurgy::YUI("animation/animation-min.js").
-					Zymurgy::YUI("container/container-min.js").
-					Theme_JavaScript();
+				$output .= Zymurgy::YUI("container/assets/container.css");
+				$output .= Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+				$output .= Zymurgy::YUI("animation/animation-min.js");
+				$output .= Zymurgy::YUI("container/container-min.js");
+				$output .= Theme_JavaScript();
+
+				break;
+
+			case "yuihtml":
+				$output .= Zymurgy::YUI("assets/skins/sam/skin.css");
+				$output .= Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+				$output .= Zymurgy::YUI("element/element-min.js");
+				$output .= Zymurgy::YUI("connection/connection-min.js");
+				$output .= Zymurgy::YUI("container/container-min.js");
+				$output .= Zymurgy::YUI("button/button-min.js");
+				$output .= Zymurgy::YUI("dragdrop/dragdrop-min.js");
+				$output .= Zymurgy::YUI("editor/editor-min.js");
+
+				$output .= "<script type=\"text/javascript\">\n";
+				$output .= "function InsertMediaFileInPage(editor, mediaFileID) {\n";
+				$output .= "alert('InsertMediaFileInPage start');\n";
+				$output .= "editor.toolbar.fireEvent('mediafileClick', { type: 'mediaFileClick', img: '/zymurgy/media.php?action=stream_media_file&amp;media_file_id=' + mediaFileID } );\n";
+				$output .= "alert('InsertMediaFileInPage fin');\n";
+				$output .= "}\n";
+				$output .= "</script>\n";
 
 				break;
 		}
-		return '';
+
+		return $output;
 	}
 
 	function JSRender($type,$name,$value)
@@ -481,18 +504,17 @@ passThroughFormSubmit = false;
 				break;
 
 			case "yuihtml":
-				echo Zymurgy::YUI("assets/skins/sam/skin.css");
-				echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
-				echo Zymurgy::YUI("element/element-min.js");
-				echo Zymurgy::YUI("container/container_core-min.js");
-				echo Zymurgy::YUI("editor/editor-min.js");
-
 				if($dialogName !== "")
 				{
 					echo("<div id=\"".
 						str_replace(".", "_", $name).
 						"_div\"></div>");
 				}
+				echo("<div id=\"".
+					str_replace(".", "_", $name).
+					"_dlg\"><div class=\"hd\">Insert Image from Library</div><div id=\"".
+					str_replace(".", "_", $name).
+					"_dlgBody\" class=\"bd\"></div></div>");
 
 				echo("<textarea id=\"".
 					str_replace(".", "_", $name).
@@ -502,6 +524,7 @@ passThroughFormSubmit = false;
 					<script type="text/javascript">
 						var Display<?= str_replace(".", "_", $name) ?>Exists = true;
 						var <?= str_replace(".", "_", $name) ?>Editor;
+						var <?= str_replace(".", "_", $name) ?>Dialog;
 
 						function Display<?= str_replace(".", "_", $name) ?>() {
 							var myConfig = {
@@ -525,6 +548,108 @@ passThroughFormSubmit = false;
 								Link<?= str_replace(".", "_", $name) ?>ToDialog();
 							}
 							<? } ?>
+
+							<?= str_replace(".", "_", $name) ?>Editor.on("toolbarLoaded", function()
+							{
+								// alert("toolbarLoaded Start");
+
+								<?= str_replace(".", "_", $name) ?>Dialog = new YAHOO.widget.Dialog(
+									"<?= str_replace(".", "_", $name) ?>_dlg",
+									{
+										width: "400px",
+										fixedcenter: true,
+										visible: false,
+										constraintoviewport: true,
+										buttons: [
+											{ text: "OK", handler: function() { this.cancel(); }, isDefault: true },
+											{ text: "Cancel", handler: function() { this.cancel(); } }
+										]
+									});
+
+								// alert("-- mediaFileDialog defined");
+
+								var mediaFileImageConfig = {
+									type: "push",
+									label: "Insert Image from Library",
+									value: "mediafile"
+								};
+
+								<?= str_replace(".", "_", $name) ?>Editor.toolbar.addButtonToGroup(
+									mediaFileImageConfig,
+									"insertitem");
+
+								<?= str_replace(".", "_", $name) ?>Editor.toolbar.on(
+									"mediafileClick",
+									function(ev)
+									{
+										// alert("mediafileClick Start");
+										this._focusWindow();
+
+										if(ev && ev.img)
+										{
+											alert("img declared");
+
+											var html = "<img src=\"" + ev.img + "\">";
+											this.execCommand("inserthtml", html);
+
+											<?= str_replace(".", "_", $name) ?>Dialog.hide();
+										}
+										else
+										{
+											var load<?= str_replace(".", "_", $name) ?>Object = {
+												targetElement: "<?= str_replace(".", "_", $name) ?>_dlgBody",
+												url: "/zymurgy/media.php?action=insert_image_into_yuihtml" +
+													"&editor_id=<?= str_replace(".", "_", $name) ?>Editor",
+												handleSuccess:function(o)
+												{
+													// alert("Success");
+													document.getElementById(this.targetElement).innerHTML = o.responseText;
+												},
+												handleFailure:function(o)
+												{
+													// alert("Failure");
+													document.getElementById(this.targetElement).innerHTML =
+														o.status + ": " + o.responseText;
+												},
+												startRequest:function()
+												{
+													document.getElementById(this.targetElement).innerHTML = "Updating...";
+
+													YAHOO.util.Connect.asyncRequest(
+														"GET",
+														this.url,
+														load<?= str_replace(".", "_", $name) ?>Callback,
+														null);
+												}
+											};
+
+											// alert("-- AJAX connection declared");
+
+											var load<?= str_replace(".", "_", $name) ?>Callback =
+											{
+												success: load<?= str_replace(".", "_", $name) ?>Object.handleSuccess,
+												failure: load<?= str_replace(".", "_", $name) ?>Object.handleFailure,
+												scope: load<?= str_replace(".", "_", $name) ?>Object
+											};
+
+											// alert("-- Callback declared");
+
+											load<?= str_replace(".", "_", $name) ?>Object.startRequest();
+
+											// alert("-- AJAX connection request started");
+
+											<?= str_replace(".", "_", $name) ?>Dialog.show();
+										}
+
+										// alert("mediafileClick End");
+									},
+									<?= str_replace(".", "_", $name) ?>Editor,
+									true);
+
+								<?= str_replace(".", "_", $name) ?>Dialog.render();
+
+								// alert("toolbarLoaded Fin");
+							});
 
 							<?= str_replace(".", "_", $name) ?>Editor.render();
 						}
