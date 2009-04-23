@@ -1799,6 +1799,41 @@
 		}
 	}
 
+	class PageImageLibraryView
+	{
+		public static function DisplayNotConfiguredMessage()
+		{
+			echo "<p>The image library has not been properly configured in Zymurgy:CM.</p>";
+		}
+
+		public static function DisplayImageList($mediaPackage, $yuiHtmlID)
+		{
+			echo("<div style=\"width: 100%; height: 75px; overflow: auto;\">\n");
+			echo("<table cellspacing=\"3\" cellpadding=\"0\" border=\"0\">\n");
+
+			echo("<tr>\n");
+
+			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
+			{
+				$mediaFile = $mediaPackage->get_media_file($cntr);
+
+				echo("<td><a href=\"javascript:InsertMediaFileInPage($yuiHtmlID, '".
+					$mediaFile->get_media_file_id().
+					"');\"><img id=\"dlgImg_".
+					$mediaFile->get_media_file_id().
+					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
+					$mediaFile->get_media_file_id().
+					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\"></a>\n");
+				echo("</td>\n");
+			}
+
+			echo("</tr>\n");
+
+			echo("</table>\n");
+			echo("</div>\n");
+		}
+	}
+
 	class MediaController
 	{
 		function Execute($action)
@@ -1817,6 +1852,7 @@
 			else if($this->Execute_MediaPackageActions($action)) {}
 			else if($this->Execute_RelationActions($action)) {}
 			else if($this->Execute_MediaPackageTypeActions($action)) {}
+			else if($this->Execute_PageImageLibraryActions($action)) {}
 			else
 			{
 				die("Unsupported action ".$action);
@@ -2382,6 +2418,38 @@
 
 					MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
 					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
+
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		private function Execute_PageImageLibraryActions($action)
+		{
+			switch($action)
+			{
+				case "insert_image_into_yuihtml":
+					$mediaPackages = MediaPackagePopulator::PopulateByOwner(
+						0,
+						"pagelibrary");
+
+					if(count($mediaPackages) <= 0)
+					{
+						PageImageLibraryView::DisplayNotConfiguredMessage();
+					}
+					else
+					{
+						$mediaPackage = $mediaPackages[0];
+						MediaPackagePopulator::PopulateMediaFiles(
+							$mediaPackage,
+							"image");
+
+						PageImageLibraryView::DisplayImageList(
+							$mediaPackage,
+							$_GET["editor_id"]);
+					}
 
 					return true;
 
