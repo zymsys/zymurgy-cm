@@ -5,7 +5,7 @@ class ZymurgyTemplate
 	public $sitepage;
 	public $navpath;
 	public $template;
-	private $pagetextcache;
+	private $pagetextcache = array();
 	
 	function __construct($navpath)
 	{
