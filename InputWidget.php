@@ -200,9 +200,9 @@ class InputWidget
 
 				$output .= "<script type=\"text/javascript\">\n";
 				$output .= "function InsertMediaFileInPage(editor, mediaFileID) {\n";
-				$output .= "alert('InsertMediaFileInPage start');\n";
+				// $output .= "alert('InsertMediaFileInPage start');\n";
 				$output .= "editor.toolbar.fireEvent('mediafileClick', { type: 'mediaFileClick', img: '/zymurgy/media.php?action=stream_media_file&amp;media_file_id=' + mediaFileID } );\n";
-				$output .= "alert('InsertMediaFileInPage fin');\n";
+				// $output .= "alert('InsertMediaFileInPage fin');\n";
 				$output .= "}\n";
 				$output .= "</script>\n";
 
