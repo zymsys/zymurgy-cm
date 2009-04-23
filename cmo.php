@@ -34,6 +34,20 @@ if (!class_exists('Zymurgy'))
 		static $userconfig;
 
 		/**
+		 * User supplied site config values from within the Zymurgy:CM control panel front-end
+		 *
+		 * @var array
+		 */
+		static $userconfigid;
+
+		/**
+		 * If this is a template page, this contains info about this template, and template instance.
+		 *
+		 * @var ZymurgyTemplate
+		 */
+		static $template;
+		
+		/**
 		 * Site Color Theme cache.
 		 *
 		 * @var unknown_type
@@ -874,42 +888,46 @@ if (!class_exists('Zymurgy'))
 			$nav->render($ishorizontal,$baseurl);
 		}
 
-		function pagetext($navpath)
+		function pagetext($tag,$type='html.600.400')
 		{
-			if (empty($navpath))
+			if (isset(Zymurgy::$template))
 			{
-				$row=Zymurgy::$db->get("select id,body from zcm_sitepage where parent=0 order by disporder limit 1");
+				return Zymurgy::$template->pagetext($tag,$type);
 			}
-			else
+			else 
 			{
-				$np = explode('/',$navpath);
-				$parent = 0;
-				foreach ($np as $navpart)
-				{
-					$navpart = Zymurgy::$db->escape_string(str_replace('_',' ',$navpart));
-					$row = Zymurgy::$db->get("select id,body from zcm_sitepage where parent=$parent and linktext='$navpart'");
-					if ($row === false)
-					{
-						// How to handle 404 like response?
-						echo "$navpart couldn't be found from $navpath.";
-						return;
-					}
-					$parent = $row['id'];
-				}
+				return "<div>This page is not linked to a template, so pagetext() can't be used here.</div>";
 			}
-			echo "<div>{$row['body']}</div>";
-			$ri = Zymurgy::$db->run("select * from zcm_sitepageplugin where zcm_sitepage={$row['id']} order by disporder");
-			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		}
+		
+		function pagegadgets()
+		{
+			if (isset(Zymurgy::$template))
 			{
-				$pp = explode('&',$row['plugin']);
-				$instance = urldecode($pp[1]);
-				if ($instance == "Page Navigation Name")
-					$instance = $navpart;
-				echo "<div align=\"{$row['align']}\">";
-				Zymurgy::plugin(urldecode($pp[0]),$instance);
-				echo "</div>";
+				return Zymurgy::$template->pagegadgets();
 			}
-			Zymurgy::$db->free_result($ri);
+			else 
+			{
+				return "<div>This page is not linked to a template, so pagegadgets() can't be used here.</div>";
+			}
+		}
+		
+		function Config($keyname, $defaultvalue, $inputspec='input.30.30')
+		{
+			if (!array_key_exists($keyname,Zymurgy::$userconfig))
+			{
+				Zymurgy::$db->run("insert into zcm_config (name,value,inputspec) values ('".
+					Zymurgy::$db->escape_string($keyname)."','".
+					Zymurgy::$db->escape_string($defaultvalue)."','".
+					Zymurgy::$db->escape_string($inputspec)."')");
+				$id = Zymurgy::$db->insert_id();
+				Zymurgy::$db->run("update zcm_config set disporder=$id where id=$id");
+				Zymurgy::$userconfig[$keyname] = $defaultvalue;
+				Zymurgy::$userconfigid[$keyname] = $id;
+				if (($inputspec=='theme') && (is_null(Zymurgy::$defaulttheme)))
+					Zymurgy::$defaulttheme = $keyname;
+			}
+			return Zymurgy::$userconfig[$keyname];
 		}
 	}
 
@@ -946,6 +964,7 @@ if (!class_exists('Zymurgy'))
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			Zymurgy::$userconfig[$row['name']] = $row['value'];
+			Zymurgy::$userconfigid[$row['name']] = $row['id'];
 			if (($row['inputspec']=='theme') && (is_null(Zymurgy::$defaulttheme)))
 				Zymurgy::$defaulttheme = $row['name'];
 		}

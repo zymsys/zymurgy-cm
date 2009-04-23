@@ -206,7 +206,6 @@ $tables = array(
   `id` bigint(20) NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
   `linktext` varchar(40) default NULL,
-  `body` longtext,
   `parent` bigint(20) default '0',
   `retire` datetime default NULL,
   `golive` datetime default NULL,
@@ -224,6 +223,27 @@ $tables = array(
   `align` varchar(6) default NULL,
   PRIMARY KEY  (`id`),
   KEY `zcm_sitepage` (`zcm_sitepage`),
-  KEY `disporder` (`disporder`))"
-	);
+  KEY `disporder` (`disporder`))",
+	'zcm_template'=>"CREATE TABLE `zcm_template` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `name` varchar(30) default NULL,
+  `path` varchar(200) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `name` (`name`))",
+	'zcm_pagetext'=>"CREATE TABLE `zcm_pagetext` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `sitepage` bigint(20) NOT NULL default '0',
+  `tag` varchar(35) NOT NULL default '',
+  `body` longtext,
+  PRIMARY KEY  (`id`),
+  KEY `sitepage` (`sitepage`))",
+	'zcm_templatetext'=>"CREATE TABLE `zcm_templatetext` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `template` bigint(20) NOT NULL default 1,
+  `tag` varchar(35) NOT NULL default '',
+  `inputspec` varchar(100) NOT NULL default 'html.600.400',
+  KEY `template` (`template`),
+  KEY `tag` (`tag`),
+  PRIMARY KEY  (`id`))"
+  );
 ?>

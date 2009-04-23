@@ -159,5 +159,6 @@ function CheckColumns($table,$columns)
 			}
 		}
 	}
+	return $cols;
 }
 ?>
