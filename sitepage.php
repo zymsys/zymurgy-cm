@@ -1,4 +1,6 @@
 <?
+ini_set("display_errors", 1);
+
 include 'sitepageutil.php';
 include 'header.php';
 include 'datagrid.php';
@@ -27,7 +29,7 @@ $dg->AddColumn('Golive','golive');
 $dg->AddColumn('Softlaunch','softlaunch');*/
 $dg->AddUpDownColumn('disporder');
 $dg->AddInput('linktext','Menu Text:',40,40);
-$dg->AddHtmlEditor('body','Body:');
+$dg->AddYuiHtmlEditor('body','Body:');
 $dg->AddEditor('retire','Retire After:','datetime');
 $dg->AddEditor('golive','Go Live:','datetime');
 $dg->AddEditor('softlaunch','Soft Launch:','datetime');
