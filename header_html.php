@@ -4,8 +4,8 @@
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
-<? 
-if (isset($includeNav) && $includeNav) 
+<?
+if (isset($includeNav) && $includeNav)
 {
 echo Zymurgy::YUI("fonts/fonts-min.css");
 echo Zymurgy::YUI("menu/assets/skins/sam/menu.css");
@@ -14,11 +14,11 @@ echo Zymurgy::YUI("container/container_core-min.js");
 echo Zymurgy::YUI("menu/menu-min.js");
 echo '<script type="text/javascript">
 YAHOO.util.Event.onContentReady("zcmnavContent", function () {
-	var oMenu = new YAHOO.widget.Menu("zcmnavContent", { 
-											position: "static", 
-											hidedelay:  750, 
+	var oMenu = new YAHOO.widget.Menu("zcmnavContent", {
+											position: "static",
+											hidedelay:  750,
 											lazyload: true });
-	oMenu.render();            
+	oMenu.render();
 });
 function resizenav() {
 	var ht = YAHOO.util.Dom.getViewportHeight();
@@ -29,7 +29,7 @@ YAHOO.util.Event.onContentReady("zcmnavContentNav", function () {
 	resizenav();
 });
 </script>';
-} 
+}
 ?>
 <style type="text/css">
 <!--
@@ -119,8 +119,14 @@ div.ZymurgyBreadcrumbs
 #DraftTool {
 	background-color: #CCCCCC;
 	width: 90%;
-	border: thin solid #333333;	
+	border: thin solid #333333;
 	padding: 5px;
+}
+
+.yui-toolbar-mediafile span.yui-toolbar-icon {
+	background-image: url(/zymurgy/images/zcmLibrary.gif) !important;
+	background-position: 2px 1px !important;
+	left: 5px !important;
 }
 -->
 </style>
