@@ -1806,8 +1806,50 @@
 			echo "<p>The image library has not been properly configured in Zymurgy:CM.</p>";
 		}
 
+		public static function RenderJavascript()
+		{
+			$output .= "<script type=\"text/javascript\">\n";
+
+			$output .= "function InsertMediaFileInPage(editor) {\n";
+			// $output .= "alert('InsertMediaFileInPage start');\n";
+			$output .= "url = '/zymurgy/media.php?action={0}&amp;media_file_id={1}&amp;suffix=thumb{2}x{3}';";
+			$output .= "url = url.replace(\"{0}\", \"stream_media_file\");\n";
+			$output .= "url = url.replace(\"{1}\", document.getElementById(\"mediaFileID\").value);\n";
+			$output .= "url = url.replace(\"{2}\", document.getElementById(\"mediaFileWidth\").value);\n";
+			$output .= "url = url.replace(\"{3}\", document.getElementById(\"mediaFileHeight\").value);\n";
+			// $output .= "alert(url);\n";
+			$output .= "alt = document.getElementById(\"mediaFileAlt\").value;\n";
+			$output .= "editor.toolbar.fireEvent('mediafileClick', { type: 'mediaFileClick', img: url, alt: alt } );\n";
+			// $output .= "alert('InsertMediaFileInPage fin');\n";
+			$output .= "}\n";
+
+			$output .= "function SelectFile(selectedImage, id) {\n";
+			$output .= " imgList = document.getElementsByTagName(\"img\");\n";
+			// $output .= " alert(imgList.length);\n";
+			$output .= " for (cntr = 0; cntr < imgList.length; cntr++) {\n";
+			$output .= "  img = imgList[cntr];\n";
+			// $output .= "  alert('Comparing ' + img.src + ' with ' + selectedImage.src);\n";
+			$output .= "  if(img.src == selectedImage.src) {\n";
+			// $output .= "   alert('match found');\n";
+			$output .= "   border = \"2px solid red\";\n";
+			$output .= "   document.getElementById(\"mediaFileID\").value = id;\n";
+			$output .= "  } else {\n";
+			// $output .= "   alert('match not found');\n";
+			$output .= "   border = \"2px solid white\";\n";
+			$output .= "  }\n";
+			$output .= "  img.style.border = border;\n";
+			// $output .= "  alert(img.style.border + ' = ' + border);\n";
+			$output .= " }\n";
+			$output .= "}\n";
+
+			$output .= "</script>\n";
+
+			return $output;
+		}
+
 		public static function DisplayImageList($mediaPackage, $yuiHtmlID)
 		{
+			echo("<input type=\"hidden\" name=\"mediaFileID\" id=\"mediaFileID\" value=\"\">\n");
 			echo("<div style=\"width: 100%; height: 75px; overflow: auto;\">\n");
 			echo("<table cellspacing=\"3\" cellpadding=\"0\" border=\"0\">\n");
 
@@ -1817,13 +1859,15 @@
 			{
 				$mediaFile = $mediaPackage->get_media_file($cntr);
 
-				echo("<td><a href=\"javascript:InsertMediaFileInPage($yuiHtmlID, '".
+				echo("<td><a href=\"javascript:SelectFile(document.getElementById('dlgImg_".
 					$mediaFile->get_media_file_id().
-					"');\"><img id=\"dlgImg_".
+					"'), ".
+					$mediaFile->get_media_file_id().
+					");\"><img id=\"dlgImg_".
 					$mediaFile->get_media_file_id().
 					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
-					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\"></a>\n");
+					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\" style=\"border: 2px solid white;\"></a>\n");
 				echo("</td>\n");
 			}
 
@@ -1831,6 +1875,19 @@
 
 			echo("</table>\n");
 			echo("</div>\n");
+
+			echo("<table>\n");
+			echo("<tr>\n");
+			echo("<td width=\"15%\">Width:</td>");
+			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\"></td>\n");
+			echo("<td width=\"15%\">Height:</td>");
+			echo("<td width=\"55%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\"></td>\n");
+			echo("</tr>\n");
+			echo("<tr>\n");
+			echo("<td>Alt&nbsp;Text:</td>");
+			echo("<td colspan=\"3\"><input type=\"text\" name=\"alt\" id=\"mediaFileAlt\" size=\"45\" maxlength=\"100\"></td>\n");
+			echo("</tr>\n");
+			echo("</table>\n");
 		}
 	}
 

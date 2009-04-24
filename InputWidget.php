@@ -203,13 +203,8 @@ class InputWidget
 				$output .= Zymurgy::YUI("dragdrop/dragdrop-min.js");
 				$output .= Zymurgy::YUI("editor/editor-min.js");
 
-				$output .= "<script type=\"text/javascript\">\n";
-				$output .= "function InsertMediaFileInPage(editor, mediaFileID) {\n";
-				// $output .= "alert('InsertMediaFileInPage start');\n";
-				$output .= "editor.toolbar.fireEvent('mediafileClick', { type: 'mediaFileClick', img: '/zymurgy/media.php?action=stream_media_file&amp;media_file_id=' + mediaFileID } );\n";
-				// $output .= "alert('InsertMediaFileInPage fin');\n";
-				$output .= "}\n";
-				$output .= "</script>\n";
+				require_once("include/media.php");
+				$output .= PageImageLibraryView::RenderJavascript();
 
 				break;
 		}
@@ -566,7 +561,12 @@ passThroughFormSubmit = false;
 										visible: false,
 										constraintoviewport: true,
 										buttons: [
-											{ text: "OK", handler: function() { this.cancel(); }, isDefault: true },
+											{ text: "OK", handler: function() {
+												//alert("OK pressed");
+												InsertMediaFileInPage(<?= str_replace(".", "_", $name) ?>Editor);
+												//alert("media inserted");
+												this.cancel();
+											}, isDefault: true },
 											{ text: "Cancel", handler: function() { this.cancel(); } }
 										]
 									});
@@ -592,9 +592,9 @@ passThroughFormSubmit = false;
 
 										if(ev && ev.img)
 										{
-											alert("img declared");
+											// alert("img declared");
 
-											var html = "<img src=\"" + ev.img + "\">";
+											var html = "<img src=\"" + ev.img + "\" alt=\"" + ev.alt + "\">";
 											this.execCommand("inserthtml", html);
 
 											<?= str_replace(".", "_", $name) ?>Dialog.hide();
