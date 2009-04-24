@@ -3,8 +3,6 @@
 	<HEAD>
 		<TITLE>Edit Color Theme</TITLE>
 <?php
-	ini_set("display_errors", 1);
-	
 	$breadcrumbTrail = "Site Colors";	
 
 	// require_once('header.php');

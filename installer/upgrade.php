@@ -1,6 +1,4 @@
 <?
-ini_set('display_errors', 1);
-
 require_once("../cmo.php");
 require_once('../config/config.php');
 include('tables.php');
@@ -207,7 +205,6 @@ while (($entry = readdir($di)) !== false)
 		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
 		
 		echo("-- Including $entry<br>");
-		
 		require_once("../plugins/$entry");
 	}
 }

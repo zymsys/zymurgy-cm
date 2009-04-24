@@ -78,7 +78,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $hrefroot ?>", function () {
 		if ($horizontal)
 			echo " yuimenubarnav";
 		echo "\">\r\n";
-		echo "\t\t<div class=\"bd\">\r\n";
+		echo "\t\t<div class=\"bd\" style=\"border-style: none\">\r\n";
 		$this->renderpart($hrefroot,$horizontal,0,$this->structure,array());
 		echo "\t\t</div>\r\n"; //bd
 		echo "\t</div>\r\n"; //yuimenubar yuimenubarnav

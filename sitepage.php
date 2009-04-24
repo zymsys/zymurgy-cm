@@ -1,6 +1,4 @@
 <?
-ini_set("display_errors", 1);
-
 include 'sitepageutil.php';
 include 'header.php';
 include 'datagrid.php';

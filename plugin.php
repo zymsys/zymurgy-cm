@@ -1,8 +1,4 @@
 <?
-	// ini_set('display_errors', 1);
-	
-	/* The plugin API is dedicated to Missy Elliot, Snoop Dog & Dr. Dre. */
-
 	$adminlevel = 2;
 
 	if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))

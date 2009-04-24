@@ -1,6 +1,4 @@
 <?php
-	// ini_set("display_errors", 1);
-
 	require_once("cms.php");
 
 	function uuid() 

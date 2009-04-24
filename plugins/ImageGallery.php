@@ -1,6 +1,4 @@
 <?
-ini_set('display_errors', 1);
-
 if (!class_exists('PluginBase'))
 {
 	require_once('../cms.php');
