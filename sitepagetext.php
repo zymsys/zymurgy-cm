@@ -56,11 +56,22 @@ if ($t)
 	}
 }
 
+//The values array contains tablename.columnname keys with values from the row to be deleted.
+function OnDelete($values)
+{
+	$t = Zymurgy::$db->get("select template from zcm_sitepage where id={$values['zcm_pagetext.sitepage']}");
+	Zymurgy::$db->run("delete from zcm_templatetext where (template=$t) and (tag='".
+		Zymurgy::$db->escape_string($values['zcm_pagetext.tag'])."')");
+	return true; //Return false to override delete.
+}
+
 $ds = new DataSet('zcm_pagetext','id');
 $ds->AddColumns('id','sitepage','tag','body');
 $ds->AddDataFilter('sitepage',$p);
+$ds->OnDelete = 'OnDelete';
 
 $dg = new DataGrid($ds);
+$dg->AddConstant('sitepage',$p);
 $dg->AddColumn('Tag','tag');
 $dg->AddInput('tag','Tag:',35,35);
 $dg->AddEditor('body',$editcaption,$inputspec);

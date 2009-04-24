@@ -740,7 +740,7 @@ class DataGrid
 					$this->thumbs[$datacolumn] = array($targetsize);
 				break;
 			case 'lookup':
-				if (!array_key_exists($table,$this->lookups))
+				if (!array_key_exists($ep[1],$this->lookups))
 				{
 					$this->lookups[$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
 				}

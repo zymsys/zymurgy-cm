@@ -888,7 +888,7 @@ if (!class_exists('Zymurgy'))
 			$nav->render($ishorizontal,$baseurl);
 		}
 
-		function pagetext($tag,$type='html.600.400')
+		static function pagetext($tag,$type='html.600.400')
 		{
 			if (isset(Zymurgy::$template))
 			{
@@ -900,6 +900,18 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 		
+		static function pageimage($tag,$width,$height,$alt='')
+		{
+			if (isset(Zymurgy::$template))
+			{
+				return Zymurgy::$template->pageimage($tag,$width,$height,$alt);
+			}
+			else 
+			{
+				return "<div>This page is not linked to a template, so pageimage() can't be used here.</div>";
+			}
+		}
+
 		function pagegadgets()
 		{
 			if (isset(Zymurgy::$template))

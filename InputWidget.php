@@ -23,6 +23,8 @@ class InputWidget
 	function InputWidget()
 	{
 		$this->fckeditorpath = '/zymurgy/fckeditor/';
+		if (array_key_exists('editkey',$_GET))
+			$this->editkey = $_GET['editkey'];
 	}
 
 	/**
@@ -137,8 +139,11 @@ class InputWidget
 					$targetsize = $this->targetsize;
 				else
 					$targetsize = "{$ep[1]}x{$ep[2]}";
+				require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
 				$ext = Thumb::mime2ext($display);
-				$imgsrc = "/UserFiles/DataGrid/sitetext.body/{$_GET['editkey']}thumb$targetsize.$ext?".rand(0,99999);
+				list($dataset,$datacolumn) = explode('.',$this->datacolumn);
+				$imgsrc = "/zymurgy/file.php?mime=$display&dataset=$dataset&datacolumn=$datacolumn&id={$this->editkey}&w={$ep[1]}&h={$ep[2]}";
+				//$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.$ext?".rand(0,99999);
 				$display = "<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a>";
 				break;
 			case "drop":

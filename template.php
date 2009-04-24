@@ -6,6 +6,8 @@ class ZymurgyTemplate
 	public $navpath;
 	public $template;
 	private $pagetextcache = array();
+	private $inputspeccache = array();
+	private $pagetextids = array();
 	
 	function __construct($navpath)
 	{
@@ -31,7 +33,6 @@ class ZymurgyTemplate
 			}
 			$this->sitepage = $row;
 		}
-		//Now $row is our page info.  Get the template info.
 		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage['template']}");
 		$this->navpath = $navpath;
 		$this->LoadPageText();
@@ -43,7 +44,10 @@ class ZymurgyTemplate
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$this->pagetextcache[$row['tag']] = $row['body'];
+			$this->inputspeccache[$row['tag']] = $row['inputspec'];
+			$this->pagetextids[$row['tag']] = $row['id'];
 		}
+		//print_r($this->pagetextids); exit;
 		Zymurgy::$db->free_result($ri);
 	}
 	
@@ -61,10 +65,37 @@ class ZymurgyTemplate
 					$this->sitepage['template'].",'".
 					Zymurgy::$db->escape_string($tag)."','".
 					Zymurgy::$db->escape_string($type)."')");
+				$this->pagetextids[$tag] = Zymurgy::$db->insert_id();
+			}
+			else 
+			{
+				$this->pagetextids[$tag] = 0; //Will fail to relate to data, but at this point there's no data anyway.
 			}
 			$this->pagetextcache[$tag] = null;
+			$this->inputspeccache[$tag] = $type;
 		}
-		return $this->pagetextcache[$tag];
+		if ($this->inputspeccache[$tag] != $type)
+		{
+			//Input spec has changed.  Update the DB and the cache.
+			$this->inputspeccache[$tag] = $type;
+			Zymurgy::$db->run("update zcm_templatetext set inputspec='".
+				Zymurgy::$db->escape_string($type)."' where (template=".$this->sitepage['template'].") and (tag='".
+				Zymurgy::$db->escape_string($tag)."')");
+		}
+		require_once(Zymurgy::$root.'/zymurgy/InputWidget.php');
+		$w = new InputWidget();
+		$w->datacolumn = 'zcm_pagetext.body';
+		$w->editkey = $this->pagetextids[$tag];
+		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
+	}
+	
+	public function pageimage($tag,$width,$height,$alt='')
+	{
+		$img = $this->pagetext($tag,"image.$width.$height");
+		$ipos = strpos($img,"src=\"");
+		if ($ipos>0)
+			$img = substr($img,0,$ipos)."alt=\"$alt\" ".substr($img,$ipos);
+		return $img;
 	}
 	
 	function pagegadgets()
