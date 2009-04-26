@@ -1,16 +1,8 @@
 <?
-//Somehow I need an editor for zcm_pagetext which makes sense.
-/*
-CREATE TABLE `zcm_pagetext` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `sitepage` bigint(20) NOT NULL default '0',
-  `tag` varchar(35) NOT NULL default '',
-  `body` longtext,
-  KEY (`sitepage`),
-  PRIMARY KEY  (`id`))
-  
-http://ym.cantechresearch.com/zymurgy/sitepagetext.php?p=11&pp=1
-*/
+require_once('cmo.php');
+include 'sitepageutil.php';
+$crumbs[] = "Page Contents";
+
 include 'header.php';
 include 'datagrid.php';
 

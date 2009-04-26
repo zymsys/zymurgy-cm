@@ -14,6 +14,8 @@ if (array_key_exists('epi',$_GET))
 }
 
 include 'sitepageutil.php';
+$crumbs[] = "Gadgets";
+
 if (array_key_exists('action',$_GET) || array_key_exists('editkey',$_GET))
 {
 	$crumbs[] = 'Edit';

@@ -2,6 +2,7 @@
 include 'sitepageutil.php';
 include 'header.php';
 include 'datagrid.php';
+require_once('sitenav.php');
 
 $templatecount = Zymurgy::$db->get("select count(*) from zcm_template");
 if ($templatecount == 0)
@@ -19,19 +20,58 @@ else if ($templatecount==1)
 //TODO: If the nav name has changed, create a redirect from the old nav name to maintain links to the old address.
 function OnBeforeInsertUpdate($values)
 {
+	$values['zcm_sitepage.linkurl'] = ZymurgySiteNav::linktext2linkpart($values['zcm_sitepage.linktext']);
 	return $values; // Change values you want to alter before the update occurs.
 }
 
+function OnBeforeInsert($values)
+{
+	$values = OnBeforeInsertUpdate($values);
+	$newnavname = $values['zcm_sitepage.linkurl'];
+	//Remove any old redirects for this nav url.  They'll be superceded by this new item.
+	Zymurgy::$db->run("delete from zcm_sitepageredirect where parent={$values['zcm_sitepage.parent']} and linkurl='".
+		Zymurgy::$db->escape_string($newnavname)."'");
+	return $values;
+}
+
+function OnBeforeUpdate($values)
+{
+	$values = OnBeforeInsertUpdate($values);
+	$newnavname = $values['zcm_sitepage.linkurl'];
+	//Handle zcm_sitepageredirect updates to preserve old links
+	$oldrow = Zymurgy::$db->get("select * from zcm_sitepage where id=".$values['zcm_sitepage.id']);
+	if ($newnavname != $oldrow['linkurl'])
+	{
+		//Link has changed.  Save change so that we can redirect anyone who tries the old link.
+		//Is this redirect already active?  Maybe the user is flip-flopping names.
+		$oldredirect = Zymurgy::$db->get("select * from zcm_sitepageredirect where parent={$values['zcm_sitepage.parent']} and linkurl='".
+			Zymurgy::$db->escape_string($oldrow['linkurl'])."'");
+		if ($oldredirect)
+		{
+			//We had an old redirect, make sure it points to the new location.
+			Zymurgy::$db->run("update zcm_sitepageredirect set sitepage={$values['zcm_sitepage.id']} where id={$oldredirect['id']}");
+		}
+		else 
+		{
+			//This is a fresh redirect; create it.
+			Zymurgy::$db->run("insert into zcm_sitepageredirect (sitepage,parent,linkurl) values ({$values['zcm_sitepage.id']}, {$values['zcm_sitepage.parent']}, '".
+				Zymurgy::$db->escape_string($oldrow['linkurl'])."')");
+		}
+	}
+	return $values;
+}
+
 $ds = new DataSet('zcm_sitepage','id');
-$ds->AddColumns('id','disporder','linktext','parent','retire','golive','softlaunch','template');
-$ds->OnBeforeUpdate = $ds->OnBeforeInsert = 'OnBeforeInsertUpdate';
+$ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template');
+$ds->OnBeforeInsert = 'OnBeforeInsert';
+$ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->AddDataFilter('parent',$p);
 
 $dg = new DataGrid($ds);
 $dg->AddConstant('parent',$p);
 $dg->AddColumn('Menu Text','linktext');
-$dg->AddColumn('Page Contents','id','<a href="sitepagetext.php?p={0}&pp=1">Page Contents</a>');
-$dg->AddColumn('Gadgets','id','<a href="sitepageextra.php?p={0}&pp=1">Gadgets</a>');
+$dg->AddColumn('Page Contents','id','<a href="sitepagetext.php?p={0}">Page Contents</a>');
+$dg->AddColumn('Gadgets','id','<a href="sitepageextra.php?p={0}">Gadgets</a>');
 $dg->AddColumn('Sub-Pages','id','<a href="sitepage.php?p={0}">Sub-Pages</a>');
 /*TODO: I'm not showing these in the grid, but I'd love to show a status column with 'Soft Launch', 'Live' or 'Retired'.  Need to extend the template feature to allow this, or some other stroke of genius.
 $dg->AddColumn('Retire','retire');

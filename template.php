@@ -1,5 +1,6 @@
 <?
 require_once('cmo.php');
+require_once('sitenav.php');
 class ZymurgyTemplate
 {
 	public $sitepage;
@@ -9,7 +10,7 @@ class ZymurgyTemplate
 	private $inputspeccache = array();
 	private $pagetextids = array();
 	
-	function __construct($navpath)
+	function __construct($navpath, $hrefroot = 'pages')
 	{
 		if (empty($navpath))
 		{
@@ -19,18 +20,63 @@ class ZymurgyTemplate
 		{
 			$np = explode('/',$navpath);
 			$parent = 0;
+			$newpath = array();
+			$do404 = false;
+			$doredirect = false;
 			foreach ($np as $navpart)
 			{
-				$navpart = Zymurgy::$db->escape_string(str_replace('_',' ',$navpart));
-				$row = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=$parent and linktext='$navpart'");
+				$navpart = Zymurgy::$db->escape_string(ZymurgySiteNav::linktext2linkpart($navpart));
+				$row = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=$parent and linkurl='$navpart'");
 				if ($row === false)
 				{
-					// How to handle 404 like response?
-					echo "$navpart couldn't be found from $navpath.";
-					return;
+					// Is there a redirect available for this navpart?
+					$redirect = Zymurgy::$db->get("select * from zcm_sitepageredirect where parent=$parent and linkurl='$navpart'");
+					if ($redirect)
+					{
+						//Yes, this page has a new home.  Find it.
+						$newpart = Zymurgy::$db->get("select linkurl from zcm_sitepage where id = {$redirect['sitepage']}");
+						if ($newpart)
+						{
+							$newpath[] = $newpart;
+							$parent = $redirect['sitepage'];
+							$doredirect = true;
+							continue;
+						}
+						else 
+						{
+							$do404 = true;
+							break;
+						}
+					}
+					else 
+					{
+						$do404 = true;
+						break;
+					}
+				}
+				else 
+				{
+					$newpath[] = $navpart;
 				}
 				$parent = $row['id'];
 			}
+			if ($do404)
+			{
+				header("HTTP/1.0 404 Not Found");
+				echo "$navpart couldn't be found from $navpath. <!--\r\n";
+				print_r($newpath);
+				echo "-->";
+				exit;
+			}
+			if ($doredirect)
+			{
+				header("Location: /$hrefroot/".implode('/',$newpath));
+				/*echo "Redirect: <pre>\r\n";
+				print_r($newpath);
+				echo "</pre>";*/
+				exit;
+			}
+
 			$this->sitepage = $row;
 		}
 		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage['template']}");
@@ -40,14 +86,19 @@ class ZymurgyTemplate
 	
 	private function LoadPageText()
 	{
+		//Load content types
+		$ri = Zymurgy::$db->run("select * from zcm_templatetext where template=".$this->sitepage['template']);
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$this->inputspeccache[$row['tag']] = $row['inputspec'];
+		}
+		Zymurgy::$db->free_result($ri);
 		$ri = Zymurgy::$db->run("select * from zcm_pagetext where sitepage=".$this->sitepage['id']);
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$this->pagetextcache[$row['tag']] = $row['body'];
-			$this->inputspeccache[$row['tag']] = $row['inputspec'];
 			$this->pagetextids[$row['tag']] = $row['id'];
 		}
-		//print_r($this->pagetextids); exit;
 		Zymurgy::$db->free_result($ri);
 	}
 	

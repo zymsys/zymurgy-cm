@@ -41,7 +41,8 @@ $newmember = array(
 );
 
 $newsitepage = array(
-	'template'=>"alter table zcm_sitepage add template bigint default 1"
+	'template'=>"alter table zcm_sitepage add template bigint default 1",
+	'linkurl'=>"alter table zcm_sitepage add linkurl varchar(40) after linktext"
 );
 
 include('upgradelib.php');
@@ -83,6 +84,24 @@ if (array_key_exists('body',$sitepagecols))
 			mysql_escape_string($row['body'])."')");
 	}
 	mysql_query("alter table zcm_sitepage drop body");
+}
+
+//Check for no old linkurl in zcm_sitepage, and populate it if required
+if (!array_key_exists('linkurl',$sitepagecols))
+{
+	require_once('../sitenav.php');
+	$spu = array();
+	$ri = mysql_query("select id,linktext from zcm_sitepage");
+	while (($row = mysql_fetch_array($ri))!==false)
+	{
+		$spu[$row['id']] = $row['linktext'];
+	}
+	mysql_free_result($ri);
+	foreach($spu as $id=>$linktext)
+	{
+		mysql_query("update zcm_sitepage set linkurl='".
+			mysql_escape_string(ZymurgySiteNav::linktext2linkpart($linktext))."' where id=$id");
+	}
 }
 
 //Check if faulty uncategorized content category exists and fix it.

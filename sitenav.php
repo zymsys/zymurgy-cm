@@ -51,45 +51,102 @@ class ZymurgySiteNav
 	
 	public function linktext2linkpart($linktext)
 	{
+		$linktext=strtr($linktext,"()!$'?:,&+-/.ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ",
+			"-------------SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy");
 		return str_replace(' ','_',$linktext);
 	}
 	
-	public function render($horizontal = true, $hrefroot = 'pages')
+	public function render($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$hrefroot = 'pages')
 	{
 		echo Zymurgy::YUI('fonts/fonts-min.css');
 		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
 		echo Zymurgy::YUI('container/container_core-min.js');
 		echo Zymurgy::YUI('menu/menu-min.js');
-		$bar = $horizontal ? 'Bar' : '';
+		$bar = $ishorizontal ? 'Bar' : '';
 ?>
 <script type="text/javascript">
 YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $hrefroot ?>", function () {
 	var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $hrefroot ?>", { 
-		<?= $horizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>, 
+		<?= $ishorizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>, 
 		hidedelay: 750, 
 		lazyload: true });
 	oMenu.render();
 });
 </script>
 <?
+		$structurestart = $this->structure;
+		$parent = 0;
+		if (!empty($startpath))
+		{
+			$sp = explode('/',$startpath);
+			$anscestors = $sp;
+			echo "<!-- \r\n";
+			while ($sp)
+			{
+				$partname = array_shift($sp);
+				echo "Looking in [$partname]: ";
+				foreach ($this->structureparts[$parent] as $key)
+				{
+					echo "($key: ".$this->items[$key]->linktext.") ";
+					if ($this->items[$key]->linktext == $partname)
+					{
+						$parent = $key;
+						$structurestart = $structurestart[$key];
+						break;
+					}
+				}
+			}
+			echo "\r\nFound parent: $parent\r\n"; 
+			echo "Structure Parts:\r\n";
+			print_r($this->structureparts); 
+			echo "Complete Structure:\r\n";
+			print_r($this->structure);
+			echo "Structure Start:\r\n";
+			print_r($structurestart);
+			echo "Items:\r\n";
+			print_r($this->items);
+			echo "-->\r\n";
+		}
+		else 
+		{
+			$anscestors = array();
+		}
 		echo "<div class=\"yui-skin-sam \">\r\n";
 		echo "\t<div id=\"ZymurgyMenu_$hrefroot\" class=\"yuimenu".strtolower($bar);
-		if ($horizontal)
+		if ($ishorizontal)
 			echo " yuimenubarnav";
 		echo "\">\r\n";
 		echo "\t\t<div class=\"bd\" style=\"border-style: none\">\r\n";
-		$this->renderpart($hrefroot,$horizontal,0,$this->structure,array());
+		if ($startpath=='Test/A')
+			$this->renderpart($hrefroot,$ishorizontal,0,($parent == 0) ? $this->structure : $structurestart,$anscestors);
+		else
+			$this->renderpart($hrefroot,$ishorizontal,0,($parent == 0) ? $this->structure : $this->structure[$parent],$anscestors);
 		echo "\t\t</div>\r\n"; //bd
 		echo "\t</div>\r\n"; //yuimenubar yuimenubarnav
 		echo "</div>\r\n"; //yui-skin-sam
 	}
 	
+	/**
+	 * Render part of the site's navigation
+	 *
+	 * @param string $hrefroot Root of the navigation sections as used by mod_rewrite
+	 * @param boolean $horizontal Is this a horizontal nav?  If false, this is a vertical nav.
+	 * @param int $depth What is our current depth?
+	 * @param array $sp Structure Part; the part of the nav to be rendered
+	 * @param array $anscestors Ancestor nav names
+	 */
 	private function renderpart($hrefroot,$horizontal,$depth,$sp,$anscestors)
 	{
 		$dtabs = str_repeat("\t",$depth+3);
 		$href = "/$hrefroot/";
-		if ($anscestors) $href .= $this->linktext2linkpart(implode('/',$anscestors)).'/';
+		if ($anscestors) 
+		{
+			foreach($anscestors as $anscestor)
+			{
+				$href .= $this->linktext2linkpart($anscestor).'/';
+			}
+		}
 		if ($depth > 0) echo "$dtabs<div class=\"yuimenu\"><div class=\"bd\">\r\n";
 		echo "$dtabs<ul";
 		if ($horizontal)

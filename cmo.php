@@ -532,21 +532,22 @@ if (!class_exists('Zymurgy'))
 			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii,`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
+			//echo $sql;
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 			{
 				die ("Error loading [plugin: $plugin] [instance $instance]: ".Zymurgy::$db->error()."<br>$sql");
 			}
 			$row = Zymurgy::$db->fetch_array($ri);
-			$pi->pid = $row['pid'];
-			$pi->iid = $row['pii'];
-			$pi->dbrelease = $row['release'];
 			$pi->extra = $extra;
 			$pi->InstanceName = $instance;
 			//echo "[".$pi->GetRelease().",{$pi->dbrelease}]"; exit;
-			if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 			if ($row !== false)
 			{
+				$pi->pid = $row['pid'];
+				$pi->iid = $row['pii'];
+				$pi->dbrelease = $row['release'];
+				if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 				Zymurgy::LoadPluginConfig($pi);
 			}
 			else
@@ -881,11 +882,11 @@ if (!class_exists('Zymurgy'))
 			return substr($color, 1);
 		}
 
-		function sitenav($ishorizontal = true,$baseurl = 'pages')
+		function sitenav($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$baseurl = 'pages')
 		{
 			require_once('sitenav.php');
 			$nav = new ZymurgySiteNav();
-			$nav->render($ishorizontal,$baseurl);
+			$nav->render($ishorizontal, $currentleveonly, $childlevelsonly, $startpath, $baseurl);
 		}
 
 		static function pagetext($tag,$type='html.600.400')
