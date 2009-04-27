@@ -15,6 +15,8 @@ $editcaption = "Content:";
  * Also pick up the inputspec if we're editing so we know how to edit this puppy.
  */
 $t = Zymurgy::$db->get("select template from zcm_sitepage where id=$p");
+$currentcontent = array(); //Array of content relevent to the current template for the page.  Used in AddDataFilter below.
+
 if ($t)
 {
 	$templatetags = array();
@@ -37,6 +39,8 @@ if ($t)
 			$inputspec = $specs[$row['tag']];
 			$editcaption = $row['tag'].":";
 		}
+		if (array_key_exists($row['tag'],$specs))
+			$currentcontent[] = $row['id'];
 	}
 	Zymurgy::$db->free_result($ri);
 	
@@ -46,6 +50,12 @@ if ($t)
 		Zymurgy::$db->run("insert into zcm_pagetext (sitepage,tag) values ($p,'".
 			Zymurgy::$db->escape_string($tag)."')");
 	}
+}
+else 
+{
+	echo "This template hasn't yet been processed by Zymurgy:CM.  Please load it once in your browser, and then try again.";
+	include('footer.php');
+	exit;
 }
 
 //The values array contains tablename.columnname keys with values from the row to be deleted.
@@ -58,8 +68,10 @@ function OnDelete($values)
 }
 
 $ds = new DataSet('zcm_pagetext','id');
-$ds->AddColumns('id','sitepage','tag','body');
+$ds->AddColumn('id',false);
+$ds->AddColumns('sitepage','tag','body');
 $ds->AddDataFilter('sitepage',$p);
+$ds->AddDataFilter('id','('.implode(',',$currentcontent).')','in');
 $ds->OnDelete = 'OnDelete';
 
 $dg = new DataGrid($ds);
