@@ -77,7 +77,10 @@ $ds->OnDelete = 'OnDelete';
 $dg = new DataGrid($ds);
 $dg->AddConstant('sitepage',$p);
 $dg->AddColumn('Tag','tag');
-$dg->AddInput('tag','Tag:',35,35);
+if ($zauth->authinfo['admin']>=2)
+{
+	$dg->AddInput('tag','Tag:',35,35);
+}
 $dg->AddEditor('body',$editcaption,$inputspec);
 $dg->AddEditColumn();
 if ($zauth->authinfo['admin']>=2)
