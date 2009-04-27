@@ -71,7 +71,10 @@ $ds = new DataSet('zcm_pagetext','id');
 $ds->AddColumn('id',false);
 $ds->AddColumns('sitepage','tag','body');
 $ds->AddDataFilter('sitepage',$p);
-$ds->AddDataFilter('id','('.implode(',',$currentcontent).')','in');
+if ($currentcontent)
+{
+	$ds->AddDataFilter('id','('.implode(',',$currentcontent).')','in');
+}
 $ds->OnDelete = 'OnDelete';
 
 $dg = new DataGrid($ds);
