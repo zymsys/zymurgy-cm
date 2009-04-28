@@ -10,13 +10,16 @@ while (($row = mysql_fetch_array($ri,MYSQL_NUM))!==false)
 function CreateMissingTables()
 {
 	global $etables,$tables;
+	$created = array();
 	foreach($tables as $tname=>$sql)
 	{
 		if (!array_key_exists($tname,$etables))
 		{
+			$created[] = $tname;
 			mysql_query($sql) or die("Unable to create $tname ($sql): ".mysql_error());
 		}
 	}
+	return $created;
 }
 
 function RenameOldTables()

@@ -1,4 +1,5 @@
 <?
+ob_start();
 require_once("../cmo.php");
 require_once('../config/config.php');
 include('tables.php');
@@ -48,7 +49,7 @@ $newsitepage = array(
 include('upgradelib.php');
 
 RenameOldTables();
-CreateMissingTables();
+$newtables = CreateMissingTables();
 CheckColumns('zcm_sitetext',$newsitetext);
 CheckColumns('zcm_passwd',$newpasswd);
 CheckColumns('zcm_plugininstance',$newplugininstance);
@@ -62,6 +63,19 @@ CheckIndexes('zcm_member',array('mpkey'),true);
 CheckIndexes('zcm_sitepage',array('template'));
 
 echo("done.<br>");
+
+//print_r($newtables); exit;
+if (array_search('zcm_template',$newtables)!==false)
+{
+	//Create default templates
+	mysql_query("insert into zcm_template (name,path) values ('Simple','/zymurgy/templates/simple.php')");
+	$stid = mysql_insert_id();
+	mysql_query("insert into zcm_template (name,path) values ('URL Link','/zymurgy/templates/link.php')");
+	$ulid = mysql_insert_id();
+	mysql_query("insert into zcm_templatetext (template,tag,inputspec) values ($stid,'Body','html.600.400')");
+	mysql_query("insert into zcm_templatetext (template,tag,inputspec) values ($ulid,'Link URL','input.60.255')");
+}
+
 echo("Renaming plugin configuration items...");
 
 RenamePluginKeys('Form',array(
@@ -283,7 +297,7 @@ echo("Done.<br>");
 // END - Install plugins
 // ----------
 
-header('Location: ../login.php');
+header('Location: ../index.php');
 
 	function  ExecuteAdd($source)
 	{

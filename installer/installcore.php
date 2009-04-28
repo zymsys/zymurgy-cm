@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		{ //Still no trouble?
 			require_once('../ZymurgyAuth.php');
 			$zauth = new ZymurgyAuth();
-			$zauth->SetAuth(0,$_POST['userID'],$_POST['userPassword'],"{$_POST['userID']},{$_POST['userAddress']},{$_POST['userName']},2,1,0","../index.php");
+			$zauth->SetAuth(0,$_POST['userID'],$_POST['userPassword'],"{$_POST['userID']},{$_POST['userAddress']},{$_POST['userName']},2,1,0","upgrade.php");
 			exit;
 		}
 	}
