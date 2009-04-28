@@ -244,6 +244,14 @@ $tables = array(
   `inputspec` varchar(100) NOT NULL default 'html.600.400',
   KEY `template` (`template`),
   KEY `tag` (`tag`),
-  PRIMARY KEY  (`id`))"
+  PRIMARY KEY  (`id`))",
+	'zcm_sitepageredirect'=>"CREATE TABLE `zcm_sitepageredirect` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `sitepage` bigint(20) default NULL,
+  `parent` bigint(20) default NULL,
+  `linkurl` varchar(40) default NULL,
+  UNIQUE KEY `id` (`id`),
+  KEY `sitepage` (`sitepage`),
+  KEY `parent` (`parent`))"
   );
 ?>
