@@ -400,6 +400,18 @@
 			include("footer.php");
 		}
 
+		static function RenderThumberJavascript($forceRefresh)
+		{
+			echo("<script type=\"text/javascript\">\n");
+			echo("function mf_aspectcrop_popup(media_file_id, thumbnail) {\n");
+			echo("url = 'media.php?action=edit_media_file_thumbnail&media_file_id={0}&thumbnail={1}&refresh=$forceRefresh';\n");
+			echo("url = url.replace(\"{0}\", media_file_id);\n");
+			echo("url = url.replace(\"{1}\", thumbnail);\n");
+			echo("window.open(url, \"thumber\", \"scrollbars=no,width=780,height=500\");\n");
+			echo("}\n");
+			echo("</script>\n");
+		}
+
 		static function DisplayEditForm($mediaFile, $mediaRelations, $members, $action)
 		{
 			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; Add/Edit Media File";
@@ -407,14 +419,7 @@
 			include("header.php");
 			include('datagrid.php');
 
-			echo("<script type=\"text/javascript\">\n");
-			echo("function mf_aspectcrop_popup(media_file_id, thumbnail) {\n");
-			echo("url = 'media.php?action=edit_media_file_thumbnail&media_file_id={0}&thumbnail={1}';\n");
-			echo("url = url.replace(\"{0}\", media_file_id);\n");
-			echo("url = url.replace(\"{1}\", thumbnail);\n");
-			echo("window.open(url, \"thumber\", \"scrollbars=no,width=780,height=500\");\n");
-			echo("}\n");
-			echo("</script>\n");
+			MediaFileView::RenderThumberJavascript("true");
 
 			DumpDataGridCSS();
 
@@ -726,7 +731,7 @@
 			include("footer.php");
 		}
 
-		static function DisplayThumber($mediaFile, $thumbnail)
+		static function DisplayThumber($mediaFile, $thumbnail, $refreshParent)
 		{
 			list ($width,$height) = explode('x', $thumbnail, 2);
 			$minwidth = $initwidth = $width;
@@ -857,6 +862,7 @@
 			echo("<div id=\"divForm\">\n");
 			echo("<form name=\"frmCrop\" method=\"POST\" action=\"".$_SERVER['REQUEST_URI']."\">\n");
 			echo("<input type=\"hidden\" name=\"action\" value=\"act_edit_media_file_thumbnail\">\n");
+			echo("<input type=\"hidden\" name=\"refreshParent\" value=\"$refreshParent\">\n");
  			echo("<input type=\"hidden\" name=\"cropX\" value=\"10\">\n");
  			echo("<input type=\"hidden\" name=\"cropY\" value=\"10\">\n");
  			echo("<input type=\"hidden\" name=\"cropWidth\" value=\"200\">\n");
@@ -879,13 +885,21 @@
  			echo("</html>\n");
 		}
 
-		static function DisplayThumbCreated()
+		static function DisplayThumbCreated($refreshParent)
 		{
 			echo("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ");
 			echo("\"http://www.w3.org/TR/html4/loose.dtd\">\n");
         	echo("<html>\n");
  			echo("<head>\n");
- 			echo("<script type=\"text/javascript\">window.opener.location.reload(); window.close();</script>");
+ 			echo("<script type=\"text/javascript\">\n");
+
+ 			if($refreshParent)
+ 			{
+ 				echo("window.opener.location.reload();\n");
+ 			}
+
+ 			echo("window.close();\n");
+ 			echo("</script>\n");
 			echo("</head>\n");
 			echo("<body onLoad=\"init();\">\n");
 			echo("&nbsp;");
@@ -1823,7 +1837,7 @@
 			// $output .= "alert('InsertMediaFileInPage fin');\n";
 			$output .= "}\n";
 
-			$output .= "function SelectFile(selectedImage, id) {\n";
+			$output .= "function SelectFile(selectedImage, id, displayName) {\n";
 			$output .= " imgList = document.getElementsByTagName(\"img\");\n";
 			// $output .= " alert(imgList.length);\n";
 			$output .= " for (cntr = 0; cntr < imgList.length; cntr++) {\n";
@@ -1833,6 +1847,7 @@
 			// $output .= "   alert('match found');\n";
 			$output .= "   border = \"2px solid red\";\n";
 			$output .= "   document.getElementById(\"mediaFileID\").value = id;\n";
+			$output .= "   document.getElementById(\"mediaFileAlt\").value = displayName;\n";
 			$output .= "  } else {\n";
 			// $output .= "   alert('match not found');\n";
 			$output .= "   border = \"2px solid white\";\n";
@@ -1850,7 +1865,7 @@
 		public static function DisplayImageList($mediaPackage, $yuiHtmlID)
 		{
 			echo("<input type=\"hidden\" name=\"mediaFileID\" id=\"mediaFileID\" value=\"\">\n");
-			echo("<div style=\"width: 100%; height: 75px; overflow: auto;\">\n");
+			echo("<div style=\"width: 100%; height: 77px; overflow: auto;\">\n");
 			echo("<table cellspacing=\"3\" cellpadding=\"0\" border=\"0\">\n");
 
 			echo("<tr>\n");
@@ -1863,7 +1878,9 @@
 					$mediaFile->get_media_file_id().
 					"'), ".
 					$mediaFile->get_media_file_id().
-					");\"><img id=\"dlgImg_".
+					", '".
+					$mediaFile->get_display_name().
+					"');\"><img id=\"dlgImg_".
 					$mediaFile->get_media_file_id().
 					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
@@ -1877,16 +1894,24 @@
 			echo("</div>\n");
 
 			echo("<table>\n");
+
+			echo("<tr>\n");
+			echo("<td colspan=\"5\">&nbsp;</td>\n");
+			echo("</tr>\n");
+
 			echo("<tr>\n");
 			echo("<td width=\"15%\">Width:</td>");
-			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\"></td>\n");
+			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\" value=\"150\"></td>\n");
 			echo("<td width=\"15%\">Height:</td>");
-			echo("<td width=\"55%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\"></td>\n");
+			echo("<td width=\"15%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\" value=\"100\"></td>\n");
+			echo("<td width=\"40%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value);\"></td>\n");
 			echo("</tr>\n");
+
 			echo("<tr>\n");
 			echo("<td>Alt&nbsp;Text:</td>");
-			echo("<td colspan=\"3\"><input type=\"text\" name=\"alt\" id=\"mediaFileAlt\" size=\"45\" maxlength=\"100\"></td>\n");
+			echo("<td colspan=\"4\"><input type=\"text\" name=\"alt\" id=\"mediaFileAlt\" size=\"45\" maxlength=\"100\"></td>\n");
 			echo("</tr>\n");
+
 			echo("</table>\n");
 		}
 	}
@@ -2067,7 +2092,8 @@
 						$_GET["thumbnail"]);
 					MediaFileView::DisplayThumber(
 						$mediaFile,
-						$_GET["thumbnail"]);
+						$_GET["thumbnail"],
+						$_GET["refresh"]);
 					return true;
 
 				case "act_edit_media_file_thumbnail":
@@ -2076,7 +2102,11 @@
 					MediaFilePopulator::MakeThumbnail(
 						$mediaFile,
 						$_GET["thumbnail"]);
-					MediaFileView::DisplayThumbCreated();
+
+					// print_r($_POST);
+
+					MediaFileView::DisplayThumbCreated(
+						$_POST["refreshParent"] == "true");
 
 					return true;
 
