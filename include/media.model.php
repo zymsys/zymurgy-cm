@@ -433,7 +433,7 @@
 		}
 
 		static function PopulateByID(
-		$media_file_id)
+			$media_file_id)
 		{
 			$sql = "SELECT `member_id`, `mimetype`, `extension`, `display_name`, `price`, ".
 				"`media_restriction_id`, `media_relation_id` FROM `zcm_media_file` ".
@@ -634,8 +634,9 @@
 				{
 					chmod($newPath, 0644);
 
-					if($mediaFile->get_relation() !== null
-						&& strlen($mediaFile->get_relation()->get_thumbnails()) > 0)
+					// if($mediaFile->get_relation() !== null
+					// 	&& strlen($mediaFile->get_relation()->get_thumbnails()) > 0)
+					if(strpos($mediaFile->get_mimetype(), "image/") === 0)
 					{
 						MediaFilePopulator::InitializeThumbnails(
 							$mediaFile);
@@ -644,7 +645,7 @@
 			}
 		}
 
-		public function DeleteMediaFile($mediaFile)
+		static function DeleteMediaFile($mediaFile)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_file_id` = '".
 				mysql_escape_string($mediaFile->get_media_file_id())."'";
@@ -655,6 +656,8 @@
 				mysql_escape_string($mediaFile->get_media_file_id())."'";
 
 			Zymurgy::$db->query($sql) or die("Could not delete media file record: ".mysql_error());
+
+			MediaFilePopulator::DeleteExistingThumbnails($mediaFile);
 
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$filepath = $uploadfolder.
@@ -669,7 +672,7 @@
 			}
 		}
 
-		public function AddRelatedMedia($media_file_id, $related_media_file_id, $media_relation_id)
+		static function AddRelatedMedia($media_file_id, $related_media_file_id, $media_relation_id)
 		{
 			$sql = "INSERT INTO `zcm_media_file_relation` ( `media_file_id`,".
 				" `related_media_file_id`, `media_relation_id` ) VALUES ( '".
@@ -682,7 +685,7 @@
 			Zymurgy::$db->query($sql) or die("Could not add related media: ".mysql_error().", $sql");
 		}
 
-		public function DeleteRelatedMedia($media_file_id, $related_media_file_id)
+		static function DeleteRelatedMedia($media_file_id, $related_media_file_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_relation` WHERE `media_file_id` = '".
 				mysql_escape_string($media_file_id)."' AND `related_media_file_id` = '".
@@ -691,8 +694,28 @@
 			Zymurgy::$db->query($sql) or die("Could not delete related media: ".mysql_error().", $sql");
 		}
 
-		public function InitializeThumbnails($mediaFile)
+		static function DeleteExistingThumbnails($mediaFile)
 		{
+			$thumbPath = Zymurgy::$config["Media File Local Path"].
+				"/".
+				$mediaFile->get_media_file_id().
+				"thumb*.jpg";
+			$thumbs = glob($thumbPath);
+
+			// echo($thumbPath."<br>");
+			// print_r($thumbs);
+			// die();
+
+			foreach($thumbs as $thumb)
+			{
+				unlink($thumb);
+			}
+		}
+
+		static function InitializeThumbnails($mediaFile)
+		{
+			MediaFilePopulator::DeleteExistingThumbnails($mediaFile);
+
 			$thumbnails = explode(",", $mediaFile->get_relation()->get_thumbnails());
 
 			foreach($thumbnails as $thumbnail)
@@ -701,7 +724,7 @@
 			}
 		}
 
-		public function InitializeThumbnail(
+		static function InitializeThumbnail(
 			$mediaFile,
 			$thumbnail,
 			$forceUpdate = false)
@@ -738,7 +761,7 @@
 			}
 		}
 
-		public function MakeThumbnail($mediaFile, $thumbnail)
+		static function MakeThumbnail($mediaFile, $thumbnail)
 		{
 			require_once('include/Thumb.php');
 

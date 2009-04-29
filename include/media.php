@@ -1834,6 +1834,7 @@
 			// $output .= "alert(url);\n";
 			$output .= "alt = document.getElementById(\"mediaFileAlt\").value;\n";
 			$output .= "editor.toolbar.fireEvent('mediafileClick', { type: 'mediaFileClick', img: url, alt: alt } );\n";
+			// $output .= "editor.toolbar.fireEvent('insertimageClick', { type: 'insertimageClick', target: editor.toolbar } );\n";
 			// $output .= "alert('InsertMediaFileInPage fin');\n";
 			$output .= "}\n";
 
