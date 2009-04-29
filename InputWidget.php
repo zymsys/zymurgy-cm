@@ -204,6 +204,7 @@ class InputWidget
 				$output .= Zymurgy::YUI("editor/editor-min.js");
 
 				require_once("include/media.php");
+				MediaFileView::RenderThumberJavascript("false");
 				$output .= PageImageLibraryView::RenderJavascript();
 
 				break;
