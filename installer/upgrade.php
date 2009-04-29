@@ -153,7 +153,7 @@ $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error
 $count = mysql_result($ri,0,0);
 if ($count==0)
 {
-	$sql = "INSERT INTO `zcm_nav` VALUES 
+	$sql = "INSERT INTO `zcm_nav` VALUES
 		(1,1,0,'Content','Sub-Menu',''),
 		(3,3,0,'Admin','Sub-Menu',''),
 		(4,4,0,'Webmaster','Sub-Menu',''),
@@ -205,20 +205,20 @@ $targetVersion = MediaFileInstaller::Version();
 if($installedVersion < $targetVersion)
 {
 	echo("-- Installing/upgrading from version $installedVersion to version $targetVersion");
-	
+
 	MediaFileInstaller::Upgrade($installedVersion, $targetVersion);
 }
-else 
+else
 {
-	echo("-- No install/upgrade required");
+	echo("-- No install/upgrade required<br>");
 }
 
 // ----------
 // ZK: 2008.11.18
 //
 // Traverse the plugins folder and install any items in there.
-// All plugins are now installed automatically by the upgrader, and it's up to the 
-// web developer to remove unwanted items from the menu using the Navigation 
+// All plugins are now installed automatically by the upgrader, and it's up to the
+// web developer to remove unwanted items from the menu using the Navigation
 // configuration system.
 // ----------
 
@@ -232,17 +232,19 @@ $plugins = array();
 $di = opendir('../plugins');
 while (($entry = readdir($di)) !== false)
 {
-	if (!is_dir("../plugins/$entry") & strrpos("../plugins/$entry", ".php") > 0)
+	if (!is_dir("../plugins/$entry")				// entry is not a directory
+		&& strrpos("../plugins/$entry", ".php") > 0	// entry is a PHP file
+		&& strpos("../plugins/$entry", ".#") > 0)	// entry is not a prior version from CVS
 	{
 		list($name,$extension) = explode('.',$entry);
 		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
-		
+
 		echo("-- Including $entry<br>");
 		require_once("../plugins/$entry");
 	}
 }
 closedir($di);
-	
+
 $ri = Zymurgy::$db->query('select * from zcm_plugin');
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {
@@ -250,10 +252,10 @@ while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
 		if ($row['enabled'] == 1)
 			$plugins[$row['name']] = 'E'; // (E)nabled
-		else 
+		else
 			$plugins[$row['name']] = 'D'; // (D)isabled
 	}
-	else 
+	else
 	{
 		$plugins[$row['name']] = 'R'; // (R)emoved
 	}
@@ -266,7 +268,7 @@ foreach ($plugins as $source=>$state)
 	{
 		case 'N': // (N)ew
 			echo("-- Adding $source<br>");
-		
+
 			ExecuteAdd($source);
 			break;
 	}
@@ -279,16 +281,16 @@ foreach ($plugins as $source=>$state)
 echo("Testing for extended third-party components...<br>");
 
 require_once("../jscalendar/calendar.php");
-	
+
 $cal = new DHTML_Calendar(
 	"/zymurgy/jscalendar/",
 	'en',
-	'calendar-win2k-2', 
+	'calendar-win2k-2',
 	false);
 
 if(!method_exists($cal, "SetFieldPrefix"))
 {
-	die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");	
+	die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");
 }
 
 echo("Done.<br>");
@@ -302,12 +304,14 @@ header('Location: ../index.php');
 	function  ExecuteAdd($source)
 	{
 		global $plugins;
-		
+
+		if(strlen($source) <= 0) return;
+
 		//Get an instance of the plugin class
 		echo("---- Getting instance of $source plugin<br>");
 		$factory = "{$source}Factory";
 		$plugin = $factory();
-		
+
 		//Add plugin to the plugin table
 		echo("---- Adding plugin definition to database<br>");
 		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled) values ('".
@@ -316,40 +320,40 @@ header('Location: ../index.php');
 			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1)");
 		$id = Zymurgy::$db->insert_id();
 		//	$id = 7;
-		
+
 		//Add default configuration
 		echo("---- Retrieving default plugin configuration<br>");
 		$defconf = $plugin->GetDefaultConfig();
-		
+
 		//	print_r($defconf);
 		//	echo("<br><br><br>");
 		//	die();
-		
+
 		foreach ($defconf as $cv)
 		{
 			//echo("cv: ");
 			//print_r($cv);
 			//echo("<br>");
-			
+
 			$key = $cv->key;
 			$value = $cv->value;
-			
+
 			// echo($key.": ".$value."<br>");
 			echo("------ $key<br>");
-			
+
 			$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
 				Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
-			
+
 			// echo(htmlentities($sql)."<br>");
 		}
-		
+
 		// die();
-		
+
 		echo("Initializing plugin<br>");
-		
+
 		$plugin->Initialize();
 	}
 ?>
