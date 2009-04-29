@@ -117,10 +117,10 @@ class InputWidget
 		switch ($ep[0])
 		{
 			case "unixdate":
-				$display = date("Y-m-d",$display);
+				$display = date("Y-m-d",strtotime($display));
 				break;
 			case "unixdatetime":
-				$display = date("Y-m-d [g:i A]",$display);
+				$display = date("Y-m-d [g:i A]",strtotime($display));
 				break;
 			case "datetime":
 				$display = date("Y-m-d [g:i A]",strtotime($display));
