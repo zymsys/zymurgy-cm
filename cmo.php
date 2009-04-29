@@ -103,7 +103,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		private static $MemberProvider = null;
 
-		private static $pageid;
+		public static $pageid;
 		private static $title;
 
 		public static $ThemeColor = array(
