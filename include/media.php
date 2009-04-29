@@ -1164,6 +1164,11 @@
 			echo("</table>");
 			echo("</form>");
 
+			echo("<table class=\"DataGrid\" style=\"margin-top: 20px;\">\n");
+			echo("<tr><th style=\"background-color: #A0A0A0; border-bottom: 1px solid black;\">Commands</th></tr>\n");
+			echo("<tr><td style=\"border-bottom: 1px solid black;\"><a style=\"text-decoration: none;\" href=\"media.php?action=list_media_package_files&media_package_id=".$mediaPackage->get_media_package_id()."\">View File Listing</a></td></tr>\n");
+			echo("</table>");
+
 			include("footer.php");
 		}
 
@@ -1208,7 +1213,7 @@
 			echo("<td>Media File Name</td>");
 			echo("<td>Owner</td>");
 			echo("<td>Relation</td>");
-			echo("<td colspan=\"3\">&nbsp;</td>");
+			echo("<td colspan=\"4\">&nbsp;</td>");
 			echo("</tr>");
 
 			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
@@ -1236,6 +1241,8 @@
 					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
 					$mediaFile->get_media_file_id()."\">".
 					"<img src=\"images/Down.gif\" alt=\"Down\" border=\"0\"></a></td>");
+				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
+					$mediaFile->get_media_file_id()."\">Download</a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_package_file&amp;media_package_id=".
 					$mediaPackage->get_media_package_id()."&amp;media_file_id=".
 					$mediaFile->get_media_file_id()."\">Delete</a></td>");
@@ -1243,7 +1250,7 @@
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
+			echo("<td colspan=\"7\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_file&amp;media_package_id=".$mediaPackage->get_media_package_id()."\">Add Media File to Package</td>");
 
 			echo("</table>");
 
