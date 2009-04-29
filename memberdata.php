@@ -66,7 +66,7 @@
 		 * @param int $tableid
 		 * @param string $exitpage
 		 */
-		public function __construct($tableid, $exitpage)
+		public function __construct($tableid, $exitpage = '')
 		{
 			// Authenticate and make sure we have the member's info
 			if (!Zymurgy::memberauthenticate())
@@ -162,7 +162,16 @@
 			$tableid = Zymurgy::$db->get("select id from zcm_customtable where navname='".
 				Zymurgy::$db->escape_string($navname)."'");
 			if ($tableid === FALSE) die("No such custom table: $navname");
-			return new ZymurgyMemberDataTable($tableid, $exitpage);
+			
+			$dataTable = new ZymurgyMemberDataTable($tableid, $exitpage);
+			
+			// ZK: Explicitly set the parent of the base table to null.
+			// Otherwise, the code will render both the base form *and* a 
+			// dialog for the base table if it is a child custom table,
+			// and the tab navigation will break.
+			$dataTable->parent = null;
+			
+			return $dataTable;
 		}
 		
 		/**
@@ -397,9 +406,22 @@
 				$field->renderTableRow($value);
 			}
 			
-			echo "<tr><td colspan=\"2\"><input type=\"submit\" value=\"Save\" /></td></tr>\r\n";
+			echo "<tr><td colspan=\"2\"><input type=\"button\" value=\"Save\" onclick=\"SaveMainForm();\" /></td></tr>\r\n";
 			
 			echo "</table></form>\r\n";
+			
+			echo "<script type=\"text/javascript\">\r\n";
+			echo "function SaveMainForm() {\r\n";
+			foreach($this->fields as $fieldid=>$field) 
+			{ 
+				echo "if(typeof Displayfield{$fieldid}Exists !== \"undefined\") {\r\n";
+				echo "field{$fieldid}Editor.saveHTML();\r\n";
+				// echo "alert(document.getElementById(\"field$fieldid\").value);\r\n";
+				echo "}\r\n";
+			}
+			echo "document.forms[\"zymurgyForm{$this->tablename}\"].submit();\r\n";
+			echo "}\r\n";			
+			echo("</script>\r\n");
 			
 			$this->RenderChildTabViews($rowid);
 		}
@@ -903,7 +925,7 @@
 				$rp = array("\"id\":\"{$row['id']}\"");
 				foreach($this->fields as $field)
 				{
-					if(strpos($field->columnname, "date") > 0
+					if(strpos($field->columnname, "date") !== FALSE
 						&& $row[$field->columnname] > 0)
 					{
 						$date = date("Y-m-d", $row[$field->columnname]);
