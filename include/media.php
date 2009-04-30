@@ -965,12 +965,12 @@
 			echo("<td>Package Type:</td>\n");
 			echo("<td><select name=\"relation_type\">\n");
 			echo("<option value=\"\">(all)</option>\n");
-			foreach($mediaRelations as $mediaRelation)
+			foreach($mediaPackageTypes as $mediaRelation)
 			{
 				echo("<option value=\"".
 					$mediaRelation->get_relation_type().
 					"\"".
-					($mediaRelation->get_relation_type() == $selectedMediaRelationType
+					($mediaRelation->get_relation_type() == $selectedMediaPackageType
 						? " SELECTED"
 						: "").
 					">".
@@ -989,7 +989,7 @@
 				echo("<option value=\"".
 					$member->get_member_id().
 					"\"".
-					($member->get_member_id() == $selectedMemberID
+					($member->get_member_id() == $selectedMember
 						? " SELECTED"
 						: "").
 					">".
