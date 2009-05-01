@@ -1845,7 +1845,7 @@
 			// $output .= "alert('InsertMediaFileInPage fin');\n";
 			$output .= "}\n";
 
-			$output .= "function SelectFile(selectedImage, id, displayName) {\n";
+			$output .= "function SelectFile(selectedImage, id, displayName, width, height) {\n";
 			$output .= " imgList = document.getElementsByTagName(\"img\");\n";
 			// $output .= " alert(imgList.length);\n";
 			$output .= " for (cntr = 0; cntr < imgList.length; cntr++) {\n";
@@ -1856,6 +1856,8 @@
 			$output .= "   border = \"2px solid red\";\n";
 			$output .= "   document.getElementById(\"mediaFileID\").value = id;\n";
 			$output .= "   document.getElementById(\"mediaFileAlt\").value = displayName;\n";
+			$output .= "   document.getElementById(\"mediaFileWidth\").value = width;\n";
+			$output .= "   document.getElementById(\"mediaFileHeight\").value = height;\n";
 			$output .= "  } else {\n";
 			// $output .= "   alert('match not found');\n";
 			$output .= "   border = \"2px solid white\";\n";
@@ -1882,13 +1884,25 @@
 			{
 				$mediaFile = $mediaPackage->get_media_file($cntr);
 
+				$uploadfolder = Zymurgy::$config["Media File Local Path"];
+				$filepath = $uploadfolder.
+					"/".
+					$mediaFile->get_media_file_id().
+					"raw.jpg";
+
+				list($width, $height, $type, $attr) = getimagesize($filepath);
+
 				echo("<td><a href=\"javascript:SelectFile(document.getElementById('dlgImg_".
 					$mediaFile->get_media_file_id().
 					"'), ".
 					$mediaFile->get_media_file_id().
 					", '".
 					$mediaFile->get_display_name().
-					"');\"><img id=\"dlgImg_".
+					"', ".
+					$width.
+					", ".
+					$height.
+					");\"><img id=\"dlgImg_".
 					$mediaFile->get_media_file_id().
 					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
@@ -1909,9 +1923,9 @@
 
 			echo("<tr>\n");
 			echo("<td width=\"15%\">Width:</td>");
-			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\" value=\"150\"></td>\n");
+			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\" value=\"\"></td>\n");
 			echo("<td width=\"15%\">Height:</td>");
-			echo("<td width=\"15%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\" value=\"100\"></td>\n");
+			echo("<td width=\"15%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\" value=\"\"></td>\n");
 			echo("<td width=\"40%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value, 'false');\"></td>\n");
 			echo("</tr>\n");
 
