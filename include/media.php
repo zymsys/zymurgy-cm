@@ -1912,7 +1912,7 @@
 			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\" value=\"150\"></td>\n");
 			echo("<td width=\"15%\">Height:</td>");
 			echo("<td width=\"15%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\" value=\"100\"></td>\n");
-			echo("<td width=\"40%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value);\"></td>\n");
+			echo("<td width=\"40%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value, 'false');\"></td>\n");
 			echo("</tr>\n");
 
 			echo("<tr>\n");
