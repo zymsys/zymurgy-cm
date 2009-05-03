@@ -590,7 +590,15 @@ class ZymurgyMember
 			switch ($reg)
 			{
 				case 'username':
-					$r[] = Zymurgy::$config['MembershipUsernameForm'];
+					if (array_key_exists('MembershipUsernameForm',Zymurgy::$config))
+						$r[] = Zymurgy::$config['MembershipUsernameForm'];
+					else
+						$r[] = '<form class="MemberForm" method="post"><table>
+        <tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>
+        <tr><td align="right">Password:</td><td><input type="password" name="pass" id="pass"></td></tr>
+        <tr><td align="right">Confirm Password:</td><td><input type="password" name="pass2" id="pass2"></td></tr>
+        <tr><td align="center" colspan="2"><input type="Submit" value="Signup"></td></tr>
+        </table></form>';
 					return implode("\r\n",$r);
 				case 'extra':
 					//May also confirm email from step one.
@@ -632,11 +640,14 @@ class ZymurgyMember
 			}
 			//None of the above?  Fall through to login.
 		}
-		if (!array_key_exists('MembershipLoginForm',Zymurgy::$config))
-		{
-			die("Please define \$ZymurgyConfig['MembershipLoginForm'] before using membership features.");
-		}
-		$r[] = Zymurgy::$config['MembershipLoginForm'];
+		if (array_key_exists('MembershipLoginForm',Zymurgy::$config))
+			$r[] = Zymurgy::$config['MembershipLoginForm'];
+		else 
+			$r[] = '<form class="MemberLogin" method="post"><table>
+        <tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>
+        <tr><td align="right">Password:</td><td><input type="password" name="pass" id="pass"></td></tr>
+        <tr><td align="center" colspan="2"><input type="Submit" value="Login"></td></tr>
+        </table></form>';
 		return implode("\r\n",$r);
 	}
 	

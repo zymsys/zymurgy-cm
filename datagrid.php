@@ -1405,51 +1405,13 @@ class DataGrid
 
 $hasdumpeddatagridcss = false;
 
-function DumpDataGridCSS($schemename='')
+function DumpDataGridCSS()
 {
-	global $ZymurgyConfig;
-
-	if (is_array($ZymurgyConfig) && (array_key_exists('gridcss',$ZymurgyConfig)))
-		$gridcss = $ZymurgyConfig['gridcss'];
-
-	echo '<style type="text/css">
-<!--
-';
-	switch ($schemename)
-	{
-		case 'blank':
-			break;
-		default:
-			if (!isset($gridcss))
-				$gridcss = "table.DataGrid {
-	background-color:White;
-	border-color:#999999;
-	border-width:1px;
-	border-style:None;
-	border-collapse:collapse;
-}
-tr.DataGridHeader {
-	color:#000000;
-	background-color:#999999;
-	font-weight:bold;
-}
-tr.DataGridRow {
-	color:Black;
-	background-color:#FFFFFF;
-}
-tr.DataGridRowAlternate {
-	color:Black;
-	background-color:#cccccc;
-}
-a.DataGrid {
-	color:White;
-}
-";
-			echo $gridcss;
-	}
-	echo '-->
-</style>
-';
+	if (array_key_exists('gridcss',Zymurgy::$config))
+		$gridcss = Zymurgy::$config['gridcss'];
+	else 
+		$gridcss = "/zymurgy/include/datagrid.css";
+	echo '<link href="'.$gridcss.'" rel="stylesheet" type="text/css" />';
 }
 
 //Tried putting these in a class, but PHP4 won't call static methods as "variable functions".  So here we are.

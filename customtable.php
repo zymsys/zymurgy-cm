@@ -222,7 +222,11 @@ function OnBeforeInsert($values)
 		Zymurgy::$db->run("alter table `{$values['zcm_customtable.tname']}` add selfref bigint default 0");
 		Zymurgy::$db->run("alter table `{$values['zcm_customtable.tname']}` add index(selfref)");
 	}
-	return $values; // Change values you want to alter before the insert occurs.
+	if ($detailfor == 0)
+	{
+		///TODO: Add to navigation
+	}
+	return $values;
 }
 
 $ds = new DataSet('zcm_customtable','id');
