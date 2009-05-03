@@ -232,15 +232,21 @@ $plugins = array();
 $di = opendir('../plugins');
 while (($entry = readdir($di)) !== false)
 {
-	if (!is_dir("../plugins/$entry")				// entry is not a directory
-		&& strrpos("../plugins/$entry", ".php") > 0	// entry is a PHP file
-		&& strpos("../plugins/$entry", ".#") > 0)	// entry is not a prior version from CVS
+	$reasons = array();
+	if (is_dir("../plugins/$entry")) $reasons[] = "is a directory";
+	if (strrpos("../plugins/$entry", ".php") === false) $reasons[] = "not a php file";
+	if (strpos("../plugins/$entry", ".#") !== false) $reasons[] = "CVS file";
+	if (count($reasons) == 0)	// entry is not a prior version from CVS
 	{
 		list($name,$extension) = explode('.',$entry);
 		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
 
 		echo("-- Including $entry<br>");
 		require_once("../plugins/$entry");
+	}
+	else 
+	{
+		echo "-- Skipping $entry (".implode(', ',$reasons).")<br>";
 	}
 }
 closedir($di);
@@ -299,7 +305,7 @@ echo("Done.<br>");
 // END - Install plugins
 // ----------
 
-header('Location: ../index.php');
+//header('Location: ../index.php');
 
 	function  ExecuteAdd($source)
 	{
