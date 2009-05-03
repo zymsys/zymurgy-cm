@@ -305,7 +305,7 @@ echo("Done.<br>");
 // END - Install plugins
 // ----------
 
-//header('Location: ../index.php');
+header('Location: ../index.php');
 
 	function  ExecuteAdd($source)
 	{
