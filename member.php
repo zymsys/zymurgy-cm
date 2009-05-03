@@ -189,8 +189,6 @@ class ZymurgyMember
 		$confirmfield,
 		$redirect)
 	{
-		die("base membersignup called");
-		
 		$pi = Zymurgy::mkplugin('Form',$formname);
 		$pi->LoadInputData();
 		$userid = $password = $confirm = '';
@@ -220,7 +218,8 @@ class ZymurgyMember
 				$userid,
 				$password,
 				$confirm,
-				$authed);			
+				$authed,
+				$pi);
 			
 			if (!$pi->IsValid())
 			{
@@ -241,11 +240,11 @@ class ZymurgyMember
 			if (!$authed)
 			{
 				//New registration
-				$ri = ZymurgyMember::membersignup_CreateMember($userid, $password);
+				$ri = ZymurgyMember::membersignup_CreateMember($userid, $password, $pi);
 
 				if($ri)
 				{
-					ZymurgyMember::membersignup_AuthenticateNewMember($userid, $password);
+					ZymurgyMember::membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values);
 				}
 			}
 			else 
@@ -327,7 +326,8 @@ class ZymurgyMember
 		$userid,
 		$password,
 		$confirm,
-		$authed)
+		$authed,
+		$pi)
 	{		
 		//Now we have our rows, is there anything obviously wrong?
 		if ($userid == '')
@@ -340,9 +340,7 @@ class ZymurgyMember
 			$pi->ValidationErrors[] = 'Password is a required field.';
 	}
 	
-	function membersignup_CreateMember(
-		$userid,
-		$password)
+	function membersignup_CreateMember($userid,	$password, $pi)
 	{
 		// die("membersignup_CreateMember() Start");
 			
@@ -368,9 +366,7 @@ class ZymurgyMember
 		return $ri;
 	}
 	
-	function membersignup_AuthenticateNewMember(
-		$userid,
-		$password)
+	function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
 	{
 		if (Zymurgy::memberdologin($userid,$password))
 		{

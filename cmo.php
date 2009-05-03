@@ -995,5 +995,10 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$imagehandler = new ZymurgyImageHandlerImageMagick();
 			break;
 	}
+	
+	if (array_key_exists('Debug',Zymurgy::$config) && (Zymurgy::$config['Debug'] > 0))
+	{
+		error_reporting(Zymurgy::$config['Debug']);
+	}
 }
 ?>
