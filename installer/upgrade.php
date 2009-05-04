@@ -210,7 +210,7 @@ if($installedVersion < $targetVersion)
 }
 else
 {
-	echo("-- No install/upgrade required<br>");
+	echo("-- No install/upgrade required");
 }
 
 // ----------
@@ -233,9 +233,11 @@ $di = opendir('../plugins');
 while (($entry = readdir($di)) !== false)
 {
 	$reasons = array();
+
 	if (is_dir("../plugins/$entry")) $reasons[] = "is a directory";
 	if (strrpos("../plugins/$entry", ".php") === false) $reasons[] = "not a php file";
 	if (strpos("../plugins/$entry", ".#") !== false) $reasons[] = "CVS file";
+
 	if (count($reasons) == 0)	// entry is not a prior version from CVS
 	{
 		list($name,$extension) = explode('.',$entry);
@@ -244,7 +246,7 @@ while (($entry = readdir($di)) !== false)
 		echo("-- Including $entry<br>");
 		require_once("../plugins/$entry");
 	}
-	else 
+	else
 	{
 		echo "-- Skipping $entry (".implode(', ',$reasons).")<br>";
 	}
@@ -310,8 +312,6 @@ header('Location: ../index.php');
 	function  ExecuteAdd($source)
 	{
 		global $plugins;
-
-		if(strlen($source) <= 0) return;
 
 		//Get an instance of the plugin class
 		echo("---- Getting instance of $source plugin<br>");
