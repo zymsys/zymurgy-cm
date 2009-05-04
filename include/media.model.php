@@ -246,8 +246,7 @@
 		 * Make an existing media file related to this one.
 		 *
 		 * @param MediaFile $newValue
-		 * @return int The number of media files related to this one,
-		 * including the newly added file.
+		 * @return int The key of the newly added file.
 		 */
 		public function add_relatedmedia($newValue)
 		{
@@ -1087,6 +1086,10 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a MediaPackage.
+	 *
+	 */
 	class MediaPackage
 	{
 		private $m_media_package_id;
@@ -1101,81 +1104,173 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the media packages's ID, as stored in the database.
+		 *
+		 * @return int The media_package_id
+		 */
 		public function get_media_package_id()
 		{
 			return $this->m_media_package_id;
 		}
 
+		/**
+		 * Set the media package's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_package_id($newValue)
 		{
 			$this->m_media_package_id = $newValue;
 		}
 
+		/**
+		 * Get the member information on the owner of the media package.
+		 *
+		 * @return MediaMember The MediaMember object describing the
+		 * owner of the media package.
+		 */
 		public function get_member()
 		{
 			return $this->m_member;
 		}
 
+		/**
+		 * Set the member information on the owner of the media file.
+		 *
+		 * @param MediaMember $newValue
+		 */
 		public function set_member($newValue)
 		{
 			$this->m_member = $newValue;
 		}
 
+		/**
+		 * Get the name of the package to display on the front-end.
+		 *
+		 * @return string The name of the package.
+		 */
 		public function get_display_name()
 		{
 			return $this->m_display_name;
 		}
 
+		/**
+		 * Set the nawe of the package to display on the front-end.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_display_name($newValue)
 		{
 			$this->m_display_name = $newValue;
 		}
 
+		/**
+		 * Get the price of the media package, when it is attached
+		 * to a for-pay system on the web site.
+		 *
+		 * @return currency The price of the package
+		 */
 		public function get_price()
 		{
 			return $this->m_price;
 		}
 
+		/**
+		 * Set the price of the media package, when it is attached
+		 * to a for-pay system on the web site.
+		 *
+		 * @return currency The price of the package
+		 */
 		public function set_price($newValue)
 		{
 			$this->m_price = $newValue;
 		}
 
+		/**
+		 * Get the object describing the download restrictions on the
+		 * package.
+		 *
+		 * @return MediaRestriction The media restriction object
+		 */
 		public function get_restriction()
 		{
 			return $this->m_restriction;
 		}
 
+		/**
+		 * Set the object describing the download restrictions on the
+		 * package.
+		 *
+		 * @param MediaRestriction $newValue
+		 */
 		public function set_restriction($newValue)
 		{
 			$this->m_restriction = $newValue;
 		}
 
+		/**
+		 * Get the object describing the package type.
+		 *
+		 * @return MediaPackageType The media package type object.
+		 */
 		public function get_packagetype()
 		{
 			return $this->m_packagetype;
 		}
 
+		/**
+		 * Set the object describing the package type.
+		 *
+		 * @param MediaPackageType $newValue
+		 */
 		public function set_packagetype($newValue)
 		{
 			$this->m_packagetype = $newValue;
 		}
 
+		/**
+		 * Get the information on a media file that is part of
+		 * this package.
+		 *
+		 * @param int $key
+		 * @return MediaFile The media file at the given key.
+		 */
 		public function get_media_file($key)
 		{
 			return $this->m_media_files[$key];
 		}
 
+		/**
+		 * Get the number of media files in the package. Note that if
+		 * the array was populated using a relation filter, this will
+		 * only count files that match the filter.
+		 *
+		 * @return int The file count
+		 */
 		public function get_media_file_count()
 		{
 			return count($this->m_media_files);
 		}
 
+		/**
+		 * Set the media file information for the media file at
+		 * the given key.
+		 *
+		 * @param int $key
+		 * @param MediaFile $newValue
+		 */
 		public function set_media_file($key, $newValue)
 		{
 			$this->m_media_files[$key] = $newValue;
 		}
 
+		/**
+		 * Add the given media file to the package.
+		 *
+		 * @param MediaFile $media_file
+		 * @return int The key of the newly added media file.
+		 */
 		public function add_media_file($media_file)
 		{
 			$this->m_media_files[] = $media_file;
@@ -1183,27 +1278,49 @@
 			return count($this->m_media_files) - 1;
 		}
 
+		/**
+		 * Remove the given media file from the package.
+		 *
+		 * @param int $key The key of the file to remove from the package
+		 */
 		public function delete_media_file($key)
 		{
 			unset($this->m_media_files[$key]);
 		}
 
+		/**
+		 * Clear the list of media files in the package.
+		 */
 		public function clear_media_files()
 		{
 			$this->m_media_files = array();
 		}
 
+		/**
+		 * Get the list of errors in the media package object. This is
+		 * populated as part of the validate() method, and is typically
+		 * called as part of the save process during data input.
+		 *
+		 * @return string[] The list of errors in the object.
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
-		public function set_errors($newValue)
-		{
-			$this->m_errors = $newValue;
-		}
-
-		public function validate($action)
+		/**
+		 * Validate the media package object. This is typically called as
+		 * part of the save process during data input. If there are
+		 * errors, the errors array will be populated, and may be retrieved
+		 * by calling get_errors().
+		 *
+		 * @param string $action The controller action. Used to enable add-only
+		 * and edit-only specific validations. The supported actions are
+		 * "act_add_media_package" and "act_edit_media_package".
+		 * @return boolean True if the data is valid. Otherwise false.
+		 */
+		public function validate(
+			$action)
 		{
 			$isValid = true;
 
@@ -1216,7 +1333,17 @@
 			return $isValid;
 		}
 
-		public function MoveMediaFile($mediaFileID, $offset)
+		/**
+		 * Move the given media file either up or down within the
+		 * package.
+		 *
+		 * @param int $mediaFileID The ID of the media file to move.
+		 * @param int $offset The offset. To move the file up, set this to -1.
+		 * To move the file down, set this to 1.
+		 */
+		public function MoveMediaFile(
+			$mediaFileID,
+			$offset)
 		{
 			// Just in case the media file disporder has been corrupted,
 			// clean it up.
@@ -1242,6 +1369,10 @@
 			}
 		}
 
+		/**
+		 * Ensure the display order indexes for the media files
+		 * within the package are contiguous.
+		 */
 		public function FixMediaFileOrder()
 		{
 			for($cntr = 0; $cntr < count($this->m_media_files); $cntr++)
