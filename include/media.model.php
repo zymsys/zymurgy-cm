@@ -1926,7 +1926,7 @@
 		 * on its key within the array.
 		 *
 		 * @param int $key
-		 * @return MediaRelation
+		 * @return MediaPackageTypeAllowedRelation
 		 */
 		public function get_allowedrelation($key)
 		{
@@ -1949,7 +1949,7 @@
 		 * media package type at the given key.
 		 *
 		 * @param int $key
-		 * @param MediaRelation $newValue
+		 * @param MediaPackageTypeAllowedRelation $newValue
 		 */
 		public function set_allowedrelation($key, $newValue)
 		{
@@ -1960,7 +1960,7 @@
 		 * Add a relation type to the list of allowed relations for
 		 * this media package
 		 *
-		 * @param MediaRelation $allowedrelation
+		 * @param MediaPackageTypeAllowedRelation $allowedrelation
 		 * @return int The key for the newly added allowed media
 		 * relation
 		 */
