@@ -1382,15 +1382,36 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * MediaPackage object, or an array of MediaPackage objects. Most of the
+	 * methods populate the MediaPackage object from the database, but the
+	 * object may also be populated from a web form.
+	 *
+	 */
 	class MediaPackagePopulator
 	{
-		static function PopulateAll()
+		/**
+		 * Return all of the media packages in the database.
+		 *
+		 * @return MediaPackage[]
+		 */
+		public static function PopulateAll()
 		{
 			return MediaPackagePopulator::PopulateMultiple(
 				"1 = 1");
 		}
 
-		static function PopulateByOwner(
+		/**
+		 * Return all of the media packages owned by the given member.
+		 *
+		 * @param int $member_id Optional. The ID of the owner of the
+		 * packages to return.
+		 * @param string $packageType Optional. The name of the package
+		 * type of packages to return.
+		 * @return MediaPackage[]
+		 */
+		public static function PopulateByOwner(
 			$member_id = 0,
 			$packageType = "")
 		{
@@ -1413,7 +1434,7 @@
 				"$ownerCriteria AND $typeCriteria");
 		}
 
-		static function PopulateMultiple($criteria)
+		private static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`,".
 				" `display_name`, `price`, `media_package_type_id` ".
@@ -1449,7 +1470,13 @@
 			return $mediaPackages;
 		}
 
-		static function PopulateByID($media_package_id)
+		/**
+		 * Return a media package, given it's media_package_id in the database.
+		 *
+		 * @param int $media_package_id
+		 * @return MediaPackage
+		 */
+		public static function PopulateByID($media_package_id)
 		{
 			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name`, ".
 				"`price`, `media_package_type_id` FROM `zcm_media_package` WHERE ".
@@ -1483,7 +1510,14 @@
 			}
 		}
 
-		static function PopulateMediaFiles(
+		/**
+		 * Populate the list of media files in a given package.
+		 *
+		 * @param MediaPackage $mediaPackage The media package to populate
+		 * @param string $mediaRelationType Optional. The relation type to
+		 * filter the media files by.
+		 */
+		public static function PopulateMediaFiles(
 			&$mediaPackage,
 			$mediaRelationType = '')
 		{
@@ -1527,7 +1561,12 @@
 			}
 		}
 
-		static function PopulateFromForm()
+		/**
+		 * Populate a MediaPackage object based on the contents of a form.
+		 *
+		 * @return MediaPackage
+		 */
+		public static function PopulateFromForm()
 		{
 			$mediaPackage = new MediaPackage();
 
@@ -1546,7 +1585,12 @@
 			return $mediaPackage;
 		}
 
-		static function SaveMediaPackage($mediaPackage)
+		/**
+		 * Save the information on a given MediaPackage to the database.
+		 *
+		 * @param MediaPackage $mediaPackage
+		 */
+		public static function SaveMediaPackage($mediaPackage)
 		{
 			$sql = "";
 
@@ -1578,7 +1622,12 @@
 			}
 		}
 
-		public function DeleteMediaPackage($media_package_id)
+		/**
+		 * Remove a given media package from the database.
+		 *
+		 * @param int $media_package_id
+		 */
+		public static function DeleteMediaPackage($media_package_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
 				mysql_escape_string($media_package_id)."'";
@@ -1591,11 +1640,19 @@
 			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
 		}
 
-		public function AddMediaFileToPackage(
-		$media_package_id,
-		$media_file_id,
-		$media_relation_id,
-		$disporder)
+		/**
+		 * Add a media file to a given media package.
+		 *
+		 * @param int $media_package_id
+		 * @param int $media_file_id
+		 * @param int $media_relation_id
+		 * @param int $disporder
+		 */
+		public static function AddMediaFileToPackage(
+			$media_package_id,
+			$media_file_id,
+			$media_relation_id,
+			$disporder)
 		{
 			$sql = "INSERT INTO `zcm_media_file_package` ( `media_package_id`, ".
 				"`media_file_id`, `media_relation_id`, `disporder` ) VALUES ('".
@@ -1608,7 +1665,13 @@
 				or die("Could not add media file to media package: ".mysql_error().", $sql");
 		}
 
-		public function SaveMediaFileOrder($mediaPackage)
+		/**
+		 * Save the updated display order for all of the media files
+		 * in a given media package.
+		 *
+		 * @param MediaPackage $mediaPackage
+		 */
+		public static function SaveMediaFileOrder($mediaPackage)
 		{
 			for($cntr = 0; $cntr < $mediaPackage->get_media_file_count(); $cntr++)
 			{
@@ -1624,7 +1687,15 @@
 			}
 		}
 
-		public function DeleteMediaFileFromPackage($media_package_id, $media_file_id)
+		/**
+		 * Remove the given media file from the given media package.
+		 *
+		 * @param int $media_package_id
+		 * @param int $media_file_id
+		 */
+		public static function DeleteMediaFileFromPackage(
+			$media_package_id,
+			$media_file_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
 				mysql_escape_string($media_package_id)."' AND `media_file_id` = '".
@@ -1633,7 +1704,16 @@
 			Zymurgy::$db->query($sql) or die("Could not delete media file from media package: ".mysql_error());
 		}
 
-		public function SwapMediaFiles(
+		/**
+		 * Swap the given media files within a package. This method
+		 * is used to re-order items within a package.
+		 *
+		 * @param MediaPackage $mediaPackage
+		 * @param MediaFile $mediaFile1
+		 * @param MediaFile $mediaFile2
+		 * @param string $relationType
+		 */
+		public static function SwapMediaFiles(
 			$mediaPackage,
 			$mediaFile1,
 			$mediaFile2,
@@ -1693,6 +1773,16 @@
 			MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
 		}
 
+		/**
+		 * Build an return a ZIP file containing all of the media
+		 * files in a given package. This method assumes that the
+		 * list of media files in the package has already been populated.
+		 *
+		 * @param MediaPackage $mediaPackage
+		 * @param boolean $forceRebuild If true, the ZIP file is regenerated
+		 * even if the file already exists. Otherwise, the cached version of
+		 * the file will be returned if it is available.
+		 */
 		public static function BuildZipFile($mediaPackage, $forceRebuild)
 		{
 			$zip = new ZipArchive();
