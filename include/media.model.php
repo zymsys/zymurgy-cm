@@ -2003,7 +2003,6 @@
 			return $this->m_errors;
 		}
 
-
 		/**
 		 * Validate the media package type object. This is typically called as
 		 * part of the save process during data input. If there are
@@ -2035,6 +2034,11 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a
+	 * MediaPackageTypeAllowedRelation.
+	 *
+	 */
 	class MediaPackageTypeAllowedRelation
 	{
 		private $m_media_package_type_allowed_relation_id;
@@ -2046,56 +2050,113 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the relation's ID, as stored in the database.
+		 *
+		 * @return int The media_package_type_allowed_relation_id
+		 */
 		public function get_media_package_type_allowed_relation_id()
 		{
 			return $this->m_media_package_type_allowed_relation_id;
 		}
 
+		/**
+		 * Set the media relation's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_package_type_allowed_relation_id($newValue)
 		{
 			$this->m_media_package_type_allowed_relation_id = $newValue;
 		}
 
+		/**
+		 * Get the ID of the media package type this relation is
+		 * associated with, as stored in the database.
+		 *
+		 * @return int the media_package_type_id
+		 */
 		public function get_media_package_type_id()
 		{
 			return $this->m_media_package_type_id;
 		}
 
+		/**
+		 * Get the ID of the media package type this relation is
+		 * associated with, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_package_type_id($newValue)
 		{
 			$this->m_media_package_type_id = $newValue;
 		}
 
+		/**
+		 * Get the maximum number of instances of this relation/
+		 * file type a given package may contain.
+		 *
+		 * @return int
+		 */
 		public function get_maxinstances()
 		{
 			return $this->m_maxinstances;
 		}
 
+		/**
+		 * Set the maximum number of instances of this relation/
+		 * file type a given package may contain.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_maxinstances($newValue)
 		{
 			$this->m_maxinstances = $newValue;
 		}
 
+		/**
+		 * Get the information on the relation being associated
+		 * with the media package type.
+		 *
+		 * @return MediaRelation
+		 */
 		public function get_relation()
 		{
 			return $this->m_relation;
 		}
 
+		/**
+		 * Set the relation being associated with the media package type.
+		 *
+		 * @param MediaRelation $newValue
+		 */
 		public function set_relation($newValue)
 		{
 			$this->m_relation = $newValue;
 		}
 
+		/**
+		 * Get the list of errors in the relation object. This is
+		 * populated as part of the validate() method, and is typically
+		 * called as part of the save process during data input.
+		 *
+		 * @return string[] The list of errors in the object.
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
-		public function set_errors($newValue)
-		{
-			$this->m_errors = $newValue;
-		}
-
+		/**
+		 * Validate the relation object. This is typically called as
+		 * part of the save process during data input. If there are
+		 * errors, the errors array will be populated, and may be retrieved
+		 * by calling get_errors().
+		 *
+		 * @param string $action The controller action. Used to enable add-only
+		 * and edit-only specific validations.
+		 * @return boolean True if the data is valid. Otherwise false.
+		 */
 		public function validate($action)
 		{
 			$isValid = true;
@@ -2124,8 +2185,20 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * MediaPackage object, or an array of MediaPackage objects. Most of the
+	 * methods populate the MediaPackage object from the database, but the
+	 * object may also be populated from a web form.
+	 *
+	 */
 	class MediaPackageTypePopulator
 	{
+		/**
+		 * Return all of the package types defined in the database.
+		 *
+		 * @return MediaPackageType[]
+		 */
 		public static function PopulateAll()
 		{
 			$sql = "SELECT `media_package_type_id`, `package_type`, ".
@@ -2150,6 +2223,13 @@
 			return $packageTypes;
 		}
 
+		/**
+		 * Return the information on a single media package type,
+		 * given it's ID in the database.
+		 *
+		 * @param int $media_package_type_id
+		 * @return MediaPackageType
+		 */
 		public static function PopulateByID(
 			$media_package_type_id)
 		{
@@ -2174,6 +2254,13 @@
 			}
 		}
 
+		/**
+		 * Return the information on a single media package type, given it's
+		 * one-word text descriptor.
+		 *
+		 * @param string $package_type
+		 * @return MediaPackageType
+		 */
 		public static function PopulateByType(
 			$package_type)
 		{
@@ -2198,6 +2285,11 @@
 			}
 		}
 
+		/**
+		 * Populate the list of allowed relations for a given package type.
+		 *
+		 * @param MediaPackageType $packageType
+		 */
 		public static function PopulateAllowedRelations(
 			&$packageType)
 		{
@@ -2223,6 +2315,13 @@
 			}
 		}
 
+		/**
+		 * Return the information on a single allowed relation, given the
+		 * relation's ID in the database.
+		 *
+		 * @param int $allowedRelationID
+		 * @return MediaPackageTypeAllowedRelation
+		 */
 		public static function PopulateAllowedRelationByID(
 			$allowedRelationID)
 		{
@@ -2249,7 +2348,12 @@
 			}
 		}
 
-		static function PopulateFromForm()
+		/**
+		 * Populate a MediaPackageType object, given the contents of a web form.
+		 *
+		 * @return MediaPackageType
+		 */
+		public static function PopulateFromForm()
 		{
 			$packageType = new MediaPackageType();
 
@@ -2260,6 +2364,12 @@
 			return $packageType;
 		}
 
+		/**
+		 * Populate a MediaPackageTypeAllowedRelation object, given the contents
+		 * of a web form.
+		 *
+		 * @return MediaPackageTypeAllowedRelation
+		 */
 		public static function PopulateAllowedRelationFromForm()
 		{
 			$allowedRestriction = new MediaPackageTypeAllowedRelation();
@@ -2276,7 +2386,12 @@
 			return $allowedRestriction;
 		}
 
-		static function SaveMediaPackageType($packageType)
+		/**
+		 * Save the information on a media package type to the database.
+		 *
+		 * @param MediaPackageType $packageType
+		 */
+		public static function SaveMediaPackageType($packageType)
 		{
 			$sql = "";
 
@@ -2305,6 +2420,12 @@
 			}
 		}
 
+		/**
+		 * Remove a media package type from the database.
+		 *
+		 * @param int $media_package_type_id The ID of the media package type to
+		 * remove, as stored in the database.
+		 */
 		public static function DeleteMediaPackageType($media_package_type_id)
 		{
 			$sql = "DELETE FROM `zcm_media_package_type` WHERE `media_package_type_id` = '".
@@ -2313,6 +2434,12 @@
 			Zymurgy::$db->query($sql) or die("Could not delete package type: ".mysql_error());
 		}
 
+		/**
+		 * Save the information on an allowed relation type for a media package
+		 * type to the database.
+		 *
+		 * @param MediaPackageTypeAllowedRelation $allowedRelation
+		 */
 		public static function SaveMediaPackageTypeAllowedRelation($allowedRelation)
 		{
 			$sql = "";
@@ -2345,6 +2472,12 @@
 			}
 		}
 
+		/**
+		 * Remove an allowed relation for a media package type from the database.
+		 *
+		 * @param int $allowedRelationID The ID of the relation to
+		 * remove, as stored in the database.
+		 */
 		public static function DeleteMediaPackageTypeAllowedRelation($allowedRelationID)
 		{
 			$sql = "DELETE FROM `zcm_media_package_type_allowed_relation` ".
