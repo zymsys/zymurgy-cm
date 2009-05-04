@@ -117,10 +117,10 @@ class InputWidget
 		switch ($ep[0])
 		{
 			case "unixdate":
-				$display = date("Y-m-d",strtotime($display));
+				$display = date("Y-m-d",$display);
 				break;
 			case "unixdatetime":
-				$display = date("Y-m-d [g:i A]",strtotime($display));
+				$display = date("Y-m-d [g:i A]",$display);
 				break;
 			case "datetime":
 				$display = date("Y-m-d [g:i A]",strtotime($display));
@@ -204,7 +204,7 @@ class InputWidget
 				$output .= Zymurgy::YUI("editor/editor-min.js");
 
 				require_once("include/media.php");
-				MediaFileView::RenderThumberJavascript("false");
+				MediaFileView::RenderThumberJavascript(false);
 				$output .= PageImageLibraryView::RenderJavascript();
 
 				break;
