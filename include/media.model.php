@@ -420,14 +420,34 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * MediaFile object, or an array of MediaFile objects. Most of the methods
+	 * populate the MediaFile object from the database, but the object may
+	 * also be populated from a web form.
+	 *
+	 */
 	class MediaFilePopulator
 	{
-		static function PopulateAll()
+		/**
+		 * Return all of the media files in the database
+		 *
+		 * @return MediaFile[]
+		 */
+		public static function PopulateAll()
 		{
 			return MediaFilePopulator::PopulateMultiple("1 = 1");
 		}
 
-		static function PopulateByOwner(
+		/**
+		 * Return all of the media files owned by a particular member.
+		 *
+		 * @param int $member_id Optional. The ID of the owner of the media files.
+		 * @param string $mediaRelationType Optional. The relation type of the
+		 * files to return
+		 * @return MediaFile[]
+		 */
+		public static function PopulateByOwner(
 			$member_id = 0,
 			$mediaRelationType = "")
 		{
@@ -453,7 +473,16 @@
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
 
-		static function PopulateStrayFiles(
+		/**
+		 * Return all of the media files that have not been placed in
+		 * a package.
+		 *
+		 * @param int $member_id Optional. The ID of the owner of the media files.
+		 * @param string $mediaRelationType Optional. The relation type of the
+		 * files to return
+		 * @return MediaFile[]
+		 */
+		public static function PopulateStrayFiles(
 			$member_id,
 			$mediaRelationType = "")
 		{
@@ -477,7 +506,17 @@
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
 
-		static function PopulateAllNotInPackage(
+		/**
+		 * Return all of the media files that have not been placed in
+		 * a given package.
+		 *
+		 * @param MediaPackage $mediaPackage
+		 * @param string $mediaRelationType Optional. The relation type of the
+		 * files to return
+		 * @param int $owner Optional. The ID of the owner of the media files.
+		 * @return MediaFile[]
+		 */
+		public static function PopulateAllNotInPackage(
 			$mediaPackage,
 			$mediaRelationType = "",
 			$owner = 0)
@@ -517,7 +556,16 @@
 			return MediaFilePopulator::PopulateMultiple($criteria);
 		}
 
-		static function PopulateAllNotRelated(
+		/**
+		 * Return all of the media files not related to a given media file.
+		 *
+		 * @param MediaFile $mediaFile
+		 * @param string $mediaRelationType Optional. The relation type of the
+		 * files to return
+		 * @param int $owner Optional. The ID of the owner of the media files.
+		 * @return MediaFile[]
+		 */
+		public static function PopulateAllNotRelated(
 			$mediaFile,
 			$mediaRelationType = "",
 			$owner = 0)
@@ -601,8 +649,14 @@
 			return $mediaFiles;
 		}
 
-		static function PopulateByID(
-		$media_file_id)
+		/**
+		 * Populate a MemberFile object by the given ID in the database.
+		 *
+		 * @param int $media_file_id The ID of the MediaFile
+		 * @return MediaFile
+		 */
+		public static function PopulateByID(
+			$media_file_id)
 		{
 			$sql = "SELECT `member_id`, `mimetype`, `extension`, `display_name`, `price`, ".
 				"`media_restriction_id`, `media_relation_id` FROM `zcm_media_file` ".
@@ -639,7 +693,15 @@
 			}
 		}
 
-		static function PopulateRelatedMedia(
+		/**
+		 * Populate the list of related media files for a given media file.
+		 * Only call this if you need to access the related media.
+		 *
+		 * @param MediaFile $base_media_file
+		 * @param string $mediaRelationType Optional. The relation type of the
+		 * files to return
+		 */
+		public static function PopulateRelatedMedia(
 			$base_media_file,
 			$mediaRelationType = '')
 		{
@@ -675,7 +737,12 @@
 			}
 		}
 
-		static function PopulateFromForm()
+		/**
+		 * Populate a MediaFile given the contents of a web form.
+		 *
+		 * @return MediaFile
+		 */
+		public static function PopulateFromForm()
 		{
 			$mediaFile = new MediaFile();
 
@@ -704,7 +771,17 @@
 			return $mediaFile;
 		}
 
-		static function GetFilestream(
+		/**
+		 * Populate the file stream for the given media file. Only call this
+		 * if you need to access the stream.
+		 *
+		 * @param MediaFile $mediaFile
+		 * @param string $suffix Optional. The suffix to apply to the media
+		 * file's name in the back-end. This is used mainly to access an
+		 * image's thumbnail/cropped image.
+		 * @return byte[] The media file's content stream.
+		 */
+		public static function GetFilestream(
 			$mediaFile,
 			$suffix = "")
 		{
@@ -735,7 +812,13 @@
 			return $content;
 		}
 
-		static function SaveMediaFile(&$mediaFile)
+		/**
+		 * Save the media file information to the database.
+		 *
+		 * @param MediaFile $mediaFile
+		 */
+		public static function SaveMediaFile(
+			&$mediaFile)
 		{
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$file = $mediaFile->get_file();
@@ -813,7 +896,13 @@
 			}
 		}
 
-		public function DeleteMediaFile($mediaFile)
+		/**
+		 * Remove the given media file from the database.
+		 *
+		 * @param MediaFile $mediaFile
+		 */
+		public static function DeleteMediaFile(
+			$mediaFile)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_file_id` = '".
 				mysql_escape_string($mediaFile->get_media_file_id())."'";
@@ -838,7 +927,18 @@
 			}
 		}
 
-		public function AddRelatedMedia($media_file_id, $related_media_file_id, $media_relation_id)
+		/**
+		 * Add a media file to the list of related media for the given
+		 * media file.
+		 *
+		 * @param int $media_file_id
+		 * @param int $related_media_file_id
+		 * @param int $media_relation_id
+		 */
+		public static function AddRelatedMedia(
+			$media_file_id,
+			$related_media_file_id,
+			$media_relation_id)
 		{
 			$sql = "INSERT INTO `zcm_media_file_relation` ( `media_file_id`,".
 				" `related_media_file_id`, `media_relation_id` ) VALUES ( '".
@@ -851,7 +951,14 @@
 			Zymurgy::$db->query($sql) or die("Could not add related media: ".mysql_error().", $sql");
 		}
 
-		public function DeleteRelatedMedia($media_file_id, $related_media_file_id)
+		/**
+		 * Remove a media file from the list of related media for the
+		 * given media file.
+		 *
+		 * @param int $media_file_id
+		 * @param int $related_media_file_id
+		 */
+		public static function DeleteRelatedMedia($media_file_id, $related_media_file_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_relation` WHERE `media_file_id` = '".
 				mysql_escape_string($media_file_id)."' AND `related_media_file_id` = '".
@@ -860,7 +967,15 @@
 			Zymurgy::$db->query($sql) or die("Could not delete related media: ".mysql_error().", $sql");
 		}
 
-		public function InitializeThumbnails($mediaFile)
+		/**
+		 * Initialize the thumbnails for a given media file. The thumbnail sizes
+		 * to initialize are specified in the media file's relation/file type
+		 * data. This is typically called when the media file is first added, and
+		 * when it is replaced.
+		 *
+		 * @param MediaFile $mediaFile
+		 */
+		public static function InitializeThumbnails($mediaFile)
 		{
 			$thumbnails = explode(",", $mediaFile->get_relation()->get_thumbnails());
 
@@ -870,7 +985,16 @@
 			}
 		}
 
-		public function InitializeThumbnail(
+		/**
+		 * Initialize a thumbnail at the given size for the given media file.
+		 *
+		 * @param MediaFile $mediaFile
+		 * @param string $thumbnail The size of the thumbnail at ###x### format
+		 * (i.e. 60x40, 800x600)
+		 * @param boolean $forceUpdate Update the thumbnail, even if one exists
+		 * at the given size.
+		 */
+		public static function InitializeThumbnail(
 			$mediaFile,
 			$thumbnail,
 			$forceUpdate = false)
@@ -907,6 +1031,14 @@
 			}
 		}
 
+		/**
+		 * Create the files required for the thumber component at the given
+		 * size for the given media file.
+		 *
+		 * @param MediaFile $mediaFile
+		 * @param string $thumbnail The size of the thumbnail at ###x### format
+		 * (i.e. 60x40, 800x600)
+		 */
 		public function MakeThumbnail($mediaFile, $thumbnail)
 		{
 			require_once('include/Thumb.php');
