@@ -1105,7 +1105,7 @@
 		private $m_errors = array();
 
 		/**
-		 * Get the media packages's ID, as stored in the database.
+		 * Get the media package's ID, as stored in the database.
 		 *
 		 * @return int The media_package_id
 		 */
@@ -1838,6 +1838,11 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a
+	 * MediaPackageType.
+	 *
+	 */
 	class MediaPackageType
 	{
 		private $m_media_package_type_id;
@@ -1848,52 +1853,117 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the media package type's ID, as stored in the database.
+		 *
+		 * @return int The media_package_type_id
+		 */
 		public function get_media_package_type_id()
 		{
 			return $this->m_media_package_type_id;
 		}
 
+		/**
+		 * Set the media package type's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_package_type_id($newValue)
 		{
 			$this->m_media_package_type_id = $newValue;
 		}
 
+		/**
+		 * Gets the media package type's one-word text descriptor. This
+		 * descriptor is used to differentiate between types in code, without
+		 * having to use either the user-friendly descriptor (which could change
+		 * based on the client's vocabulary) or the database ID (which could
+		 * change between deployments).
+		 *
+		 * @return string The package type descriptor
+		 */
 		public function get_package_type()
 		{
 			return $this->m_package_type;
 		}
 
+		/**
+		 * Sets the media package type's one-word text descriptor. This
+		 * descriptor is used to differentiate between types in code, without
+		 * having to use either the user-friendly descriptor (which could change
+		 * based on the client's vocabulary) or the database ID (which could
+		 * change between deployments).
+		 *
+		 * @param string $newValue
+		 */
 		public function set_package_type($newValue)
 		{
 			$this->m_package_type = $newValue;
 		}
 
+		/**
+		 * Gets the media package type's user friendly label.
+		 *
+		 * @return string The package label
+		 */
 		public function get_package_label()
 		{
 			return $this->m_package_label;
 		}
 
+		/**
+		 * Sets the media package type's user friendly label.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_package_label($newValue)
 		{
 			$this->m_package_label = $newValue;
 		}
 
-
+		/**
+		 * Gets the information on the allowed relation type based
+		 * on its key within the array.
+		 *
+		 * @param int $key
+		 * @return MediaRelation
+		 */
 		public function get_allowedrelation($key)
 		{
 			return $this->m_allowedrelations[$key];
 		}
 
+		/**
+		 * Returns the number of allowed relations for this media
+		 * package type.
+		 *
+		 * @return int
+		 */
 		public function get_allowedrelation_count()
 		{
 			return count($this->m_allowedrelations);
 		}
 
+		/**
+		 * Sets the information on an allowed relation for this
+		 * media package type at the given key.
+		 *
+		 * @param int $key
+		 * @param MediaRelation $newValue
+		 */
 		public function set_allowedrelation($key, $newValue)
 		{
 			$this->m_allowedrelations[$key] = $newValue;
 		}
 
+		/**
+		 * Add a relation type to the list of allowed relations for
+		 * this media package
+		 *
+		 * @param MediaRelation $allowedrelation
+		 * @return int The key for the newly added allowed media
+		 * relation
+		 */
 		public function add_allowedrelation($allowedrelation)
 		{
 			$this->m_allowedrelations[] = $allowedrelation;
@@ -1901,26 +1971,50 @@
 			return count($this->m_allowedrelations) - 1;
 		}
 
+		/**
+		 * Remove the allowed relation for this media package at the
+		 * given key.
+		 *
+		 * @param int $key
+		 */
 		public function delete_allowedrelation($key)
 		{
 			unset($this->m_allowedrelations[$key]);
 		}
 
+		/**
+		 * Clear the list of allowed relations for this media package.
+		 *
+		 */
 		public function clear_allowedrelations()
 		{
 			$this->m_allowedrelations = array();
 		}
 
+		/**
+		 * Get the list of errors in the media package type object. This is
+		 * populated as part of the validate() method, and is typically
+		 * called as part of the save process during data input.
+		 *
+		 * @return string[] The list of errors in the object.
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
-		public function set_errors($newValue)
-		{
-			$this->m_errors = $newValue;
-		}
 
+		/**
+		 * Validate the media package type object. This is typically called as
+		 * part of the save process during data input. If there are
+		 * errors, the errors array will be populated, and may be retrieved
+		 * by calling get_errors().
+		 *
+		 * @param string $action The controller action. Used to enable add-only
+		 * and edit-only specific validations. The supported actions are
+		 * "act_add_media_package_type" and "act_edit_media_package_type".
+		 * @return boolean True if the data is valid. Otherwise false.
+		 */
 		public function validate($action)
 		{
 			$isValid = true;
