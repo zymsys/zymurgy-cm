@@ -1409,9 +1409,18 @@ function DumpDataGridCSS()
 {
 	if (array_key_exists('gridcss',Zymurgy::$config))
 		$gridcss = Zymurgy::$config['gridcss'];
-	else 
+	else
 		$gridcss = "/zymurgy/include/datagrid.css";
-	echo '<link href="'.$gridcss.'" rel="stylesheet" type="text/css" />';
+
+	if(strpos($gridcss, "{") == FALSE)
+	{
+		echo '<link href="'.$gridcss.'" rel="stylesheet" type="text/css" />';
+	}
+	else
+	{
+		echo "<style><!--\n$gridcss\n--></style>\n";
+	}
+
 }
 
 //Tried putting these in a class, but PHP4 won't call static methods as "variable functions".  So here we are.
