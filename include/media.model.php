@@ -4,6 +4,10 @@
 		Z:CM Model classes
 	*/
 
+	/**
+	 * Contains the information and validation routines for a MediaFile.
+	 *
+	 */
 	class MediaFile
 	{
 		private $m_media_file_id;
@@ -30,106 +34,221 @@
 			$this->m_member = new MediaMember();
 		}
 
+		/**
+		 * Get the media file's ID, as stored in the database.
+		 *
+		 * @return int The media_file_id
+		 */
 		public function get_media_file_id()
 		{
 			return $this->m_media_file_id;
 		}
 
+		/**
+		 * Set the media file's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_file_id($newValue)
 		{
 			$this->m_media_file_id = $newValue;
 		}
 
+		/**
+		 * Get the member information on the owner of the media file.
+		 *
+		 * @return MediaMember The MediaMember object describing the
+		 * owner of the media file.
+		 */
 		public function get_member()
 		{
 			return $this->m_member;
 		}
 
+		/**
+		 * Set the member information on the owner of the media file.
+		 *
+		 * @param MediaMember $newValue
+		 */
 		public function set_member($newValue)
 		{
 			$this->m_member = $newValue;
 		}
 
+		/**
+		 * Get the media file's mime-type, as detected when the file
+		 * was first uploaded.
+		 *
+		 * @return string The mime-type
+		 */
 		public function get_mimetype()
 		{
 			return $this->m_mimetype;
 		}
 
+		/**
+		 * Set the media file's mime-type.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_mimetype($newValue)
 		{
 			$this->m_mimetype = $newValue;
 		}
 
+		/**
+		 * Get the media file's extension, as detected when the file
+		 * was first uploaded.
+		 *
+		 * @return string The file extension.
+		 */
 		public function get_extension()
 		{
 			return $this->m_extension;
 		}
 
+		/**
+		 * Set the media file's extension.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_extension($newValue)
 		{
 			$this->m_extension = $newValue;
 		}
 
+		/**
+		 * Get the name to display in the application front-end.
+		 *
+		 * @return string The name of the media file
+		 */
 		public function get_display_name()
 		{
 			return $this->m_display_name;
 		}
 
+		/**
+		 * Set the name to display in the application front-end.
+		 *
+		 * @param unknown_type $newValue
+		 */
 		public function set_display_name($newValue)
 		{
 			$this->m_display_name = str_replace("\\'", "'", $newValue);
 		}
 
+		/**
+		 * Get the price of the media file, when it is attached to a
+		 * for-pay system on the web site.
+		 *
+		 * @return currency The price of the file
+		 */
 		public function get_price()
 		{
 			return $this->m_price;
 		}
 
+		/**
+		 * Set the price of the media file, when it is attached to a
+		 * for-pay system on the web site.
+		 *
+		 * @param currency $newValue
+		 */
 		public function set_price($newValue)
 		{
 			$this->m_price = $newValue;
 		}
 
+		/**
+		 * Get the display index of the media file. This is populated
+		 * when the MediaFile is retrieved as part of a MediaPackage.
+		 *
+		 * @return int The file's display index
+		 */
 		public function get_disporder()
 		{
 			return $this->m_disporder;
 		}
 
+		/**
+		 * Set the display index of the media file.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_disporder($newValue)
 		{
 			$this->m_disporder = $newValue;
 		}
 
+		/**
+		 * Get the object describing the download restrictions on the
+		 * file.
+		 *
+		 * @return MediaRestriction The media restriction object
+		 */
 		public function get_restriction()
 		{
 			return $this->m_restriction;
 		}
 
+		/**
+		 * Set the download restrictions on the file.
+		 *
+		 * @param MediaRestriction $newValue
+		 */
 		public function set_restriction($newValue)
 		{
 			$this->m_restriction = $newValue;
 		}
 
+		/**
+		 * Get the relation/file type information on the file.
+		 *
+		 * @return MediaRelation The relation data.
+		 */
 		public function get_relation()
 		{
 			return $this->m_relation;
 		}
 
+		/**
+		 * Set the relation/file type information on the file.
+		 *
+		 * @param MediaRelation $newValue
+		 */
 		public function set_relation($newValue)
 		{
 			$this->m_relation = $newValue;
 		}
 
+		/**
+		 * Get the information on a media file related to this one.
+		 *
+		 * @param int $key
+		 * @return MediaFile The media file at the given key.
+		 */
 		public function get_relatedmedia($key)
 		{
 			return $this->m_relatedmedia[$key];
 		}
 
+		/**
+		 * Get the number of media files related to this one.
+		 *
+		 * @return int The number of media files related to this one.
+		 */
 		public function get_relatedmedia_count()
 		{
 			return count($this->m_relatedmedia);
 		}
 
+		/**
+		 * Make an existing media file related to this one.
+		 *
+		 * @param MediaFile $newValue
+		 * @return int The number of media files related to this one,
+		 * including the newly added file.
+		 */
 		public function add_relatedmedia($newValue)
 		{
 			$this->m_relatedmedia[] = $newValue;
@@ -137,36 +256,86 @@
 			return count($this->m_relatedmedia) - 1;
 		}
 
+		/**
+		 * Remove the media file at the given key from this media file's
+		 * list of related files
+		 *
+		 * @param int $key
+		 */
 		public function delete_relatedmedia($key)
 		{
 			unset($this->m_relatedmedia[$key]);
 		}
 
+		/**
+		 * Get the media file's file information. This is only populated
+		 * when the media file has been set in a web form.
+		 *
+		 * @return File The file object, as set in $_FILES
+		 */
 		public function get_file()
 		{
 			return $this->m_file;
 		}
 
+		/**
+		 * Set the media file's file information. This is only to be
+		 * called when the media file has been set in a web form.
+		 *
+		 * @param File $fileObject The file object, as set in $_FILES
+		 */
 		public function set_file($fileObject)
 		{
 			$this->m_file = $fileObject;
 		}
 
+		/**
+		 * Get the media file's actual file stream. This is only populated
+		 * when the media file is going to be downloaded/streamed to the
+		 * end user.
+		 *
+		 * @return byte[] The media file's content stream
+		 */
 		public function get_filestream()
 		{
 			return $this->m_filestream;
 		}
 
+		/**
+		 * Set the media file's actual file stream. This is only to be
+		 * called when the media file is going to be downloaded/streamed
+		 * to the end user.
+		 *
+		 * @param byte[] $newValue The media file's content stream
+		 */
 		public function set_filestream($newValue)
 		{
 			$this->m_filestream = $newValue;
 		}
 
+		/**
+		 * Get the list of errors in the media file object. This is
+		 * populated as part of the validate() method, and is typically
+		 * called as part of the save process during data input.
+		 *
+		 * @return string[] The list of errors in the object.
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
+		/**
+		 * Validate the media file object. This is typically called as
+		 * part of the save process during data input. If there are
+		 * errors, the errors array will be populated, and may be retrieved
+		 * by calling get_errors().
+		 *
+		 * @param string $action The controller action. Used to enable add-only
+		 * and edit-only specific validations. The supported actions are
+		 * "act_add_media_file" and "act_edit_media_file".
+		 * @return boolean True if the data is valid. Otherwise false.
+		 */
 		public function validate($action)
 		{
 			$isValid = true;
@@ -194,7 +363,7 @@
 			return $isValid;
 		}
 
-		public function validateFile()
+		private function validateFile()
 		{
 			$isValid = true;
 			$continueProcessing = true;
