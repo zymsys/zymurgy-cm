@@ -93,6 +93,9 @@ class ZymurgyInfusionsoftWrapper
 	 */
 	function execute($cmd,$params)
 	{
+		// print_r($params);
+		// die();
+
 		array_unshift($params,Zymurgy::$config['Infusionsoft API Key']);
 		$eparams = array();
 		foreach ($params as $param)
@@ -103,7 +106,7 @@ class ZymurgyInfusionsoftWrapper
 		$result = $this->client->send($call);
 		if ($result->faultCode())
 		{
-			throw new Exception("Fault [".$result->faultCode()."] running $cmd: ".$result->faultString());
+			throw new Exception("Fault [".$result->faultCode()."] running $cmd (".print_r($call)."): ".$result->faultString());
 		}
 		return $result;
 	}
