@@ -382,8 +382,8 @@
 			
 			$memberdata = $this->RetrieveMemberData($rowid);			
 			$this->RenderTabs();		
-			
-			echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['SCRIPT_URI']}\" method=\"post\" enctype=\"multipart/form-data\">\r\n";
+
+			echo "<form id=\"zymurgyForm{$this->tablename}\" action=\"{$_SERVER['PHP_SELF']}\" method=\"post\" enctype=\"multipart/form-data\">\r\n";
 			
 			$rowid = is_array($memberdata)
 				? $memberdata["id"]
