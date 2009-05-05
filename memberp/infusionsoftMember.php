@@ -39,10 +39,12 @@ class infusionsoftMember extends ZymurgyMember
 	 */
 	private static function findmemberfromsession()
 	{
+		$sid = session_id();
 		if (empty($sid))
 		{
 			session_start();
 		}
+
 		if (array_key_exists('customer_id',$_SESSION))
 		{
 			$member = Zymurgy::$db->get("select * from zcm_member where mpkey='".
@@ -205,6 +207,8 @@ class infusionsoftMember extends ZymurgyMember
 				$userid,
 				$password,
 				$confirm,
+				$firstname,
+				$lastname,
 				$useridfield,
 				$passwordfield,
 				$confirmfield,
@@ -346,11 +350,12 @@ class infusionsoftMember extends ZymurgyMember
 		$lastname,
 		$authed)
 	{
-		parent::ValidateForm(
+		parent::membersignup_ValidateForm(
 			$userid,
 			$password,
 			$confirm,
-			$authed);
+			$authed,
+			$pi);
 
 		if ($firstname == '')
 			$pi->ValidationErrors[] = 'First name is a required field.';
@@ -373,14 +378,14 @@ class infusionsoftMember extends ZymurgyMember
 			require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 			$infusion = new ZymurgyInfusionsoftWrapper();
 
-			$r = $infusion->execute_fetch_array_va(
-				'ContactService.add',
-				'',
+			$r = $infusion->execute_va(
+				'DataService.add',
+				"Contact",
 				array(
-				'FirstName' => $firstname,
-				'LastName' => $lastname,
-				'Email' => $userid,
-				'Password' => $password));
+					'FirstName' => $firstname,
+					'LastName' => $lastname,
+					'Email' => $userid,
+					'Password' => $password));
 		}
 	}
 }
