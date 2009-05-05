@@ -58,6 +58,7 @@ class ZymurgySiteNav
 	
 	public function render($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$hrefroot = 'pages')
 	{
+		$idpart = ZymurgySiteNav::linktext2linkpart($startpath);
 		echo Zymurgy::YUI('fonts/fonts-min.css');
 		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
@@ -66,8 +67,8 @@ class ZymurgySiteNav
 		$bar = $ishorizontal ? 'Bar' : '';
 ?>
 <script type="text/javascript">
-YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $hrefroot ?>", function () {
-	var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $hrefroot ?>", { 
+YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
+	var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $idpart ?>", { 
 		<?= $ishorizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>, 
 		hidedelay: 750, 
 		lazyload: true });
@@ -113,7 +114,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $hrefroot ?>", function () {
 			$anscestors = array();
 		}
 		echo "<div class=\"yui-skin-sam \">\r\n";
-		echo "\t<div id=\"ZymurgyMenu_$hrefroot\" class=\"yuimenu".strtolower($bar);
+		echo "\t<div id=\"ZymurgyMenu_$idpart\" class=\"yuimenu".strtolower($bar);
 		if ($ishorizontal)
 			echo " yuimenubarnav";
 		echo "\">\r\n";
