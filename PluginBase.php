@@ -15,27 +15,27 @@ class PluginBase
 	{
 		//Stub so that ancestors can call parent and when we need one the wiring is in place.
 	}
-	
+
 	function CompleteUpgrade()
 	{
 		$this->dbrelease = $this->GetRelease();
 		Zymurgy::$db->query("update zcm_plugin set `release`={$this->dbrelease} where id={$this->pid}");
 	}
-	
+
 	function GetTitle()
 	{
 		die("GetTitle must be implemented by plugins.");
 	}
-	
+
 	function GetRelease()
 	{
 		return 1; //Default release number.
 	}
-	
+
 	function GetUninstallSQL()
 	{
 	}
-	
+
 	/**
 	 * Remove related records and files for this instance.  Base method removes the plugin's configuration.
 	 *
@@ -45,17 +45,17 @@ class PluginBase
 		$sql = "delete from zcm_pluginconfig where plugin={$this->pid} and instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die ("Unable to remove plugin configuration ($sql): ".Zymurgy::$db->error());
 	}
-	
+
 	function GetDefaultConfig()
 	{
 		return array();
 	}
-	
+
 	function GetUserConfigKeys()
 	{
 		return array();
 	}
-	
+
 	function GetConfigItemTypes()
 	{
 		//Data types are in the format:
@@ -72,36 +72,36 @@ class PluginBase
 //		"lookup.$table"
 		return array();
 	}
-	
+
 	function Initialize()
 	{
 	}
-	
+
 	function Upgrade()
 	{
 	}
-	
+
 	function Render()
 	{
 		die("Render must be implemented by plugins.");
 	}
-	
+
 	function RenderAdmin()
 	{
 		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
 	}
-	
+
 	function RenderCommandMenu()
 	{
 		global $zauth;
-		
+
 		$menuItems = $this->GetCommandMenuItems();
-		
+
 		// echo("menuItems: [ ");
 		// print_r($menuItems);
 		// echo(" ] ");
 		// die();
-		
+
 		if(sizeof($menuItems) > 0)
 		{
 			echo("<br><br><table class=\"DataGrid\">");
@@ -110,7 +110,7 @@ class PluginBase
 			for($commandIndex = 0; $commandIndex < sizeof($menuItems); $commandIndex++)
 			{
 				$menuItem = $menuItems[$commandIndex];
-				
+
 				if($menuItem->authlevel <= $zauth->authinfo['admin'])
 				{
 					$rowClass = $commandIndex % 2 == 0 ? "DataGridRow" : "DataGridRowAlternate";
@@ -130,51 +130,51 @@ class PluginBase
 						"{pluginName}",
 						str_replace("Plugin", "", $this->GetTitle()),
 						$menuItem->text);
-						
+
 					echo "<tr class=\"{$rowClass}\"><td><a ";
 					if (!is_null($menuItem->confirmation))
 					{
 						echo "onClick=\"return confirm('{$menuItem->confirmation}')\" ";
 					}
-					echo "href=\"{$url}\">{$text}</a></td></tr>";				
-				}				
+					echo "href=\"{$url}\">{$text}</a></td></tr>";
+				}
 			}
-			
+
 			echo("</table>");
 		}
 	}
-	
+
 	function AdminMenuText()
 	{
 		return '';
 	}
-	
+
 	function BuildConfig(&$cfg,$key,$default,$inputspec='input.40.60',$authlevel=0)
 	{
 		$cfg[$key]=new PluginConfig($key,$default,$inputspec,$authlevel);
 	}
-	
+
 	function SetConfigValue($key, $value)
 	{
 		if (array_key_exists($key,$this->config))
 			$this->config[$key]->value = $value;
-		else 
+		else
 			$this->config[$key] = new PluginConfig($key,$value);
 	}
-	
+
 	function GetConfigValue($key,$default='')
 	{
 		if (array_key_exists($key,$this->config))
 			return $this->config[$key]->value;
-		else 
+		else
 			return $default;
 	}
-	
+
 	function GetCommandMenuItems()
 	{
 		die("GetCommandMenuItems must be implemented by plugins.");
 	}
-	
+
 	function BuildMenuItem(&$array, $text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$array[] = new PluginMenuItem(
@@ -183,7 +183,7 @@ class PluginBase
 			$authlevel,
 			$confirmation);
 	}
-	
+
 	function BuildSettingsMenuItem(&$r)
 	{
 		$this->BuildMenuItem(
@@ -191,8 +191,8 @@ class PluginBase
 			"Edit settings",
 			"pluginconfig.php?plugin={pid}&amp;instance={iid}",
 			0);
-	}	
-		
+	}
+
 	function BuildDeleteMenuItem(&$r)
 	{
 		$this->BuildMenuItem(
@@ -201,7 +201,45 @@ class PluginBase
 			"pluginadmin.php?pid={pid}&delkey={iid}",
 			0,
 			"Are you sure you want to delete this instance?  This action is not reversible.");
-	}	
+	}
+
+	function GetExtensions()
+	{
+		return array();
+	}
+
+	function CallExtensionMethod($methodName)
+	{
+		$extensions = $this->GetExtensions();
+
+		foreach($extensions as $extension)
+		{
+			if(method_exists($extension, $methodName))
+			{
+				call_user_method($methodName, $extension, $this);
+			}
+		}
+	}
+
+	function BuildExtensionConfig(&$r)
+	{
+		$extensions = $this->GetExtensions();
+
+		foreach($extensions as $extension)
+		{
+			$configItems = $extension->GetConfigItems();
+
+			foreach($configItems as $configItem)
+			{
+				$this->BuildConfig(
+					$r,
+					$configItem["name"],
+					$configItem["default"],
+					$configItem["inputspec"],
+					$configItem["authlevel"]);
+			}
+		}
+	}
 }
 
 class PluginConfig
@@ -210,7 +248,7 @@ class PluginConfig
 	var $value;
 	var $inputspec;
 	var $authlevel;
-	
+
 	function PluginConfig($key, $value, $inputspec='input.40.60', $authlevel=0)
 	{
 		$this->key = $key;
@@ -226,7 +264,7 @@ class PluginMenuItem
 	var $url;
 	var $authlevel;
 	var $confirmation;
-	
+
 	function PluginMenuItem($text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$this->text = $text;
@@ -234,5 +272,10 @@ class PluginMenuItem
 		$this->authlevel = $authlevel;
 		$this->confirmation = $confirmation;
 	}
+}
+
+interface PluginExtension
+{
+	public function GetExtensionName();
 }
 ?>
