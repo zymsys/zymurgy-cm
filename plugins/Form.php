@@ -51,7 +51,6 @@ class Form extends PluginBase
 			$dom = substr($dom,4);
 		$r = array();
 		$this->BuildConfig($r,'Name','My New Form','input.40.60',2);
-		$this->BuildConfig($r,'Capture to Database',0,'radio.'.serialize(array(0=>'No',1=>'Yes')));
 		$this->BuildConfig($r,'Submit Button Text','Send','input.80.80');
 		//$this->BuildConfig($r,'Field Name','','input.40.60');
 		$this->BuildConfig($r,'Validation Error Intro','There were some problems processing your information...','html.500.300');
@@ -498,56 +497,11 @@ function Validate$name(me) {
 		return array($name,$email);
 	}
 
-	function SendEmail()
-	{
-		$this->CallExtensionMethod("SendEmail");
-	}
-
-	function MakeXML($values)
-	{
-		$xml = array("<formvalues>");
-		foreach ($values as $header=>$value)
-		{
-			$v = str_replace(array('<','&','>','"',"'"),array('&lt;','&amp;','&gt;','&quot;','&apos;'),$value);
-			$xml[] = "\t<value header=\"$header\">$v</value>";
-		}
-		$xml[] = "</formvalues>";
-		return implode("\r\n",$xml);
-	}
-
-	function StoreCapture($xml = null)
-	{
-		if ($xml == null)
-			$xml = $this->MakeXML($this->GetValues());
-		if (array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER))
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		else
-			$ip = $_SERVER['REMOTE_ADDR'];
-		if ($this->SaveID)
-		{
-			$sql = "update zcm_form_capture set submittime=now(), ip='{$_SERVER['REMOTE_ADDR']}', useragent='".
-				Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."', formvalues='".
-				Zymurgy::$db->escape_string($xml)."' where id=".$this->SaveID;
-		}
-		else
-		{
-			$sql = "insert into zcm_form_capture (instance,submittime,ip,useragent,formvalues,member) values ({$this->iid},now(),
-				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
-				Zymurgy::$db->escape_string($xml)."',".
-				($this->member === false ? 'NULL' : $this->member['id']).")";
-		}
-		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
-
-		return Zymurgy::$db->insert_id();
-	}
-
 	function RenderThanks()
 	{
-		// if ($this->GetConfigValue('Email Form Results To Address') != '')
-		$this->SendEmail();
+		$this->CallExtensionMethod("SendEmail");
+		$this->CallExtensionMethod("CaptureFormData");
 
-		if ($this->GetConfigValue('Capture to Database') == 1)
-			$this->StoreCapture();
 		echo $this->GetConfigValue('Thanks');
 	}
 
@@ -1143,6 +1097,7 @@ function DownloadExport(pid,iid,name) {
 
 		$extensions[] = new FormEmailToWebmaster();
 		$extensions[] = new FormEmailConfirmation();
+		$extensions[] = new FormCaptureToDatabase();
 
 		return $extensions;
 	}
@@ -1339,7 +1294,7 @@ class FormEmailConfirmation implements PluginExtension
 	{
 		if(!($plugin instanceof Form))
 		{
-			die("FormEmailToWebmaster: plugin sent not an instance of Form. Aborting.");
+			die("FormEmailConfirmation: plugin sent not an instance of Form. Aborting.");
 		}
 	}
 
@@ -1386,6 +1341,74 @@ class FormEmailConfirmation implements PluginExtension
 		$mail->AddAddress($to);
 		if (!$mail->Send())
 			echo " There has been a problem sending email to [$to]. ";
+	}
+}
+
+class FormCaptureToDatabase implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "Capture to Database";
+	}
+
+	public function IsEnabled($plugin)
+	{
+		return true;
+	}
+
+	public function GetConfigItems()
+	{
+		return array();
+	}
+
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("CaptureToDatabase: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+
+	function MakeXML($values)
+	{
+		$xml = array("<formvalues>");
+		foreach ($values as $header=>$value)
+		{
+			$v = str_replace(array('<','&','>','"',"'"),array('&lt;','&amp;','&gt;','&quot;','&apos;'),$value);
+			$xml[] = "\t<value header=\"$header\">$v</value>";
+		}
+		$xml[] = "</formvalues>";
+		return implode("\r\n",$xml);
+	}
+
+	public function CaptureFormData(
+		$plugin)
+	{
+		$this->ConfirmPluginCompatability($plugin);
+
+		$xml = $this->MakeXML($plugin->GetValues());
+
+		if (array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER))
+			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		else
+			$ip = $_SERVER['REMOTE_ADDR'];
+
+		if ($plugin->SaveID)
+		{
+			$sql = "update zcm_form_capture set submittime=now(), ip='{$_SERVER['REMOTE_ADDR']}', useragent='".
+				Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."', formvalues='".
+				Zymurgy::$db->escape_string($xml)."' where id=".$plugin->SaveID;
+		}
+		else
+		{
+			$sql = "insert into zcm_form_capture (instance,submittime,ip,useragent,formvalues,member) values ({$plugin->iid},now(),
+				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
+				Zymurgy::$db->escape_string($xml)."',".
+				($plugin->member === false ? 'NULL' : $this->member['id']).")";
+		}
+		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
+
+		return Zymurgy::$db->insert_id();
 	}
 }
 ?>
