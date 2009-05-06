@@ -505,7 +505,7 @@ function Validate$name(me) {
 		return array($name,$email);
 	}
 
-	function SendEmail()
+	function SendEmail_Old()
 	{
 		//Load PHPMailer class
 		$mail = Zymurgy::GetPHPMailer();
@@ -569,7 +569,6 @@ function Validate$name(me) {
 		$values["\n"] = '';
 		$from = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results From Address'));
 		$subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results Subject'));
-		/*
 		if ($to != '')
 		{
 			list($mail->FromName, $mail->From) = $this->AddressElements($from);
@@ -586,7 +585,6 @@ function Validate$name(me) {
 				echo " There has been a problem sending email to [$to]. ";
 			//mail($to,$subject,implode("\n",$body),"From: $from\nX-WebmailSrc: $ip");
 		}
-		*/
 		$tofield = $this->GetConfigValue('Confirmation Email Address Field');
 		if ($tofield!='')
 		{
@@ -605,7 +603,10 @@ function Validate$name(me) {
 			if (!$mail->Send())
 				echo " There has been a problem sending email to [$to]. ";
 		}
+	}
 
+	function SendEmail()
+	{
 		$this->CallExtensionMethod("SendEmail");
 	}
 
@@ -1247,6 +1248,7 @@ function DownloadExport(pid,iid,name) {
 		$extensions = array();
 
 		$extensions[] = new FormEmailToWebmaster();
+		$extensions[] = new FormEmailConfirmation();
 
 		return $extensions;
 	}
@@ -1293,6 +1295,11 @@ class FormEmailToWebmaster implements PluginExtension
 		{
 			die("FormEmailToWebmaster: plugin sent not an instance of Form. Aborting.");
 		}
+	}
+
+	public function IsEnabled($plugin)
+	{
+		return strlen(trim($plugin->GetConfigValue('Email Form Results To Address'))) > 0;
 	}
 
 	public function SendEmail(
@@ -1394,6 +1401,95 @@ class FormEmailToWebmaster implements PluginExtension
 
 		$mail->Body = implode("\n",$body);
 
+		if (!$mail->Send())
+			echo " There has been a problem sending email to [$to]. ";
+	}
+}
+
+class FormEmailConfirmation implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "E-mail confirmation to person filling out form";
+	}
+
+	public function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => "Confirmation Email From",
+			"default" => "",
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Confirmation Email Subject",
+			"default" => "",
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Confirmation Email Address Field",
+			"default" => "",
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Confirmation Email Contents",
+			"default" => "",
+			"inputspec" => "html.500.300",
+			"authlevel" => 0);
+
+		return $configItems;
+	}
+
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("FormEmailToWebmaster: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+
+	public function IsEnabled($plugin)
+	{
+		return strlen(trim($plugin->GetConfigValue('Confirmation Email Address Field'))) > 0;
+	}
+
+	public function SendEmail(
+		$plugin)
+	{
+		$this->ConfirmPluginCompatability($plugin);
+
+		//Load PHPMailer class
+		$mail = Zymurgy::GetPHPMailer();
+
+		$values = $plugin->GetValues();
+		//Build body lines
+		$body = array();
+		$subvalues = array();
+		foreach($values as $header=>$value)
+		{
+			$body[] = $header.': '.$value;
+			$subvalues['{'.$header.'}']=$value;
+		}
+
+		//Also substitute newline characters for blank to avoid attacks on our email headers
+		$values["\r"] = '';
+		$values["\n"] = '';
+
+		$tofield = $plugin->GetConfigValue('Confirmation Email Address Field');
+
+		//Send confirmation email as well.
+		if (!array_key_exists($tofield,$values))
+			die("This form doesn't have a field called '$tofield' for email confirmation.");
+		$to = str_replace(array("\r","\n"),'',$values[$tofield]);
+		list($mail->FromName, $mail->From) = $plugin->AddressElements($plugin->GetConfigValue('Confirmation Email From'));
+		$body = $plugin->GetConfigValue('Confirmation Email Contents');
+		$mail->Subject = str_replace(array_keys($subvalues),$subvalues,$plugin->GetConfigValue('Confirmation Email Subject'));
+		$mail->AltBody = strip_tags($body);
+		$mail->Body = str_replace(array_keys($subvalues),$subvalues,$body);
+		$mail->ClearAddresses();
+		$mail->ClearAttachments();
+		$mail->AddAddress($to);
 		if (!$mail->Send())
 			echo " There has been a problem sending email to [$to]. ";
 	}

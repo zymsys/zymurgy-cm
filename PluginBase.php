@@ -214,7 +214,7 @@ class PluginBase
 
 		foreach($extensions as $extension)
 		{
-			if(method_exists($extension, $methodName))
+			if($extension->IsEnabled($this) && method_exists($extension, $methodName))
 			{
 				call_user_method($methodName, $extension, $this);
 			}
@@ -277,5 +277,7 @@ class PluginMenuItem
 interface PluginExtension
 {
 	public function GetExtensionName();
+	public function IsEnabled($plugin);
+	public function GetConfigItems();
 }
 ?>
