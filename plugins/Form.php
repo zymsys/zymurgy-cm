@@ -51,19 +51,12 @@ class Form extends PluginBase
 			$dom = substr($dom,4);
 		$r = array();
 		$this->BuildConfig($r,'Name','My New Form','input.40.60',2);
-		$this->BuildConfig($r,'Email Form Results To Address','you@'.$dom);
-		$this->BuildConfig($r,'Email Form Results From Address','you@'.$dom,'input.50.100');
-		$this->BuildConfig($r,'Email Form Results Subject','Feedback from '.$ZymurgyConfig['defaulttitle'],'input.50.100');
 		$this->BuildConfig($r,'Capture to Database',0,'radio.'.serialize(array(0=>'No',1=>'Yes')));
 		$this->BuildConfig($r,'Submit Button Text','Send','input.80.80');
 		//$this->BuildConfig($r,'Field Name','','input.40.60');
 		$this->BuildConfig($r,'Validation Error Intro','There were some problems processing your information...','html.500.300');
 		$this->BuildConfig($r,'Footer','','html.500.300');
 		$this->BuildConfig($r,'Thanks','Thanks for your feedback!  We will get back to you shortly.','html.500.300');
-		$this->BuildConfig($r,'Confirmation Email From','','input.40.60');
-		$this->BuildConfig($r,'Confirmation Email Subject','','input.40.60');
-		$this->BuildConfig($r,'Confirmation Email Address Field','','input.40.60');
-		$this->BuildConfig($r,'Confirmation Email Contents','','html.500.300');
 
 		$this->BuildExtensionConfig($r);
 
@@ -505,106 +498,6 @@ function Validate$name(me) {
 		return array($name,$email);
 	}
 
-	function SendEmail_Old()
-	{
-		//Load PHPMailer class
-		$mail = Zymurgy::GetPHPMailer();
-		$to = $this->GetConfigValue('Email Form Results To Address');
-		$values = $this->GetValues();
-		//Build body lines
-		$body = array();
-		$subvalues = array();
-		foreach($values as $header=>$value)
-		{
-			$body[] = $header.': '.$value;
-			$subvalues['{'.$header.'}']=$value;
-		}
-		if ($this->member !== false)
-		{
-			$body[] = "Submitted by member #{$this->member['id']}: {$this->member['email']}";
-		}
-		if (array_key_exists('zcmtracking',$_COOKIE))
-		{
-			$tracking = $_COOKIE['zcmtracking'];
-			$firstcontact = Zymurgy::$db->get("select * from zcm_tracking where id='".
-				Zymurgy::$db->escape_string($tracking)."'");
-			$body[] = '';
-			$body[] = "User tracking started {$firstcontact['created']}:";
-			if (!empty($firstcontact['tag']))
-				$body[] = "\tIncoming Link Tag: {$firstcontact['tag']}";
-			require_once Zymurgy::$root.'/zymurgy/include/referrer.php';
-			$r = new Referrer($firstcontact['referrer']);
-			if (!empty($r->host))
-				$body[] = "\tFrom Host: {$r->host}";
-			if (!empty($r->searchengine))
-				$body[] = "\tSearch Engine: {$r->searchengine}";
-			if (!empty($r->searchstring))
-				$body[] = "\tSearch String: {$r->searchstring}";
-			$ri = Zymurgy::$db->run("select viewtime,document from zcm_pageview left join zcm_meta on zcm_pageview.pageid=zcm_meta.id where trackingid='".
-				Zymurgy::$db->escape_string($tracking)."' order by viewtime");
-			$views = array();
-			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-			{
-				$views[] = $row;
-			}
-			Zymurgy::$db->free_result($ri);
-			if (count($views)>0)
-			{
-				$body[] = '';
-				$body[] = "Page Views:";
-				if (count($views) > 10)
-				{
-					//Show only the first and last 5
-					$views = array_merge(array_slice($views,0,5), array_slice($views,-5));
-					$body[] = "(Showing only the first and last 5 page views)";
-				}
-				foreach($views as $view)
-				{
-					$body[] = "\t{$view['viewtime']}: {$view['document']}";
-				}
-			}
-		}
-		//Also substitute newline characters for blank to avoid attacks on our email headers
-		$values["\r"] = '';
-		$values["\n"] = '';
-		$from = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results From Address'));
-		$subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results Subject'));
-		if ($to != '')
-		{
-			list($mail->FromName, $mail->From) = $this->AddressElements($from);
-			$mail->Subject = $subject;
-			$mail->AddAddress($to);
-			//Look for attachments
-			//echo "<pre>"; print_r($_FILES); echo "</pre><hr />";
-			foreach ($_FILES as $file=>$fileinfo)
-			{
-				$mail->AddAttachment($fileinfo['tmp_name'],$fileinfo['name']);
-			}
-			$mail->Body = implode("\n",$body);
-			if (!$mail->Send())
-				echo " There has been a problem sending email to [$to]. ";
-			//mail($to,$subject,implode("\n",$body),"From: $from\nX-WebmailSrc: $ip");
-		}
-		$tofield = $this->GetConfigValue('Confirmation Email Address Field');
-		if ($tofield!='')
-		{
-			//Send confirmation email as well.
-			if (!array_key_exists($tofield,$values))
-				die("This form doesn't have a field called '$tofield' for email confirmation.");
-			$to = str_replace(array("\r","\n"),'',$values[$tofield]);
-			list($mail->FromName, $mail->From) = $this->AddressElements($this->GetConfigValue('Confirmation Email From'));
-			$body = $this->GetConfigValue('Confirmation Email Contents');
-			$mail->Subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Confirmation Email Subject'));
-			$mail->AltBody = strip_tags($body);
-			$mail->Body = str_replace(array_keys($subvalues),$subvalues,$body);
-			$mail->ClearAddresses();
-			$mail->ClearAttachments();
-			$mail->AddAddress($to);
-			if (!$mail->Send())
-				echo " There has been a problem sending email to [$to]. ";
-		}
-	}
-
 	function SendEmail()
 	{
 		$this->CallExtensionMethod("SendEmail");
@@ -650,8 +543,9 @@ function Validate$name(me) {
 
 	function RenderThanks()
 	{
-		if ($this->GetConfigValue('Email Form Results To Address') != '')
-			$this->SendEmail();
+		// if ($this->GetConfigValue('Email Form Results To Address') != '')
+		$this->SendEmail();
+
 		if ($this->GetConfigValue('Capture to Database') == 1)
 			$this->StoreCapture();
 		echo $this->GetConfigValue('Thanks');
