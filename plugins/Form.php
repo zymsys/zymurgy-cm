@@ -64,6 +64,9 @@ class Form extends PluginBase
 		$this->BuildConfig($r,'Confirmation Email Subject','','input.40.60');
 		$this->BuildConfig($r,'Confirmation Email Address Field','','input.40.60');
 		$this->BuildConfig($r,'Confirmation Email Contents','','html.500.300');
+
+		$this->BuildExtensionConfig($r);
+
 		return $r;
 	}
 
@@ -566,6 +569,7 @@ function Validate$name(me) {
 		$values["\n"] = '';
 		$from = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results From Address'));
 		$subject = str_replace(array_keys($subvalues),$subvalues,$this->GetConfigValue('Email Form Results Subject'));
+		/*
 		if ($to != '')
 		{
 			list($mail->FromName, $mail->From) = $this->AddressElements($from);
@@ -582,6 +586,7 @@ function Validate$name(me) {
 				echo " There has been a problem sending email to [$to]. ";
 			//mail($to,$subject,implode("\n",$body),"From: $from\nX-WebmailSrc: $ip");
 		}
+		*/
 		$tofield = $this->GetConfigValue('Confirmation Email Address Field');
 		if ($tofield!='')
 		{
@@ -600,6 +605,8 @@ function Validate$name(me) {
 			if (!$mail->Send())
 				echo " There has been a problem sending email to [$to]. ";
 		}
+
+		$this->CallExtensionMethod("SendEmail");
 	}
 
 	function MakeXML($values)
@@ -1234,10 +1241,161 @@ function DownloadExport(pid,iid,name) {
 			echo "Visit <a href=\"http://regexlib.com/\" target=\"_blank\">http://regexlib.com/</a> for more examples.";
 		}
 	}
+
+	function GetExtensions()
+	{
+		$extensions = array();
+
+		$extensions[] = new FormEmailToWebmaster();
+
+		return $extensions;
+	}
 }
 
 function FormFactory()
 {
 	return new Form();
+}
+
+class FormEmailToWebmaster implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "E-mail to Webmaster";
+	}
+
+	public function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => "Email Form Results To Address",
+			"default" => "you@".Zymurgy::$config['sitehome'],
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Email Form Results From Address",
+			"default" => "you@".Zymurgy::$config['sitehome'],
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Email Form Results Subject",
+			"default" => 'Feedback from '.Zymurgy::$config['defaulttitle'],
+			"inputspec" => "input.50.100",
+			"authlevel" => 0);
+
+		return $configItems;
+	}
+
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("FormEmailToWebmaster: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+
+	public function SendEmail(
+		$plugin)
+	{
+		$this->ConfirmPluginCompatability($plugin);
+
+		//Load PHPMailer class
+		$mail = Zymurgy::GetPHPMailer();
+
+		$values = $plugin->GetValues();
+		//Build body lines
+		$body = array();
+		$subvalues = array();
+		foreach($values as $header=>$value)
+		{
+			$body[] = $header.': '.$value;
+			$subvalues['{'.$header.'}']=$value;
+		}
+
+		if ($plugin->member !== false)
+		{
+			$body[] = "Submitted by member #{$plugin->member['id']}: {$plugin->member['email']}";
+		}
+
+		if (array_key_exists('zcmtracking',$_COOKIE))
+		{
+			$tracking = $_COOKIE['zcmtracking'];
+
+			$firstcontact = Zymurgy::$db->get("select * from zcm_tracking where id='".
+				Zymurgy::$db->escape_string($tracking)."'");
+
+			$body[] = '';
+
+			$body[] = "User tracking started {$firstcontact['created']}:";
+
+			if (!empty($firstcontact['tag']))
+				$body[] = "\tIncoming Link Tag: {$firstcontact['tag']}";
+
+			require_once Zymurgy::$root.'/zymurgy/include/referrer.php';
+
+			$r = new Referrer($firstcontact['referrer']);
+
+			if (!empty($r->host))
+				$body[] = "\tFrom Host: {$r->host}";
+
+			if (!empty($r->searchengine))
+				$body[] = "\tSearch Engine: {$r->searchengine}";
+
+			if (!empty($r->searchstring))
+				$body[] = "\tSearch String: {$r->searchstring}";
+
+			$ri = Zymurgy::$db->run("select viewtime,document from zcm_pageview left join zcm_meta on zcm_pageview.pageid=zcm_meta.id where trackingid='".
+				Zymurgy::$db->escape_string($tracking)."' order by viewtime");
+
+			$views = array();
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				$views[] = $row;
+			}
+
+			Zymurgy::$db->free_result($ri);
+
+			if (count($views)>0)
+			{
+				$body[] = '';
+				$body[] = "Page Views:";
+
+				if (count($views) > 10)
+				{
+					//Show only the first and last 5
+					$views = array_merge(array_slice($views,0,5), array_slice($views,-5));
+					$body[] = "(Showing only the first and last 5 page views)";
+				}
+
+				foreach($views as $view)
+				{
+					$body[] = "\t{$view['viewtime']}: {$view['document']}";
+				}
+			}
+		}
+
+		//Also substitute newline characters for blank to avoid attacks on our email headers
+		$values["\r"] = '';
+		$values["\n"] = '';
+		$from = str_replace(array_keys($subvalues),$subvalues,$plugin->GetConfigValue('Email Form Results From Address'));
+		$subject = str_replace(array_keys($subvalues),$subvalues,$plugin->GetConfigValue('Email Form Results Subject'));
+
+		$to = $plugin->GetConfigValue('Email Form Results To Address');
+
+		list($mail->FromName, $mail->From) = $plugin->AddressElements($from);
+		$mail->Subject = $subject;
+		$mail->AddAddress($to);
+
+		foreach ($_FILES as $file=>$fileinfo)
+		{
+			$mail->AddAttachment($fileinfo['tmp_name'],$fileinfo['name']);
+		}
+
+		$mail->Body = implode("\n",$body);
+
+		if (!$mail->Send())
+			echo " There has been a problem sending email to [$to]. ";
+	}
 }
 ?>
