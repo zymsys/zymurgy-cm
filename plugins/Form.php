@@ -1,4 +1,5 @@
 <?
+ini_set("display_errors", 1);
 class Form extends PluginBase
 {
 	var $ValidationErrors;
@@ -585,23 +586,8 @@ function Validate$name(me) {
 		{
 			switch ($_GET['ras'])
 			{
-				case 'export':
-					$this->RenderAdminExport();
-					break;
-
 				case 'datamgmt':
-					// $this->RenderAdminDataManagement();
 					$this->CallExtensionMethod("RenderAdminDataManagement");
-					break;
-
-				case 'doexport':
-					$expid = $this->RenderAdminPrepDownload();
-					$this->RenderAdminDoExport();
-					break;
-
-				case 'dodownload':
-					$expid = 0 + $_GET['expid'];
-					$this->RenderAdminDoDownload($expid);
 					break;
 
 				case 'regex':
@@ -619,11 +605,7 @@ function Validate$name(me) {
 			echo "<h3>Form administration for: ".$this->InstanceName."</h3>\r\n";
 
 			$this->RenderAdminFields();
-
-			//echo "<a href=\"pluginadmin.php?ras=fields&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Edit Fields</a><br />\r\n";
-			//echo "<a href=\"pluginadmin.php?ras=export&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Data Exports</a><br />\r\n";
 		}
-		//echo "doexport"; exit;
 	}
 
 	function xmltoarray($xml)
@@ -649,268 +631,7 @@ function Validate$name(me) {
 		return $xrow;
 	}
 
-	function RenderAdminDoExport()
-	{
-		$this->RenderAdminExport();
-		$this->RenderDownloadCode($_GET['pid'],$_GET['iid'],$_GET['name']);
-	}
-
-	/**
-	 * Generate an export ID and assign all unexported records to it.
-	 *
-	 * @return int export ID
-	 */
-	function RenderAdminPrepDownload()
-	{
-		global $zauth;
-		$csql = "insert into zcm_form_export (exptime,expuser,instance) values (now(),".$zauth->authinfo['id'].",{$this->iid})";
-		Zymurgy::$db->query($csql) or die ("Unable to create export ($csql): ".Zymurgy::$db->error());
-		$expid = Zymurgy::$db->insert_id();
-		$sql = "update zcm_form_capture set export=$expid where export is null";
-		Zymurgy::$db->query($sql) or die("Unable to mark fields as exported ($sql): ".Zymurgy::$db->error());
-		return $expid;
-	}
-
-	function RenderAdminDoDownload($expid)
-	{
-		// die("Using Form RenderAdminDoDownload");
-
-		$exported = array();
-		$headers = array();
-		$rows = array();
-
-		$this->RenderAdminDoDownload_GetCaptureArrays(
-			$this->RenderAdminDoDownload_Query($expid),
-			$exported,
-			$headers,
-			$rows);
-		$this->RenderAdminDoDownload_OutputExcel(
-			$headers,
-			$rows,
-			"formrecords".$expid);
-	}
-
-	function RenderAdminDoDownload_Query($expid)
-	{
-		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,member.email from zcm_form_capture left join member on (zcm_form_capture.member=member.id) where (instance={$this->iid}) and export=$expid";
-		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
-
-		return $ri;
-	}
-
-	function RenderAdminDoDownload_GetCaptureArrays(
-		$exportRecordset,
-		&$exported,
-		&$headers,
-		&$rows)
-	{
-		global $zauth;
-
-		//Get form's headers which will include headers from previous runs, even those no longer in use so that exports line up.
-		$sql = "select count(*) from zcm_form_capture where member is not null and instance={$this->iid}";
-		$ri = Zymurgy::$db->query($sql) or die("Can't check member records ($sql): ".Zymurgy::$db->error());
-		$membercount = Zymurgy::$db->result($ri,0,0);
-		$headers = $membercount ? array('Member ID','Member Email') : array();
-		$sql = "select * from zcm_form_header where instance={$this->iid}";
-		$ri = Zymurgy::$db->query($sql) or die("Unable to get export headers ($sql): ".Zymurgy::$db->error());
-		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-		{
-			$headers[] = $row['header'];
-		}
-		Zymurgy::$db->free_result($ri);
-
-		//Now get actual data for this export
-		$ri = $exportRecordset;
-
-		$exported = array();
-		$rows = array();
-		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-		{
-			//Mark this row for update at the end to show it is part of this export
-			$exported[] = $row['id'];
-			$xrow = $this->xmltoarray($row['formvalues']);
-			//Ensure the headers are registered
-			$keys = array_keys($xrow);
-			foreach ($keys as $key)
-			{
-				if (!in_array($key,$headers))
-				{
-					$sql = "insert into zcm_form_header (instance,header) values ({$this->iid},'".Zymurgy::$db->escape_string($key)."')";
-					Zymurgy::$db->query($sql) or die ("Unable to create new header [$key] ($sql): ".Zymurgy::$db->error());
-					$headers[] = $key;
-				}
-			}
-			if ($membercount)
-			{
-				$xrow = array_merge(array('Member ID'=>$row['member'],'Member Email'=>$row['email']),$xrow);
-			}
-			$rows[] = $xrow;
-			echo "<pre>";
-			print_r($xrow);
-			echo "</pre>";
-		}
-	}
-
-	function RenderAdminDoDownload_OutputExcel(
-		$headers,
-		$rows,
-		$reportName = "formrecords")
-	{
-		ob_clean();
-		header("Content-Type: application/vnd.ms-excel");
-		header("Content-Disposition: attachment;filename=".urlencode($reportName).".xls");
-		echo "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\"
-xmlns:x=\"urn:schemas-microsoft-com:office:excel\"
-xmlns=\"http://www.w3.org/TR/REC-html40\">
-<head>
-<meta http-equiv=Content-Type content=\"text/html; charset=windows-1252\">
-<meta name=ProgId content=Excel.Sheet>
-<meta name=Generator content=\"Zymurgy:CM Form Plugin\">
-<style>
-<!--table
-	{mso-displayed-decimal-separator:\"\\.\";
-	mso-displayed-thousand-separator:\"\\,\";}
-@page
-	{margin:1.0in .75in 1.0in .75in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;}
-tr
-	{mso-height-source:auto;}
-col
-	{mso-width-source:auto;}
-br
-	{mso-data-placement:same-cell;}
-td
-	{mso-style-parent:style0;
-	padding-top:1px;
-	padding-right:1px;
-	padding-left:1px;
-	mso-ignore:padding;
-	color:windowtext;
-	font-size:10.0pt;
-	font-weight:400;
-	font-style:normal;
-	text-decoration:none;
-	font-family:Arial;
-	mso-generic-font-family:auto;
-	mso-font-charset:0;
-	mso-number-format:General;
-	text-align:general;
-	vertical-align:bottom;
-	border:none;
-	mso-background-source:auto;
-	mso-pattern:auto;
-	mso-protection:locked visible;
-	white-space:nowrap;
-	mso-rotate:0;}
-.xl24
-	{mso-style-parent:style0;
-	font-weight:700;
-	font-family:Arial, sans-serif;
-	mso-font-charset:0;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <x:ExcelWorkbook>
-  <x:ExcelWorksheets>
-   <x:ExcelWorksheet>
-    <x:Name>{$this->InstanceName} Export</x:Name>
-    <x:WorksheetOptions>
-     <x:Print>
-      <x:ValidPrinterInfo/>
-      <x:HorizontalResolution>-3</x:HorizontalResolution>
-      <x:VerticalResolution>0</x:VerticalResolution>
-     </x:Print>
-     <x:Selected/>
-     <x:Panes>
-      <x:Pane>
-       <x:Number>1</x:Number>
-       <x:ActiveRow>2</x:ActiveRow>
-       <x:ActiveCol>1</x:ActiveCol>
-      </x:Pane>
-     </x:Panes>
-     <x:ProtectContents>False</x:ProtectContents>
-     <x:ProtectObjects>False</x:ProtectObjects>
-     <x:ProtectScenarios>False</x:ProtectScenarios>
-    </x:WorksheetOptions>
-   </x:ExcelWorksheet>
-  </x:ExcelWorksheets>
-  <x:WindowHeight>11760</x:WindowHeight>
-  <x:WindowWidth>15315</x:WindowWidth>
-  <x:WindowTopX>360</x:WindowTopX>
-  <x:WindowTopY>75</x:WindowTopY>
-  <x:ProtectStructure>False</x:ProtectStructure>
-  <x:ProtectWindows>False</x:ProtectWindows>
- </x:ExcelWorkbook>
-</xml><![endif]-->
-		</head>
-		<body>";
-		echo "<table x:str border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:
- collapse;table-layout:fixed\">";
-		echo "<tr>";
-		echo "<td class=\"xl24\">".implode("</td><td class=\"xl24\">",$headers)."</td>";
-		echo "</tr>";
-		foreach($rows as $xrow)
-		{
-			echo "<tr>";
-			foreach($headers as $key)
-			{
-				if (array_key_exists($key,$xrow))
-					$val = $xrow[$key];
-				else
-					$val = '';
-				echo "<td>".htmlentities($val)."</td>";
-			}
-			echo "</tr>";
-		}
-		echo "</table>";
-		echo "</body></html>";
-		exit;
-	}
-
-	function RenderDownloadCode($pid,$iid,$name)
-	{
-		echo "<iframe frameborder=\"0\" width=\"10\" height=\"10\" src=\"";
-		echo "pluginadmin.php?ras=dodownload&pid=$pid&iid=$iid&name=".
-			urlencode($name)."\"></iframe>\r\n";
-		/*echo "<script language=\"javascript\">\r\n";
-		echo "window.location.href='pluginadmin.php?ras=dodownload&pid=$pid&iid=$iid&name=".
-			urlencode($name)."';\r\n";*/
-		/*echo "<!--
-function DownloadExport(pid,iid,name) {
-	window.location.href='pluginadmin.php?ras=doexport&pid='+pid+'&iid='+iid+'&name='+escape(name);
-	window.location.href='pluginadmin.php?ras=export&pid='+pid+'&iid='+iid+'&name='+escape(name);
-}
-//-->\r\n";*/
-		//echo "</script>\r\n";
-	}
-
-	function RenderAdminExport()
-	{
-		$sql = "select count(*) from zcm_form_capture where export is null";
-		$ri = Zymurgy::$db->query($sql);
-		$newcaps = Zymurgy::$db->result($ri,0,0);
-		if ($newcaps>0)
-		{
-			/*echo "<a href=\"javascript:DownloadExport({$this->pid},{$this->iid},'".
-				str_replace("'","''",$this->InstanceName).
-				"')\">$newcaps new record(s) ready to download.</a><br />\r\n";*/
-			echo "<a href=\"pluginadmin.php?ras=doexport&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">$newcaps new record(s) ready to download.</a><br />\r\n";
-		}
-		$ds = new DataSet('zcm_form_export','id');
-		$ds->AddColumns('id','exptime','expuser','instance');
-		$ds->AddDataFilter('instance',$this->iid);
-
-		$dg = new DataGrid($ds);
-		$dg->AddColumn('Export Time','exptime');
-		$dg->AddColumn('Exported By','expuser');
-		$dg->AddColumn('','id',"<a href=\"pluginadmin.php?ras=dodownload&expid={0}&pid={$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName)."\">Download Again</a><br />\r\n");
-		$dg->AddLookup('expuser','Exported By:','zcm_passwd','id','username');
-		$dg->insertlabel = '';
-		$dg->Render();
-	}
-
-	private function RenderCalendarControl($name,$value)
+	public function RenderCalendarControl($name,$value)
 	{
 		$iw = new InputWidget();
 		$iw->Render('datetime',$name,$value);
@@ -920,86 +641,6 @@ function DownloadExport(pid,iid,name) {
 	{
 		$iw = new InputWidget();
 		return $iw->PostValue('unixdatetime',$name);
-	}
-
-	function RenderAdminDataManagementDownload_Query(&$from, &$to)
-	{
-		//Now get actual data for this export
-		$from = $this->GetCalendarControlValue('from');
-		//Round to up to the next minute so we search under it, and including the full minute selected by the user.
-		$to = $this->GetCalendarControlValue('to');
-		$top = explode(' ',strftime('%Y %m %d %H %M',$to+60));
-		$to = mktime($top[3],$top[4],0,$top[1],$top[2],$top[0]);
-		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,zcm_member.email
-			from zcm_form_capture left join zcm_member on (zcm_form_capture.member=zcm_member.id)
-			where (instance={$this->iid}) and (unix_timestamp(submittime)>='$from') and (unix_timestamp(submittime)<'$to')";
-		//Change from and to into values that can be used to identify the xls file.
-		$from = strftime('%Y%m%d%H%M',$from);
-		$to = strftime('%Y%m%d%H%M',$to);
-		//echo $sql; exit;
-		$ri = Zymurgy::$db->query($sql) or die("Unable to export records ($sql): ".Zymurgy::$db->error());
-
-		return $ri;
-	}
-
-	function RenderAdminDataManagementDelete()
-	{
-		$from = $this->GetCalendarControlValue('from');
-		//Round to up to the next minute so we search under it, and including the full minute selected by the user.
-		$to = $this->GetCalendarControlValue('to');
-		$top = explode(' ',strftime('%Y %m %d %H %M',$to+60));
-		$to = mktime($top[3],$top[4],0,$top[1],$top[2],$top[0]);
-		$sql = "delete from zcm_form_capture where (instance={$this->iid}) and (unix_timestamp(submittime)>='$from') and (unix_timestamp(submittime)<'$to')";
-		Zymurgy::$db->run($sql);
-		echo "The selected range of data has been removed from the database.";
-	}
-
-	function RenderAdminDataManagementQuery()
-	{
-		list($from,$to) = Zymurgy::$db->get("select min(submittime),max(submittime) from zcm_form_capture where instance=".$this->iid);
-		if (empty($from))
-		{
-			echo "This form has no captured data to manage.  Enable capture from the form's configuration page to capture form data.";
-			return;
-		}
-		?>
-		<form onSubmit="return checkAction()" method="post" action="pluginadmin.php?ras=datamgmt&pid=<?php echo "{$this->pid}&iid={$this->iid}&name=".urlencode($this->InstanceName); ?>">
-			<table>
-				<tr>
-					<td  align="right">Action:</td>
-					<td><select id="action" name="action" onChange="changeAction(this)"><option value="dl">Download</option><option value="rm">Delete</option></select>
-				</tr>
-				<tr>
-					<td  align="right">Records from:</td>
-					<td><?php $this->RenderCalendarControl('from',$from); ?></td>
-				</tr>
-				<tr>
-					<td  align="right">Records to:</td>
-					<td><?php $this->RenderCalendarControl('to',$to); ?></td>
-				</tr>
-			</table>
-			<input id="submit" type="submit" value="Download Selected Form Data">
-		</form>
-		<script>
-		function changeAction(sel) {
-			var btn = document.getElementById('submit');
-			if (sel.value=='dl')
-				btn.value = 'Download Selected Form Data';
-			else
-				btn.value = 'Delete Selected Form Data';
-		}
-
-		function checkAction() {
-			var sel = document.getElementById('action');
-			if (sel.value=='rm')
-			{
-				return (confirm("Are you sure you want to delete this data?  This action is not reversible.")==true);
-			}
-			else
-				return true;
-		}
-		</script>
-		<?php
 	}
 
 	function RenderAdminFields()
@@ -1437,7 +1078,55 @@ class FormExportFromDatabase implements PluginExtension
 				$this->DeleteData($plugin);
 		}
 		else
-			$plugin->RenderAdminDataManagementQuery();
+			$this->DisplayExportPage($plugin);
+	}
+
+	private function DisplayExportPage($plugin)
+	{
+		list($from,$to) = Zymurgy::$db->get("select min(submittime),max(submittime) from zcm_form_capture where instance=".$plugin->iid);
+		if (empty($from))
+		{
+			echo "This form has no captured data to manage.  Enable capture from the form's configuration page to capture form data.";
+			return;
+		}
+		?>
+		<form onSubmit="return checkAction()" method="post" action="pluginadmin.php?ras=datamgmt&pid=<?php echo "{$plugin->pid}&iid={$plugin->iid}&name=".urlencode($plugin->InstanceName); ?>">
+			<table>
+				<tr>
+					<td  align="right">Action:</td>
+					<td><select id="action" name="action" onChange="changeAction(this)"><option value="dl">Download</option><option value="rm">Delete</option></select>
+				</tr>
+				<tr>
+					<td  align="right">Records from:</td>
+					<td><?php $plugin->RenderCalendarControl('from',$from); ?></td>
+				</tr>
+				<tr>
+					<td  align="right">Records to:</td>
+					<td><?php $plugin->RenderCalendarControl('to',$to); ?></td>
+				</tr>
+			</table>
+			<input id="submit" type="submit" value="Download Selected Form Data">
+		</form>
+		<script>
+		function changeAction(sel) {
+			var btn = document.getElementById('submit');
+			if (sel.value=='dl')
+				btn.value = 'Download Selected Form Data';
+			else
+				btn.value = 'Delete Selected Form Data';
+		}
+
+		function checkAction() {
+			var sel = document.getElementById('action');
+			if (sel.value=='rm')
+			{
+				return (confirm("Are you sure you want to delete this data?  This action is not reversible.")==true);
+			}
+			else
+				return true;
+		}
+		</script>
+		<?php
 	}
 
 	private function DownloadDataExport($plugin)
