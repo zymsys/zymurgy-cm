@@ -2550,34 +2550,73 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a
+	 * MediaMember.
+	 *
+	 */
 	class MediaMember
 	{
 		private $m_member_id;
 		private $m_email;
 
+		/**
+		 * Get the member's ID, as stored in the zcm_member
+		 * table of the database.
+		 *
+		 * @return int The member_id
+		 */
 		public function get_member_id()
 		{
 			return $this->m_member_id;
 		}
 
+		/**
+		 * Set the member's ID, as stored in the zcm_member
+		 * table of the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_member_id($newValue)
 		{
 			$this->m_member_id = $newValue;
 		}
 
+		/**
+		 * Get the member's e-mail address.
+		 *
+		 * @return string
+		 */
 		public function get_email()
 		{
 			return $this->m_email;
 		}
 
+		/**
+		 * Set the member's e-mail address.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_email($newValue)
 		{
 			$this->m_email = $newValue;
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * MediaMember object, or an array of MediaMember objects. Most of the
+	 * methods populate the MediaMember object from the database, but the
+	 * object may also be populated from a web form.
+	 *
+	 */
 	class MediaMemberPopulator
 	{
+		/**
+		 * Return all of the members in the database.
+		 *
+		 * @return MediaMember[]
+		 */
 		static function PopulateAll()
 		{
 			$sql = "SELECT `id`, `email` FROM `zcm_member`";
@@ -2600,6 +2639,12 @@
 			return $members;
 		}
 
+		/**
+		 * Return the member with the given ID in the database.
+		 *
+		 * @param int $member_id
+		 * @return MediaMember
+		 */
 		static function PopulateByID($member_id)
 		{
 			$sql = "SELECT `email` ".
@@ -2621,6 +2666,11 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a
+	 * MediaRelation.
+	 *
+	 */
 	class MediaRelation
 	{
 		private $m_media_relation_id;
@@ -2631,66 +2681,141 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the relation's ID, as stored in the database.
+		 *
+		 * @return int The media_relation_id
+		 */
 		public function get_media_relation_id()
 		{
 			return $this->m_media_relation_id;
 		}
 
+		/**
+		 * Set the relation's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_media_relation_id($newValue)
 		{
 			$this->m_media_relation_id = $newValue;
 		}
 
+		/**
+		 * Get the one-word relation type code, used in the back-end
+		 * code to identify relations without having to use the numeric
+		 * ID automatically assigned by the database (which can change
+		 * between deployments) or the user-friendly labels (which can
+		 * change depending on the client's vocabulary).
+		 *
+		 * @return string
+		 */
 		public function get_relation_type()
 		{
 			return $this->m_relation_type;
 		}
 
+		/**
+		 * Set the one-word relation type code, used in the back-end
+		 * code to identify relations without having to use the numeric
+		 * ID automatically assigned by the database (which can change
+		 * between deployments) or the user-friendly labels (which can
+		 * change depending on the client's vocabulary).
+		 *
+		 * @param string $newValue
+		 */
 		public function set_relation_type($newValue)
 		{
 			$this->m_relation_type = $newValue;
 		}
 
+		/**
+		 * Get the user-friendly label for this relation.
+		 *
+		 * @return string
+		 */
 		public function get_relation_label()
 		{
 			return $this->m_relation_label;
 		}
 
+		/**
+		 * Set the user-friendly label for this relation.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_relation_label($newValue)
 		{
 			$this->m_relation_label = $newValue;
 		}
 
+		/**
+		 * Get the list of thumbnails to automatically generate for
+		 * media files assigned this relation, if the relation is
+		 * meant to contain images.
+		 *
+		 * @return string Comma-seperated list of thumbnail sizes in
+		 * WWxHH format.
+		 */
 		public function get_thumbnails()
 		{
 			return $this->m_thumbnails;
 		}
 
+		/**
+		 * Set the list of thumbnails to automatically generate for
+		 * media files assigned this relation, if the relation is
+		 * meant to contain images.
+		 *
+		 * @param string $newValueComma-seperated list of thumbnail
+		 * sizes in WWxHH format.
+		 */
 		public function set_thumbnails($newValue)
 		{
 			$this->m_thumbnails = $newValue;
 		}
 
+		/**
+		 * Get the list of mime-types to allow for media files
+		 * assigned this relation.
+		 *
+		 * @return Comma seperated list of mime-types.
+		 */
 		public function get_allowed_mimetypes()
 		{
 			return $this->m_allowed_mimetypes;
 		}
 
+		/**
+		 * Set the list of mime-types to allow for media files
+		 * assigned this relation.
+		 *
+		 * @param string $newValue Comma seperated list of mime-types
+		 */
 		public function set_allowed_mimetypes($newValue)
 		{
 			$this->m_allowed_mimetypes = $newValue;
 		}
 
+		/**
+		 * Get the list of errors in the media relation object. This is
+		 * populated as part of the validate() method, and is typically
+		 * called as part of the save process during data input.
+		 *
+		 * @return string[] The list of errors in the object.
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
-		public function set_errors($newValue)
-		{
-			$this->m_errors = $newValue;
-		}
-
+		/**
+		 * Determine if the given mime-type is in the list of mime-types
+		 * allowed by this relation.
+		 *
+		 * @param string $mimetype
+		 * @return boolean True if the mime-type is allowed. Otherwise false.
+		 */
 		public function isValidMimetype($mimetype)
 		{
 			if(strlen($this->m_allowed_mimetypes) <= 0) return true;
@@ -2699,6 +2824,17 @@
 			return in_array($mimetype, $mimetypes);
 		}
 
+		/**
+		 * Validate the media relation object. This is typically called as
+		 * part of the save process during data input. If there are
+		 * errors, the errors array will be populated, and may be retrieved
+		 * by calling get_errors().
+		 *
+		 * @param string $action The controller action. Used to enable add-only
+		 * and edit-only specific validations. The supported actions are
+		 * "act_add_media_relation" and "act_edit_media_relation".
+		 * @return boolean True if the data is valid. Otherwise false.
+		 */
 		public function validate($action)
 		{
 			$isValid = true;
