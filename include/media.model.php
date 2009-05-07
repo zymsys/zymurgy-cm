@@ -2617,7 +2617,7 @@
 		 *
 		 * @return MediaMember[]
 		 */
-		static function PopulateAll()
+		public static function PopulateAll()
 		{
 			$sql = "SELECT `id`, `email` FROM `zcm_member`";
 
@@ -2645,7 +2645,7 @@
 		 * @param int $member_id
 		 * @return MediaMember
 		 */
-		static function PopulateByID($member_id)
+		public static function PopulateByID($member_id)
 		{
 			$sql = "SELECT `email` ".
 				"FROM `zcm_member` WHERE `id` = '".
@@ -2855,9 +2855,21 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * MediaMember object, or an array of MediaMember objects. Most of the
+	 * methods populate the MediaMember object from the database, but the
+	 * object may also be populated from a web form.
+	 *
+	 */
 	class MediaRelationPopulator
 	{
-		static function PopulateAll()
+		/**
+		 * Return all of the relations in the database.
+		 *
+		 * @return MediaRelation[]
+		 */
+		public static function PopulateAll()
 		{
 			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label`, `thumbnails`, ".
 				"`allowed_mimetypes` FROM `zcm_media_relation` ORDER BY `relation_type_label`";
@@ -2882,7 +2894,13 @@
 			return $mediaRelations;
 		}
 
-		static function PopulateByID($media_relation_id)
+		/**
+		 * Return the relation with the given ID in the database.
+		 *
+		 * @param int $media_relation_id
+		 * @return MediaRelation
+		 */
+		public static function PopulateByID($media_relation_id)
 		{
 			$sql = "SELECT `relation_type`, `relation_type_label`, `thumbnails`, `allowed_mimetypes` ".
 				"FROM `zcm_media_relation` WHERE `media_relation_id` = '".
@@ -2905,7 +2923,13 @@
 			}
 		}
 
-		static function PopulateByType($relation_type)
+		/**
+		 * Return the relation with the given one-word type string.
+		 *
+		 * @param string $relation_type
+		 * @return MediaRelation
+		 */
+		public static function PopulateByType($relation_type)
 		{
 			$sql = "SELECT `media_relation_id`,  `relation_type`, `relation_type_label`, ".
 				"`thumbnails`, `allowed_mimetypes` FROM `zcm_media_relation` ".
@@ -2933,7 +2957,12 @@
 			}
 		}
 
-		static function PopulateFromForm()
+		/**
+		 * Populate a MediaRelation object, given the input on a web form.
+		 *
+		 * @return MediaRelation
+		 */
+		public static function PopulateFromForm()
 		{
 			$mediaRelation = new MediaRelation();
 
@@ -2946,7 +2975,12 @@
 			return $mediaRelation;
 		}
 
-		static function SaveRelation($mediaRelation)
+		/**
+		 * Save the media relation to the database.
+		 *
+		 * @param MediaRelation $mediaRelation
+		 */
+		public static function SaveRelation($mediaRelation)
 		{
 			$sql = "";
 
@@ -2979,7 +3013,12 @@
 			}
 		}
 
-		public function DeleteRelation($media_relation_id)
+		/**
+		 * Remove the given media relation from the database.
+		 *
+		 * @param int $media_relation_id
+		 */
+		public static function DeleteRelation($media_relation_id)
 		{
 			$sql = "DELETE FROM `zcm_media_relation` WHERE `media_relation_id` = '".
 			mysql_escape_string($media_relation_id)."'";
