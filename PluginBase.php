@@ -240,6 +240,29 @@ class PluginBase
 			}
 		}
 	}
+
+	function BuildExtensionMenu(&$r)
+	{
+		$extensions = $this->GetExtensions();
+
+		foreach($extensions as $extension)
+		{
+			if($extension->IsEnabled($this))
+			{
+				$menuItems = $extension->GetCommands();
+
+				foreach($menuItems as $menuItem)
+				{
+					$this->BuildMenuItem(
+						$r,
+						$menuItem["caption"],
+						$menuItem["url"],
+						$menuItem["authlevel"],
+						key_exists("confirmation", $menuItem) ? $menuItem["confirmation"] : NULL);
+				}
+			}
+		}
+	}
 }
 
 class PluginConfig
@@ -279,5 +302,6 @@ interface PluginExtension
 	public function GetExtensionName();
 	public function IsEnabled($plugin);
 	public function GetConfigItems();
+	public function GetCommands();
 }
 ?>

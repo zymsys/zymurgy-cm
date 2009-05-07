@@ -72,16 +72,6 @@ class Form extends PluginBase
 			"pluginadmin.php?pid={pid}&iid={iid}&name={name}",
 			0);
 		$this->BuildSettingsMenuItem($r);
-		/*$this->BuildMenuItem(
-			$r,
-			"Data export",
-			"pluginadmin.php?ras=export&pid={pid}&iid={iid}&name={name}",
-			0);*/
-		$this->BuildMenuItem(
-			$r,
-			"Captured Data Management",
-			"pluginadmin.php?ras=datamgmt&pid={pid}&iid={iid}&name={name}",
-			0);
 		$this->BuildMenuItem(
 			$r,
 			"Edit available input types",
@@ -93,6 +83,8 @@ class Form extends PluginBase
 			"pluginadmin.php?ras=regex&pid={pid}&iid={iid}&name={name}",
 			2);
 		$this->BuildDeleteMenuItem($r);
+
+		$this->BuildExtensionMenu($r);
 
 		return $r;
 	}
@@ -598,7 +590,8 @@ function Validate$name(me) {
 					break;
 
 				case 'datamgmt':
-					$this->RenderAdminDataManagement();
+					// $this->RenderAdminDataManagement();
+					$this->CallExtensionMethod("RenderAdminDataManagement");
 					break;
 
 				case 'doexport':
@@ -923,43 +916,10 @@ function DownloadExport(pid,iid,name) {
 		$iw->Render('datetime',$name,$value);
 	}
 
-	private function GetCalendarControlValue($name)
+	public function GetCalendarControlValue($name)
 	{
 		$iw = new InputWidget();
 		return $iw->PostValue('unixdatetime',$name);
-	}
-
-	function RenderAdminDataManagement()
-	{
-		if ($_SERVER['REQUEST_METHOD']=='POST')
-		{
-			if ($_POST['action']=='dl')
-				$this->RenderAdminDataManagementDownload();
-			else
-				$this->RenderAdminDataManagementDelete();
-		}
-		else
-			$this->RenderAdminDataManagementQuery();
-	}
-
-	function RenderAdminDataManagementDownload()
-	{
-		$exported = array();
-		$headers = array();
-		$rows = array();
-
-		$from = "";
-		$to = "";
-
-		$this->RenderAdminDoDownload_GetCaptureArrays(
-			$this->RenderAdminDataManagementDownload_Query($from, $to),
-			$exported,
-			$headers,
-			$rows);
-		$this->RenderAdminDoDownload_OutputExcel(
-			$headers,
-			$rows,
-			$this->InstanceName."-$from-$to");
 	}
 
 	function RenderAdminDataManagementDownload_Query(&$from, &$to)
@@ -1098,6 +1058,7 @@ function DownloadExport(pid,iid,name) {
 		$extensions[] = new FormEmailToWebmaster();
 		$extensions[] = new FormEmailConfirmation();
 		$extensions[] = new FormCaptureToDatabase();
+		$extensions[] = new FormExportFromDatabase();
 
 		return $extensions;
 	}
@@ -1136,6 +1097,11 @@ class FormEmailToWebmaster implements PluginExtension
 			"authlevel" => 0);
 
 		return $configItems;
+	}
+
+	public function GetCommands()
+	{
+		return array();
 	}
 
 	public function ConfirmPluginCompatability($plugin)
@@ -1290,6 +1256,11 @@ class FormEmailConfirmation implements PluginExtension
 		return $configItems;
 	}
 
+	public function GetCommands()
+	{
+		return array();
+	}
+
 	public function ConfirmPluginCompatability($plugin)
 	{
 		if(!($plugin instanceof Form))
@@ -1361,11 +1332,16 @@ class FormCaptureToDatabase implements PluginExtension
 		return array();
 	}
 
+	public function GetCommands()
+	{
+		return array();
+	}
+
 	public function ConfirmPluginCompatability($plugin)
 	{
 		if(!($plugin instanceof Form))
 		{
-			die("CaptureToDatabase: plugin sent not an instance of Form. Aborting.");
+			die("FormCaptureToDatabase: plugin sent not an instance of Form. Aborting.");
 		}
 	}
 
@@ -1404,11 +1380,310 @@ class FormCaptureToDatabase implements PluginExtension
 			$sql = "insert into zcm_form_capture (instance,submittime,ip,useragent,formvalues,member) values ({$plugin->iid},now(),
 				'{$_SERVER['REMOTE_ADDR']}','".Zymurgy::$db->escape_string($_SERVER['HTTP_USER_AGENT'])."','".
 				Zymurgy::$db->escape_string($xml)."',".
-				($plugin->member === false ? 'NULL' : $this->member['id']).")";
+				($plugin->member === false ? 'NULL' : $plugin->member['id']).")";
 		}
 		Zymurgy::$db->query($sql) or die("Unable to store form info ($sql): ".Zymurgy::$db->error());
 
 		return Zymurgy::$db->insert_id();
 	}
+}
+
+class FormExportFromDatabase implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "Export from Database";
+	}
+
+	public function IsEnabled($plugin)
+	{
+		return true;
+	}
+
+	public function GetConfigItems()
+	{
+		return array();
+	}
+
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("FormExpertFromDatabase: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+
+	public function GetCommands()
+	{
+		$commands = array();
+
+		$commands[] = array(
+			"caption" => "Captured Data Management",
+			"url" => "pluginadmin.php?ras=datamgmt&amp;pid={pid}&amp;iid={iid}&amp;name={name}",
+			"authlevel" => 0);
+
+		return $commands;
+	}
+
+	public function RenderAdminDataManagement($plugin)
+	{
+		$this->ConfirmPluginCompatability($plugin);
+
+		if ($_SERVER['REQUEST_METHOD']=='POST')
+		{
+			if ($_POST['action']=='dl')
+				$this->DownloadDataExport($plugin);
+			else
+				$this->DeleteData($plugin);
+		}
+		else
+			$plugin->RenderAdminDataManagementQuery();
+	}
+
+	private function DownloadDataExport($plugin)
+	{
+		$exported = array();
+		$headers = array();
+		$rows = array();
+
+		$from = "";
+		$to = "";
+
+		$this->GetCaptureArrays(
+			$plugin,
+			$this->GetData($plugin, $from, $to),
+			$exported,
+			$headers,
+			$rows);
+		$this->RenderExcelSpreadsheet(
+			$plugin,
+			$headers,
+			$rows,
+			$plugin->InstanceName."-$from-$to");
+	}
+
+	private function GetCaptureArrays(
+		$plugin,
+		$exportRecordset,
+		&$exported,
+		&$headers,
+		&$rows)
+	{
+		$headers = $this->GetReportHeaders($plugin);
+		$ri = $exportRecordset;
+
+		$exported = array();
+		$rows = array();
+
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			//Mark this row for update at the end to show it is part of this export
+			$exported[] = $row['id'];
+			$xrow = $plugin->xmltoarray($row['formvalues']);
+
+			//Ensure the headers are registered
+			$keys = array_keys($xrow);
+			foreach ($keys as $key)
+			{
+				if (!in_array($key,$headers))
+				{
+					$sql = "insert into zcm_form_header (instance,header) values ({$plugin->iid},'".
+						Zymurgy::$db->escape_string($key)."')";
+					Zymurgy::$db->query($sql)
+						or die ("Unable to create new header [$key] ($sql): ".Zymurgy::$db->error());
+					$headers[] = $key;
+				}
+			}
+
+			if ($membercount)
+			{
+				$xrow = array_merge(array('Member ID'=>$row['member'],'Member Email'=>$row['email']),$xrow);
+			}
+
+			$rows[] = $xrow;
+
+			// echo "<pre>";
+			// print_r($xrow);
+			// echo "</pre>";
+		}
+	}
+
+	private function GetReportHeaders($plugin)
+	{
+		//Get form's headers which will include headers from previous runs, even those no longer in use so that exports line up.
+		$sql = "select count(*) from zcm_form_capture where member is not null and instance={$plugin->iid}";
+		$ri = Zymurgy::$db->query($sql) or die("Can't check member records ($sql): ".Zymurgy::$db->error());
+		$membercount = Zymurgy::$db->result($ri,0,0);
+		$headers = $membercount ? array('Member ID','Member Email') : array();
+		$sql = "select * from zcm_form_header where instance={$plugin->iid}";
+		$ri = Zymurgy::$db->query($sql) or die("Unable to get export headers ($sql): ".Zymurgy::$db->error());
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$headers[] = $row['header'];
+		}
+		Zymurgy::$db->free_result($ri);
+
+		return $headers;
+	}
+
+	function GetData($plugin, &$from, &$to)
+	{
+		//Now get actual data for this export
+		$from = $plugin->GetCalendarControlValue('from');
+		//Round to up to the next minute so we search under it, and including the full minute selected by the user.
+		$to = $plugin->GetCalendarControlValue('to');
+
+		$top = explode(' ',strftime('%Y %m %d %H %M',$to+60));
+		$to = mktime($top[3],$top[4],0,$top[1],$top[2],$top[0]);
+
+		$sql = "select zcm_form_capture.id,zcm_form_capture.formvalues,zcm_form_capture.member,zcm_member.email
+			from zcm_form_capture left join zcm_member on (zcm_form_capture.member=zcm_member.id)
+			where (instance={$plugin->iid}) and (unix_timestamp(submittime)>='$from') and (unix_timestamp(submittime)<'$to')";
+
+		//Change from and to into values that can be used to identify the xls file.
+		$from = strftime('%Y%m%d%H%M',$from);
+		$to = strftime('%Y%m%d%H%M',$to);
+
+		$ri = Zymurgy::$db->query($sql)
+			or die("Unable to export records ($sql): ".Zymurgy::$db->error());
+
+		return $ri;
+	}
+
+	function RenderExcelSpreadsheet(
+		$plugin,
+		$headers,
+		$rows,
+		$reportName = "formrecords")
+	{
+		ob_clean();
+		header("Content-Type: application/vnd.ms-excel");
+		header("Content-Disposition: attachment;filename=".urlencode($reportName).".xls");
+		echo "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\"
+xmlns:x=\"urn:schemas-microsoft-com:office:excel\"
+xmlns=\"http://www.w3.org/TR/REC-html40\">
+<head>
+<meta http-equiv=Content-Type content=\"text/html; charset=windows-1252\">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content=\"Zymurgy:CM Form Plugin\">
+<style>
+<!--table
+	{mso-displayed-decimal-separator:\"\\.\";
+	mso-displayed-thousand-separator:\"\\,\";}
+@page
+	{margin:1.0in .75in 1.0in .75in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;}
+tr
+	{mso-height-source:auto;}
+col
+	{mso-width-source:auto;}
+br
+	{mso-data-placement:same-cell;}
+td
+	{mso-style-parent:style0;
+	padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:windowtext;
+	font-size:10.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Arial;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	mso-protection:locked visible;
+	white-space:nowrap;
+	mso-rotate:0;}
+.xl24
+	{mso-style-parent:style0;
+	font-weight:700;
+	font-family:Arial, sans-serif;
+	mso-font-charset:0;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>{$plugin->InstanceName} Export</x:Name>
+    <x:WorksheetOptions>
+     <x:Print>
+      <x:ValidPrinterInfo/>
+      <x:HorizontalResolution>-3</x:HorizontalResolution>
+      <x:VerticalResolution>0</x:VerticalResolution>
+     </x:Print>
+     <x:Selected/>
+     <x:Panes>
+      <x:Pane>
+       <x:Number>1</x:Number>
+       <x:ActiveRow>2</x:ActiveRow>
+       <x:ActiveCol>1</x:ActiveCol>
+      </x:Pane>
+     </x:Panes>
+     <x:ProtectContents>False</x:ProtectContents>
+     <x:ProtectObjects>False</x:ProtectObjects>
+     <x:ProtectScenarios>False</x:ProtectScenarios>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+  <x:WindowHeight>11760</x:WindowHeight>
+  <x:WindowWidth>15315</x:WindowWidth>
+  <x:WindowTopX>360</x:WindowTopX>
+  <x:WindowTopY>75</x:WindowTopY>
+  <x:ProtectStructure>False</x:ProtectStructure>
+  <x:ProtectWindows>False</x:ProtectWindows>
+ </x:ExcelWorkbook>
+</xml><![endif]-->
+		</head>
+		<body>";
+		echo "<table x:str border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:
+ collapse;table-layout:fixed\">";
+		echo "<tr>";
+		echo "<td class=\"xl24\">".implode("</td><td class=\"xl24\">",$headers)."</td>";
+		echo "</tr>";
+		foreach($rows as $xrow)
+		{
+			echo "<tr>";
+			foreach($headers as $key)
+			{
+				if (array_key_exists($key,$xrow))
+					$val = $xrow[$key];
+				else
+					$val = '';
+				echo "<td>".htmlentities($val)."</td>";
+			}
+			echo "</tr>";
+		}
+		echo "</table>";
+		echo "</body></html>";
+		exit;
+	}
+
+	private function DeleteData($plugin)
+	{
+		$from = $plugin->GetCalendarControlValue('from');
+		//Round to up to the next minute so we search under it, and including the
+		// full minute selected by the user.
+		$to = $plugin->GetCalendarControlValue('to');
+
+		$top = explode(' ',strftime('%Y %m %d %H %M',$to+60));
+		$to = mktime($top[3],$top[4],0,$top[1],$top[2],$top[0]);
+
+		$sql = "delete from zcm_form_capture where (instance={$plugin->iid}) and ".
+			"(unix_timestamp(submittime)>='$from') and (unix_timestamp(submittime)<'$to')";
+		Zymurgy::$db->run($sql);
+
+		echo "The selected range of data has been removed from the database.";
+	}
+
 }
 ?>
