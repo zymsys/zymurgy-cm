@@ -6,13 +6,13 @@ if (!class_exists('PluginBase'))
 	require_once('../include/Thumb.php');
 }
 
-class ImageGallery extends PluginBase 
+class ImageGallery extends PluginBase
 {
 	function GetTitle()
 	{
 		return 'Image Gallery Plugin';
 	}
-	
+
 	function Initialize()
 	{
 		Zymurgy::$db->query("CREATE TABLE `zcm_galleryimage` (
@@ -26,14 +26,14 @@ class ImageGallery extends PluginBase
 		  KEY `instance` (`instance`),
 		  KEY `disporder` (`disporder`))");
 	}
-	
+
 	function GetRelease()
 	{
 		return 4; // ZK: Recreated ImageGallery, based on FlashReliefThumbGallery.
 		//return 3; //Renamed table to zcm_fr_galleryimage; rename corresponding files as well.
 		//return 2; //Added link to zcm_fr_galleryimage table
 	}
-	
+
 	function Upgrade()
 	{
 		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
@@ -46,7 +46,7 @@ class ImageGallery extends PluginBase
 	{
 		return "drop table zcm_galleryimage";
 	}
-	
+
 	function RemoveInstance()
 	{
 		$sql = "select id from zcm_galleryimage where instance={$this->iid}";
@@ -60,60 +60,76 @@ class ImageGallery extends PluginBase
 		Zymurgy::$db->query($sql) or die("Unable to remove gallery images ($sql): ".Zymurgy::$db->error());
 		parent::RemoveInstance();
 	}
-	
+
+	function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => "Generate Gallery Image",
+			"default" => "false",
+			"inputspec" => "drop.true,false",
+			"authlevel" => 2);
+		$configItems[] = array(
+			"name" => "Thumbnail width",
+			"default" => 80,
+			"inputspec" => "input.3.3",
+			"authlevel" => 2);
+		$configItems[] = array(
+			"name" => "Thumbnail height",
+			"default" => 60,
+			"inputspec" => "input.3.3",
+			"authlevel" => 2);
+		$configItems[] = array(
+			"name" => "Image width",
+			"default" => 800,
+			"inputspec" => "input.3.3",
+			"authlevel" => 2);
+		$configItems[] = array(
+			"name" => "Image height",
+			"default" => 600,
+			"inputspec" => "input.3.3",
+			"authlevel" => 2);
+
+		return $configItems;
+	}
+
 	function GetDefaultConfig()
 	{
 		$r = array();
-		
-		$this->BuildConfig(
-			$r,
-			"Generate Gallery Image",
-			"false",
-			"drop.true,false",
-			2);
-		$this->BuildConfig(
-			$r,
-			"Thumbnail width",
-			80,
-			"input.3.3",
-			2);
-		$this->BuildConfig(
-			$r,
-			"Thumbnail height",
-			60,
-			"input.3.3",
-			2);
-		$this->BuildConfig(
-			$r,
-			"Image width",
-			800,
-			"input.3.3",
-			2);
-		$this->BuildConfig(
-			$r,
-			"Image height",
-			600,
-			"input.3.3",
-			2);
-			
+
+		$configItems = $this->GetConfigItems();
+
+		foreach($configItems as $configItem)
+		{
+			$this->BuildConfig(
+				$r,
+				$configItem["name"],
+				$configItem["default"],
+				$configItem["inputspec"],
+				$configItem["authlevel"]);
+		}
+
+		$this->BuildExtensionConfig($r);
+
 		return $r;
 	}
-	
+
 	function GetCommandMenuItems()
 	{
 		$r = array();
-		
+
 		$this->BuildSettingsMenuItem($r);
-		$this->BuildDeleteMenuItem($r);		
-		
+		$this->BuildDeleteMenuItem($r);
+
 		return $r;
 	}
-	
+
 	function AdminMenuText()
 	{
 		return "Galleries";
 	}
-	
+
 	function RenderAdmin()
 	{
 		$usegimage = ($this->GetConfigValue('Generate Gallery Image')=='true');
@@ -148,7 +164,7 @@ class ImageGallery extends PluginBase
 		$ds->AddDataFilter(
 			'instance',
 			$this->iid);
-			
+
 		$dg = new DataGrid($ds);
 		$dg->AddThumbColumn(
 			'Image',
@@ -164,7 +180,7 @@ class ImageGallery extends PluginBase
 		$dg->AddAttachmentEditor(
 			'image',
 			'Image:');
-			
+
 		$dg->AddInput(
 			'caption',
 			'Caption:',
@@ -175,9 +191,9 @@ class ImageGallery extends PluginBase
 			'Link:',
 			200,
 			60);
-		
+
 		if ($usegimage)
-		{			
+		{
 			$dg->AddButton(
 				'Set Gallery Image',
 				"pluginadmin.php?pid={$this->pid}&iid={$this->iid}&gimage={0}");
@@ -190,28 +206,28 @@ class ImageGallery extends PluginBase
 				'x'.
 				$this->GetConfigValue('Image height').
 				"',{0},'zcm_galleryimage.image',true)\">Adjust Image</a>");
-			
+
 		$dg->AddUpDownColumn('disporder');
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
 		$dg->insertlabel='Add a new Image';
 		$dg->AddConstant('instance',$this->iid);
-		
+
 		$dg->Render();
 	}
-	
+
 	function RenderHTML()
 	{
 		global $ZymurgyRoot;
-		
+
 		$html = "";
-		
+
 		$html .= Zymurgy::YUI("carousel/assets/skins/sam/carousel.css")."\n";
 		$html .= Zymurgy::YUI("yahoo/yahoo-dom-event.js")."\n";
 		$html .= Zymurgy::YUI("element/element-beta-min.js")."\n";
 		$html .= Zymurgy::YUI("carousel/carousel-beta-min.js")."\n";
-		
-		
+
+
 		$html .= "<style>\n";
 		$html .= "#spotlight { border: 1px solid black; margin: 10px auto; padding: 1px; width: ".$this->GetConfigValue("Image width")."px; height: ".$this->GetConfigValue("Image height")."px; overflow: hidden; text-align: center; vertical-align: middle; }\n";
 		$html .= "#container { margin: 0 auto; }\n";
@@ -219,20 +235,20 @@ class ImageGallery extends PluginBase
 		$html .= ".yui-carousel-element .yui-carousel-item-selected { opacity: 1; } \n";
 		$html .= ".yui-skin-sam .yui-carousel-nav ul li { margin: 0; }\n";
 		$html .= "</style>\n";
-		
+
 		$html .= "<div id=\"spotlight\"></div>\n";
 
 		$html .= "<div id=\"container\"><ol id=\"carousel\">\n";
-		
+
 		$sql = "select id,caption,link from zcm_galleryimage where instance={$this->iid} order by disporder";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to load images ($sql): ".Zymurgy::$db->error());
 		if (!$ri)
 			die("Unable to read gallery images ($sql): ".Zymurgy::$db->error());
-			
+
 		$imgpath = "DataGrid/zcm_galleryimage.image";
 		//echo("$ZymurgyRoot/UserFiles");
 		// chdir("$ZymurgyRoot/UserFiles");
-		
+
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$html .= "<li>\n";
@@ -248,17 +264,17 @@ class ImageGallery extends PluginBase
 				".jpg\">\n";
 			$html .= "</li>\n";
 		}
-		
+
 		$html .= "</ol></div>\n";
-				
+
 		$html .= "<script>\n";
-		
+
 		$html .= "(function () {\n";
 		$html .= "var carousel;\n";
-                        
+
 		$html .= "function getImage(parent) {\n";
 		$html .= "var el = parent.firstChild;\n";
-                   
+
 		$html .= "while (el) {\n";
 		$html .= "if (el.nodeName.toUpperCase() == \"IMG\") {\n";
 		$html .= "return el.src.replace(/".
@@ -273,24 +289,24 @@ class ImageGallery extends PluginBase
 		$html .= "}\n";
 		$html .= "el = el.nextSibling;\n";
 		$html .= "}\n";
-            
+
 		$html .= "return \"\";\n";
 		$html .= "}\n";
-                
+
 		$html .= "YAHOO.util.Event.onDOMReady(function (ev) {\n";
 		$html .= "var el, item,\n";
 		$html .= "spotlight   = YAHOO.util.Dom.get(\"spotlight\"),\n";
 		$html .= "carousel    = new YAHOO.widget.Carousel(\"container\", { animation: { speed: 0.5 }, numVisible: 8, revealAmount: 20 } );\n";
-                
+
 		$html .= "carousel.render();\n";
 		$html .= "carousel.show();\n";
 		// $html .= "carousel.startAutoPlay();\n";
-                    
+
 		$html .= "item = carousel.getElementForItem(carousel.get(\"selectedItem\"));\n";
 		$html .= "if (item) {\n";
 		$html .= "spotlight.innerHTML = \"<img src=\\\"\" + getImage(item) + \"\\\">\";\n";
 		$html .= "}\n";
-                       
+
 		$html .= "carousel.on(\"itemSelected\", function (index) {\n";
 		$html .= "item = carousel.getElementForItem(index);\n";
 
@@ -300,29 +316,29 @@ class ImageGallery extends PluginBase
 		$html .= "});\n";
 		$html .= "});\n";
 		$html .= "})();\n";
-  
+
 		$html .= "</script>\n";
-		
+
 		// $html = "Content pending";
-		
+
 		return $html;
 	}
-	
+
 	function RenderJS()
-	{		
+	{
 		return "";
 	}
-	
+
 	function RenderXML()
 	{
 		return "";
 	}
-	
+
 	function Render()
 	{
 		// echo($this->extra);
 		// die();
-		
+
 		$r='';
 		switch($this->extra)
 		{
@@ -339,46 +355,46 @@ class ImageGallery extends PluginBase
 				$r = isset($_POST["process"])
 					? $this->UploadFromPicasa()
 					: $this->RenderPicasaUploader();
-					
+
 				break;
-				
+
 			default:
 				$r = $this->RenderHTML();
 				break;
 		}
 		return $r;
 	}
-	
+
 	function RenderPicasaUploader()
 	{
-		require_once("../include/xmlHandler.php");	
-		
+		require_once("../include/xmlHandler.php");
+
 		$pluginSQL = "SELECT `id` FROM zcm_plugin WHERE name = 'ImageGallery'";
 		$pid = Zymurgy::$db->get($pluginSQL) or die("Cannot retrieve plugin information");
-				
+
 		$instanceSQL = "SELECT `id`, `name` FROM zcm_plugininstance WHERE plugin = '".
 			$pid.
 			"' AND `name` <> '0' ORDER BY `name`";
 		$instanceRI = Zymurgy::$db->query($instanceSQL) or die("Cannot retrieve list of instances");
-		
+
 		include("../header_html.php");
-		
+
 		echo("<p>The Zymurgy:CM&trade; Picasa Upload Utility allows you to upload your images directly from Google Picasa into your Image Gallery. It also takes care of re-sizing your images for the Web, so you don't have to wait a long time to upload images taken with your digital camera.</p>");
-		
+
 		echo("<form name=\"f\" method=\"POST\" action=\"ImageGallery.php\">");
 		echo("<input type=\"hidden\" name=\"process\" value=\"true\">");
 		echo("<input type=\"hidden\" name=\"DocType\" value=\"picasa\">");
 		echo("<p><b>Web Site:</b> ".Zymurgy::$config['defaulttitle']." (".Zymurgy::$config['sitehome'].")");
 		echo("<br><b>Upload to Gallery:</b> <select name=\"cmbInstance\">");
-		
+
 		while (($instanceRow = mysql_fetch_array($instanceRI))!==false)
 		{
 			echo("<option value=\"".$instanceRow["id"]."\">".$instanceRow["name"]."</option>");
-		}		
-		
+		}
+
 		echo("</select></p>");
 		echo("<p>The following images will be uploaded:</p>");
-		
+
 		$xh = new xmlHandler();
 		$nodeNames = array("PHOTO:THUMBNAIL", "PHOTO:IMGSRC", "TITLE");
 		$xh->setElementNames($nodeNames);
@@ -388,10 +404,10 @@ class ImageGallery extends PluginBase
 		$xh->setXmlData(stripslashes($_POST['rss']));
 		$pData = $xh->xmlParse();
 		$br = 0;
-	
+
 		$cntr = 0;
-		
-		echo("<table border='0' cellspacing='10' cellpadding='0'><tr>");		
+
+		echo("<table border='0' cellspacing='10' cellpadding='0'><tr>");
 
 		foreach($pData as $e) {
 			if($cntr % 7 == 0)
@@ -399,60 +415,60 @@ class ImageGallery extends PluginBase
 				echo("</tr><tr>");
 			}
 			echo "<td bgcolor='#C0C0C0' width='120' align='center' valign='middle'><img src='".$e['photo:thumbnail']."?size=".$this->GetConfigValue('Thumbnail width')."'></td>";
-			$large = $e['photo:imgsrc'];		
+			$large = $e['photo:imgsrc'];
 			echo "<input type=hidden name='".$large."?size=1280'>\r\n";
-			
+
 			$cntr++;
 		}
-		
+
 		echo("</tr></table>");
-		
+
 		echo("<p>");
 		echo("<input type=\"submit\" value=\"Publish\">&nbsp;");
 		echo("<input type=\"button\" value=\"Cancel\" onclick=\"location.href='minibrowser:close'\">");
 		echo("</p>");
-		
+
 		echo("</form></body></html>");
 
 		// include("../footer.php");
 	}
-	
+
 	function UploadFromPicasa()
 	{
 		$this->CreateUploadDirectory();
-		
-		$instanceID = $_POST["cmbInstance"];		
-		
+
+		$instanceID = $_POST["cmbInstance"];
+
 		// echo $instanceID;
 		// die;
-	
+
 		$dispOrderSQL = "SELECT MAX(`disporder`) FROM zcm_galleryimage WHERE `instance` = '$instanceID'";
 		$dispOrder = Zymurgy::$db->get($dispOrderSQL) or $dispOrder = 0;
-		
+
 		if($dispOrder == null)
 		{
 			$dispOrder = 0;
 		}
-		
+
 		foreach($_FILES as $key => $file)
 		{
-			$tmpfile = $file['tmp_name'];		
+			$tmpfile = $file['tmp_name'];
 			$dispOrder++;
-			
+
 			$insertSQL = "INSERT INTO zcm_galleryimage ( instance, image, link, ".
 			"caption, disporder ) VALUES ( '$instanceID', '".$file['type']."', '', '".$file["name"]."', '$dispOrder')";
-			
+
 			Zymurgy::$db->query($insertSQL) or die("Could not insert record for image.");
-			
+
 			$idSQL = "SELECT id FROM zcm_galleryimage WHERE instance = '$instanceID' ".
 				"AND disporder = '$dispOrder'";
 			$id = Zymurgy::$db->get($idSQL) or die("Could not get ID of new image record.");
-			
-			$localfn = "../../UserFiles/DataGrid/zcm_galleryimage.image/".$id."raw.jpg";
-			
-			$targets = array();			
 
-			$targets[] = 
+			$localfn = "../../UserFiles/DataGrid/zcm_galleryimage.image/".$id."raw.jpg";
+
+			$targets = array();
+
+			$targets[] =
 				$this->GetConfigValue('Thumbnail width').
 				"x".
 				$this->GetConfigValue('Thumbnail height').
@@ -460,29 +476,29 @@ class ImageGallery extends PluginBase
 				$this->GetConfigValue('Image width').
 				"x".
 				$this->GetConfigValue('Image height');
-			
+
 			Zymurgy::MakeThumbs(
 				"zcm_galleryimage.image",
 				$id,
 				$targets,
 				$tmpfile);
-			
+
 			// if(move_uploaded_file($tmpfile, $localfn))
 			// {
 				// chmod($localfn, 0644);
 			// }
 		}
-		
+
 		// echo("http://".$_SERVER['SERVER_NAME']."/zymurgy/login.php");
 	}
-	
+
 	function CreateUploadDirectory()
 	{
 		global $ZymurgyRoot;
-		
+
 		@mkdir("$ZymurgyRoot/UserFiles/DataGrid");
 		$thumbdest = "$ZymurgyRoot/UserFiles/DataGrid/zcm_galleryimage.image";
-		@mkdir($thumbdest);		
+		@mkdir($thumbdest);
 	}
 }
 
@@ -493,34 +509,34 @@ function ImageGalleryFactory()
 
 if(array_key_exists('DocType', $_GET) && $_GET["DocType"] == 'picasa')
 {
-	header("Content-type: text/html");	
-		
+	header("Content-type: text/html");
+
 	echo plugin('ImageGallery', 0, 'picasa');
 }
 else if(array_key_exists('DocType', $_POST) && $_POST["DocType"] == 'picasa')
 {
-	header("Content-type: text/html");	
-		
+	header("Content-type: text/html");
+
 	echo plugin('ImageGallery', 0, 'picasa');
 }
 else if (array_key_exists('GalleryInstance',$_GET))
 {
 	$doctype = $_GET['DocType'];
-	
+
 	// print_r($_GET);
 	// echo("<br>".$_GET['DocType']."<br>".$doctype);
 	// die;
-	
+
 	if ($doctype=='js')
 	{
-		header("Content-type: text/javascript");		
+		header("Content-type: text/javascript");
 	}
-	else 
+	else
 	{
 		header("Content-type: text/xml");
 		$doctype = 'xml';
 	}
-	
+
 	echo plugin('ImageGallery',$_GET['GalleryInstance'],$doctype);
 }
 ?>

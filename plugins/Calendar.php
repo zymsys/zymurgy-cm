@@ -13,7 +13,7 @@ class Calendar extends PluginBase
 		}
 		$this->CompleteUpgrade();
 	}
-	
+
 	function GetTitle()
 	{
 		return 'Calendar Plugin';
@@ -23,95 +23,95 @@ class Calendar extends PluginBase
 	{
 		return 3;
 	}
-	
+
 	function GetUninstallSQL()
 	{
 		return 'drop table calendar';
 	}
-	
+
 	function RemoveInstance()
 	{
 		$sql = "delete from calendar where instance={$this->iid}";
 		Zymurgy::$db->query($sql) or die("Unable to remove calendar ($sql): ".Zymurgy::$db->error());
 		parent::RemoveInstance();
 	}
-		
+
+	function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => 'Allow Multi-day Events',
+			"default" => 'no',
+			"inputspec" => 'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Events have Location',
+			"default" => 'no',
+			"inputspec" => 'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Date Format',
+			"default" => 'F  jS, Y',
+			"inputspec" => 'input.30.30',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Date Tag',
+			"default" => 'h2',
+			"inputspec" => 'input.50.50',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Title Tag',
+			"default" => 'h3',
+			"inputspec" => 'input.50.50',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Location Tag',
+			"default" => 'em',
+			"inputspec" => 'input.50.50',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Description Tag',
+			"default" => 'p',
+			"inputspec" => 'input.50.50',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Event Separator',
+			"default" => '',
+			"inputspec" => 'textarea.60.5',
+			"authlevel" => 0);
+
+		return $configItems;
+	}
+
 	function GetDefaultConfig()
 	{
 		$r = array();
-		
-		$this->BuildConfig(
-			$r,
-			'Allow Multi-day Events',
-			'no',
-			'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
-			0);
-		$this->BuildConfig(
-			$r,
-			'Events have Location',
-			'no',
-			'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
-			0);
-		$this->BuildConfig(
-			$r,
-			'Date Format',
-			'F  jS, Y',
-			'input.30.30',
-			0);
-		$this->BuildConfig(
-			$r,
-			'Date Tag',
-			'h2',
-			'input.50.50',
-			0);
-		$this->BuildConfig(
-			$r,
-			'Title Tag',
-			'h3',
-			'input.50.50',
-			0);
-		$this->BuildConfig(
-			$r,
-			'Location Tag',
-			'em',
-			'input.50.50',
-			0);
-		$this->BuildConfig(
-			$r,
-			'Description Tag',
-			'p',
-			'input.50.50',
-			0);
-		$this->BuildConfig(
-			$r,
-			'Event Separator',
-			'',
-			'textarea.60.5',
-			0);
-		
+
+		$configItems = $this->GetConfigItems();
+
+		foreach($configItems as $configItem)
+		{
+			$this->BuildConfig(
+				$r,
+				$configItem["name"],
+				$configItem["default"],
+				$configItem["inputspec"],
+				$configItem["authlevel"]);
+		}
+
+		$this->BuildExtensionConfig($r);
+
 		return $r;
-		
-		/*
-		return array(
-			'Allow Multi-day Events'=>'no',
-			'Events have Location'=>'no',
-			'Date Format'=>'F  jS, Y',
-			'Date Tag'=>'h2',
-			'Title Tag'=>'h3',
-			'Location Tag'=>'i',
-			'Description Tag'=>'p',
-			'Event Separator'=>''
-		);
-		*/
 	}
-		
+
 	function GetCommandMenuItems()
 	{
 		$r = array();
-		
+
 		$this->BuildSettingsMenuItem($r);
-		$this->BuildDeleteMenuItem($r);		
-		
+		$this->BuildDeleteMenuItem($r);
+
 		return $r;
 	}
 
@@ -143,7 +143,7 @@ class Calendar extends PluginBase
 		*/
 		return;
 	}
-	
+
 	function Initialize()
 	{
 		Zymurgy::$db->query("CREATE TABLE `calendar` (
@@ -157,7 +157,7 @@ class Calendar extends PluginBase
   KEY `start` (`start`,`end`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 	}
-	
+
 	function Render()
 	{
 		if($this->GetConfigValue('Date Format') == null)
@@ -165,7 +165,7 @@ class Calendar extends PluginBase
 			echo("Calendar plugin instance must be configured before it can be displayed.");
 			die("Calendar plugin instance must be configured before it can be displayed.");
 		}
-		
+
 		//Begin by deleting items which are over.
 		//Zymurgy::$db->query("delete from calendar where end<(unix_timestamp()+24*3600)");
 		Zymurgy::$db->query("delete from calendar where end<(unix_timestamp()-24*3600)");
@@ -189,12 +189,12 @@ class Calendar extends PluginBase
 		}
 		return "<div class=\"Calendar\">".join($this->GetConfigValue('Event Separator'),$cal)."</div>";
 	}
-	
+
 	function AdminMenuText()
 	{
 		return 'Calendar';
 	}
-	
+
 	function RenderAdmin()
 	{
 		$ds = new DataSet('calendar','id');
@@ -211,7 +211,7 @@ class Calendar extends PluginBase
 		$dg->AddUnixDateEditor('start','Start Date:');
 		if ($this->GetConfigValue('Allow Multi-day Events') == 'yes')
 			$dg->AddUnixDateEditor('end','End Date:');
-		else 
+		else
 			$ds->OnBeforeUpdate = $ds->OnBeforeInsert = "CalendarSetEndDate";
 		$dg->AddConstant('instance',$this->iid);
 		$dg->AddInput('title','Title:',60,60);
