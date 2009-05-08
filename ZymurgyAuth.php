@@ -3,9 +3,9 @@ class ZymurgyAuth
 {
 	function ZymurgyAuth()
 	{
-		session_start();
+		if(!isset($_SESSION)) session_start();
 	}
-	
+
 	/**
 	 * @desc Sets the authentication token into a cookie, and redirects the user.
 	 * @return void
@@ -34,15 +34,15 @@ class ZymurgyAuth
 	document.location.href = '<?=$location?>';
 	//-->
 	</script>
-	<?*/		
+	<?*/
 	}
-	
+
 	function Logout($location)
 	{
 		unset($_SESSION['AUTH']);
 		header("Location: $location");
 	}
-	
+
 	function GetAuthentication()
 	{
 		if (isset($_SESSION['AUTH']))
@@ -52,13 +52,13 @@ class ZymurgyAuth
 		}
 		return false;
 	}
-	
+
 	function IsAuthenticated()
 	{
 		$ai = $this->GetAuthentication();
 		return is_array($ai);
 	}
-	
+
 	function Authenticate($loginpath)
 	{
 		$r = $this->IsAuthenticated();
@@ -68,7 +68,7 @@ class ZymurgyAuth
 			header("Location: $loginpath");
 			exit;
 		}
-		else 
+		else
 			return $r;
 	}
 }
