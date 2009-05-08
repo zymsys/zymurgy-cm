@@ -42,6 +42,39 @@ class Form extends PluginBase
 		parent::RemoveInstance();
 	}
 
+	function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems["Name"] = array(
+			"name" => "Name",
+			"default" => "My New Form",
+			"inputspec" => "input.50.100",
+			"authlevel" => 2);
+		$configItems["Submit Button Text"] = array(
+			"name" => "Submit Button Text",
+			"default" => "Send",
+			"inputspec" => "input.10.80",
+			"authlevel" => 0);
+		$configItems["Validation Error Intro"] = array(
+			"name" => "Validation Error Intro",
+			"default" => "There were some problems processing your information:",
+			"inputspec" => "html.500.300",
+			"authlevel" => 0);
+		$configItems["Footer"] = array(
+			"name" => "Footer",
+			"default" => "",
+			"inputspec" => "html.500.300",
+			"authlevel" => 0);
+		$configItems["Thanks"] = array(
+			"name" => "Thanks",
+			"default" => "Thanks for your feedback!  We will get back to you shortly.",
+			"inputspec" => "html.500.300",
+			"authlevel" => 0);
+
+		return $configItems;
+	}
+
 	function GetDefaultConfig()
 	{
 		global $ZymurgyConfig;
@@ -50,12 +83,18 @@ class Form extends PluginBase
 		if (substr($dom,0,4) == "www.")
 			$dom = substr($dom,4);
 		$r = array();
-		$this->BuildConfig($r,'Name','My New Form','input.40.60',2);
-		$this->BuildConfig($r,'Submit Button Text','Send','input.80.80');
-		//$this->BuildConfig($r,'Field Name','','input.40.60');
-		$this->BuildConfig($r,'Validation Error Intro','There were some problems processing your information...','html.500.300');
-		$this->BuildConfig($r,'Footer','','html.500.300');
-		$this->BuildConfig($r,'Thanks','Thanks for your feedback!  We will get back to you shortly.','html.500.300');
+
+		$configItems = $this->GetConfigItems();
+
+		foreach($configItems as $configItem)
+		{
+			$this->BuildConfig(
+				$r,
+				$configItem["name"],
+				$configItem["default"],
+				$configItem["inputspec"],
+				$configItem["authlevel"]);
+		}
 
 		$this->BuildExtensionConfig($r);
 
@@ -71,7 +110,12 @@ class Form extends PluginBase
 			"View form details",
 			"pluginadmin.php?pid={pid}&iid={iid}&name={name}",
 			0);
-		$this->BuildSettingsMenuItem($r);
+		// $this->BuildSettingsMenuItem($r);
+		$this->BuildMenuItem(
+			$r,
+			"Edit settings",
+			"zkpluginconfig.php?plugin={pid}&amp;instance={iid}",
+			0);
 		$this->BuildMenuItem(
 			$r,
 			"Edit available input types",
@@ -716,10 +760,22 @@ class FormEmailToWebmaster implements PluginExtension
 		return "E-mail to Webmaster";
 	}
 
+	public function GetDescription()
+	{
+		return "<p>When enabled, the information a user enters into the ".
+			"form will be automatically e-mailed to you. This is great for ".
+			"Contact Us forms, or other forms requiring immeiate action.</p>";
+	}
+
 	public function GetConfigItems()
 	{
 		$configItems = array();
 
+		$configItems[] = array(
+			"name" => "Enable E-mail to Address",
+			"default" => "on",
+			"inputspec" => "checkbox",
+			"authlevel" => 0);
 		$configItems[] = array(
 			"name" => "Email Form Results To Address",
 			"default" => "you@".Zymurgy::$config['sitehome'],
@@ -865,7 +921,14 @@ class FormEmailConfirmation implements PluginExtension
 {
 	public function GetExtensionName()
 	{
-		return "E-mail confirmation to person filling out form";
+		return "E-mail Confirmation";
+	}
+
+	public function GetDescription()
+	{
+		return "<p>When enabled, an e-mail will be automatically ".
+			"sent to the user notifying them that you have received ".
+			"the information on the form.</p>";
 	}
 
 	public function GetConfigItems()
@@ -962,6 +1025,13 @@ class FormCaptureToDatabase implements PluginExtension
 		return "Capture to Database";
 	}
 
+	public function GetDescription()
+	{
+		return "<p>When a form is submitted, the data will be automatically ".
+			"saved to the database for later retrieval.</p>".
+			"<p>There are no items to configure for this feature.</p>";
+	}
+
 	public function IsEnabled($plugin)
 	{
 		return true;
@@ -1033,6 +1103,13 @@ class FormExportFromDatabase implements PluginExtension
 	public function GetExtensionName()
 	{
 		return "Export from Database";
+	}
+
+	public function GetDescription()
+	{
+		return "<p>Data submitted to the form can be retrieved from the ".
+			"database in Microsoft Excel format.</p>".
+			"<p>There are no items to configure for this feature.</p>";
 	}
 
 	public function IsEnabled($plugin)
