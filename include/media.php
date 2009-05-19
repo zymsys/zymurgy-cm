@@ -678,7 +678,10 @@
 
 		static function DisplayDeleteFrom($mediaFile)
 		{
-			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; Delete Media File";
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles").
+				"</a> &gt; ".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Delete");
 
 			include("header.php");
 
@@ -688,12 +691,22 @@
 			echo("<input type=\"hidden\" name=\"media_file_id\" value=\"".
 				$mediaFile->get_media_file_id()."\">");
 
-			echo("<p>Are you sure you want to delete the following media file:</p>");
-			echo("<p>Display Name: ".$mediaFile->get_display_name()."</p>");
+			echo("<p>".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayDeleteForm.Confirm").
+				"</p>");
+			echo("<p>".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayDeleteForm.Field.DisplayName").
+				" ".
+				$mediaFile->get_display_name().
+				"</p>");
 
 			echo("<p>");
-			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"Yes\">");
-			echo("<input style=\"width: 80px;\" type=\"button\" value=\"No\" onclick=\"window.location.href='media.php?action=list_media_files';\">");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.Common.Yes").
+				"\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.Common.No").
+				"\" onclick=\"window.location.href='media.php?action=list_media_files';\">");
 			echo("</p>");
 
 			echo("</form>");

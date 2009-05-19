@@ -24,10 +24,16 @@
 	<string id="MediaRelation.Validate.TypeRequired">Relation Type is required.</string>
 
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles">Media Files</string>
+	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Delete">Delete Media File</string>
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Edit">Add/Edit Media File</string>
 
-	<string id="MediaFileView.Common.Filter">Filter</string>
 	<string id="MediaFileView.Common.AllOption">(all)</string>
+	<string id="MediaFileView.Common.Filter">Filter</string>
+	<string id="MediaFileView.Common.No">No</string>
+	<string id="MediaFileView.Common.Yes">Yes</string>
+
+	<string id="MediaFileView.DisplayDeleteForm.Confirm">Are you sure you want to delete the following media file:</string>
+	<string id="MediaFileView.DisplayDeleteForm.Field.DisplayName">Display Name:</string>
 
 	<string id="MediaFileView.DisplayEditForm.EditFile">Only provide a file if you want to replace the one currently in the system.</string>
 	<string id="MediaFileView.DisplayEditForm.Field.ContentType">Content Type:</string>
