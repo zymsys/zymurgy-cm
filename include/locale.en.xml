@@ -49,4 +49,12 @@
 	<string id="MediaFileView.DisplayList.Header.Owner">Owner</string>
 	<string id="MediaFileView.DisplayList.Table.Delete">Delete</string>
 	<string id="MediaFileView.DisplayList.Table.Download">Download</string>
+
+	<string id="MediaFileView.DisplayRelatedMedia.Footer.Add">Add Related Media File</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Header.DisplayName">Display Name</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Header.MimeType">MIME Type</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Header.Owner">Owner</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Header.Relation">Relation</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Table.Delete">Delete</string>
+	<string id="MediaFileView.DisplayRelatedMedia.Table.Download">Download</string>
 </locale>

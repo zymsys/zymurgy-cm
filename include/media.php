@@ -629,10 +629,10 @@
 		{
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td>Display Name</td>");
-			echo("<td>MIME Type</td>");
-			echo("<td>Owner</td>");
-			echo("<td>Relation</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayRelatedMedia.Header.DisplayName");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayRelatedMedia.Header.MimeType");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayRelatedMedia.Header.Owner");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayRelatedMedia.Header.Relation");
 			echo("<td colspan=\"2\">&nbsp;</td>");
 			echo("</tr>");
 
@@ -652,17 +652,26 @@
 				echo("<td>".$relatedFile->get_member()->get_email()."</td>");
 				echo("<td>".$relatedFile->get_relation()->get_relation_label()."</td>");
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
-					$relatedFile->get_media_file_id()."\">Download</a></td>");
+					$relatedFile->get_media_file_id()."\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayRelatedMedia.Table.Download").
+					"</a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_file_relation&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
 					"&amp;related_media_file_id=".
 					$relatedFile->get_media_file_id().
-					"\">Delete</a></td>");
+					"\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayRelatedMedia.Table.Delete").
+					"</a></td>");
 				echo("</tr>");
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_file_relatedmedia&amp;media_file_id=".$mediaFile->get_media_file_id()."\">Add Related Media File</td>");
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=".
+				"add_media_file_relatedmedia&amp;media_file_id=".
+				$mediaFile->get_media_file_id().
+				"\">".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayRelatedMedia.Footer.Add").
+				"</td>");
 
 			echo("</table>");
 		}
