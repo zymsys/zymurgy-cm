@@ -341,7 +341,7 @@
 
 			if(strlen($this->m_display_name) <= 0)
 			{
-				$this->m_errors[] = "Display Name is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaFile.Validate.DisplayNameRequired");
 				$isValid = false;
 			}
 
@@ -349,7 +349,7 @@
 			{
 				if(!isset($this->m_file))
 				{
-					$this->m_errors[] = "A file must be provided.";
+					$this->m_errors[] = Zymurgy::GetLocaleString("MediaFile.Validate.FileRequired");
 					$isValid = false;
 				}
 			}
@@ -377,32 +377,35 @@
 					break;
 
 				case UPLOAD_ERR_INI_SIZE:
-					$this->m_errors[] = ("The uploaded file exceeds the upload_max_filesize directive (".ini_get("upload_max_filesize").") in php.ini.");
+					$this->m_errors[] = str_replace(
+						"{0}",
+						ini_get("upload_max_filesize"),
+						Zymurgy::GetLocaleString("FileUpload.Validate.TooLargeINI"));
 					$isValid = false;
 					break;
 
 				case UPLOAD_ERR_FORM_SIZE:
-					$this->m_errors[] = ("The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.");
+					$this->m_errors[] = Zymurgy::GetLocaleString("FileUpload.Validate.TooLargeForm");
 					$isValid = false;
 					break;
 
 				case UPLOAD_ERR_PARTIAL:
-					$this->m_errors[] = ("The uploaded file was only partially uploaded.");
+					$this->m_errors[] = Zymurgy::GetLocaleString("FileUpload.Validate.PartialUpload");
 					$isValid = false;
 					break;
 
 				case UPLOAD_ERR_NO_TMP_DIR:
-					$this->m_errors[] = ("Missing a temporary folder.");
+					$this->m_errors[] = Zymurgy::GetLocaleString("FileUpload.Validate.NoTempFolder");
 					$isValid = false;
 					break;
 
 				case UPLOAD_ERR_CANT_WRITE:
-					$this->m_errors[] = ("Failed to write file to disk");
+					$this->m_errors[] = Zymurgy::GetLocaleString("FileUpload.Validate.WriteFailure");
 					$isValid = false;
 					break;
 
 				default:
-					$this->m_errors[] = ("Unknown File Error");
+					$this->m_errors[] = Zymurgy::GetLocaleString("FileUpload.Validate.UnknownError");
 					$isValid = false;
 			}
 
@@ -410,7 +413,10 @@
 			{
 				if(!($this->m_relation->isValidMimetype($this->m_file['type'])))
 				{
-					$this->m_errors[] = ("The selected file is not in the correct format for the selected content type. The following mimetypes are supported: ".$this->m_relation->get_allowed_mimetypes().".");
+					$this->m_errors[] = str_replace(
+						"{0}",
+						$this->m_relation->get_allowed_mimetypes(),
+						Zymurgy::GetLocaleString("FileUpload.Validate.TooLargeINI"));
 					$isValid = false;
 				}
 			}

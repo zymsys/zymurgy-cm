@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <locale>
+	<string id="FileUpload.Validate.NoTempFolder">Missing a temporary folder.</string>
+	<string id="FileUpload.Validate.PartialUpload">The uploaded file was only partially uploaded.</string>
+	<string id="FileUpload.Validate.TooLargeForm">The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.</string>
+	<string id="FileUpload.Validate.TooLargeINI">The uploaded file exceeds the upload_max_filesize directive ({0}) in php.ini.</string>
+	<string id="FileUpload.Validate.UnknownError">Unknown File Error</string>
+	<string id="FileUpload.Validate.WriteFailure">Failed to write file to disk</string>
+
 	<string id="MediaFile.Validate.DisplayNameRequired">The Display Name is required.</string>
+	<string id="MediaFile.Validate.FileFormat">The selected file is not in the correct format for the selected content type. The following mimetypes are supported: {0}</string>
+	<string id="MediaFile.Validate.FileRequired">A file must be provided.</string>
 </locale>
