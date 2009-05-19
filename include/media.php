@@ -120,7 +120,7 @@
 							"PRIMARY KEY (`media_restriction_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_restriction table: ".mysql_error());
+							or die("Could not create zcm_media_restriction table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_relation` (".
 							"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -129,7 +129,7 @@
 							"PRIMARY KEY (`media_relation_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_relation table: ".mysql_error());
+							or die("Could not create zcm_media_relation table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_file` (".
 							"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -141,7 +141,7 @@
 							"PRIMARY KEY (`media_file_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_file table: ".mysql_error());
+							or die("Could not create zcm_media_file table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_file_relation` (".
 							"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -151,7 +151,7 @@
 							"PRIMARY KEY (`media_file_relation_id`)".
 							") ENGINE = InnoDB";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_file_relation table: ".mysql_error());
+							or die("Could not create zcm_media_file_relation table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_package` (".
 							"`media_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -161,7 +161,7 @@
 							"PRIMARY KEY (`media_package_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_package table: ".mysql_error());
+							or die("Could not create zcm_media_package table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_file_package` (".
 							"`media_file_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -172,7 +172,7 @@
 							"PRIMARY KEY (`media_file_package_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_file_package table: ".mysql_error());
+							or die("Could not create zcm_media_file_package table: ".mysql_error().", $sql");
 
 						break;
 
@@ -180,12 +180,12 @@
 						$sql = "ALTER TABLE `zcm_media_relation` ".
 							"ADD COLUMN `allowed_mimetypes` VARCHAR(200) AFTER `relation_type_label`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
+							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
 
 						$sql = "ALTER TABLE `zcm_media_file` ".
 							"ADD COLUMN `media_relation_id` INTEGER UNSIGNED AFTER `media_restriction_id`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_file table: ".mysql_error());
+							or die("Could not upgrade zcm_media_file table: ".mysql_error().", $sql");
 
 						break;
 
@@ -198,9 +198,7 @@
 							"PRIMARY KEY (`media_package_type_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-						 	or die(
-						 		"Could not create zcm_media_package_type table: ".
-						 		mysql_error());
+						 	or die("Could not create zcm_media_package_type table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE `zcm_media_package_type_allowed_relation` (".
 							"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
@@ -211,15 +209,13 @@
 							"PRIMARY KEY (`media_package_type_allowed_relation_id`)".
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
-							or die(
-								"Could not create zcm_media_package_type_allowed_relation table: ".
-								mysql_error());
+							or die("Could not create zcm_media_package_type_allowed_relation table: ".mysql_error().", $sql");
 
 						$sql = "ALTER TABLE `zcm_media_package` ".
 							"ADD COLUMN `media_package_type_id` INTEGER UNSIGNED NOT NULL ".
 								"AFTER `media_restriction_id`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
+							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
 
 						break;
 
@@ -227,19 +223,19 @@
 						$sql = "ALTER TABLE `zcm_media_file` ".
 							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_file table: ".mysql_error());
+							or die("Could not upgrade zcm_media_file table: ".mysql_error().", $sql");
 
 						$sql = "ALTER TABLE `zcm_media_package` ".
 							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_package table: ".mysql_error());
+							or die("Could not upgrade zcm_media_package table: ".mysql_error().", $sql");
 						break;
 
 					case 5:
 						$sql = "ALTER TABLE `zcm_media_relation` ".
 							"ADD COLUMN `thumbnails` VARCHAR(50) AFTER `relation_type_label`;";
 						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error());
+							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
 						break;
 
 					default:
@@ -285,7 +281,7 @@
 			$members,
 			$selectedMemberID)
 		{
-			$breadcrumbTrail = "Media Files";
+			$breadcrumbTrail = Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles");
 
 			include("header.php");
 			include('datagrid.php');
@@ -297,9 +293,15 @@
 			echo("<table>\n");
 
 			echo("<tr>\n");
-			echo("<td>Content Type:</td>\n");
+			echo(
+				"<td>".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayList.Filter.ContentType")
+				."</td>\n");
 			echo("<td><select name=\"relation_type\">\n");
-			echo("<option value=\"\">(all)</option>\n");
+			echo(
+				"<option value=\"\">".
+				Zymurgy::GetLocaleString("MediaFileView.Common.AllOption").
+				"</option>\n");
 			foreach($mediaRelations as $mediaRelation)
 			{
 				echo("<option value=\"".
@@ -316,9 +318,15 @@
 			echo("</tr>\n");
 
 			echo("<tr>\n");
-			echo("<td>Owner:</td>\n");
+			echo(
+				"<td>".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayList.Filter.Owner").
+				"</td>\n");
 			echo("<td><select name=\"member_id\">\n");
-			echo("<option value=\"\">(all)</option>\n");
+			echo(
+				"<option value=\"\">".
+				Zymurgy::GetLocaleString("MediaFileView.Common.AllOption").
+				"</option>\n");
 			foreach($members as $member)
 			{
 				echo("<option value=\"".
@@ -338,7 +346,10 @@
 
 			echo("<tr>\n");
 			echo("<td>&nbsp;</td>\n");
-			echo("<td><input type=\"submit\" value=\"Filter\"></td>\n");
+			echo(
+				"<td><input type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.Common.Filter").
+				"\"></td>\n");
 			echo("</tr>\n");
 
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
@@ -348,10 +359,10 @@
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td>Display Name</td>");
-			echo("<td>Content Type</td>");
-			echo("<td>MIME Type</td>");
-			echo("<td>Owner</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayList.Header.DisplayName");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayList.Header.ContentType");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayList.Header.MimeType");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayList.Header.Owner");
 			echo("<td colspan=\"2\">&nbsp;</td>");
 			echo("</tr>");
 
@@ -384,20 +395,34 @@
 				}
 
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
-					$mediaFile->get_media_file_id()."\">Download</a></td>");
+					$mediaFile->get_media_file_id()."\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayList.Table.Download").
+					"</a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_file&amp;media_file_id=".
-					$mediaFile->get_media_file_id()."\">Delete</a></td>");
+					$mediaFile->get_media_file_id()."\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayList.Table.Delete").
+					"</a></td>");
 				echo("</tr>");
 
 				$cntr++;
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_file\">Add Media File</td>");
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"media.php?action=add_media_file\">".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayList.Footer.Add").
+				"</a></td>");
 
 			echo("</table>");
 
 			include("footer.php");
+		}
+
+		static function DisplayTableHeader($key)
+		{
+			echo(
+				"<td>".
+				Zymurgy::GetLocaleString($key).
+				"</td>");
 		}
 
 		static function RenderThumberJavascript($forceRefresh)

@@ -22,4 +22,19 @@
 
 	<string id="MediaRelation.Validate.LabelRequired">Label is required.</string>
 	<string id="MediaRelation.Validate.TypeRequired">Relation Type is required.</string>
+
+	<string id="MediaFileView.BreadcrumbTrail.MediaFiles">Media Files</string>
+
+	<string id="MediaFileView.Common.Filter">Filter</string>
+	<string id="MediaFileView.Common.AllOption">(all)</string>
+
+	<string id="MediaFileView.DisplayList.Filter.ContentType">Content Type:</string>
+	<string id="MediaFileView.DisplayList.Filter.Owner">Owner:</string>
+	<string id="MediaFileView.DisplayList.Footer.Add">Add Media File</string>
+	<string id="MediaFileView.DisplayList.Header.ContentType">Content Type</string>
+	<string id="MediaFileView.DisplayList.Header.DisplayName">Display Name</string>
+	<string id="MediaFileView.DisplayList.Header.MimeType">MIME Type</string>
+	<string id="MediaFileView.DisplayList.Header.Owner">Owner</string>
+	<string id="MediaFileView.DisplayList.Table.Delete">Delete</string>
+	<string id="MediaFileView.DisplayList.Table.Download">Download</string>
 </locale>
