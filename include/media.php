@@ -716,9 +716,14 @@
 
 		static function DisplayListOfFilesToAdd($mediaFile, $mediaFiles, $mediaRelations)
 		{
-			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; <a href=\"media.php?action=edit_media_file&amp;media_file_id=".
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles").
+				"</a> &gt; <a href=\"media.php?action=edit_media_file&amp;media_file_id=".
 				$mediaFile->get_media_file_id().
-				"\">Add/Edit Media File</a> &gt; Add Related Media File";
+				"\">".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Edit").
+				"</a> &gt; ".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.AddRelated");
 
 			include("header.php");
 			include('datagrid.php');
@@ -734,9 +739,9 @@
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>&nbsp;</td>");
-			echo("<td>Display Name</td>");
-			echo("<td>MIME Type</td>");
-			echo("<td>Owner</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayListOfFilesToAdd.Header.DisplayName");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayListOfFilesToAdd.Header.MimeType");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayListOfFilesToAdd.Header.Owner");
 			echo("<td>&nbsp;</td>");
 			echo("</tr>");
 
@@ -758,7 +763,9 @@
 				echo("<td>".$relatedFile->get_mimetype()."</td>");
 				echo("<td>".$relatedFile->get_member()->get_email()."</td>");
 				echo("<td><a href=\"media.php?action=download_media_file&amp;media_file_id=".
-					$relatedFile->get_media_file_id()."\">Download</a></td>");
+					$relatedFile->get_media_file_id()."\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayListOfFilesToAdd.Table.Download").
+					"</a></td>");
 				echo("</tr>");
 
 				$cntr++;
@@ -769,7 +776,9 @@
 
 			echo("</table>");
 
-			echo("<p>Relation: <select name=\"media_relation_id\">");
+			echo("<p>".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayListOfFilesToAdd.Field.Relation").
+				": <select name=\"media_relation_id\">");
 
 			foreach($mediaRelations as $mediaRelation)
 			{
@@ -781,8 +790,13 @@
 			}
 
 			echo("</select></p>");
-			echo("<p><input style=\"width: 80px;\" type=\"submit\" value=\"Save\">&nbsp;");
-			echo("<input style=\"width: 80px;\" type=\"button\" value=\"Cancel\" onclick=\"window.location.href='media.php?action=edit_media_file&media_file_id=".$mediaFile->get_media_file_id()."';\">&nbsp;</p>");
+			echo("<p><input style=\"width: 80px;\" type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayListOfFilesToAdd.Submit").
+				"\">&nbsp;");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayListOfFilesToAdd.Cancel").
+				"\" onclick=\"window.location.href='media.php?action=edit_media_file".
+				"&media_file_id=".$mediaFile->get_media_file_id()."';\">&nbsp;</p>");
 
 			include("footer.php");
 		}

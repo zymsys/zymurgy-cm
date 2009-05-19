@@ -26,6 +26,7 @@
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles">Media Files</string>
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Delete">Delete Media File</string>
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Edit">Add/Edit Media File</string>
+	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.AddRelated">Add Related Media File</string>
 
 	<string id="MediaFileView.Common.AllOption">(all)</string>
 	<string id="MediaFileView.Common.Filter">Filter</string>
@@ -55,6 +56,14 @@
 	<string id="MediaFileView.DisplayList.Header.Owner">Owner</string>
 	<string id="MediaFileView.DisplayList.Table.Delete">Delete</string>
 	<string id="MediaFileView.DisplayList.Table.Download">Download</string>
+
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Cancel">Cancel</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Field.Relation">Relation</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.DisplayName">Display Name</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.MimeType">MIME Type</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.Owner">Owner</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Submit">Save</string>
+	<string id="MediaFileView.DisplayListOfFilesToAdd.Table.Download">Download</string>
 
 	<string id="MediaFileView.DisplayRelatedMedia.Footer.Add">Add Related Media File</string>
 	<string id="MediaFileView.DisplayRelatedMedia.Header.DisplayName">Display Name</string>
