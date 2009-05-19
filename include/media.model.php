@@ -1349,7 +1349,7 @@
 
 			if(strlen($this->m_display_name) <= 0)
 			{
-				$this->m_errors[] = "Display Name is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaPackage.Validate.DisplayNameRequired");
 				$isValid = false;
 			}
 
