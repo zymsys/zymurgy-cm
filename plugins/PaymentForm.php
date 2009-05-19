@@ -406,7 +406,8 @@
 		{
 			$sql = "SELECT `invoice_id`, `capture_id`, `processor`, `status_code`, ".
 				"`response_date`, `post_vars` FROM `zcm_form_paymentresponse` ".
-				"WHERE `instance` = ".
+				"INNER JOIN `zcm_form_capture` ON `zcm_form_capture`.`id` = `zcm_form_paymentresponse`.`capture_id` ".
+				"WHERE `zcm_form_capture`.`instance` = ".
 				mysql_escape_string($this->iid);
 
 			// die($sql);
