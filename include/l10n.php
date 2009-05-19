@@ -43,7 +43,7 @@
 			if(key_exists($key, $this->m_cache)
 				&& $this->m_cache[$key]->TimeAdded < time() + (60 * 60 * 24 * 1000))
 			{
-				echo("From cache.<br>");
+				// echo("From cache.<br>");
 
 				$value = $this->m_cache[$key]->Value;
 			}
@@ -69,7 +69,7 @@
 
 			if($value == "n/a" && $this->m_defaultLocale !== null)
 			{
-				echo("From default locale");
+				// echo("From default locale");
 
 				$value = $this->m_defaultLocale->GetString($key);
 			}
