@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<locale>
+	<string id="MediaFile.Validate.DisplayNameRequired">The Display Name is required.</string>
+</locale>
