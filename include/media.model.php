@@ -1444,7 +1444,7 @@
 			if($member_id > 0)
 			{
 				$ownerCriteria = "`zcm_media_package`.`member_id` = '".
-					mysql_escape_string($member_id).
+					Zymurgy::$db->escape_string($member_id).
 					"'";
 			}
 
@@ -1504,7 +1504,7 @@
 			$sql = "SELECT `media_restriction_id`, `member_id`, `display_name`, ".
 				"`price`, `media_package_type_id` FROM `zcm_media_package` WHERE ".
 				"`media_package_id` = '".
-				mysql_escape_string($media_package_id)."'";
+				Zymurgy::$db->escape_string($media_package_id)."'";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve media package: ".mysql_error().", $sql");
 
@@ -1550,12 +1550,12 @@
 			{
 				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);
 				$criteria = "`media_relation_id` = '".
-					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					Zymurgy::$db->escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
 			$sql = "SELECT `media_file_id`, `disporder`, `media_relation_id` ".
 				"FROM `zcm_media_file_package` WHERE `media_package_id` = '".
-				mysql_escape_string($mediaPackage->get_media_package_id()).
+				Zymurgy::$db->escape_string($mediaPackage->get_media_package_id()).
 				"' AND $criteria ORDER BY `disporder`";
 
 			// die($sql);
@@ -1619,13 +1619,19 @@
 
 			if($mediaPackage->get_media_package_id() <= 0)
 			{
-				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, `media_package_type_id`, `display_name`, `price` ) VALUES ( '".
-					mysql_escape_string($mediaPackage->get_member()->get_member_id())."', '".
-					mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', '".
-					mysql_escape_string($mediaPackage->get_display_name())."', '".
-					mysql_escape_string($mediaPackage->get_price())."' )";
+				$sql = "INSERT INTO `zcm_media_package` ( `member_id`, ".
+					"`media_package_type_id`, `display_name`, `price` ) VALUES ( '".
+					Zymurgy::$db->escape_string($mediaPackage->get_member()->get_member_id()).
+					"', '".
+					Zymurgy::$db->escape_string($mediaPackage->get_packagetype()->get_media_package_type_id()).
+					"', '".
+					Zymurgy::$db->escape_string($mediaPackage->get_display_name()).
+					"', '".
+					Zymurgy::$db->escape_string($mediaPackage->get_price()).
+					"' )";
 
-				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not insert media file record: ".mysql_error().", $sql");
 
 				$sql = "SELECT MAX(`media_package_id`) FROM `zcm_media_package`";
 
@@ -1635,13 +1641,20 @@
 			else
 			{
 				$sql = "UPDATE `zcm_media_package` SET ".
-					"`member_id` = '".mysql_escape_string($mediaPackage->get_member()->get_member_id())."', ".
-					"`media_package_type_id` = '".mysql_escape_string($mediaPackage->get_packagetype()->get_media_package_type_id())."', ".
-					"`display_name` = '".mysql_escape_string($mediaPackage->get_display_name())."', ".
-					"`price` = '".mysql_escape_string($mediaPackage->get_price())."' ".
-					"WHERE `media_package_id` = '".mysql_escape_string($mediaPackage->get_media_package_id())."'";
+					"`member_id` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_member()->get_member_id()).
+					"', `media_package_type_id` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_packagetype()->get_media_package_type_id()).
+					"', `display_name` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_display_name()).
+					"', `price` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_price()).
+					"' WHERE `media_package_id` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_media_package_id()).
+					"'";
 
-				Zymurgy::$db->query($sql) or die("Could not update media file record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not update media file record: ".mysql_error().", $sql");
 			}
 		}
 
@@ -1653,14 +1666,16 @@
 		public static function DeleteMediaPackage($media_package_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
-				mysql_escape_string($media_package_id)."'";
+				Zymurgy::$db->escape_string($media_package_id)."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete media package record: ".mysql_error().", $sql");
 
 			$sql = "DELETE FROM `zcm_media_package` WHERE `media_package_id` = '".
-				mysql_escape_string($media_package_id)."'";
+				Zymurgy::$db->escape_string($media_package_id)."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete media package record: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete media package record: ".mysql_error().", $sql");
 		}
 
 		/**
@@ -1679,10 +1694,10 @@
 		{
 			$sql = "INSERT INTO `zcm_media_file_package` ( `media_package_id`, ".
 				"`media_file_id`, `media_relation_id`, `disporder` ) VALUES ('".
-				mysql_escape_string($media_package_id)."', '".
-				mysql_escape_string($media_file_id)."', '".
-				mysql_escape_string($media_relation_id)."', '".
-				mysql_escape_string($disporder)."')";
+				Zymurgy::$db->escape_string($media_package_id)."', '".
+				Zymurgy::$db->escape_string($media_file_id)."', '".
+				Zymurgy::$db->escape_string($media_relation_id)."', '".
+				Zymurgy::$db->escape_string($disporder)."')";
 
 			Zymurgy::$db->query($sql)
 				or die("Could not add media file to media package: ".mysql_error().", $sql");
@@ -1701,9 +1716,12 @@
 				$mediaFile = $mediaPackage->get_media_file($cntr);
 
 				$sql = "UPDATE `zcm_media_file_package` SET `disporder` = '".
-					mysql_escape_string($mediaFile->get_disporder())."' WHERE `media_package_id` = '".
-					mysql_escape_string($mediaPackage->get_media_package_id())."' AND `media_file_id` = '".
-					mysql_escape_string($mediaFile->get_media_file_id())."'";
+					Zymurgy::$db->escape_string($mediaFile->get_disporder()).
+					"' WHERE `media_package_id` = '".
+					Zymurgy::$db->escape_string($mediaPackage->get_media_package_id()).
+					"' AND `media_file_id` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_media_file_id()).
+					"'";
 
 				Zymurgy::$db->query($sql)
 					or die("Could not re-order media file in package: ".mysql_error());
@@ -1721,10 +1739,13 @@
 			$media_file_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_package_id` = '".
-				mysql_escape_string($media_package_id)."' AND `media_file_id` = '".
-				mysql_escape_string($media_file_id)."'";
+				Zymurgy::$db->escape_string($media_package_id).
+				"' AND `media_file_id` = '".
+				Zymurgy::$db->escape_string($media_file_id).
+				"'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete media file from media package: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete media file from media package: ".mysql_error().", $sql");
 		}
 
 		/**
