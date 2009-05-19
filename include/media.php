@@ -1021,7 +1021,7 @@
 			$members,
 			$selectedMember)
 		{
-			$breadcrumbTrail = "Media Packages";
+			$breadcrumbTrail = Zymurgy::GetLocaleString("MediaPackageView.BreadcrumbTrail.MediaPackages");
 
 			include("header.php");
 			include('datagrid.php');
@@ -1032,28 +1032,32 @@
 			echo("<table>\n");
 
 			echo("<tr>\n");
-			echo("<td>Package Type:</td>\n");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayList.Field.PackageType");
 			echo("<td><select name=\"relation_type\">\n");
-			echo("<option value=\"\">(all)</option>\n");
+			echo("<option value=\"\">".
+				Zymurgy::GetLocaleString("Common.AllOption").
+				"</option>\n");
 			foreach($mediaPackageTypes as $mediaRelation)
 			{
 				echo("<option value=\"".
-					$mediaRelation->get_relation_type().
+					$mediaRelation->get_package_type().
 					"\"".
-					($mediaRelation->get_relation_type() == $selectedMediaPackageType
+					($mediaRelation->get_package_type() == $selectedMediaPackageType
 						? " SELECTED"
 						: "").
 					">".
-					$mediaRelation->get_relation_label().
+					$mediaRelation->get_package_label().
 					"</option>\n");
 			}
 			echo("</select></td>\n");
 			echo("</tr>\n");
 
 			echo("<tr>\n");
-			echo("<td>Owner:</td>\n");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayList.Field.Owner");
 			echo("<td><select name=\"member_id\">\n");
-			echo("<option value=\"\">(all)</option>\n");
+			echo("<option value=\"\">".
+				Zymurgy::GetLocaleString("Common.AllOption").
+				"</option>\n");
 			foreach($members as $member)
 			{
 				echo("<option value=\"".
@@ -1073,7 +1077,9 @@
 
 			echo("<tr>\n");
 			echo("<td>&nbsp;</td>\n");
-			echo("<td><input type=\"submit\" value=\"Filter\"></td>\n");
+			echo("<td><input type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("Common.Filter").
+				"\"></td>\n");
 			echo("</tr>\n");
 
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
@@ -1083,9 +1089,9 @@
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td>Display Name</td>");
-			echo("<td>Package Type</td>");
-			echo("<td>Owner</td>");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayList.Header.DisplayName");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayList.Header.PackageType");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayList.Header.Owner");
 			echo("<td colspan=\"2\">&nbsp;</td>");
 			echo("</tr>");
 
@@ -1108,20 +1114,35 @@
 
 				echo("<td>".$mediaPackage->get_member()->get_email()."</td>");
 				echo("<td><a href=\"media.php?action=list_media_package_files&amp;media_package_id=".
-					$mediaPackage->get_media_package_id()."\">Files</a></td>");
+					$mediaPackage->get_media_package_id().
+					"\">".
+					Zymurgy::GetLocaleString("MediaPackageView.DisplayList.Table.Files").
+					"</a></td>");
 				echo("<td><a href=\"media.php?action=delete_media_package&amp;media_package_id=".
-					$mediaPackage->get_media_package_id()."\">Delete</a></td>");
+					$mediaPackage->get_media_package_id().
+					"\">".
+					Zymurgy::GetLocaleString("MediaPackageView.DisplayList.Table.Delete").
+					"</a></td>");
 				echo("</tr>");
 
 				$cntr++;
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"media.php?action=add_media_package\">Add Media Package</td>");
+			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"media.php?action=add_media_package\">".
+				Zymurgy::GetLocaleString("MediaPackageView.DisplayList.Footer.Add").
+				"</td>");
 
 			echo("</table>");
 
 			include("footer.php");
+		}
+
+		public static function DisplayTableHeader($key)
+		{
+			echo("<td>".
+				Zymurgy::GetLocaleString($key).
+				"</td>\n");
 		}
 
 		static function DisplayEditForm(

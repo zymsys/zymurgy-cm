@@ -124,4 +124,27 @@
 			</section>
 		</section>
 	</section>
+	<section name="MediaPackageView">
+		<section name="BreadcrumbTrail">
+			<string name="MediaPackages">Media Packages</string>
+		</section>
+		<section name="DisplayList">
+			<section name="Field">
+				<string name="PackageType">Package Type:</string>
+				<string name="Owner">Owner:</string>
+			</section>
+			<section name="Footer">
+				<string name="Add">Add Media Package</string>
+			</section>
+			<section name="Header">
+				<string name="DisplayName">Display Name</string>
+				<string name="PackageType">Package Type</string>
+				<string name="Owner">Owner</string>
+			</section>
+			<section name="Table">
+				<string name="Delete">Delete</string>
+				<string name="Files">Files</string>
+			</section>
+		</section>
+	</section>
 </locale>
