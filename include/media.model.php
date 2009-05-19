@@ -2282,7 +2282,7 @@
 		{
 			$sql = "SELECT `package_type`, `package_type_label` FROM ".
 				"`zcm_media_package_type` WHERE `media_package_type_id` = '".
-				mysql_escape_string($media_package_type_id).
+				Zymurgy::$db->escape_string($media_package_type_id).
 				"'";
 
 			$ri = Zymurgy::$db->query($sql)
@@ -2313,7 +2313,7 @@
 		{
 			$sql = "SELECT `media_package_type_id`, `package_type_label` FROM ".
 				"`zcm_media_package_type` WHERE `package_type` = '".
-				mysql_escape_string($package_type).
+				Zymurgy::$db->escape_string($package_type).
 				"'";
 
 			$ri = Zymurgy::$db->query($sql)
@@ -2340,7 +2340,12 @@
 		public static function PopulateAllowedRelations(
 			&$packageType)
 		{
-			$sql = "SELECT `media_package_type_allowed_relation_id`, `media_relation_id`, `max_instances` FROM `zcm_media_package_type_allowed_relation` WHERE `media_package_type_id` = '".mysql_escape_string($packageType->get_media_package_type_id())."'";
+			$sql = "SELECT `media_package_type_allowed_relation_id`, ".
+				"`media_relation_id`, `max_instances` FROM ".
+				"`zcm_media_package_type_allowed_relation` WHERE ".
+				"`media_package_type_id` = '".
+				Zymurgy::$db->escape_string($packageType->get_media_package_type_id()).
+				"'";
 
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve allowed relations: ".mysql_error().", $sql");
@@ -2351,7 +2356,8 @@
 
 				$allowedRelation->set_media_package_type_allowed_relation_id(
 					$row["media_package_type_allowed_relation_id"]);
-				$allowedRelation->set_media_package_type_id($packageType->get_media_package_type_id());
+				$allowedRelation->set_media_package_type_id(
+					$packageType->get_media_package_type_id());
 				$allowedRelation->set_maxinstances($row["max_instances"]);
 
 				$relation = MediaRelationPopulator::PopulateByID(
@@ -2372,7 +2378,10 @@
 		public static function PopulateAllowedRelationByID(
 			$allowedRelationID)
 		{
-			$sql = "SELECT `media_package_type_id`, `media_relation_id`, `max_instances` FROM `zcm_media_package_type_allowed_relation` WHERE `media_package_type_allowed_relation_id` = '".mysql_escape_string($allowedRelationID)."'";
+			$sql = "SELECT `media_package_type_id`, `media_relation_id`, ".
+				"`max_instances` FROM `zcm_media_package_type_allowed_relation` ".
+				"WHERE `media_package_type_allowed_relation_id` = '".
+				Zymurgy::$db->escape_string($allowedRelationID)."'";
 
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve allowed relations: ".mysql_error().", $sql");
@@ -2446,10 +2455,11 @@
 			{
 				$sql = "INSERT INTO `zcm_media_package_type` ( `package_type`, ".
 					"`package_type_label` ) VALUES ( '".
-					mysql_escape_string($packageType->get_package_type())."', '".
-					mysql_escape_string($packageType->get_package_label())."')";
+					Zymurgy::$db->escape_string($packageType->get_package_type())."', '".
+					Zymurgy::$db->escape_string($packageType->get_package_label())."')";
 
-				Zymurgy::$db->query($sql) or die("Could not insert package type record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not insert package type record: ".mysql_error().", $sql");
 
 				$sql = "SELECT MAX(`media_package_type_id`) FROM `zcm_media_package_type`";
 
@@ -2458,12 +2468,16 @@
 			}
 			else
 			{
-				$sql = "UPDATE `zcm_media_package_type` SET ".
-					"`package_type` = '".mysql_escape_string($packageType->get_package_type())."', ".
-					"`package_type_label` = '".mysql_escape_string($packageType->get_package_label())."' ".
-					"WHERE `media_package_type_id` = '".mysql_escape_string($packageType->get_media_package_type_id())."'";
+				$sql = "UPDATE `zcm_media_package_type` SET `package_type` = '".
+					Zymurgy::$db->escape_string($packageType->get_package_type()).
+					"', `package_type_label` = '".
+					Zymurgy::$db->escape_string($packageType->get_package_label()).
+					"' WHERE `media_package_type_id` = '".
+					Zymurgy::$db->escape_string($packageType->get_media_package_type_id()).
+					"'";
 
-				Zymurgy::$db->query($sql) or die("Could not update package type record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not update package type record: ".mysql_error().", $sql");
 			}
 		}
 
@@ -2476,9 +2490,10 @@
 		public static function DeleteMediaPackageType($media_package_type_id)
 		{
 			$sql = "DELETE FROM `zcm_media_package_type` WHERE `media_package_type_id` = '".
-				mysql_escape_string($media_package_type_id)."'";
+				Zymurgy::$db->escape_string($media_package_type_id)."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete package type: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete package type: ".mysql_error().", $sql");
 		}
 
 		/**
@@ -2495,11 +2510,15 @@
 			{
 				$sql = "INSERT INTO `zcm_media_package_type_allowed_relation` ( ".
 					"`media_package_type_id`, `media_relation_id`, `max_instances` ) VALUES ( '".
-					mysql_escape_string($allowedRelation->get_media_package_type_id())."', '".
-					mysql_escape_string($allowedRelation->get_relation()->get_media_relation_id())."', '".
-					mysql_escape_string($allowedRelation->get_maxinstances())."')";
+					Zymurgy::$db->escape_string($allowedRelation->get_media_package_type_id()).
+					"', '".
+					Zymurgy::$db->escape_string($allowedRelation->get_relation()->get_media_relation_id()).
+					"', '".
+					Zymurgy::$db->escape_string($allowedRelation->get_maxinstances()).
+					"')";
 
-				Zymurgy::$db->query($sql) or die("Could not insert allowed relation record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not insert allowed relation record: ".mysql_error().", $sql");
 
 				$sql = "SELECT MAX(`media_package_type_allowed_relation_id`) FROM ".
 					"`zcm_media_package_type_allowed_relation`";
@@ -2510,12 +2529,18 @@
 			else
 			{
 				$sql = "UPDATE `zcm_media_package_type_allowed_relation` SET ".
-					"`media_package_type_id` = '".mysql_escape_string($allowedRelation->get_media_package_type_id())."', ".
-					"`media_relation_id` = '".mysql_escape_string($allowedRelation->get_relation()->get_media_relation_id())."', ".
-					"`max_instances` = '".mysql_escape_string($allowedRelation->get_maxinstances())."' ".
-					"WHERE `media_package_type_allowed_relation_id` = '".mysql_escape_string($allowedRelation->get_media_package_type_allowed_relation_id())."'";
+					"`media_package_type_id` = '".
+					Zymurgy::$db->escape_string($allowedRelation->get_media_package_type_id()).
+					"', `media_relation_id` = '".
+					Zymurgy::$db->escape_string($allowedRelation->get_relation()->get_media_relation_id()).
+					"', `max_instances` = '".
+					Zymurgy::$db->escape_string($allowedRelation->get_maxinstances()).
+					"' WHERE `media_package_type_allowed_relation_id` = '".
+					Zymurgy::$db->escape_string($allowedRelation->get_media_package_type_allowed_relation_id()).
+					"'";
 
-				Zymurgy::$db->query($sql) or die("Could not update allowed relation record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not update allowed relation record: ".mysql_error().", $sql");
 			}
 		}
 
@@ -2529,9 +2554,10 @@
 		{
 			$sql = "DELETE FROM `zcm_media_package_type_allowed_relation` ".
 				"WHERE `media_package_type_allowed_relation_id` = '".
-				mysql_escape_string($allowedRelationID)."'";
+				Zymurgy::$db->escape_string($allowedRelationID)."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete allowed relation: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete allowed relation: ".mysql_error().", $sql");
 		}
 	}
 
