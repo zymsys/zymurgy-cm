@@ -110,12 +110,12 @@ class Form extends PluginBase
 			"View form details",
 			"pluginadmin.php?pid={pid}&iid={iid}&name={name}",
 			0);
-		// $this->BuildSettingsMenuItem($r);
-		$this->BuildMenuItem(
-			$r,
-			"Edit settings",
-			"zkpluginconfig.php?plugin={pid}&amp;instance={iid}",
-			0);
+		$this->BuildSettingsMenuItem($r);
+		//$this->BuildMenuItem(
+		//	$r,
+		//	"Edit settings",
+		//	"zkpluginconfig.php?plugin={pid}&amp;instance={iid}",
+		//	0);
 		$this->BuildMenuItem(
 			$r,
 			"Edit available input types",
