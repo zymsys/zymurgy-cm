@@ -300,7 +300,7 @@
 			echo("<td><select name=\"relation_type\">\n");
 			echo(
 				"<option value=\"\">".
-				Zymurgy::GetLocaleString("MediaFileView.Common.AllOption").
+				Zymurgy::GetLocaleString("Common.AllOption").
 				"</option>\n");
 			foreach($mediaRelations as $mediaRelation)
 			{
@@ -325,7 +325,7 @@
 			echo("<td><select name=\"member_id\">\n");
 			echo(
 				"<option value=\"\">".
-				Zymurgy::GetLocaleString("MediaFileView.Common.AllOption").
+				Zymurgy::GetLocaleString("Common.AllOption").
 				"</option>\n");
 			foreach($members as $member)
 			{
@@ -348,7 +348,7 @@
 			echo("<td>&nbsp;</td>\n");
 			echo(
 				"<td><input type=\"submit\" value=\"".
-				Zymurgy::GetLocaleString("MediaFileView.Common.Filter").
+				Zymurgy::GetLocaleString("Common.Filter").
 				"\"></td>\n");
 			echo("</tr>\n");
 
@@ -442,7 +442,7 @@
 			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
 				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles").
 				"</a> &gt; ".
-				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Edit");
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.Edit");
 
 			include("header.php");
 			include('datagrid.php');
@@ -681,7 +681,7 @@
 			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
 				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles").
 				"</a> &gt; ".
-				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Delete");
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.Delete");
 
 			include("header.php");
 
@@ -702,10 +702,10 @@
 
 			echo("<p>");
 			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"".
-				Zymurgy::GetLocaleString("MediaFileView.Common.Yes").
+				Zymurgy::GetLocaleString("Common.Yes").
 				"\">");
 			echo("<input style=\"width: 80px;\" type=\"button\" value=\"".
-				Zymurgy::GetLocaleString("MediaFileView.Common.No").
+				Zymurgy::GetLocaleString("Common.No").
 				"\" onclick=\"window.location.href='media.php?action=list_media_files';\">");
 			echo("</p>");
 
@@ -721,9 +721,9 @@
 				"</a> &gt; <a href=\"media.php?action=edit_media_file&amp;media_file_id=".
 				$mediaFile->get_media_file_id().
 				"\">".
-				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Edit").
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.Edit").
 				"</a> &gt; ".
-				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.AddRelated");
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.AddRelated");
 
 			include("header.php");
 			include('datagrid.php');

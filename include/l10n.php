@@ -52,18 +52,34 @@
 				$xmlString = file_get_contents(
 					$this->m_localeFilepath);
 
-				$xml = new SimpleXMLElement($xmlString);
+				// $xpath = "//string[@id='$key']";
+				$xpath = "/";
+				$pathArray = explode(".", $key);
 
-				foreach($xml->xpath("//string[@id='$key']") as $item)
+				foreach($pathArray as $pathItem)
 				{
-					// print_r($item);
+					$xpath .= "/*[@name='$pathItem']";
+				}
 
-					$localeItem = new LocaleItem();
-					$localeItem->Value = $item;
-					$localeItem->TimeAdded = time();
-					$this->m_cache[$key] = $localeItem;
+				$xml = new SimpleXMLElement($xmlString);
+				$snippit = $xml->xpath($xpath);
 
-					$value = $item[0];
+				// print_r($snippit);
+				// echo("<br>");
+
+				if(is_array($snippit) && count($snippit) > 0)
+				{
+					foreach($snippit as $item)
+					{
+						// print_r($item);
+
+						$localeItem = new LocaleItem();
+						$localeItem->Value = $item;
+						$localeItem->TimeAdded = time();
+						$this->m_cache[$key] = $localeItem;
+
+						$value = $item[0];
+					}
 				}
 			}
 

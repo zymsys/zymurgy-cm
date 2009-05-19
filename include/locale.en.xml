@@ -1,75 +1,127 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <locale>
-	<string id="FileUpload.Validate.NoTempFolder">Missing a temporary folder.</string>
-	<string id="FileUpload.Validate.PartialUpload">The uploaded file was only partially uploaded.</string>
-	<string id="FileUpload.Validate.TooLargeForm">The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.</string>
-	<string id="FileUpload.Validate.TooLargeINI">The uploaded file exceeds the upload_max_filesize directive ({0}) in php.ini.</string>
-	<string id="FileUpload.Validate.UnknownError">Unknown File Error</string>
-	<string id="FileUpload.Validate.WriteFailure">Failed to write file to disk</string>
-
-	<string id="MediaFile.Validate.DisplayNameRequired">The Display Name is required.</string>
-	<string id="MediaFile.Validate.FileFormat">The selected file is not in the correct format for the selected content type. The following mimetypes are supported: {0}</string>
-	<string id="MediaFile.Validate.FileRequired">A file must be provided.</string>
-
-	<string id="MediaPackage.Validate.DisplayNameRequired">The Display Name is required.</string>
-
-	<string id="MediaPackageType.Validate.LabelRequired">Label is required.</string>
-	<string id="MediaPackageType.Validate.TypeRequired">Package Type is required.</string>
-
-	<string id="MediaPackageTypeAllowedRelation.Validate.MaxInstancesFormat">Max instances must be a number.</string>
-	<string id="MediaPackageTypeAllowedRelation.Validate.MaxInstancesRequired">Max instances is required.</string>
-	<string id="MediaPackageTypeAllowedRelation.Validate.RelationRequired">Relation is required.</string>
-
-	<string id="MediaRelation.Validate.LabelRequired">Label is required.</string>
-	<string id="MediaRelation.Validate.TypeRequired">Relation Type is required.</string>
-
-	<string id="MediaFileView.BreadcrumbTrail.MediaFiles">Media Files</string>
-	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Delete">Delete Media File</string>
-	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Edit">Add/Edit Media File</string>
-	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.AddRelated">Add Related Media File</string>
-
-	<string id="MediaFileView.Common.AllOption">(all)</string>
-	<string id="MediaFileView.Common.Filter">Filter</string>
-	<string id="MediaFileView.Common.No">No</string>
-	<string id="MediaFileView.Common.Yes">Yes</string>
-
-	<string id="MediaFileView.DisplayDeleteForm.Confirm">Are you sure you want to delete the following media file:</string>
-	<string id="MediaFileView.DisplayDeleteForm.Field.DisplayName">Display Name:</string>
-
-	<string id="MediaFileView.DisplayEditForm.EditFile">Only provide a file if you want to replace the one currently in the system.</string>
-	<string id="MediaFileView.DisplayEditForm.Field.ContentType">Content Type:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.DisplayName">Display Name:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.File">File:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.MimeType">MIME Type:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.Owner">Owner:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.Price">Price:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.RelatedMedia">Related Media:</string>
-	<string id="MediaFileView.DisplayEditForm.Field.Thumbnails">Thumbnails:</string>
-	<string id="MediaFileView.DisplayEditForm.Submit">Save</string>
-
-	<string id="MediaFileView.DisplayList.Filter.ContentType">Content Type:</string>
-	<string id="MediaFileView.DisplayList.Filter.Owner">Owner:</string>
-	<string id="MediaFileView.DisplayList.Footer.Add">Add Media File</string>
-	<string id="MediaFileView.DisplayList.Header.ContentType">Content Type</string>
-	<string id="MediaFileView.DisplayList.Header.DisplayName">Display Name</string>
-	<string id="MediaFileView.DisplayList.Header.MimeType">MIME Type</string>
-	<string id="MediaFileView.DisplayList.Header.Owner">Owner</string>
-	<string id="MediaFileView.DisplayList.Table.Delete">Delete</string>
-	<string id="MediaFileView.DisplayList.Table.Download">Download</string>
-
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Cancel">Cancel</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Field.Relation">Relation</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.DisplayName">Display Name</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.MimeType">MIME Type</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Header.Owner">Owner</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Submit">Save</string>
-	<string id="MediaFileView.DisplayListOfFilesToAdd.Table.Download">Download</string>
-
-	<string id="MediaFileView.DisplayRelatedMedia.Footer.Add">Add Related Media File</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Header.DisplayName">Display Name</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Header.MimeType">MIME Type</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Header.Owner">Owner</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Header.Relation">Relation</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Table.Delete">Delete</string>
-	<string id="MediaFileView.DisplayRelatedMedia.Table.Download">Download</string>
+	<section name="Common">
+		<string name="AllOption">(all)</string>
+		<string name="Filter">Filter</string>
+		<string name="No">No</string>
+		<string name="Yes">Yes</string>
+	</section>
+	<section name="FileUpload">
+		<section name="Validate">
+			<string name="NoTempFolder">Missing a temporary folder.</string>
+			<string name="PartialUpload">The uploaded file was only partially uploaded.</string>
+			<string name="TooLargeForm">The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.</string>
+			<string name="TooLargeINI">The uploaded file exceeds the upload_max_filesize directive ({0}) in php.ini.</string>
+			<string name="UnknownError">Unknown File Error</string>
+			<string name="WriteFailure">Failed to write file to disk</string>
+		</section>
+	</section>
+	<section name="MediaFile">
+		<section name="Validate">
+			<string name="DisplayNameRequired">The Display Name is required.</string>
+			<string name="FileFormat">The selected file is not in the correct format for the selected content type. The following mimetypes are supported: {0}</string>
+			<string name="FileRequired">A file must be provided.</string>
+		</section>
+	</section>
+	<section name="MediaPackage">
+		<section name="Validate">
+			<string name="DisplayNameRequired">The Display Name is required.</string>
+		</section>
+	</section>
+	<section name="MediaPackageType">
+		<section name="Validate">
+			<string name="LabelRequired">Label is required.</string>
+			<string name="TypeRequired">Package Type is required.</string>
+		</section>
+	</section>
+	<section name="MediaPackageTypeAllowedRelation">
+		<section name="Validate">
+			<string name="MaxInstancesFormat">Max instances must be a number.</string>
+			<string name="MaxInstancesRequired">Max instances is required.</string>
+			<string name="RelationRequired">Relation is required.</string>
+		</section>
+	</section>
+	<section name="MediaRelation">
+		<section name="Validate">
+			<string name="LabelRequired">Label is required.</string>
+			<string name="TypeRequired">Relation Type is required.</string>
+		</section>
+	</section>
+	<section name="MediaFileView">
+		<section name="BreadcrumbTrail">
+			<string name="AddRelated">Add Related Media File</string>
+			<string name="Delete">Delete Media File</string>
+			<string name="Edit">Add/Edit Media File</string>
+			<string name="MediaFiles">Media Files</string>
+		</section>
+		<section name="DisplayDeleteForm">
+			<string name="Confirm">Are you sure you want to delete the following media file:</string>
+			<section name="Field">
+				<string name="DisplayName">Display Name:</string>
+			</section>
+		</section>
+		<section name="DisplayEditForm">
+			<string name="EditFile">Only provide a file if you want to replace the one currently in the system.</string>
+			<string name="Submit">Save</string>
+			<section name="Field">
+				<string name="ContentType">Content Type:</string>
+				<string name="DisplayName">Display Name:</string>
+				<string name="File">File:</string>
+				<string name="MimeType">MIME Type:</string>
+				<string name="Owner">Owner:</string>
+				<string name="Price">Price:</string>
+				<string name="RelatedMedia">Related Media:</string>
+				<string name="Thumbnails">Thumbnails:</string>
+			</section>
+		</section>
+		<section name="DisplayList">
+			<section name="Filter">
+				<string name="ContentType">Content Type:</string>
+				<string name="Owner">Owner:</string>
+			</section>
+			<section name="Footer">
+				<string name="Add">Add Media File</string>
+			</section>
+			<section name="Header">
+				<string name="ContentType">Content Type</string>
+				<string name="DisplayName">Display Name</string>
+				<string name="MimeType">MIME Type</string>
+				<string name="Owner">Owner</string>
+			</section>
+			<section name="Table">
+				<string name="Delete">Delete</string>
+				<string name="Download">Download</string>
+			</section>
+		</section>
+		<section name="DisplayListOfFilesToAdd">
+			<string name="Cancel">Cancel</string>
+			<string name="Submit">Save</string>
+			<section name="Field">
+				<string name="Relation">Relation</string>
+			</section>
+			<section name="Header">
+				<string name="DisplayName">Display Name</string>
+				<string name="MimeType">MIME Type</string>
+				<string name="Owner">Owner</string>
+			</section>
+			<section name="Table">
+				<string name="MediaFileView.DisplayListOfFilesToAdd.Table.Download">Download</string>
+			</section>
+		</section>
+		<section name="DisplayRelatedMedia">
+			<section name="Footer">
+				<string name="Add">Add Related Media File</string>
+			</section>
+			<section name="Header">
+				<string name="DisplayName">Display Name</string>
+				<string name="MimeType">MIME Type</string>
+				<string name="Owner">Owner</string>
+				<string name="Relation">Relation</string>
+			</section>
+			<section name="Table">
+				<string name="Delete">Delete</string>
+				<string name="Download">Download</string>
+			</section>
+		</section>
+	</section>
 </locale>
