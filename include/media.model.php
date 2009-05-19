@@ -2914,13 +2914,13 @@
 
 			if(strlen($this->m_relation_type) <= 0)
 			{
-				$this->m_errors[] = "Relation Type is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaRelation.Validate.TypeRequired");
 				$isValid = false;
 			}
 
 			if(strlen($this->m_relation_label) <= 0)
 			{
-				$this->m_errors[] = "Label is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaRelation.Validate.LabelRequired");
 				$isValid = false;
 			}
 
