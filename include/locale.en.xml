@@ -12,4 +12,11 @@
 	<string id="MediaFile.Validate.FileRequired">A file must be provided.</string>
 
 	<string id="MediaPackage.Validate.DisplayNameRequired">The Display Name is required.</string>
+
+	<string id="MediaPackageType.Validate.LabelRequired">Label is required.</string>
+	<string id="MediaPackageType.Validate.TypeRequired">Package Type is required.</string>
+
+	<string id="MediaPackageTypeAllowedRelation.Validate.MaxInstancesFormat">Max instances must be a number.</string>
+	<string id="MediaPackageTypeAllowedRelation.Validate.MaxInstancesRequired">Max instances is required.</string>
+	<string id="MediaPackageTypeAllowedRelation.Validate.RelationRequired">Relation is required.</string>
 </locale>

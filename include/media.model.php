@@ -2064,13 +2064,13 @@
 
 			if(strlen($this->m_package_type) <= 0)
 			{
-				$this->m_errors[] = "Package Type is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaPackageType.Validate.TypeRequired");
 				$isValid = false;
 			}
 
 			if(strlen($this->m_package_label) <= 0)
 			{
-				$this->m_errors[] = "Label is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString("MediaPackageType.Validate.LabelRequired");
 				$isValid = false;
 			}
 
@@ -2207,20 +2207,23 @@
 
 			if($this->m_relation == null)
 			{
-				$this->m_errors[] = "Relation is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString(
+					"MediaPackageTypeAllowedRelation.Validate.RelationRequired");
 				$isValid = false;
 			}
 
 			if(strlen($this->m_maxinstances) <= 0)
 			{
-				$this->m_errors[] = "Max instances is required.";
+				$this->m_errors[] = Zymurgy::GetLocaleString(
+					"MediaPackageTypeAllowedRelation.Validate.MaxInstancesRequired");
 				$isValid = false;
 			}
 			else
 			{
 				if(!is_numeric($this->m_maxinstances))
 				{
-					$this->m_errors[] = "Max instances must be a number.";
+					$this->m_errors[] = Zymurgy::GetLocaleString(
+						"MediaPackageTypeAllowedRelation.Validate.MaxInstancesFormat");
 					$isValid = false;
 				}
 			}
