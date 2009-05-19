@@ -2605,7 +2605,7 @@
 		{
 			$sql = "SELECT `download_limit`, `day_limit` FROM `zcm_media_restriction` ".
 				"WHERE `media_restriction_id` = '".
-				mysql_escape_string($restriction_id)."'";
+				Zymurgy::$db->escape_string($restriction_id)."'";
 
 			$ri = Zymurgy::$db->query($sql) or die();
 
@@ -2722,7 +2722,7 @@
 		{
 			$sql = "SELECT `email` ".
 				"FROM `zcm_member` WHERE `id` = '".
-				mysql_escape_string($member_id)."'";
+				Zymurgy::$db->escape_string($member_id)."'";
 
 			$ri = Zymurgy::$db->query($sql) or die();
 
