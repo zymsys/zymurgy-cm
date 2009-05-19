@@ -598,7 +598,7 @@
 				"AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_relation` WHERE ".
 				"`zcm_media_file_relation`.`related_media_file_id` = `zcm_media_file`.`media_file_id` AND ".
 				"`zcm_media_file_relation`.`media_file_id` = '".
-				Zymurge::$db->escape_string($mediaFile->get_media_file_id()).
+				Zymurgy::$db->escape_string($mediaFile->get_media_file_id()).
 				"')";
 
 			return MediaFilePopulator::PopulateMultiple($criteria);
