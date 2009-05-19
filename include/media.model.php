@@ -462,7 +462,7 @@
 			if($member_id > 0)
 			{
 				$ownerCriteria = "`member_id` = '".
-					mysql_escape_string($member_id).
+					Zymurgy::$db->escape_string($member_id).
 					"'";
 			}
 
@@ -470,7 +470,7 @@
 			{
 				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);
 				$relationCriteria = "`media_relation_id` = '".
-					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					Zymurgy::$db->escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
 			$criteria = "$ownerCriteria AND $relationCriteria";
@@ -497,11 +497,11 @@
 			{
 				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);
 				$relationCriteria = "`media_relation_id` = '".
-					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					Zymurgy::$db->escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
 			$criteria = "`zcm_media_file`.`member_id` = '".
-				mysql_escape_string($member_id).
+				Zymurgy::$db->escape_string($member_id).
 				"' AND $relationCriteria ".
 				"AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
 				"`zcm_media_file_package`.`media_file_id` = `zcm_media_file`.`media_file_id`) ".
@@ -540,20 +540,20 @@
 			if($owner > 0)
 			{
 				$ownerCriteria = "`member_id` = '".
-					mysql_escape_string($owner)."'";
+					Zymurgy::$db->escape_string($owner)."'";
 			}
 
 			$allowedRelationCriteria = "EXISTS(SELECT 1 FROM `zcm_media_package_type_allowed_relation` ".
 				"WHERE `zcm_media_package_type_allowed_relation`.`media_relation_id` = ".
 				"`zcm_media_file`.`media_relation_id` AND ".
 				"`zcm_media_package_type_allowed_relation`.`media_package_type_id` = '".
-				mysql_escape_string($mediaPackage->get_packageType()->get_media_package_type_id()).
+				Zymurgy::$db->escape_string($mediaPackage->get_packageType()->get_media_package_type_id()).
 				"')";
 
 			$notInPackageCriteria = "NOT EXISTS(SELECT 1 FROM `zcm_media_file_package` WHERE ".
 				"`zcm_media_file_package`.`media_file_id` = `zcm_media_file`.`media_file_id` AND ".
 				"`zcm_media_file_package`.`media_package_id` = '".
-				mysql_escape_string($mediaPackage->get_media_package_id())."') ";
+				Zymurgy::$db->escape_string($mediaPackage->get_media_package_id())."') ";
 
 			$criteria = "$relationCriteria AND $ownerCriteria AND ".
 				"$allowedRelationCriteria AND $notInPackageCriteria";
@@ -581,7 +581,7 @@
 			{
 				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);
 				$relationCriteria = "`media_relation_id` = '".
-					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					Zymurgy::$db->escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
 			$ownerCriteria = "1 = 1";
@@ -593,12 +593,12 @@
 			}
 
 			$criteria = "`media_file_id` <> '".
-				mysql_escape_string($mediaFile->get_media_file_id()).
+				Zymurgy::$db->escape_string($mediaFile->get_media_file_id()).
 				"' AND $relationCriteria AND $ownerCriteria ".
 				"AND NOT EXISTS(SELECT 1 FROM `zcm_media_file_relation` WHERE ".
 				"`zcm_media_file_relation`.`related_media_file_id` = `zcm_media_file`.`media_file_id` AND ".
 				"`zcm_media_file_relation`.`media_file_id` = '".
-				mysql_escape_string($mediaFile->get_media_file_id()).
+				Zymurge::$db->escape_string($mediaFile->get_media_file_id()).
 				"')";
 
 			return MediaFilePopulator::PopulateMultiple($criteria);
@@ -612,7 +612,8 @@
 
 			// die($sql);
 
-			$ri = Zymurgy::$db->query($sql) or die("Could not select list of media files: ".mysql_error());
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not select list of media files: ".mysql_error().", $sql");
 			$mediaFiles = array();
 
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
@@ -666,7 +667,7 @@
 			$sql = "SELECT `member_id`, `mimetype`, `extension`, `display_name`, `price`, ".
 				"`media_restriction_id`, `media_relation_id` FROM `zcm_media_file` ".
 				"WHERE `media_file_id` = '".
-				mysql_escape_string($media_file_id)."'";
+				Zymurgy::$db->escape_string($media_file_id)."'";
 
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve media file record: ".mysql_error().", $sql");
@@ -716,12 +717,12 @@
 			{
 				$mediaRelation = MediaRelationPopulator::PopulateByType($mediaRelationType);
 				$criteria = "`media_relation_id` = '".
-					mysql_escape_string($mediaRelation->get_media_relation_id())."'";
+					Zymurgy::$db->escape_string($mediaRelation->get_media_relation_id())."'";
 			}
 
 			$sql = "SELECT `related_media_file_id`, `media_relation_id` FROM ".
 				"`zcm_media_file_relation` WHERE `media_file_id` = '".
-				mysql_escape_string($base_media_file->get_media_file_id())."' ".
+				Zymurgy::$db->escape_string($base_media_file->get_media_file_id())."' ".
 				"AND $criteria";
 
 			// die($sql);
@@ -846,14 +847,15 @@
 			{
 				$sql = "INSERT INTO `zcm_media_file` ( `member_id`, `mimetype`, `extension`, ".
 					"`display_name`, `price`, `media_relation_id` ) VALUES ( '".
-					mysql_escape_string($mediaFile->get_member()->get_member_id())."', '".
-					mysql_escape_string($mediaFile->get_mimetype())."', '".
-					mysql_escape_string($mediaFile->get_extension())."', '".
-					mysql_escape_string($mediaFile->get_display_name())."', '".
-					mysql_escape_string($mediaFile->get_price())."', '".
-					mysql_escape_string($mediaFile->get_relation()->get_media_relation_id())."' )";
+					Zymurgy::$db->escape_string($mediaFile->get_member()->get_member_id())."', '".
+					Zymurgy::$db->escape_string($mediaFile->get_mimetype())."', '".
+					Zymurgy::$db->escape_string($mediaFile->get_extension())."', '".
+					Zymurgy::$db->escape_string($mediaFile->get_display_name())."', '".
+					Zymurgy::$db->escape_string($mediaFile->get_price())."', '".
+					Zymurgy::$db->escape_string($mediaFile->get_relation()->get_media_relation_id())."' )";
 
-				Zymurgy::$db->query($sql) or die("Could not insert media file record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not insert media file record: ".mysql_error().", $sql");
 
 				$sql = "SELECT MAX(`media_file_id`) FROM `zcm_media_file`";
 
@@ -863,15 +865,24 @@
 			else
 			{
 				$sql = "UPDATE `zcm_media_file` SET ".
-					"`member_id` = '".mysql_escape_string($mediaFile->get_member()->get_member_id())."', ".
-					"`mimetype` = '".mysql_escape_string($mediaFile->get_mimetype())."', ".
-					"`extension` = '".mysql_escape_string($mediaFile->get_extension())."', ".
-					"`display_name` = '".mysql_escape_string($mediaFile->get_display_name())."', ".
-					"`price` = '".mysql_escape_string($mediaFile->get_price())."', ".
-					"`media_relation_id` = '".mysql_escape_string($mediaFile->get_relation()->get_media_relation_id())."' ".
-					"WHERE `media_file_id` = '".mysql_escape_string($mediaFile->get_media_file_id())."'";
+					"`member_id` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_member()->get_member_id()).
+					"', `mimetype` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_mimetype()).
+					"', `extension` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_extension()).
+					"', `display_name` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_display_name()).
+					"', `price` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_price()).
+					"', `media_relation_id` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_relation()->get_media_relation_id()).
+					"' WHERE `media_file_id` = '".
+					Zymurgy::$db->escape_string($mediaFile->get_media_file_id()).
+					"'";
 
-				Zymurgy::$db->query($sql) or die("Could not update media file record: ".mysql_error());
+				Zymurgy::$db->query($sql)
+					or die("Could not update media file record: ".mysql_error().", $sql");
 			}
 
 			if($uploadingFile)
@@ -910,14 +921,16 @@
 			$mediaFile)
 		{
 			$sql = "DELETE FROM `zcm_media_file_package` WHERE `media_file_id` = '".
-				mysql_escape_string($mediaFile->get_media_file_id())."'";
+				Zymurgy::$db->escape_string($mediaFile->get_media_file_id())."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete media file record from packages: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete media file record from packages: ".mysql_error().", $sql");
 
 			$sql = "DELETE FROM `zcm_media_file` WHERE `media_file_id` = '".
-				mysql_escape_string($mediaFile->get_media_file_id())."'";
+				Zymurgy::$db->escape_string($mediaFile->get_media_file_id())."'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete media file record: ".mysql_error());
+			Zymurgy::$db->query($sql)
+				or die("Could not delete media file record: ".mysql_error().", $sql");
 
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$filepath = $uploadfolder.
@@ -947,13 +960,14 @@
 		{
 			$sql = "INSERT INTO `zcm_media_file_relation` ( `media_file_id`,".
 				" `related_media_file_id`, `media_relation_id` ) VALUES ( '".
-				mysql_escape_string($media_file_id)."', '".
-				mysql_escape_string($related_media_file_id)."', '".
-				mysql_escape_string($media_relation_id)."' )";
+				Zymurgy::$db->escape_string($media_file_id)."', '".
+				Zymurgy::$db->escape_string($related_media_file_id)."', '".
+				Zymurgy::$db->escape_string($media_relation_id)."' )";
 
 			// die($sql);
 
-			Zymurgy::$db->query($sql) or die("Could not add related media: ".mysql_error().", $sql");
+			Zymurgy::$db->query($sql)
+				or die("Could not add related media: ".mysql_error().", $sql");
 		}
 
 		/**
@@ -966,10 +980,13 @@
 		public static function DeleteRelatedMedia($media_file_id, $related_media_file_id)
 		{
 			$sql = "DELETE FROM `zcm_media_file_relation` WHERE `media_file_id` = '".
-				mysql_escape_string($media_file_id)."' AND `related_media_file_id` = '".
-				mysql_escape_string($related_media_file_id)."'";
+				Zymurgy::$db->escape_string($media_file_id).
+				"' AND `related_media_file_id` = '".
+				Zymurgy::$db->escape_string($related_media_file_id).
+				"'";
 
-			Zymurgy::$db->query($sql) or die("Could not delete related media: ".mysql_error().", $sql");
+			Zymurgy::$db->query($sql)
+				or die("Could not delete related media: ".mysql_error().", $sql");
 		}
 
 		/**
