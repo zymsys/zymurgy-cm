@@ -435,7 +435,7 @@ class DataSet
 			{
 				die("You have declared a filter for an undeclared column: {$f->columnname}.");
 			}
-			if ($this->columns[$f->columnname]->quoted)
+			if ($this->columns[$f->columnname]->quoted && !($f->value == "null"))
 				$value = "'{$f->value}'";
 			else
 				$value = $f->value;
