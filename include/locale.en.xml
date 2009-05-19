@@ -24,9 +24,21 @@
 	<string id="MediaRelation.Validate.TypeRequired">Relation Type is required.</string>
 
 	<string id="MediaFileView.BreadcrumbTrail.MediaFiles">Media Files</string>
+	<string id="MediaFileView.BreadcrumbTrail.MediaFiles.Edit">Add/Edit Media File</string>
 
 	<string id="MediaFileView.Common.Filter">Filter</string>
 	<string id="MediaFileView.Common.AllOption">(all)</string>
+
+	<string id="MediaFileView.DisplayEditForm.EditFile">Only provide a file if you want to replace the one currently in the system.</string>
+	<string id="MediaFileView.DisplayEditForm.Field.ContentType">Content Type:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.DisplayName">Display Name:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.File">File:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.MimeType">MIME Type:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.Owner">Owner:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.Price">Price:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.RelatedMedia">Related Media:</string>
+	<string id="MediaFileView.DisplayEditForm.Field.Thumbnails">Thumbnails:</string>
+	<string id="MediaFileView.DisplayEditForm.Submit">Save</string>
 
 	<string id="MediaFileView.DisplayList.Filter.ContentType">Content Type:</string>
 	<string id="MediaFileView.DisplayList.Filter.Owner">Owner:</string>

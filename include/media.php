@@ -439,7 +439,10 @@
 
 		static function DisplayEditForm($mediaFile, $mediaRelations, $members, $action)
 		{
-			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">Media Files</a> &gt; Add/Edit Media File";
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles").
+				"</a> &gt; ".
+				Zymurgy::GetLocaleString("MediaFileView.BreadcrumbTrail.MediaFiles.Edit");
 
 			include("header.php");
 			include('datagrid.php');
@@ -480,21 +483,21 @@
 			echo("<table>");
 
 			echo("<tr>");
-			echo("<td>Display Name:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.DisplayName");
 			echo("<td>");
 			$widget->Render("input.30.100", "display_name", $mediaFile->get_display_name());
 			echo("</td>");
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Price:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.Price");
 			echo("<td>");
 			$widget->Render("input.10.9", "price", $mediaFile->get_price());
 			echo("</td>");
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Owner:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.Owner");
 			echo("<td>");
 			echo("<select name=\"member_id\">");
 
@@ -514,7 +517,7 @@
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Content Type:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.ContentType");
 			echo("<td>");
 			echo("<select name=\"media_relation_id\">");
 
@@ -534,7 +537,7 @@
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>File:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.File");
 			echo("<td>");
 			$widget->Render("attachment", "file", "");
 			echo("</td>");
@@ -544,14 +547,14 @@
 			{
 				echo("<tr>");
 				echo("<td>&nbsp;</td>");
-				echo("<td>Only provide a file if you want to replace the one currently in the system.</td>");
+				MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.EditFile");
 				echo("</tr>");
 			}
 
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 
 			echo("<tr>");
-			echo("<td>mime-type:</td>");
+			MediaFileView::DisplayTableHeader("MediaFileView.DisplayEditForm.Field.MimeType");
 			echo("<td>".$mediaFile->get_mimetype()."</td>");
 			echo("</tr>");
 
@@ -559,7 +562,9 @@
 				&& strlen($mediaFile->get_relation()->get_thumbnails()) > 0)
 			{
 				echo("<tr>");
-				echo("<td valign=\"bottom\">Thumbnails:</td>");
+				echo("<td valign=\"bottom\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayEditForm.Field.Thumbnails").
+					"</td>");
 				echo("<td>");
 
 				$thumbnails = explode(",", $mediaFile->get_relation()->get_thumbnails());
@@ -596,7 +601,9 @@
 				echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
 
 				echo("<tr>");
-				echo("<td valign=\"top\">Related Media:</td>");
+				echo("<td valign=\"top\">".
+					Zymurgy::GetLocaleString("MediaFileView.DisplayEditForm.Field.RelatedMedia").
+					"</td>");
 				echo("<td>");
 				MediaFileView::DisplayRelatedMedia($mediaFile);
 				echo("</td>");
@@ -607,7 +614,9 @@
 
 			echo("<tr>");
 			echo("<td>&nbsp;</td>");
-			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("<td><input type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("MediaFileView.DisplayEditForm.Submit").
+				"\"></td>");
 			echo("</tr>");
 
 			echo("</table>");
