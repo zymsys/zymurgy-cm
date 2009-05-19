@@ -1151,7 +1151,10 @@
 			$packageTypes,
 			$action)
 		{
-			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">Media Packages</a> &gt; Add/Edit Media Package";
+			$breadcrumbTrail = "<a href=\"media.php?action=list_media_packages\">".
+				Zymurgy::GetLocaleString("MediaPackageView.BreadcrumbTrail.MediaPackages").
+				"</a> &gt; ".
+				Zymurgy::GetLocaleString("MediaPackageView.BreadcrumbTrail.Edit");
 
 			include("header.php");
 			$widget = new InputWidget();
@@ -1180,21 +1183,21 @@
 			echo("<table>");
 
 			echo("<tr>");
-			echo("<td>Display Name:</td>");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayEditForm.Field.DisplayName");
 			echo("<td>");
 				$widget->Render("input.30.100", "display_name", $mediaPackage->get_display_name());
 			echo("</td>");
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Price:</td>");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayEditForm.Field.Price");
 			echo("<td>");
 				$widget->Render("input.10.9", "price", $mediaPackage->get_price());
 			echo("</td>");
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Owner:</td>");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayEditForm.Field.Owner");
 			echo("<td>");
 			echo("<select name=\"member_id\">");
 
@@ -1214,7 +1217,7 @@
 			echo("</tr>");
 
 			echo("<tr>");
-			echo("<td>Package Type:</td>");
+			MediaPackageView::DisplayTableHeader("MediaPackageView.DisplayEditForm.Field.PackageType");
 			echo("<td>");
 			echo("<select name=\"media_package_type_id\">");
 
@@ -1249,15 +1252,25 @@
 
 			echo("<tr>");
 			echo("<td>&nbsp;</td>");
-			echo("<td><input type=\"submit\" value=\"Save\"></td>");
+			echo("<td><input type=\"submit\" value=\"".
+				Zymurgy::GetLocaleString("MediaPackageView.DisplayEditForm.Submit").
+				"\"></td>");
 			echo("</tr>");
 
 			echo("</table>");
 			echo("</form>");
 
 			echo("<table class=\"DataGrid\" style=\"margin-top: 20px;\">\n");
-			echo("<tr><th style=\"background-color: #A0A0A0; border-bottom: 1px solid black;\">Commands</th></tr>\n");
-			echo("<tr><td style=\"border-bottom: 1px solid black;\"><a style=\"text-decoration: none;\" href=\"media.php?action=list_media_package_files&media_package_id=".$mediaPackage->get_media_package_id()."\">View File Listing</a></td></tr>\n");
+			echo("<tr><th style=\"background-color: #A0A0A0; border-bottom: 1px solid black;\">".
+				Zymurgy::GetLocaleString("MediaPackageView.DisplayEditForm.Commands").
+				"</th></tr>\n");
+			echo("<tr><td style=\"border-bottom: 1px solid black;\"><a ".
+				"style=\"text-decoration: none;\" href=\"media.php?action=".
+				"list_media_package_files&media_package_id=".
+				$mediaPackage->get_media_package_id().
+				"\">".
+				Zymurgy::GetLocaleString("MediaPackageView.DisplayEditForm.CommandItems.Files").
+				"</a></td></tr>\n");
 			echo("</table>");
 
 			include("footer.php");

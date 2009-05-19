@@ -71,10 +71,10 @@
 				{
 					foreach($snippit as $item)
 					{
-						// print_r($item);
+						// echo("Processing {$item[0]}.<br>");
 
 						$localeItem = new LocaleItem();
-						$localeItem->Value = $item;
+						$localeItem->Value = $item[0];
 						$localeItem->TimeAdded = time();
 						$this->m_cache[$key] = $localeItem;
 

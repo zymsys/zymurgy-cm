@@ -127,6 +127,20 @@
 	<section name="MediaPackageView">
 		<section name="BreadcrumbTrail">
 			<string name="MediaPackages">Media Packages</string>
+			<string name="Edit">Add/Edit Media Package</string>
+		</section>
+		<section name="DisplayEditForm">
+			<string name="Commands">Commands</string>
+			<string name="Submit">Save</string>
+			<section name="CommandItems">
+				<string name="Files">View File Listing</string>
+			</section>
+			<section name="Field">
+				<string name="DisplayName">Display Name:</string>
+				<string name="Owner">Owner:</string>
+				<string name="PackageType">Package Type:</string>
+				<string name="Price">Price:</string>
+			</section>
 		</section>
 		<section name="DisplayList">
 			<section name="Field">
