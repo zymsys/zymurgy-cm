@@ -1,5 +1,6 @@
 <?
 require_once("include/payment.php");
+require_once("include/l10n.php");
 
 if (!class_exists('Zymurgy'))
 {
@@ -46,7 +47,7 @@ if (!class_exists('Zymurgy'))
 		 * @var ZymurgyTemplate
 		 */
 		static $template;
-		
+
 		/**
 		 * Site Color Theme cache.
 		 *
@@ -67,7 +68,7 @@ if (!class_exists('Zymurgy'))
 		 * @var array
 		 */
 		static $member;
-		
+
 		/**
 		 * Image handler for resizing images
 		 *
@@ -116,6 +117,13 @@ if (!class_exists('Zymurgy'))
 		);
 
 		public static $defaulttheme = null;
+
+		/**
+		 * Array of the locale objects used for localization support.
+		 *
+		 * @var Locale[]
+		 */
+		public static $Locales = array();
 
 		/**
 		 * Provides the base functionality for both RequireOnce() and YUI() methods.
@@ -895,19 +903,19 @@ if (!class_exists('Zymurgy'))
 			{
 				return Zymurgy::$template->pagetext($tag,$type);
 			}
-			else 
+			else
 			{
 				return "<div>This page is not linked to a template, so pagetext() can't be used here.</div>";
 			}
 		}
-		
+
 		static function pageimage($tag,$width,$height,$alt='')
 		{
 			if (isset(Zymurgy::$template))
 			{
 				return Zymurgy::$template->pageimage($tag,$width,$height,$alt);
 			}
-			else 
+			else
 			{
 				return "<div>This page is not linked to a template, so pageimage() can't be used here.</div>";
 			}
@@ -919,12 +927,12 @@ if (!class_exists('Zymurgy'))
 			{
 				return Zymurgy::$template->pagegadgets();
 			}
-			else 
+			else
 			{
 				return "<div>This page is not linked to a template, so pagegadgets() can't be used here.</div>";
 			}
 		}
-		
+
 		function Config($keyname, $defaultvalue, $inputspec='input.30.30')
 		{
 			if (!array_key_exists($keyname,Zymurgy::$userconfig))
@@ -941,6 +949,21 @@ if (!class_exists('Zymurgy'))
 					Zymurgy::$defaulttheme = $keyname;
 			}
 			return Zymurgy::$userconfig[$keyname];
+		}
+
+		/**
+		 * Get the string from the locale XML file.
+		 *
+		 * @param string $key
+		 * @return string
+		 */
+		function GetLocaleString($key)
+		{
+			// ZK: The locale is hard-coded to English for now, as it's the only
+			// language Zymurgy:CM currently supports on the back-end.
+			// TODO Read the locale from the session.
+
+			return Zymurgy::$Locales["en"]->GetString($key);
 		}
 	}
 
@@ -995,10 +1018,12 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$imagehandler = new ZymurgyImageHandlerImageMagick();
 			break;
 	}
-	
+
 	if (array_key_exists('Debug',Zymurgy::$config) && (Zymurgy::$config['Debug'] > 0))
 	{
 		error_reporting(Zymurgy::$config['Debug']);
 	}
+
+	Zymurgy::$Locales = LocaleFactory::GetLocales();
 }
 ?>
