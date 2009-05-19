@@ -1,118 +1,289 @@
-<?
-$id = 0 + $_GET['plugin'];
-$instance = 0 + $_GET['instance'];
+<?php
+	ini_set("display_errors", 1);
 
-// Default configs may only be set by the webmaster
-if($instance == 0)
-	$adminlevel = 2;
+	require_once('cmo.php');
+	require_once('PluginBase.php');
 
-require_once 'cmo.php';
-$title = Zymurgy::$db->get("select title from zcm_plugin where id=$id");
-$instancename = Zymurgy::$db->get("select name from zcm_plugininstance where id=$instance");
-$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; <a href=\"pluginadmin.php?pid=$id\">$title Instances</a> &gt; ";
-if ($instance)
-	$breadcrumbTrail .= "<a href=\"pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($instancename)."\">$instancename</a> &gt; Settings";
-else 
-	$breadcrumbTrail .= "Default Settings";
+	$descriptor = "";
 
-require_once('header.php');
-require_once('PluginBase.php');
+	$plugin = GetPlugin(
+		$_GET["plugin"],
+		$_GET["instance"]);
+	$configItems = GetConfigItems(
+		$plugin,
+		isset($_GET["ext"]) ? $_GET["ext"] : "",
+		$descriptor);
+	$configValues = PopulateConfiguration(
+		$plugin);
+	$breadcrumbTrail = GetBreadcrumbTrail(
+		$plugin);
+	$message = "";
 
-//Load plugin info
-$ri = Zymurgy::$db->query("select * from zcm_plugin where id=$id");
-$plugin = Zymurgy::$db->fetch_array($ri);
-require_once("plugins/{$plugin['name']}.php");
-$factory = "{$plugin['name']}Factory";
-$po = $factory();
-$po->config = $po->GetDefaultConfig();
-//Load instance data
-$ri = Zymurgy::$db->query("select * from zcm_plugininstance where id=$instance");
-$instancerow = Zymurgy::$db->fetch_array($ri);
-$po->InstanceName = $instancerow['name'];
-//Load instance values to override this config
-$ri = Zymurgy::$db->query("select * from zcm_pluginconfig where plugin=$id and instance=$instance");
-while (($row = Zymurgy::$db->fetch_array($ri))!== false)
-{
-	$po->SetConfigValue($row['key'],$row['value']);
-}
-$config = $po->config;
+	require_once('header.php');
 
-$widget = new InputWidget();
-$widget->fckeditorcss = '';
-if ($_SERVER['REQUEST_METHOD']=='POST')
-{
-	if (get_magic_quotes_gpc()) {
-		function stripslashes_deep($value)
-		{
-			$value = is_array($value) ?
-				array_map('stripslashes_deep', $value) :
-				stripslashes($value);				
-			return $value;
+	if ($_SERVER['REQUEST_METHOD']=='POST')
+	{
+		if (get_magic_quotes_gpc()) {
+			$_POST = array_map('stripslashes_deep', $_POST);
+			$_GET = array_map('stripslashes_deep', $_GET);
+			$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
 		}
-		
-		$_POST = array_map('stripslashes_deep', $_POST);
-		$_GET = array_map('stripslashes_deep', $_GET);
-		$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
+
+		foreach ($configValues as $key => $value)
+		{
+			$inputField = str_replace(' ','_',$key);
+
+			if(isset($_POST[$inputField]))
+			{
+				$dbvalue = Zymurgy::$db->escape_string($_POST[$inputField]);
+				$sql = "update zcm_pluginconfig set `value`='$dbvalue' where (`key`='".
+					Zymurgy::$db->escape_string($key).
+					"') and (`plugin`={$plugin->pid}) and (`instance`={$plugin->iid})";
+				$ri = Zymurgy::$db->query($sql);
+				if (!$ri)
+				{
+					die("Error updating plugin config: ".Zymurgy::$db->error()."<br>$sql");
+				}
+				if (Zymurgy::$db->affected_rows()==0)
+				{
+					//Key doesn't exist yet.  Create it.
+					$sql = "insert into zcm_pluginconfig (`plugin`,`instance`,`key`,`value`) values ({$plugin->pid},{$plugin->iid},'".
+						Zymurgy::$db->escape_string($key).
+						"','$dbvalue')";
+					$ri = Zymurgy::$db->query($sql);
+					if (!$ri)
+					{
+						if (Zymurgy::$db->errno() != 1062) //1062 means the user hit submit bit didn't change anything, so no rows affected and can't re-insert.  Just ignore it.
+							die("Error (".Zymurgy::$db->errno().") adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
+					}
+				}
+			}
+		}
+
+//		if ($issuper)
+//			header('Location: plugin.php');
+//		else
+//			header("Location: pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($po->InstanceName));
+
+		$message .= "Settings saved.";
 	}
 
-	foreach ($config as $cv)
+	echo("<table>");
+	echo("<tr><td valign=\"top\" style=\"border-right: 1px solid black;\"><div style=\"width: 170px; margin-right: 10px;\">");
+	DisplayMenu(
+		$plugin);
+	echo("</div></td><td valign=\"top\" style=\"padding-left: 10px;\">");
+	DisplayConfigurationPage(
+		$plugin,
+		$configItems,
+		$configValues,
+		$descriptor,
+		$message);
+	echo("</td></tr></table>");
+
+	require_once("footer.php");
+
+	function GetPlugin(
+		$pluginID,
+		$instanceID)
 	{
-		if ($zauth->authinfo['admin'] < $cv->authlevel)
-			continue; //We don't have auth for this config item.
-		$key = str_replace('_',' ',$cv->key);
-		$value = $cv->value;
-		$dbvalue = Zymurgy::$db->escape_string($widget->PostValue($cv->inputspec,$key));
-		$sql = "update zcm_pluginconfig set `value`='$dbvalue' where (`key`='".
-			Zymurgy::$db->escape_string($key).
-			"') and (`plugin`={$plugin['id']}) and (`instance`=$instance)";
-		$ri = Zymurgy::$db->query($sql);
-		if (!$ri)
+		$sql = "SELECT `name` FROM `zcm_plugin` WHERE `id` = '".
+			Zymurgy::$db->escape_string($pluginID).
+			"'";
+		$pluginName = Zymurgy::$db->get($sql)
+			or die("Could not get plugin information: ".mysql_error().", $sql");
+
+		require_once("plugins/{$pluginName}.php");
+		$factory = "{$pluginName}Factory";
+		$po = $factory();
+
+		$po->pid = $pluginID;
+		$po->iid = $instanceID;
+		$po->InstanceName = GetInstanceName($instanceID);
+
+		return $po;
+	}
+
+	function GetInstanceName(
+		$instanceID)
+	{
+		$sql = "SELECT `name` FROM zcm_plugininstance WHERE `id` = '".
+			Zymurgy::$db->escape_string($instanceID).
+			"'";
+		$instanceName = Zymurgy::$db->get($sql)
+			or die("Could not get instance information: ".mysql_error().", $sql");
+
+		return $instanceName;
+	}
+
+	function GetConfigItems(
+		$plugin,
+		$extensionName,
+		&$descriptor)
+	{
+		$objectWithConfig = $plugin;
+
+		if(strlen($extensionName) > 0)
 		{
-			die("Error updating plugin config: ".Zymurgy::$db->error()."<br>$sql");
-		}
-		if (Zymurgy::$db->affected_rows()==0)
-		{
-			//Key doesn't exist yet.  Create it.
-			$sql = "insert into zcm_pluginconfig (`plugin`,`instance`,`key`,`value`) values ({$plugin['id']},$instance,'".
-				Zymurgy::$db->escape_string($key).
-				"','$dbvalue')";
-			$ri = Zymurgy::$db->query($sql);
-			if (!$ri)
+			$extensions = $plugin->GetExtensions();
+
+			foreach($extensions as $extension)
 			{
-				if (Zymurgy::$db->errno() != 1062) //1062 means the user hit submit bit didn't change anything, so no rows affected and can't re-insert.  Just ignore it.
-					die("Error (".Zymurgy::$db->errno().") adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
+				if($extension instanceof $extensionName)
+				{
+					$objectWithConfig = $extension;
+					$descriptor = $extension->GetDescription();
+
+					break;
+				}
+			}
+		}
+
+		return $objectWithConfig->GetConfigItems();
+	}
+
+	function PopulateConfiguration(
+		$plugin)
+	{
+		$configValues = array();
+
+		// print_r($plugin);
+
+		$sql = "SELECT `key`, `value` FROM `zcm_pluginconfig` WHERE `plugin` = '".
+			Zymurgy::$db->escape_string($plugin->pid).
+			"' AND `instance` = '".
+			Zymurgy::$db->escape_string($plugin->iid).
+			"'";
+		// die($sql);
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not get current configuration: ".mysql_error().", $sql");
+
+		while (($row = Zymurgy::$db->fetch_array($ri))!== false)
+		{
+			$configValues[$row['key']] = $row['value'];
+		}
+
+		return $configValues;
+	}
+
+	function GetBreadcrumbTrail(
+		$plugin)
+	{
+		$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; <a href=\"pluginadmin.php?pid=".
+			$plugin->pid.
+			"\">".
+			$plugin->GetTitle().
+			" Instances</a> &gt; ";
+
+		if (isset($_GET["instance"]))
+			$breadcrumbTrail .= "<a href=\"pluginadmin.php?pid=".
+				$plugin->pid.
+				"&amp;iid=".
+				$plugin->iid.
+				"&amp;name=".
+				urlencode($plugin->InstanceName).
+				"\">".
+				$plugin->InstanceName.
+				"</a> &gt; Settings";
+		else
+			$breadcrumbTrail .= "Default Settings";
+
+		return $breadcrumbTrail;
+	}
+
+	function DisplayMenu(
+		$plugin)
+	{
+		if(isset($_GET["ext"]))
+		{
+			echo("<a href=\"pluginconfig.php?plugin=".
+				$plugin->pid.
+				"&amp;instance=".
+				$plugin->iid.
+				"\">General</a><br>");
+		}
+		else
+		{
+			echo("<b>General</b><br>");
+		}
+
+		$extensions = $plugin->GetExtensions();
+
+		foreach($extensions as $extension)
+		{
+			if(isset($_GET["ext"]) && $extension instanceof $_GET["ext"])
+			{
+				echo("<b>".$extension->GetExtensionName()."</b><br>");
+			}
+			else
+			{
+			echo("<a href=\"pluginconfig.php?plugin=".
+				$plugin->pid.
+				"&amp;instance=".
+				$plugin->iid.
+				"&amp;ext=".
+				get_class($extension).
+				"\">".
+				$extension->GetExtensionName().
+				"</a><br>");
 			}
 		}
 	}
-	if ($issuper)
-		header('Location: plugin.php');
-	else 
-		header("Location: pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($po->InstanceName));
-}
-else 
-{
-	//print_r($config);
-	// die();
-	
-	//Render data entry form.
-	echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\">";
-	echo "<table>";
-	foreach ($config as $cv)
+
+	function DisplayConfigurationPage(
+		$plugin,
+		$configItems,
+		$configValues,
+		$descriptor,
+		$message)
 	{
-		// ZK: authlevel no longer returned
-		// if ($zauth->authinfo['admin'] < $cv->authlevel)
-		// 	continue; //We don't have auth for this config item.
-		
-		$key = $cv->key;
-		$value = $cv->value;
-		
-		echo "<tr><td align=\"right\">$key:</td><td>";
-		//echo "[{$cv->inputspec}]";
-		$widget->Render($cv->inputspec,str_replace(' ','_',$key),$value);
-		echo "</td></tr>\r\n";
+		$widget = new InputWidget();
+		$widget->fckeditorcss = '';
+
+		// print_r($configValues);
+
+		echo("<style>\n");
+		echo(".pluginButton { width: 80px; margin-right: 10px; }\n");
+		echo(".message { background: lightyellow; border: 2px solid black; ".
+			"padding: 10px; margin-bottom: 10px; }\n");
+		echo("</style>");
+
+		echo($descriptor);
+
+		if(strlen($message) > 0)
+		{
+			echo("<div class=\"message\">$message</div>\n");
+		}
+
+		echo "<form method=\"post\" action=\"{$_SERVER['REQUEST_URI']}\">";
+		echo "<table>";
+
+		foreach ($configItems as $configItem)
+		{
+			echo "<tr><td align=\"right\">".$configItem["name"]."</td><td>";
+			$widget->Render(
+				$configItem["inputspec"],
+				str_replace(' ', '_', $configItem["name"]),
+				isset($configValues[$configItem["name"]])
+					? $configValues[$configItem["name"]]
+					: $configItem["default"]);
+			echo "</td></tr>\r\n";
+		}
+
+		echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
+		echo "<tr><td colspan=\"2\">";
+		echo "<input class=\"pluginButton\" type=\"submit\" value=\"Save\">";
+		echo "<input class=\"pluginButton\" type=\"button\" value=\"Cancel\" onclick=\"window.reload();\">";
+		echo "</td></tr></table>";
+		echo "</form>";
 	}
-	echo "<tr><td colspan=\"2\"><input value=\"Save Plugin Config\" type=\"submit\"></td></tr></table>";
-	echo "</form>";
-	include('footer.php');
-}
+
+	function stripslashes_deep($value)
+	{
+		$value = is_array($value) ?
+			array_map('stripslashes_deep', $value) :
+			stripslashes($value);
+		return $value;
+	}
 ?>
