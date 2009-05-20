@@ -104,7 +104,15 @@ if (!class_exists('Zymurgy'))
 		 */
 		private static $MemberProvider = null;
 
-		private static $pageid;
+		/**
+		 * Member made public to allow Zymurgy::sitetext() to be called without calling
+		 * Zymurgy::headtags() first. This allows pages based on AJAX calls (that contain
+		 * incomplete HTML) to work properly.
+		 *
+		 * @var int
+		 */
+		public static $pageid;
+
 		private static $title;
 
 		public static $ThemeColor = array(
