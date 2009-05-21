@@ -4,13 +4,19 @@ class Calendar extends PluginBase
 	function Upgrade()
 	{
 		if ($this->dbrelease == $this->GetRelease()) return;
-		switch($this->dbrelease)
+
+		if($this->dbrelease < 2)
 		{
-			case(1):
-				Zymurgy::$db->query("alter table calendar add location varchar(80)") or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
-			case(2):
-				Zymurgy::$db->query("alter table calendar add instance integer") or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
+			Zymurgy::$db->query("alter table calendar add location varchar(80)")
+				or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
 		}
+
+		if($this->dbrelease < 3)
+		{
+			Zymurgy::$db->query("alter table calendar add instance integer")
+				or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
+		}
+
 		$this->CompleteUpgrade();
 	}
 
