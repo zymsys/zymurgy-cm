@@ -745,6 +745,15 @@ function Validate$name(me) {
 		$extensions[] = new FormCaptureToDatabase();
 		$extensions[] = new FormExportFromDatabase();
 
+		if(file_exists(Zymurgy::$root."/zymurgy/custom/plugins/Form.php"))
+		{
+			include_once(Zymurgy::$root."/zymurgy/custom/plugins/Form.php");
+
+			$extensions = array_merge(
+				$extensions,
+				CustomFormExtensions::GetExtensions());
+		}
+
 		return $extensions;
 	}
 }
@@ -1498,7 +1507,7 @@ class FormAddToCustomTable implements PluginExtension
 
 		$configItems[] = array(
 			"name" => "Enable Add to Custom Table",
-			"default" => "off",
+			"default" => "",
 			"inputspec" => "checkbox",
 			"authlevel" => 0);
 		$configItems[] = array(
