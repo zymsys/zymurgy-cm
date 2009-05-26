@@ -29,15 +29,20 @@
 			$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
 		}
 
-		foreach ($configValues as $key => $value)
+//		$fieldLog = "";
+
+		foreach ($configItems as $configItem)
 		{
-			$inputField = str_replace(' ','_',$key);
+			$inputField = str_replace(' ','_',$configItem["name"]);
+
+//			$fieldLog .= "<br>-- $inputField: ".
+//				(isset($_POST[$inputField]) ? $_POST[$inputField] : "(not set)");
 
 			if(isset($_POST[$inputField]))
 			{
 				$dbvalue = Zymurgy::$db->escape_string($_POST[$inputField]);
 				$sql = "update zcm_pluginconfig set `value`='$dbvalue' where (`key`='".
-					Zymurgy::$db->escape_string($key).
+					Zymurgy::$db->escape_string($configItem["name"]).
 					"') and (`plugin`={$plugin->pid}) and (`instance`={$plugin->iid})";
 				$ri = Zymurgy::$db->query($sql);
 				if (!$ri)
@@ -48,7 +53,7 @@
 				{
 					//Key doesn't exist yet.  Create it.
 					$sql = "insert into zcm_pluginconfig (`plugin`,`instance`,`key`,`value`) values ({$plugin->pid},{$plugin->iid},'".
-						Zymurgy::$db->escape_string($key).
+						Zymurgy::$db->escape_string($configItem["name"]).
 						"','$dbvalue')";
 					$ri = Zymurgy::$db->query($sql);
 					if (!$ri)
@@ -65,7 +70,7 @@
 //		else
 //			header("Location: pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($po->InstanceName));
 
-		$message .= "Settings saved.";
+		$message .= "Settings saved."; // <br>$fieldLog";
 	}
 
 	echo("<table>");
