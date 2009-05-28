@@ -105,7 +105,7 @@
 				<string name="Owner">Owner</string>
 			</section>
 			<section name="Table">
-				<string name="MediaFileView.DisplayListOfFilesToAdd.Table.Download">Download</string>
+				<string name="Download">Download</string>
 			</section>
 		</section>
 		<section name="DisplayRelatedMedia">

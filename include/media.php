@@ -2048,214 +2048,238 @@
 		{
 			// ZK: The Installer actions are disabled by default.
 			// If you are working on the component and need to reset the
-			// table definitions, uncomment the two lines below, and use
-			// the following URLs:
+			// table definitions, uncomment the $action !== "install" line,
+			// and use the following URLs:
 			//
 			// (ZymurgyRoot)/media.php?action=install
 			// (ZymurgyRoot)/media.php?action=uninstall
 
-			// if($this->Execute_InstallerActions($action)) {}
-			// else
-			if($this->Execute_MediaFileActions($action)) {}
-			else if($this->Execute_MediaPackageActions($action)) {}
-			else if($this->Execute_RelationActions($action)) {}
-			else if($this->Execute_MediaPackageTypeActions($action)) {}
-			else if($this->Execute_PageImageLibraryActions($action)) {}
+			if(
+				$action !== "install" && $action !== "uninstall" &&
+				method_exists($this, $action))
+			{
+				call_user_method($action, $this);
+			}
 			else
 			{
-				die("Unsupported action ".$action);
+				// ZK: Here for backwards compatability only during
+				// controller layout migration
+
+				if($this->Execute_MediaFileActions($action)) {}
+				else if($this->Execute_MediaPackageActions($action)) {}
+				else if($this->Execute_RelationActions($action)) {}
+				else if($this->Execute_MediaPackageTypeActions($action)) {}
+				else if($this->Execute_PageImageLibraryActions($action)) {}
+				else
+				{
+					die("Unsupported action ".$action);
+				}
 			}
 		}
 
-		private function Execute_InstallerActions($action)
+		private function install()
 		{
-			switch($action)
-			{
-				case "install":
-					MediaFileInstaller::Install();
-					return true;
-
-				case "uninstall":
-					MediaFileInstaller::Uninstall();
-					return true;
-
-				default:
-					return false;
-			}
+			MediaFileInstaller::Install();
 		}
 
-		private function Execute_MediaFileActions($action)
+		private function uninstall()
 		{
-			switch($action)
+			MediaFileInstaller::Uninstall();
+		}
+
+		private function list_media_files()
+		{
+			$mediaFiles = MediaFilePopulator::PopulateByOwner(
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
+				isset($_POST["relation_type"]) ? $_POST["relation_type"] : "");
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+			$members = MediaMemberPopulator::PopulateAll();
+
+			MediaFileView::DisplayList(
+				$mediaFiles,
+				$mediaRelations,
+				isset($_POST["relation_type"]) ? $_POST["relation_type"] : 0,
+				$members,
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+		}
+
+		private function add_media_file()
+		{
+			$mediaFile = new MediaFile();
+			$mediaFile->set_mimetype("n/a");
+			$mediaFile->set_member(
+				MediaMemberPopulator::PopulateByID(1));
+
+			$mediaRelation = new MediaRelation();
+			$mediaRelation->set_media_relation_id(0);
+			$mediaFile->set_relation($mediaRelation);
+
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+			$members = MediaMemberPopulator::PopulateAll();
+
+			MediaFileView::DisplayEditForm(
+				$mediaFile,
+				$mediaRelations,
+				$members,
+				"act_add_media_file");
+		}
+
+		private function edit_media_file()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			MediaFilePopulator::PopulateRelatedMedia($mediaFile);
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+			$members = MediaMemberPopulator::PopulateAll();
+
+			MediaFileView::DisplayEditForm(
+				$mediaFile,
+				$mediaRelations,
+				$members,
+				"act_edit_media_file");
+		}
+
+		private function act_add_media_file()
+		{
+			$this->update_media_file("act_add_media_file");
+		}
+
+		private function act_edit_media_file()
+		{
+			$this->update_media_file("act_edit_media_file");
+		}
+
+		private function update_media_file($action)
+		{
+			if($action == null)
 			{
-				case "list_media_files":
-					$mediaFiles = MediaFilePopulator::PopulateByOwner(
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
-						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "");
+				die("update_media_file may not be called via the controller action");
+			}
+
+			$mediaFile = MediaFilePopulator::PopulateFromForm();
+
+			if(!$mediaFile->validate($action))
+			{
+				$mediaRelations = MediaRelationPopulator::PopulateAll();
+				MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, $action);
+			}
+			else
+			{
+				if(MediaFilePopulator::SaveMediaFile($mediaFile))
+				{
 					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					$members = MediaMemberPopulator::PopulateAll();
-
-					MediaFileView::DisplayList(
-						$mediaFiles,
-						$mediaRelations,
-						isset($_POST["relation_type"]) ? $_POST["relation_type"] : 0,
-						$members,
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
-
-					return true;
-
-				case "add_media_file":
-					$mediaFile = new MediaFile();
-					$mediaFile->set_mimetype("n/a");
-					$mediaFile->set_member(
-						MediaMemberPopulator::PopulateByID(1));
-
-					$mediaRelation = new MediaRelation();
-					$mediaRelation->set_media_relation_id(0);
-					$mediaFile->set_relation($mediaRelation);
-
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					$members = MediaMemberPopulator::PopulateAll();
-
-					MediaFileView::DisplayEditForm(
-						$mediaFile,
-						$mediaRelations,
-						$members,
-						"act_add_media_file");
-
-					return true;
-
-				case "edit_media_file":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					MediaFilePopulator::PopulateRelatedMedia($mediaFile);
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					$members = MediaMemberPopulator::PopulateAll();
-
-					MediaFileView::DisplayEditForm(
-						$mediaFile,
-						$mediaRelations,
-						$members,
-						"act_edit_media_file");
-
-					return true;
-
-				case "act_add_media_file":
-				case "act_edit_media_file":
-					$mediaFile = MediaFilePopulator::PopulateFromForm();
-
-					if(!$mediaFile->validate($action))
-					{
-						$mediaRelations = MediaRelationPopulator::PopulateAll();
-						MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, $action);
-					}
-					else
-					{
-						if(MediaFilePopulator::SaveMediaFile($mediaFile))
-						{
-							$mediaRelations = MediaRelationPopulator::PopulateAll();
-							MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, $action);
-						}
-						else
-						{
-							header("Location: media.php?action=list_media_files");
-						}
-					}
-					return true;
-
-				case "delete_media_file":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					MediaFileView::DisplayDeleteFrom($mediaFile);
-					return true;
-
-				case "act_delete_media_file":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_POST["media_file_id"]);
-					MediaFilePopulator::DeleteMediaFile(
-						$mediaFile);
+					MediaFileView::DisplayEditForm($mediaFile, $mediaRelations, $action);
+				}
+				else
+				{
 					header("Location: media.php?action=list_media_files");
-					return true;
-
-				case "add_media_file_relatedmedia":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					$mediaFiles = MediaFilePopulator::PopulateAllNotRelated(
-						$mediaFile);
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					MediaFileView::DisplayListOfFilesToAdd($mediaFile, $mediaFiles, $mediaRelations);
-					return true;
-
-				case "act_add_media_file_relatedmedia":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_POST["media_file_id"]);
-
-					MediaFilePopulator::AddRelatedMedia(
-						$_POST["media_file_id"],
-						$_POST["related_media_file_id"],
-						$_POST["media_relation_id"]);
-
-					header(
-						"Location: media.php?action=edit_media_file&media_file_id=".
-						$_POST["media_file_id"]);
-
-					return true;
-
-				case "delete_media_file_relation":
-					MediaFilePopulator::DeleteRelatedMedia(
-						$_GET["media_file_id"],
-						$_GET["related_media_file_id"]);
-					header(
-						"Location: media.php?action=edit_media_file&media_file_id=".
-						$_GET["media_file_id"]);
-					return true;
-
-				case "edit_media_file_thumbnail":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					MediaFilePopulator::InitializeThumbnail(
-						$mediaFile,
-						$_GET["thumbnail"]);
-					MediaFileView::DisplayThumber(
-						$mediaFile,
-						$_GET["thumbnail"],
-						$_GET["refresh"]);
-					return true;
-
-				case "act_edit_media_file_thumbnail":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					MediaFilePopulator::MakeThumbnail(
-						$mediaFile,
-						$_GET["thumbnail"]);
-
-					// print_r($_POST);
-
-					MediaFileView::DisplayThumbCreated(
-						$_POST["refreshParent"] == "true");
-
-					return true;
-
-				case "download_media_file":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					$fileContent = MediaFilePopulator::GetFilestream(
-						$mediaFile);
-					MediaFileView::DownloadMediaFile($mediaFile, $fileContent);
-					return true;
-
-				case "stream_media_file":
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_GET["media_file_id"]);
-					$fileContent = MediaFilePopulator::GetFilestream(
-						$mediaFile,
-						$_GET["suffix"]);
-					MediaFileView::StreamMediaFile($mediaFile, $fileContent);
-					return true;
-
-				default:
-					return false;
+				}
 			}
+		}
+
+		private function delete_media_file()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			MediaFileView::DisplayDeleteFrom($mediaFile);
+		}
+
+		private function act_delete_media_file()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_POST["media_file_id"]);
+			MediaFilePopulator::DeleteMediaFile(
+				$mediaFile);
+
+			header("Location: media.php?action=list_media_files");
+		}
+
+		private function add_media_file_relatedmedia()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			$mediaFiles = MediaFilePopulator::PopulateAllNotRelated(
+				$mediaFile);
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+
+			MediaFileView::DisplayListOfFilesToAdd(
+				$mediaFile,
+				$mediaFiles,
+				$mediaRelations);
+		}
+
+		private function act_add_media_file_relatedmedia()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_POST["media_file_id"]);
+
+			MediaFilePopulator::AddRelatedMedia(
+				$_POST["media_file_id"],
+				$_POST["related_media_file_id"],
+				$_POST["media_relation_id"]);
+
+			header(
+				"Location: media.php?action=edit_media_file&media_file_id=".
+				$_POST["media_file_id"]);
+		}
+
+		private function delete_media_file_relation()
+		{
+			MediaFilePopulator::DeleteRelatedMedia(
+				$_GET["media_file_id"],
+				$_GET["related_media_file_id"]);
+
+			header(
+				"Location: media.php?action=edit_media_file&media_file_id=".
+				$_GET["media_file_id"]);
+		}
+
+		private function edit_media_file_thumbnail()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			MediaFilePopulator::InitializeThumbnail(
+				$mediaFile,
+				$_GET["thumbnail"]);
+			MediaFileView::DisplayThumber(
+				$mediaFile,
+				$_GET["thumbnail"],
+				$_GET["refresh"]);
+		}
+
+		private function act_edit_media_file_thumbnail()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			MediaFilePopulator::MakeThumbnail(
+				$mediaFile,
+				$_GET["thumbnail"]);
+
+			// print_r($_POST);
+
+			MediaFileView::DisplayThumbCreated(
+				$_POST["refreshParent"] == "true");
+		}
+
+		private function download_media_file()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			$fileContent = MediaFilePopulator::GetFilestream(
+				$mediaFile);
+
+			MediaFileView::DownloadMediaFile($mediaFile, $fileContent);
+		}
+
+		private function stream_media_file()
+		{
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_GET["media_file_id"]);
+			$fileContent = MediaFilePopulator::GetFilestream(
+				$mediaFile,
+				$_GET["suffix"]);
+
+			MediaFileView::StreamMediaFile($mediaFile, $fileContent);
 		}
 
 		private function Execute_MediaPackageActions($action)
