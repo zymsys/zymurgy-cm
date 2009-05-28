@@ -25,7 +25,7 @@ function CreateMissingTables()
 function RenameOldTables()
 {
 	global $etables,$tables;
-	
+
 	/* If we don't have zcm_passwd and we're trying to upgrade, we probably need to rename all the old tables. */
 	if (!array_key_exists('zcm_passwd',$etables))
 	{
@@ -91,7 +91,11 @@ function RenamePluginKeys($plugin,$keynames)
  * @param string $table
  * @param string $indexes
  */
-function CheckIndexes($table,$indexes,$unique = false)
+function CheckIndexes(
+	$table,
+	$indexes,
+	$unique = false,
+	$indexType = "")
 {
 	$existing = array();
 	$sql = "show index from $table";
@@ -109,11 +113,11 @@ function CheckIndexes($table,$indexes,$unique = false)
 			{
 				$sql = "alter table $table add unique($column)";
 			}
-			else 
+			else
 			{
-				$sql = "alter table $table add index($column)";
+				$sql = "alter table $table add $indexType index($column)";
 			}
-			mysql_query($sql) or die("Unable to index $column in $table: $sql");
+			mysql_query($sql) or die("Unable to index $column in $table: ".mysql_error().", $sql");
 		}
 	}
 }
@@ -146,16 +150,16 @@ function CheckColumns($table,$columns)
 				foreach($colsql as $sql)
 					mysql_query($sql) or die("Can't create column ($sql): ".mysql_error());
 			}
-			else 
+			else
 				mysql_query($colsql) or die("Can't create column ($colsql): ".mysql_error());
 			//Special cases
-			if (($table=='sitetext') && ($colname=='plainbody'))
+			if (($table=='zcm_sitetext') && ($colname=='plainbody'))
 			{
-				$sql = "select id,body from sitetext";
+				$sql = "select id,body from zcm_sitetext";
 				$ri = mysql_query($sql) or die("Can't get sitetext ($sql): ".mysql_error());
 				while (($row = mysql_fetch_array($ri))!==false)
 				{
-					$sql = "update sitetext set plainbody='".
+					$sql = "update zcm_sitetext set plainbody='".
 						mysql_escape_string(strip_tags($row['body']))."' where id={$row['id']}";
 					mysql_query($sql) or die("Can't set plain text ($sql): ".mysql_error());
 				}

@@ -61,6 +61,7 @@ $sitepagecols = CheckColumns('zcm_sitepage',$newsitepage);
 CheckIndexes('zcm_customtable',array('navname'));
 CheckIndexes('zcm_member',array('mpkey'),true);
 CheckIndexes('zcm_sitepage',array('template'));
+CheckIndexes("zcm_sitetext", array("plainbody"), false, "FULLTEXT");
 
 echo("done.<br>");
 
