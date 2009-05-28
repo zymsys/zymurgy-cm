@@ -1933,6 +1933,8 @@
 
 		public static function RenderJavascript()
 		{
+			$output = "";
+
 			$output .= "<script type=\"text/javascript\">\n";
 
 			$output .= "function InsertMediaFileInPage(editor) {\n";
