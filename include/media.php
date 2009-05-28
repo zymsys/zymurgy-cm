@@ -2062,16 +2062,7 @@
 			}
 			else
 			{
-				// ZK: Here for backwards compatability only during
-				// controller layout migration
-
-				if($this->Execute_RelationActions($action)) {}
-				else if($this->Execute_MediaPackageTypeActions($action)) {}
-				else if($this->Execute_PageImageLibraryActions($action)) {}
-				else
-				{
-					die("Unsupported action ".$action);
-				}
+				die("Unsupported action ".$action);
 			}
 		}
 
@@ -2479,228 +2470,260 @@
 			MediaPackageView::DownloadMediaPackage($mediaPackage);
 		}
 
-		private function Execute_RelationActions($action)
+		private function list_relations()
 		{
-			switch($action)
+			$relations = MediaRelationPopulator::PopulateAll();
+
+			MediaRelationView::DisplayList($relations);
+		}
+
+		private function add_relation()
+		{
+			$relation = new MediaRelation();
+
+			MediaRelationView::DisplayEditForm($relation, "act_add_relation");
+		}
+
+		private function edit_relation()
+		{
+			$relation = MediaRelationPopulator::PopulateByID(
+				$_GET["media_relation_id"]);
+
+			MediaRelationView::DisplayEditForm($relation, "act_add_relation");
+		}
+
+		private function act_add_relation()
+		{
+			$this->update_media_relation("act_add_relation");
+		}
+
+		private function act_edit_relation()
+		{
+			$this->update_media_relation("act_edit_relation");
+		}
+
+		private function update_media_relation($action)
+		{
+			$relation = MediaRelationPopulator::PopulateFromForm();
+
+			if(!$relation->validate($action))
 			{
-				case "list_relations":
-					$relations = MediaRelationPopulator::PopulateAll();
-					MediaRelationView::DisplayList($relations);
-					return true;
-
-				case "add_relation":
-					$relation = new MediaRelation();
-					MediaRelationView::DisplayEditForm($relation, "act_add_relation");
-					return true;
-
-				case "edit_relation":
-					$relation = MediaRelationPopulator::PopulateByID(
-						$_GET["media_relation_id"]);
-					MediaRelationView::DisplayEditForm($relation, "act_add_relation");
-					return true;
-
-				case "act_add_relation":
-				case "act_edit_relation":
-					$relation = MediaRelationPopulator::PopulateFromForm();
-
-					if(!$relation->validate($action))
-					{
-						MediaRelationView::DisplayEditForm($relation, $action);
-					}
-					else
-					{
-						if(MediaRelationPopulator::SaveRelation($relation))
-						{
-							MediaRelationView::DisplayEditForm($relation, $action);
-						}
-						else
-						{
-							header("Location: media.php?action=list_relations");
-						}
-					}
-					return true;
-
-				case "delete_relation":
-					$relation = MediaRelationPopulator::PopulateByID(
-						$_GET["media_relation_id"]);
-					MediaRelationView::DisplayDeleteFrom($relation);
-					return true;
-
-				case "act_delete_relation":
-					MediaRelationPopulator::DeleteRelation(
-						$_POST["media_relation_id"]);
+				MediaRelationView::DisplayEditForm($relation, $action);
+			}
+			else
+			{
+				if(MediaRelationPopulator::SaveRelation($relation))
+				{
+					MediaRelationView::DisplayEditForm($relation, $action);
+				}
+				else
+				{
 					header("Location: media.php?action=list_relations");
-					return true;
-
-				default:
-					return false;
+				}
 			}
 		}
 
-		private function Execute_MediaPackageTypeActions($action)
+		private function delete_relation()
 		{
-			switch($action)
+			$relation = MediaRelationPopulator::PopulateByID(
+				$_GET["media_relation_id"]);
+
+			MediaRelationView::DisplayDeleteFrom($relation);
+		}
+
+		private function act_delete_relation()
+		{
+			MediaRelationPopulator::DeleteRelation(
+				$_POST["media_relation_id"]);
+
+			header("Location: media.php?action=list_relations");
+		}
+
+		private function list_media_package_types()
+		{
+			$packageTypes = MediaPackageTypePopulator::PopulateAll();
+
+			MediaPackageTypeView::DisplayList($packageTypes);
+		}
+
+		private function add_media_package_type()
+		{
+			$packageType = new MediaPackageType();
+
+			MediaPackageTypeVieW::DisplayEditForm(
+				$packageType,
+				"act_add_media_package_type");
+		}
+
+		private function edit_media_package_type()
+		{
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$_GET["media_package_type_id"]);
+			MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
+
+			MediaPackageTypeVieW::DisplayEditForm(
+				$packageType,
+				"act_edit_media_package_type");
+		}
+
+		private function act_add_media_package_type()
+		{
+			$this->update_media_package_type("act_add_media_package_type");
+		}
+
+		private function act_edit_media_package_type()
+		{
+			$this->update_media_package_type("act_edit_media_package_type");
+		}
+
+		private function update_media_package_type($action)
+		{
+			$packageType = MediaPackageTypePopulator::PopulateFromForm();
+
+			if(!$packageType->validate($action))
 			{
-				case "list_media_package_types":
-					$packageTypes = MediaPackageTypePopulator::PopulateAll();
-					MediaPackageTypeView::DisplayList($packageTypes);
-					return true;
-
-				case "add_media_package_type":
-					$packageType = new MediaPackageType();
-					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_add_media_package_type");
-					return true;
-
-				case "edit_media_package_type":
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$_GET["media_package_type_id"]);
-					MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
-					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
-					return true;
-
-				case "act_add_media_package_type":
-				case "act_edit_media_package_type":
-					$packageType = MediaPackageTypePopulator::PopulateFromForm();
-
-					if(!$packageType->validate($action))
-					{
-						MediaPackageTypeVieW::DisplayEditForm($packageType, $action);
-					}
-					else
-					{
-						if(MediaPackageTypePopulator::SaveMediaPackageType($packageType))
-						{
-							MediaPackageTypeView::DisplayEditForm($packageType, $action);
-						}
-						else
-						{
-							header("Location: media.php?action=list_media_package_types");
-						}
-					}
-					return true;
-
-				case "delete_media_package_type":
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$_GET["media_package_type_id"]);
-					MediaPackageTypeVieW::DisplayDeleteForm($packageType);
-					return true;
-
-				case "act_delete_media_package_type":
-					MediaPackageTypePopulator::DeleteMediaPackageType(
-						$_POST["media_package_type_id"]);
+				MediaPackageTypeVieW::DisplayEditForm($packageType, $action);
+			}
+			else
+			{
+				if(MediaPackageTypePopulator::SaveMediaPackageType($packageType))
+				{
+					MediaPackageTypeView::DisplayEditForm($packageType, $action);
+				}
+				else
+				{
 					header("Location: media.php?action=list_media_package_types");
-					return true;
-
-				case "add_media_package_type_allowed_relation":
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$_GET["media_package_type_id"]);
-					$allowedRelation = new MediaPackageTypeAllowedRelation();
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					MediaPackageTypeView::DisplayEditAllowedRelationForm(
-						$allowedRelation,
-						$packageType,
-						$mediaRelations,
-						"act_add_media_package_type_allowed_relation");
-					return true;
-
-				case "edit_media_package_type_allowed_relation":
-					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
-						$_GET["allowed_relation_id"]);
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$allowedRelation->get_media_package_type_id());
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					MediaPackageTypeView::DisplayEditAllowedRelationForm(
-						$allowedRelation,
-						$packageType,
-						$mediaRelations,
-						"act_edit_media_package_type_allowed_relation");
-					return true;
-
-				case "act_add_media_package_type_allowed_relation":
-				case "act_edit_media_package_type_allowed_relation":
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$_POST["media_package_type_id"]);
-					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationFromForm();
-
-					if(!$allowedRelation->validate($action))
-					{
-						$mediaRelations = MediaRelationPopulator::PopulateAll();
-						MediaPackageTypeView::DisplayEditAllowedRelationForm(
-							$allowedRelation,
-							$packageType,
-							$mediaRelations,
-							$action);
-					}
-					else
-					{
-						if(MediaPackageTypePopulator::SaveMediaPackageTypeAllowedRelation($allowedRelation))
-						{
-							$mediaRelations = MediaRelationPopulator::PopulateAll();
-							MediaPackageTypeView::DisplayEditAllowedRelationForm(
-								$allowedRelation,
-								$packageType,
-								$mediaRelations,
-								$action);
-						}
-						else
-						{
-							header("Location: media.php?action=edit_media_package_type&media_package_type_id=".$_POST["media_package_type_id"]);
-						}
-					}
-
-					return true;
-
-				case "delete_media_package_type_allowed_relation":
-					$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
-						$_GET["allowed_relation_id"]);
-					$packageType = MediaPackageTypePopulator::PopulateByID(
-						$allowedRelation->get_media_package_type_id());
-
-					if($allowedRelation !== null)
-					{
-						MediaPackageTypePopulator::DeleteMediaPackageTypeAllowedRelation(
-							$allowedRelation->get_media_package_type_allowed_relation_id());
-					}
-
-					MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
-					MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
-
-					return true;
-
-				default:
-					return false;
+				}
 			}
 		}
 
-		private function Execute_PageImageLibraryActions($action)
+		private function delete_media_package_type()
 		{
-			switch($action)
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$_GET["media_package_type_id"]);
+
+			MediaPackageTypeVieW::DisplayDeleteForm($packageType);
+		}
+
+		private function act_delete_media_package_type()
+		{
+			MediaPackageTypePopulator::DeleteMediaPackageType(
+				$_POST["media_package_type_id"]);
+
+			header("Location: media.php?action=list_media_package_types");
+		}
+
+		private function add_media_package_type_allowed_relation()
+		{
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$_GET["media_package_type_id"]);
+			$allowedRelation = new MediaPackageTypeAllowedRelation();
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+
+			MediaPackageTypeView::DisplayEditAllowedRelationForm(
+				$allowedRelation,
+				$packageType,
+				$mediaRelations,
+				"act_add_media_package_type_allowed_relation");
+		}
+
+		private function edit_media_package_type_allowed_relation()
+		{
+			$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
+				$_GET["allowed_relation_id"]);
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$allowedRelation->get_media_package_type_id());
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+
+			MediaPackageTypeView::DisplayEditAllowedRelationForm(
+				$allowedRelation,
+				$packageType,
+				$mediaRelations,
+				"act_edit_media_package_type_allowed_relation");
+		}
+
+		private function act_add_media_package_type_allowed_relation()
+		{
+			$this->update_media_package_type_allowed_relation(
+				"act_add_media_package_type_allowed_relation");
+		}
+
+		private function act_edit_media_package_type_allowed_relation()
+		{
+			$this->update_media_package_type_allowed_relation(
+				"act_edit_media_package_type_allowed_relation");
+		}
+
+		private function update_media_package_type_allowed_relation($action)
+		{
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$_POST["media_package_type_id"]);
+			$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationFromForm();
+
+			if(!$allowedRelation->validate($action))
 			{
-				case "insert_image_into_yuihtml":
-					$mediaPackages = MediaPackagePopulator::PopulateByOwner(
-						0,
-						"pagelibrary");
+				$mediaRelations = MediaRelationPopulator::PopulateAll();
+				MediaPackageTypeView::DisplayEditAllowedRelationForm(
+					$allowedRelation,
+					$packageType,
+					$mediaRelations,
+					$action);
+			}
+			else
+			{
+				if(MediaPackageTypePopulator::SaveMediaPackageTypeAllowedRelation($allowedRelation))
+				{
+					$mediaRelations = MediaRelationPopulator::PopulateAll();
+					MediaPackageTypeView::DisplayEditAllowedRelationForm(
+						$allowedRelation,
+						$packageType,
+						$mediaRelations,
+						$action);
+				}
+				else
+				{
+					header("Location: media.php?action=edit_media_package_type&media_package_type_id=".$_POST["media_package_type_id"]);
+				}
+			}
+		}
 
-					if(count($mediaPackages) <= 0)
-					{
-						PageImageLibraryView::DisplayNotConfiguredMessage();
-					}
-					else
-					{
-						$mediaPackage = $mediaPackages[0];
-						MediaPackagePopulator::PopulateMediaFiles(
-							$mediaPackage,
-							"image");
+		private function delete_media_package_type_allowed_relation()
+		{
+			$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
+				$_GET["allowed_relation_id"]);
+			$packageType = MediaPackageTypePopulator::PopulateByID(
+				$allowedRelation->get_media_package_type_id());
 
-						PageImageLibraryView::DisplayImageList(
-							$mediaPackage,
-							$_GET["editor_id"]);
-					}
+			if($allowedRelation !== null)
+			{
+				MediaPackageTypePopulator::DeleteMediaPackageTypeAllowedRelation(
+					$allowedRelation->get_media_package_type_allowed_relation_id());
+			}
 
-					return true;
+			MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
+			MediaPackageTypeVieW::DisplayEditForm($packageType, "act_edit_media_package_type");
+		}
 
-				default:
-					return false;
+		private function insert_image_into_yuihtml()
+		{
+			$mediaPackages = MediaPackagePopulator::PopulateByOwner(
+				0,
+				"pagelibrary");
+
+			if(count($mediaPackages) <= 0)
+			{
+				PageImageLibraryView::DisplayNotConfiguredMessage();
+			}
+			else
+			{
+				$mediaPackage = $mediaPackages[0];
+				MediaPackagePopulator::PopulateMediaFiles(
+					$mediaPackage,
+					"image");
+
+				PageImageLibraryView::DisplayImageList(
+					$mediaPackage,
+					$_GET["editor_id"]);
 			}
 		}
 	}
