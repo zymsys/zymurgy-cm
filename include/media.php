@@ -2065,8 +2065,7 @@
 				// ZK: Here for backwards compatability only during
 				// controller layout migration
 
-				if($this->Execute_MediaPackageActions($action)) {}
-				else if($this->Execute_RelationActions($action)) {}
+				if($this->Execute_RelationActions($action)) {}
 				else if($this->Execute_MediaPackageTypeActions($action)) {}
 				else if($this->Execute_PageImageLibraryActions($action)) {}
 				else
@@ -2281,192 +2280,203 @@
 			MediaFileView::StreamMediaFile($mediaFile, $fileContent);
 		}
 
-		private function Execute_MediaPackageActions($action)
+		private function list_media_packages()
 		{
-			switch($action)
+			$mediaPackages = MediaPackagePopulator::PopulateByOwner(
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
+				isset($_POST["package_type"]) ? $_POST["package_type"] : "");
+			$packageTypes = MediaPackageTypePopulator::PopulateAll();
+			$members = MediaMemberPopulator::PopulateAll();
+
+			MediaPackageView::DisplayList(
+				$mediaPackages,
+				$packageTypes,
+				isset($_POST["package_type"]) ? $_POST["package_type"] : 0,
+				$members,
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+		}
+
+		private function add_media_package()
+		{
+			$mediaPackage = new MediaPackage();
+			$members = MediaMemberPopulator::PopulateAll();
+			$mediaPackage->set_member($members[0]);
+			$packageTypes = MediaPackageTypePopulator::PopulateAll();
+
+			MediaPackageView::DisplayEditForm(
+				$mediaPackage,
+				$members,
+				$packageTypes,
+				"act_add_media_package");
+		}
+
+		private function edit_media_package()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+			$members = MediaMemberPopulator::PopulateAll();
+			$packageTypes = MediaPackageTypePopulator::PopulateAll();
+
+			MediaPackageView::DisplayEditForm(
+				$mediaPackage,
+				$members,
+				$packageTypes,
+				"act_edit_media_package");
+		}
+
+		private function act_add_media_package()
+		{
+			$this->update_media_package("act_add_media_package");
+		}
+
+		private function act_edit_media_package()
+		{
+			$this->update_media_package("act_edit_media_package");
+		}
+
+		private function update_media_package($action)
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateFromForm();
+			$members = MediaMemberPopulator::PopulateAll();
+			$packageTypes = MediaPackageTypePopulator::PopulateAll();
+
+			if(!$mediaPackage->validate($action))
 			{
-				case "list_media_packages":
-					$mediaPackages = MediaPackagePopulator::PopulateByOwner(
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0,
-						isset($_POST["package_type"]) ? $_POST["package_type"] : "");
-					$packageTypes = MediaPackageTypePopulator::PopulateAll();
-					$members = MediaMemberPopulator::PopulateAll();
-
-					MediaPackageView::DisplayList(
-						$mediaPackages,
-						$packageTypes,
-						isset($_POST["package_type"]) ? $_POST["package_type"] : 0,
-						$members,
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
-					return true;
-
-				case "add_media_package":
-					$mediaPackage = new MediaPackage();
-					$members = MediaMemberPopulator::PopulateAll();
-					$mediaPackage->set_member($members[0]);
-					$packageTypes = MediaPackageTypePopulator::PopulateAll();
-
-					MediaPackageView::DisplayEditForm(
-						$mediaPackage,
-						$members,
-						$packageTypes,
-						"act_add_media_package");
-
-					return true;
-
-				case "edit_media_package":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					$members = MediaMemberPopulator::PopulateAll();
-					$packageTypes = MediaPackageTypePopulator::PopulateAll();
-
-					MediaPackageView::DisplayEditForm(
-						$mediaPackage,
-						$members,
-						$packageTypes,
-						"act_edit_media_package");
-
-					return true;
-
-				case "act_add_media_package":
-				case "act_edit_media_package":
-					$mediaPackage = MediaPackagePopulator::PopulateFromForm();
-					$members = MediaMemberPopulator::PopulateAll();
-					$packageTypes = MediaPackageTypePopulator::PopulateAll();
-
-					if(!$mediaPackage->validate($action))
-					{
-						MediaPackageView::DisplayEditForm(
-							$mediaPackage,
-							$members,
-							$packageTypes,
-							$action);
-					}
-					else
-					{
-						if(MediaPackagePopulator::SaveMediaPackage($mediaPackage))
-						{
-							MediaPackageView::DisplayEditForm(
-								$mediaPackage,
-								$members,
-								$packageTypes,
-								$action);
-						}
-						else
-						{
-							header("Location: media.php?action=list_media_packages");
-						}
-					}
-					return true;
-
-				case "delete_media_package":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					MediaPackageView::DisplayDeleteFrom($mediaPackage);
-					return true;
-
-				case "act_delete_media_package":
-					MediaPackagePopulator::DeleteMediaPackage(
-						$_POST["media_package_id"]);
-					header("Location: media.php?action=list_media_packages");
-					return true;
-
-				case "list_media_package_files":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
-
-					// echo("<pre>");
-					// print_r($mediaPackage);
-					// echo("</pre>");
-					// echo($mediaPackage->get_media_file_count());
-					// die();
-
-					MediaPackageView::DisplayRelatedMedia($mediaPackage);
-					return true;
-
-				case "add_media_package_file":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						isset($_POST["media_package_id"]) ? $_POST["media_package_id"] : $_GET["media_package_id"]);
-					$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
-						$mediaPackage,
-						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
-					$mediaRelations = MediaRelationPopulator::PopulateAll();
-					$members = MediaMemberPopulator::PopulateAll();
-
-					MediaPackageView::DisplayListOfFilesToAdd(
-						$mediaPackage,
-						$mediaFiles,
-						$mediaRelations,
-						isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
-						$members,
-						isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
-
-					return true;
-
-				case "act_add_media_package_file":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_POST["media_package_id"]);
-					$mediaFile = MediaFilePopulator::PopulateByID(
-						$_POST["media_file_id"]);
-					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
-					$disporder = $mediaPackage->get_media_file_count();
-
-					MediaPackagePopulator::AddMediaFileToPackage(
-						$mediaPackage->get_media_package_id(),
-						$mediaFile->get_media_file_id(),
-						$mediaFile->get_relation()->get_media_relation_id(),
-						$disporder + 1);
-
-					header(
-						"Location: media.php?action=list_media_package_files&media_package_id=".
-						$_POST["media_package_id"]);
-
-					return true;
-
-				case "move_media_package_file_up":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
-						$mediaPackage->MoveMediaFile($_GET["media_file_id"], -1);
-					MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
-					header(
-						"Location: media.php?action=list_media_package_files&media_package_id=".
-						$_GET["media_package_id"]);
-					return true;
-
-				case "move_media_package_file_down":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
-					$mediaPackage->MoveMediaFile($_GET["media_file_id"], 1);
-					MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
-					header(
-						"Location: media.php?action=list_media_package_files&media_package_id=".
-						$_GET["media_package_id"]);
-					return true;
-
-				case "delete_media_package_file":
-					MediaPackagePopulator::DeleteMediaFileFromPackage(
-						$_GET["media_package_id"],
-						$_GET["media_file_id"]);
-					header(
-						"Location: media.php?action=list_media_package_files&media_package_id=".
-						$_GET["media_package_id"]);
-					return true;
-
-				case "download_media_package":
-					$mediaPackage = MediaPackagePopulator::PopulateByID(
-						$_GET["media_package_id"]);
-					MediaPackagePopulator::BuildZipFile($mediaPackage, false);
-					MediaPackageView::DownloadMediaPackage($mediaPackage);
-
-					break;
-
-				default:
-					return false;
+				MediaPackageView::DisplayEditForm(
+					$mediaPackage,
+					$members,
+					$packageTypes,
+					$action);
 			}
+			else
+			{
+				if(MediaPackagePopulator::SaveMediaPackage($mediaPackage))
+				{
+					MediaPackageView::DisplayEditForm(
+						$mediaPackage,
+						$members,
+						$packageTypes,
+						$action);
+				}
+				else
+				{
+					header("Location: media.php?action=list_media_packages");
+				}
+			}
+		}
+
+		private function delete_media_package()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+
+			MediaPackageView::DisplayDeleteFrom($mediaPackage);
+		}
+
+		private function act_delete_media_package()
+		{
+			MediaPackagePopulator::DeleteMediaPackage(
+				$_POST["media_package_id"]);
+
+			header("Location: media.php?action=list_media_packages");
+		}
+
+		private function list_media_package_files()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+			MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+
+			MediaPackageView::DisplayRelatedMedia($mediaPackage);
+		}
+
+		private function add_media_package_file()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				isset($_POST["media_package_id"]) ? $_POST["media_package_id"] : $_GET["media_package_id"]);
+			$mediaFiles = MediaFilePopulator::PopulateAllNotInPackage(
+				$mediaPackage,
+				isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+			$mediaRelations = MediaRelationPopulator::PopulateAll();
+			$members = MediaMemberPopulator::PopulateAll();
+
+			MediaPackageView::DisplayListOfFilesToAdd(
+				$mediaPackage,
+				$mediaFiles,
+				$mediaRelations,
+				isset($_POST["relation_type"]) ? $_POST["relation_type"] : "",
+				$members,
+				isset($_POST["member_id"]) ? $_POST["member_id"] : 0);
+		}
+
+		private function act_add_media_package_file()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_POST["media_package_id"]);
+			$mediaFile = MediaFilePopulator::PopulateByID(
+				$_POST["media_file_id"]);
+			MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+			$disporder = $mediaPackage->get_media_file_count();
+
+			MediaPackagePopulator::AddMediaFileToPackage(
+				$mediaPackage->get_media_package_id(),
+				$mediaFile->get_media_file_id(),
+				$mediaFile->get_relation()->get_media_relation_id(),
+				$disporder + 1);
+
+			header(
+				"Location: media.php?action=list_media_package_files&media_package_id=".
+				$_POST["media_package_id"]);
+		}
+
+		private function move_media_package_file_up()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+			MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+
+			$mediaPackage->MoveMediaFile($_GET["media_file_id"], -1);
+			MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
+
+			header(
+				"Location: media.php?action=list_media_package_files&media_package_id=".
+				$_GET["media_package_id"]);
+		}
+
+		private function move_media_package_file_down()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+			MediaPackagePopulator::PopulateMediaFiles($mediaPackage);
+
+			$mediaPackage->MoveMediaFile($_GET["media_file_id"], 1);
+			MediaPackagePopulator::SaveMediaFileOrder($mediaPackage);
+
+			header(
+				"Location: media.php?action=list_media_package_files&media_package_id=".
+				$_GET["media_package_id"]);
+		}
+
+		private function delete_media_package_file()
+		{
+			MediaPackagePopulator::DeleteMediaFileFromPackage(
+				$_GET["media_package_id"],
+				$_GET["media_file_id"]);
+
+			header(
+				"Location: media.php?action=list_media_package_files&media_package_id=".
+					$_GET["media_package_id"]);
+		}
+
+		private function download_media_package()
+		{
+			$mediaPackage = MediaPackagePopulator::PopulateByID(
+				$_GET["media_package_id"]);
+
+			MediaPackagePopulator::BuildZipFile($mediaPackage, false);
+
+			MediaPackageView::DownloadMediaPackage($mediaPackage);
 		}
 
 		private function Execute_RelationActions($action)
