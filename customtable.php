@@ -84,7 +84,7 @@ function OnBeforeUpdate($values)
 			{
 				$changed[] = $tname;
 			}
-			else 
+			else
 			{
 				$errmsg = "Couldn't rename the $oldname column to $newname in the table $tname ($sql): ".mysql_error();
 				break; //Don't bother changing any more, we're going to try to undo the damage and get out.
@@ -131,7 +131,7 @@ function OnBeforeUpdate($values)
 			$sql = "alter table `{$values['zcm_customtable.tname']}` drop disporder";
 			$ri = mysql_query($sql) or die ("Unable to remove display order ($sql): ".mysql_error());
 		}
-		else 
+		else
 		{
 			//Add display order column
 			$sql = "alter table `{$values['zcm_customtable.tname']}` add disporder bigint";
@@ -151,7 +151,7 @@ function OnBeforeUpdate($values)
 			$sql = "alter table `{$values['zcm_customtable.tname']}` drop member";
 			$ri = mysql_query($sql) or die ("Unable to remove member ($sql): ".mysql_error());
 		}
-		else 
+		else
 		{
 			//Add member column
 			$sql = "alter table `{$values['zcm_customtable.tname']}` add member bigint";
@@ -168,7 +168,7 @@ function OnBeforeUpdate($values)
 			//Remove self ref column
 			Zymurgy::$db->run("alter table `{$values['zcm_customtable.tname']}` drop selfref");
 		}
-		else 
+		else
 		{
 			//Add self ref column
 			Zymurgy::$db->run("alter table `{$values['zcm_customtable.tname']}` add selfref bigint default 0");
@@ -182,7 +182,7 @@ function OnBeforeUpdate($values)
 function OnBeforeInsert($values)
 {
 	global $detailfor;
-	
+
 	$okname = okname($values['zcm_customtable.tname']);
 	if ($okname!==true)
 	{
@@ -242,6 +242,12 @@ $dg->AddColumn('Table','tname');
 $dg->AddColumn('Display Order?','hasdisporder');
 $dg->AddColumn('Member Data?','ismember');
 $dg->AddUpDownColumn('disporder');
+
+$dg->AddColumn(
+	"Contents",
+	"id",
+	"<a href=\"customedit.php?t={0}\">Contents</a>");
+
 $dg->AddColumn('Fields','id','<a href="customfield.php?t={0}">Fields</a>');
 $dg->AddColumn('Detail Tables','id','<a href="customtable.php?d={0}">Detail Tables</a>');
 $dg->AddInput('tname','Table Name:',30,30);
