@@ -763,10 +763,21 @@ class DataGrid
 		$this->columns[$n]->validator = $v;
 	}
 
-	function AddConstant($datacolumn,$value)
+	function AddConstant($datacolumn,$value,$addfilter = true)
 	{
 		if (!(strpos($datacolumn,'.') !== false))
 			$datacolumn = $this->DataSet->tables[0].".$datacolumn";
+		if ($addfilter)
+		{
+			$exists = false;
+			foreach($this->DataSet->Filters as $dsf)
+			{
+				if ($dsf->columnname == $datacolumn)
+					$exists = true;
+			}
+			if (!$exists)
+				$this->DataSet->AddDataFilter($datacolumn,$value);
+		}
 		$this->constants[$datacolumn] = $value;
 	}
 
@@ -1112,6 +1123,10 @@ class DataGrid
 						$widget = new InputWidget();
 						$widget->UsePennies = $this->UsePennies;
 						$widget->lookups = $this->lookups;
+						if (isset($this->OnBeforeAutoInsert))
+							$widget->OnBeforeAutoInsert = $this->OnBeforeAutoInsert;
+						if (isset($this->OnAutoInsert))
+							$widget->OnAutoInsert = $this->OnAutoInsert;
 						$postvalue = $widget->PostValue($c->editor,$postname);
 						//echo "[$postname,{$c->editor},$postvalue]";
 						if (($c->editor == "attachment") || ($c->editortype == "image"))
@@ -1294,15 +1309,41 @@ class DataGrid
 		}
 	}
 
+	function RenderContextMenuItem($name,$action)
+	{
+		echo "<li class=\"yuimenuitem\">";
+		echo "<a class=\"yuimenuitemlabel\" href=\"$action\">$name</a>";
+		echo "</li>";
+	}
+	
+	function RenderContextMenu($row)
+	{
+		$id = $row->values[$this->DataSet->masterkey];
+		$elid = "zcmdgt$id";
+		echo "<td>";
+		echo "<img id=\"$elid\" src=\"/zymurgy/images/Context.gif\" alt=\"Context Menu\" width=\"12\" height=\"12\" />";
+		echo "</td>";
+		return $elid;
+	}
 
 	function RenderGrid($page,$count)
 	{
 		global $hasdumpeddatagridcss;
 
 		if (!$hasdumpeddatagridcss) DumpDataGridCSS();
+		//Context menu YUI requirements
+		echo Zymurgy::YUI('fonts/fonts-min.css');
+		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
+		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+		echo Zymurgy::YUI('container/container_core-min.js');
+		echo Zymurgy::YUI('menu/menu-min.js');
+		echo Zymurgy::RequireOnce('/zymurgy/include/datagrid.js');
 		echo "<table cellspacing=\"0\" cellpadding=\"3\" rules=\"cols\" bordercolor=\"#999999\" border=\"1\" class=\"DataGrid\"";
 		if (isset($this->width)) echo " width=\"{$this->width}\"";
 		echo "><tr class=\"DataGridHeader\">\r\n";
+		//Show empty context menu button column header
+		//echo "<td></td>";
+		//Show data columns
 		$colcount = 0;
 		foreach ($this->columns as $c)
 		{
@@ -1332,6 +1373,7 @@ class DataGrid
 		}
 		echo "</tr>\r\n";
 		$alternate = false;
+		$contexttriggers = array();
 		foreach ($this->DataSet->rows as $row)
 		{
 			if ($alternate)
@@ -1340,6 +1382,7 @@ class DataGrid
 				$trclass = "DataGridRow";
 			$alternate = !$alternate;
 			echo "<tr class=\"$trclass\">";
+			//$contexttriggers[] = $this->RenderContextMenu($row);
 			foreach ($this->columns as $c)
 			{
 				if ($c->template != '')
@@ -1400,6 +1443,12 @@ class DataGrid
 		echo "</table></td>";
 		echo "</tr>\r\n";
 		echo "</table>\r\n";
+		if ($contexttriggers)
+		{
+			echo "<script type=\"text/javascript\">
+			var oZCMDGCM$id = ZymurgyCreateDGCM(['".implode("', '",$contexttriggers)."'],'".$this->DataSet->tables[0]."');
+			</script>";		
+		}
 	}
 }
 

@@ -19,6 +19,8 @@ class InputWidget
 	var $lookups = array();
 	var $editkey = 0;
 	var $datacolumn = 'sitetext.body';
+	var $OnBeforeAutoInsert;
+	var $OnAutoInsert;
 
 	function InputWidget()
 	{
@@ -66,6 +68,31 @@ class InputWidget
 				if ($this->UsePennies)
 					$m = $m * 100;
 				return $m;
+				break;
+			case "autocomplete":
+				$table = $ep[1];
+				$idcolumn = $ep[2];
+				$column = $ep[3];
+				$postvalue = $_POST[$postname];
+				$autocreate = array_key_exists(4,$ep) ? ($ep[4] == 'true') : false;
+				$sql = "select `$idcolumn` from `$table` where `$column`='".
+					Zymurgy::$db->escape_string($postvalue)."'";
+				$value = Zymurgy::$db->get($sql);
+				if (!$value && $autocreate)
+				{
+					//Autocreate unknown entry from autocomplete widget
+					$newrecord = array("$table.$column"=>$postvalue);
+					if (isset($this->OnBeforeAutoInsert))
+						$newrecord = call_user_func($this->OnBeforeAutoInsert, $table, $newrecord);
+					$sql = "insert into $table (".
+						implode(',',array_keys($newrecord)).") values ('".
+						implode("','",$newrecord)."')";
+					Zymurgy::$db->run($sql);
+					$value = $newrecord[$idcolumn] = Zymurgy::$db->insert_id();
+					if (isset($this->OnAutoInsert))
+						call_user_func($this->OnAutoInsert,$table, $newrecord);
+				}
+				return $value;
 				break;
 			case "unixdate":
 				$dp = explode("-",$_POST[$postname]);
@@ -133,6 +160,15 @@ class InputWidget
 				break;
 			case "lookup":
 				$display = $this->lookups[$ep[1]]->values[$display];
+				break;
+			case "autocomplete":
+				$table = $ep[1];
+				$idcolumn = $ep[2];
+				$column = $ep[3];
+				$autocreate = array_key_exists(4,$ep) ? ($ep[4] == 'true') : false;
+				$sql = "select `$column` from `$table` where `$idcolumn`='".
+					Zymurgy::$db->escape_string($display)."'";
+				$display = Zymurgy::$db->get($sql);
 				break;
 			case "image":
 				if (isset($this->targetsize))
@@ -301,27 +337,44 @@ passThroughFormSubmit = false;
 					str_replace("'","\'",$value)."');</script>";
 				break;
 
+			case "autocomplete":
 			case "plugin":
 				global $ZymurgyAutocompleteZIndex;
-				$ep = explode('&',$value);
-				$pluginvalue = urldecode($ep[0]);
-				$textvalue = urldecode($ep[1]);
+				$isplugin = ($ep[0] == "plugin");
 				$acwidth = 200;
 				if (!isset($ZymurgyAutocompleteZIndex)) $ZymurgyAutocompleteZIndex = 9000;
 				$jsname = str_replace('.','_',$name);
-				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"\"/>";
-				echo "<div style=\"float:left\">";
-				echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
-				$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
-				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-				{
-					echo "\t<option value=\"{$row['id']}\"";
-					if ($row['name'] == $pluginvalue)
-						echo " selected=\"selected\"";
-					echo ">{$row['name']}</option>\r\n";
+				if ($isplugin)
+				{ //Show drop down list of available plugins
+					$ep = explode('&',$value);
+					$pluginvalue = urldecode($ep[0]);
+					$textvalue = urldecode($ep[1]);
+					echo "<div style=\"float:left\">";
+					echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
+					$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
+					while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+					{
+						echo "\t<option value=\"{$row['id']}\"";
+						if ($row['name'] == $pluginvalue)
+							echo " selected=\"selected\"";
+						echo ">{$row['name']}</option>\r\n";
+					}
+					echo "</select>";
+					echo "</div>";
 				}
-				echo "</select>";
-				echo "</div><div style=\"float:left; margin-left:6px\">";
+				else 
+				{
+					$table = $ep[1];
+					$idcolumn = $ep[2];
+					$column = $ep[3];
+					$textvalue = $this->Display($type,'{0}',$value);
+				}
+				echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"".
+					addslashes($textvalue)."\"/>";
+				if ($isplugin)
+				{
+					echo "<div style=\"float:left; margin-left:6px\">";
+				}
 				echo Zymurgy::YUI('autocomplete/assets/skins/sam/autocomplete.css');
 				echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
 				echo Zymurgy::YUI('datasource/datasource-min.js');
@@ -333,25 +386,37 @@ passThroughFormSubmit = false;
 				echo Zymurgy::YUI('datasource/datasource-min.js');
 				echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
 				echo Zymurgy::RequireOnce('/zymurgy/include/cmo.js');
-				echo "<div id=\"{$name}-autocomplete\" style=\"width: {$acwidth}px\"><input id=\"{$name}-input\" type=\"text\" title=\"Choose a Plugin First\" value=\"".htmlentities($textvalue)."\" />";
+				echo "<div id=\"{$name}-autocomplete\" style=\"width: {$acwidth}px\"><input id=\"{$name}-input\" type=\"text\" ";
+				if ($isplugin)
+				{
+					echo "title=\"Choose a Plugin First\" ";
+				}
+				echo "value=\"".htmlentities($textvalue)."\" onchange=\"{$jsname}_update\" />";
 				echo "<div id=\"{$name}-container\" style=\"z-index:$ZymurgyAutocompleteZIndex\"></div></div>";
-				echo "<div style=\"float:left; margin-left:".($acwidth+5)."px\"><input type=\"button\" value=\"&raquo;\" onclick=\"{$jsname}_autocomp.toggleContainer(); Zymurgy.toggleText(this,'&raquo;','&laquo;');\" /></div>";
+				echo "<div style=\"float:left;z-index:$ZymurgyAutocompleteZIndex;";
+				echo " margin-left:".($acwidth+5)."px";
+				echo "\"><input type=\"button\" value=\"&raquo;\" onclick=\"{$jsname}_autocomp.toggleContainer(); Zymurgy.toggleText(this,'&raquo;','&laquo;');\" /></div>";
 				echo "</div>";
 				echo '<script type="text/javascript">
 					'.$jsname.'_text = document.getElementById("'.$name.'-input");
 					'.$jsname.'_plugin = document.getElementById("'.$name.'-plugin");
 					'.$jsname.'_hidden = document.getElementById("'.$name.'");
-					Zymurgy.enableHint('.$jsname.'_text);
 					';
-				if (empty($textvalue))
-					echo "{$jsname}_text.disabled = true;\r\n";
-				echo 'function '.$jsname.'_update() {
-						if ('.$jsname.'_text.disabled || '.$jsname.'_plugin.value == 0)
-							'.$jsname.'_hidden.value = "&";
-						else
-							'.$jsname.'_hidden.value = escape('.$jsname.'_plugin.options['.$jsname.'_plugin.selectedIndex].text) + "&" + escape('.$jsname.'_text.value);
-					}
-					YAHOO.util.Event.addListener("'.$name.'-plugin", "change", function () {
+				if ($isplugin)
+				{
+					echo "Zymurgy.enableHint({$jsname}_text);\r\n";
+				}
+				if ($isplugin)
+				{
+					if (empty($textvalue))
+						echo "{$jsname}_text.disabled = true;\r\n";
+					echo 'function '.$jsname.'_update() {
+							if ('.$jsname.'_text.disabled || '.$jsname.'_plugin.value == 0)
+								'.$jsname.'_hidden.value = "&";
+							else
+								'.$jsname.'_hidden.value = escape('.$jsname.'_plugin.options['.$jsname.'_plugin.selectedIndex].text) + "&" + escape('.$jsname.'_text.value);
+						}
+						YAHOO.util.Event.addListener("'.$name.'-plugin", "change", function () {
 						if (this.value == "")
 						{
 							'.$jsname.'_text.disabled = true;
@@ -366,16 +431,36 @@ passThroughFormSubmit = false;
 						'.$jsname.'_update();
 					});
 					var '.$jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/plugin.php?pg='.$_GET['d'].'&");
-					'.$jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
-					'.$jsname.'_datasource.responseSchema = {fields : ["plugin"]};
-					var '.$jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$name.'-input","'.$name.'-container", '.$jsname.'_datasource);
-					'.$jsname.'_autocomp.textboxChangeEvent.subscribe('.$jsname.'_update);
-					'.$jsname.'_autocomp.generateRequest = function(sQuery) {
-						var elSel = document.getElementById("'.$name.'-plugin");
-						return "/zymurgy/include/plugin.php?pg='.$_GET['d'].'&pi=" + elSel.value + "&q=" + sQuery;
-					};
-				</script>
-				';
+						'.$jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
+						'.$jsname.'_datasource.responseSchema = {fields : ["plugin"]};
+						var '.$jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$name.'-input","'.$name.'-container", '.$jsname.'_datasource);
+						'.$jsname.'_autocomp.textboxChangeEvent.subscribe('.$jsname.'_update);
+						'.$jsname.'_autocomp.generateRequest = function(sQuery) {
+							var elSel = document.getElementById("'.$name.'-plugin");
+							return "/zymurgy/include/plugin.php?pg='.$_GET['d'].'&pi=" + elSel.value + "&q=" + sQuery;
+						};
+						
+						';
+				}
+				else 
+				{ //Autocomplete
+					echo 'var '.$jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/autocomplete.php");
+						'.$jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+						'.$jsname.'_datasource.responseSchema = {
+							resultsList : "results",
+							fields : ["value"]};
+						var '.$jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$name.'-input","'.$name.'-container", '.$jsname.'_datasource);
+						'.$jsname.'_autocomp.generateRequest = function(sQuery) {
+							return "/zymurgy/include/autocomplete.php?t='.urlencode($table).'&c='.
+								urlencode($column).'&i='.urlencode($idcolumn).'&q=" + sQuery;
+						};
+						function '.$jsname.'_update() {
+							'.$jsname.'_hidden.value = escape('.$jsname.'_text.value);
+						}
+						'.$jsname.'_autocomp.textboxChangeEvent.subscribe('.$jsname.'_update);
+						';
+				}
+				echo "</script>\r\n";
 				$ZymurgyAutocompleteZIndex++;
 				break;
 
