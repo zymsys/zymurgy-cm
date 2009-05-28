@@ -2065,8 +2065,7 @@
 				// ZK: Here for backwards compatability only during
 				// controller layout migration
 
-				if($this->Execute_MediaFileActions($action)) {}
-				else if($this->Execute_MediaPackageActions($action)) {}
+				if($this->Execute_MediaPackageActions($action)) {}
 				else if($this->Execute_RelationActions($action)) {}
 				else if($this->Execute_MediaPackageTypeActions($action)) {}
 				else if($this->Execute_PageImageLibraryActions($action)) {}
