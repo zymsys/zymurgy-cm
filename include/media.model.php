@@ -1,4 +1,6 @@
 <?php
+	ini_set("display_errors", 1);
+
 	/*
 		Zymurgy:CM Media File Component
 		Z:CM Model classes
@@ -649,6 +651,8 @@
 				$mediaFiles[] = $mediaFile;
 			}
 
+			Zymurgy::$db->free_result($ri);
+
 			// print_r($mediaFiles);
 			// die();
 
@@ -672,6 +676,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve media file record: ".mysql_error().", $sql");
 
+			$mediaFile = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -684,19 +690,21 @@
 				$mediaFile->set_price($row["price"]);
 
 				$member = MediaMemberPopulator::PopulateByID(
-				$row["member_id"]);
+					$row["member_id"]);
 				$mediaFile->set_member($member);
 
 				$restriction = MediaRestrictionPopulator::PopulateByID(
-				$row["media_restriction_id"]);
+					$row["media_restriction_id"]);
 				$mediaFile->set_restriction($restriction);
 
 				$relation = MediaRelationPopulator::PopulateByID(
-				$row["media_relation_id"]);
+					$row["media_relation_id"]);
 				$mediaFile->set_relation($relation);
-
-				return $mediaFile;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $mediaFile;
 		}
 
 		/**
@@ -711,6 +719,8 @@
 			$base_media_file,
 			$mediaRelationType = '')
 		{
+			if($base_media_file == null) return;
+
 			$criteria = "1 = 1";
 
 			if($mediaRelationType !== '')
@@ -741,6 +751,8 @@
 
 				$base_media_file->add_relatedmedia($mediaFile);
 			}
+
+			Zymurgy::$db->free_result($ri);
 		}
 
 		/**
@@ -771,7 +783,6 @@
 				// echo("File found.");
 
 				$mediaFile->set_file($_FILES['file']);
-
 			}
 
 			return $mediaFile;
@@ -857,10 +868,8 @@
 				Zymurgy::$db->query($sql)
 					or die("Could not insert media file record: ".mysql_error().", $sql");
 
-				$sql = "SELECT MAX(`media_file_id`) FROM `zcm_media_file`";
-
 				$mediaFile->set_media_file_id(
-					Zymurgy::$db->get($sql));
+					Zymurgy::$db->insert_id());
 			}
 			else
 			{
@@ -1045,7 +1054,8 @@
 					$filepath.".".$mediaFile->get_extension(),
 					$filepath."aspectcropNormal.jpg");
 
-				system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 {$filepath}aspectcropNormal.jpg {$filepath}aspectcropDark.jpg");
+				system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 ".
+					"{$filepath}aspectcropNormal.jpg {$filepath}aspectcropDark.jpg");
 
 				copy(
 					$filepath.".".$mediaFile->get_extension(),
@@ -1490,6 +1500,8 @@
 				$mediaPackages[] = $mediaPackage;
 			}
 
+			Zymurgy::$db->free_result($ri);
+
 			return $mediaPackages;
 		}
 
@@ -1507,6 +1519,8 @@
 				Zymurgy::$db->escape_string($media_package_id)."'";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve media package: ".mysql_error().", $sql");
+
+			$mediaPackage = null;
 
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
@@ -1528,9 +1542,11 @@
 				$packageType = MediaPackageTypePopulator::PopulateByID(
 					$row["media_package_type_id"]);
 				$mediaPackage->set_packagetype($packageType);
-
-				return $mediaPackage;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $mediaPackage;
 		}
 
 		/**
@@ -1582,6 +1598,8 @@
 					$mediaPackage->add_media_file($mediaFile);
 				}
 			}
+
+			Zymurgy::$db->free_result($ri);
 		}
 
 		/**
@@ -1632,6 +1650,9 @@
 
 				Zymurgy::$db->query($sql)
 					or die("Could not insert media file record: ".mysql_error().", $sql");
+
+				$mediaPackage->set_media_package_id(
+					Zymurgy::$db->insert_id());
 
 				$sql = "SELECT MAX(`media_package_id`) FROM `zcm_media_package`";
 
@@ -2267,6 +2288,8 @@
 				$packageTypes[] = $packageType;
 			}
 
+			Zymurgy::$db->free_result($ri);
+
 			return $packageTypes;
 		}
 
@@ -2288,6 +2311,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve package type: ".mysql_error().", $sql");
 
+			$packageType = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -2296,9 +2321,11 @@
 				$packageType->set_media_package_type_id($media_package_type_id);
 				$packageType->set_package_type($row["package_type"]);
 				$packageType->set_package_label($row["package_type_label"]);
-
-				return $packageType;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $packageType;
 		}
 
 		/**
@@ -2319,6 +2346,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve package type: ".mysql_error().", $sql");
 
+			$packageType = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -2327,9 +2356,11 @@
 				$packageType->set_media_package_type_id($row["media_package_type_id"]);
 				$packageType->set_package_type($package_type);
 				$packageType->set_package_label($row["package_type_label"]);
-
-				return $packageType;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $packageType;
 		}
 
 		/**
@@ -2366,6 +2397,8 @@
 
 				$packageType->add_allowedrelation($allowedRelation);
 			}
+
+			Zymurgy::$db->free_result($ri);
 		}
 
 		/**
@@ -2386,6 +2419,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve allowed relations: ".mysql_error().", $sql");
 
+			$allowedRelation = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -2399,9 +2434,11 @@
 				$relation = MediaRelationPopulator::PopulateByID(
 					$row["media_relation_id"]);
 				$allowedRelation->set_relation($relation);
-
-				return $allowedRelation;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $allowedRelation;
 		}
 
 		/**
@@ -2461,10 +2498,8 @@
 				Zymurgy::$db->query($sql)
 					or die("Could not insert package type record: ".mysql_error().", $sql");
 
-				$sql = "SELECT MAX(`media_package_type_id`) FROM `zcm_media_package_type`";
-
 				$packageType->set_media_package_type_id(
-					Zymurgy::$db->get($sql));
+					Zymurgy::$db->insert_id());
 			}
 			else
 			{
@@ -2520,11 +2555,8 @@
 				Zymurgy::$db->query($sql)
 					or die("Could not insert allowed relation record: ".mysql_error().", $sql");
 
-				$sql = "SELECT MAX(`media_package_type_allowed_relation_id`) FROM ".
-					"`zcm_media_package_type_allowed_relation`";
-
 				$allowedRelation->set_media_package_type_allowed_relation_id(
-					Zymurgy::$db->get($sql));
+					Zymurgy::$db->insert_id());
 			}
 			else
 			{
@@ -2601,13 +2633,16 @@
 	class MediaRestrictionPopulator
 	{
 		static function PopulateByID(
-		$restriction_id)
+			$restriction_id)
 		{
 			$sql = "SELECT `download_limit`, `day_limit` FROM `zcm_media_restriction` ".
 				"WHERE `media_restriction_id` = '".
 				Zymurgy::$db->escape_string($restriction_id)."'";
 
-			$ri = Zymurgy::$db->query($sql) or die();
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve media restriction: ".mysql_error().", $sql");
+
+			$restriction_id = null;
 
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
@@ -2617,9 +2652,11 @@
 				$mediaRestriction->set_restriction_id($restriction_id);
 				$mediaRestriction->set_download_limit($row["download_limit"]);
 				$mediaRestriction->set_day_limit($row["day_limit"]);
-
-				return $mediaRestriction;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $mediaRestriction;
 		}
 	}
 
@@ -2709,6 +2746,8 @@
 				$members[] = $member;
 			}
 
+			Zymurgy::$db->free_result($ri);
+
 			return $members;
 		}
 
@@ -2726,6 +2765,8 @@
 
 			$ri = Zymurgy::$db->query($sql) or die();
 
+			$member = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -2733,9 +2774,11 @@
 
 				$member->set_member_id($member_id);
 				$member->set_email($row["email"]);
-
-				return $member;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $member;
 		}
 	}
 
@@ -2964,6 +3007,8 @@
 				$mediaRelations[] = $mediaRelation;
 			}
 
+			Zymurgy::$db->free_result($ri);
+
 			return $mediaRelations;
 		}
 
@@ -2981,6 +3026,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve relation: ".mysql_error().", $sql");
 
+			$mediaRelation = null;
+
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
@@ -2991,9 +3038,11 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
-
-				return $mediaRelation;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $mediaRelation;
 		}
 
 		/**
@@ -3011,6 +3060,8 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve relation: ".mysql_error().", $sql");
 
+			$mediaRelation = null;
+
 			if(Zymurgy::$db->num_rows($ri) <= 0)
 			{
 				die("Could not find any relations with the given type");
@@ -3025,9 +3076,11 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
-
-				return $mediaRelation;
 			}
+
+			Zymurgy::$db->free_result($ri);
+
+			return $mediaRelation;
 		}
 
 		/**
@@ -3073,10 +3126,8 @@
 				Zymurgy::$db->query($sql)
 					or die("Could not insert relation record: ".mysql_error().", $sql");
 
-				$sql = "SELECT MAX(`media_relation_id`) FROM `zcm_media_relation`";
-
 				$mediaRelation->set_media_relation_id(
-					Zymurgy::$db->get($sql));
+					Zymurgy::$db->insert_id());
 			}
 			else
 			{

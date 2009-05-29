@@ -2126,6 +2126,12 @@
 		{
 			$mediaFile = MediaFilePopulator::PopulateByID(
 				$_GET["media_file_id"]);
+
+			if($mediaFile == null)
+			{
+				die("Invalid media_file_id. Aborting.");
+			}
+
 			MediaFilePopulator::PopulateRelatedMedia($mediaFile);
 			$mediaRelations = MediaRelationPopulator::PopulateAll();
 			$members = MediaMemberPopulator::PopulateAll();
@@ -2314,6 +2320,12 @@
 		{
 			$mediaPackage = MediaPackagePopulator::PopulateByID(
 				$_GET["media_package_id"]);
+
+			if($mediaPackage == null)
+			{
+				die("Invalid media_package_id. Aborting.");
+			}
+
 			$members = MediaMemberPopulator::PopulateAll();
 			$packageTypes = MediaPackageTypePopulator::PopulateAll();
 
@@ -2498,6 +2510,11 @@
 			$relation = MediaRelationPopulator::PopulateByID(
 				$_GET["media_relation_id"]);
 
+			if($relation == null)
+			{
+				die("Invalid media_relation_id. Aborting.");
+			}
+
 			MediaRelationView::DisplayEditForm($relation, "act_add_relation");
 		}
 
@@ -2568,6 +2585,12 @@
 		{
 			$packageType = MediaPackageTypePopulator::PopulateByID(
 				$_GET["media_package_type_id"]);
+
+			if($packageType == null)
+			{
+				die("Invalid media_package_type_id. Aborting.");
+			}
+
 			MediaPackageTypePopulator::PopulateAllowedRelations($packageType);
 
 			MediaPackageTypeVieW::DisplayEditForm(
@@ -2640,6 +2663,12 @@
 		{
 			$allowedRelation = MediaPackageTypePopulator::PopulateAllowedRelationByID(
 				$_GET["allowed_relation_id"]);
+
+			if($allowedRelation == null)
+			{
+				die("Invalid allowed_relation_id. Aborting.");
+			}
+
 			$packageType = MediaPackageTypePopulator::PopulateByID(
 				$allowedRelation->get_media_package_type_id());
 			$mediaRelations = MediaRelationPopulator::PopulateAll();
