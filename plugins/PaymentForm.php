@@ -13,36 +13,40 @@
 		function Initialize()
 		{
 			parent::Initialize();
-			$this->CreatePaymentResponseTable();
+			$this->VerifyTableDefinitions();
 		}
 
 		function Upgrade()
 		{
-			$diemsg = "Unable to upgrade PaymentForm plugin: ";
-
-			if ($this->dbrelease < 6)
-			{
-				$this->CreatePaymentResponseTable();
-			}
+			$this->VerifyTableDefinitions();
 
 			parent::Upgrade();
 		}
 
 		private function CreatePaymentResponseTable()
 		{
-			$sql = "CREATE TABLE IF NOT EXISTS `zcm_form_paymentresponse` (".
-				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-				"`instance` INTEGER UNSIGNED NOT NULL,".
-				"`invoice_id` VARCHAR(50) NOT NULL,".
-				"`capture_id` INTEGER UNSIGNED NOT NULL,".
-				"`response_date` DATETIME NOT NULL,".
-				"`processor` VARCHAR(50) NOT NULL,".
-				"`status_code` VARCHAR(50) NOT NULL,".
-				"`post_vars` TEXT NOT NULL,".
-				"PRIMARY KEY (`id`)".
-				") ENGINE = InnoDB;";
-			Zymurgy::$db->query($sql)
-				or die("Could not create zcm_form_paymentresponse table: ".mysql_error());
+			require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+
+			$tableDefinitions = array(
+				array(
+					"name" => "zcm_form_paymentresponse",
+					"columns" => array(
+						DefineTableField("id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+						DefineTableField("instance", "INTEGER", "UNSIGNED NOT NULL"),
+						DefineTableField("invoice_id", "VARCHAR(50)", "NOT NULL"),
+						DefineTableField("capture_id", "INTEGER", "UNSIGNED NOT NULL"),
+						DefineTableField("responsedate", "DATETIME", "NOT NULL"),
+						DefineTableField("processor", "VARCHAR(50)", "NOT NULL"),
+						DefineTableField("status_code", "VARCHAR(50)", "NOT NULL"),
+						DefineTableField("post_vars", "TEXT", "NOT NULL")
+					),
+					"indexes" => array(),
+					"primarykey" => "id",
+					"engine" => "InnoDB"
+				)
+			);
+
+			ProcessTableDefinitions($tableDefinitions);
 		}
 
 		function GetDefaultConfig()
