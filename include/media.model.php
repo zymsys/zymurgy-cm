@@ -1,5 +1,5 @@
 <?php
-	ini_set("display_errors", 1);
+	// ini_set("display_errors", 1);
 	require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 	/*
@@ -3294,7 +3294,8 @@
 		static function GetTableDefinitions()
 		{
 			return array(
-				MediaRelationPopulator::GetTableDefinitions_zcm_media_relation());
+				MediaRelationPopulator::GetTableDefinitions_zcm_media_relation(),
+				MediaRelationPopulator::GetTableDefinitions_zcm_media_file_relation());
 		}
 
 		static function GetTableDefinitions_zcm_media_relation()
@@ -3310,6 +3311,22 @@
 				),
 				"indexes" => array(),
 				"primarykey" => "media_relation_id",
+				"engine" => "InnoDB"
+			);
+		}
+
+		static function GetTableDefinitions_zcm_media_file_relation()
+		{
+			return array(
+				"name" => "zcm_media_file_relation",
+				"columns" => array(
+					DefineTableField("media_file_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("media_file_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("related_media_file_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_file_relation_id",
 				"engine" => "InnoDB"
 			);
 		}

@@ -124,6 +124,9 @@
 			$tableDefinitions = array_merge(
 				$tableDefinitions,
 				MediaRestrictionPopulator::GetTableDefinitions());
+			$tableDefinitions = array_merge(
+				$tableDefinitions,
+				MediaRelationPopulator::GetTableDefinitions());
 
 			ProcessTableDefinitions($tableDefinitions);
 
@@ -133,33 +136,9 @@
 				{
 					case 1:
 
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_relation` (".
-							"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-							"`relation_type` VARCHAR(50) NOT NULL,".
-							"`relation_type_label` VARCHAR(50) NOT NULL,".
-							"PRIMARY KEY (`media_relation_id`)".
-							") ENGINE = InnoDB;";
-						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_relation table: ".mysql_error().", $sql");
-
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file_relation` (".
-							"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
-							"`related_media_file_id` INTEGER UNSIGNED NOT NULL,".
-							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
-							"PRIMARY KEY (`media_file_relation_id`)".
-							") ENGINE = InnoDB";
-						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_file_relation table: ".mysql_error().", $sql");
-
 						break;
 
 					case 2:
-						VerifyColumnExists(
-							"zcm_media_relation",
-							"allowed_mimetypes",
-							"VARCHAR(200)",
-							"AFTER `relation_type_label`");
 
 						break;
 
@@ -172,11 +151,6 @@
 						break;
 
 					case 5:
-						VerifyColumnExists(
-							"zcm_media_relation",
-							"thumbnails",
-							"VARCHAR(50)",
-							"AFTER `relation_type_label`");
 
 						break;
 
