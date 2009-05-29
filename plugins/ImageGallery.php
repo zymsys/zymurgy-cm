@@ -15,16 +15,34 @@ class ImageGallery extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_galleryimage` (
-		  `id` int(11) NOT NULL auto_increment,
-		  `instance` int(11) default NULL,
-		  `image` varchar(60) default NULL,
-		  `link` varchar(200) default NULL,
-		  `caption` varchar(200) default NULL,
-		  `disporder` int(11) default NULL,
-		  PRIMARY KEY  (`id`),
-		  KEY `instance` (`instance`),
-		  KEY `disporder` (`disporder`))");
+		$this->VerifyTableDefinitions();
+	}
+
+	private function VerifyTableDefinitions()
+	{
+		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+
+		$tableDefinitions = array(
+			array(
+				"name" => "zcm_galleryimage",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("image", "VARCHAR(60)", "DEFAULT NULL"),
+					DefineTableField("link", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("caption", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("disporder", "INT(11)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "instance", "unique" => "false", "type" => ""),
+					array("columns" => "disporder", "unique" => "false", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			)
+		);
+
+		ProcessTableDefinitions($tableDefinitions);
 	}
 
 	function GetRelease()
@@ -36,14 +54,7 @@ class ImageGallery extends PluginBase
 
 	function Upgrade()
 	{
-		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
-
-		VerifyColumnExists(
-			"zcm_galleryimage",
-			"link",
-			"VARCHAR(200)",
-			"");
-
+		$this->VerifyTableDefinitions();
 		$this->CompleteUpgrade();
 	}
 
