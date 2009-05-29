@@ -135,7 +135,7 @@ class Form extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_capture` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_capture` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `instance` int(11) NOT NULL default '0',
   `submittime` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -149,7 +149,7 @@ class Form extends PluginBase
   KEY member (member),
   KEY `instance` (`instance`,`submittime`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_input` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_input` (
   `id` int(11) NOT NULL auto_increment,
   `instance` int(11) NOT NULL default '0',
   `inputtype` int(11) NOT NULL default '0',
@@ -163,14 +163,14 @@ class Form extends PluginBase
   PRIMARY KEY  (`id`),
   KEY `instance` (`instance`,`disporder`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_inputtype` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_inputtype` (
   `id` int(11) NOT NULL auto_increment,
   `takesxtra` smallint(6) NOT NULL default '0',
   `name` varchar(60) NOT NULL default '',
   `specifier` text NOT NULL,
   PRIMARY KEY  (`id`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_export` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_export` (
   `id` int(11) NOT NULL auto_increment,
   `exptime` datetime default NULL,
   `expuser` int(11) default NULL,
@@ -179,7 +179,7 @@ class Form extends PluginBase
   KEY `exptime` (`exptime`),
   KEY `instance` (`instance`)
 )");
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_header` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_header` (
   `id` int(11) NOT NULL auto_increment,
   `instance` int(11) default NULL,
   `header` varchar(60) default NULL,
@@ -187,7 +187,7 @@ class Form extends PluginBase
   KEY `instance` (`instance`)
 )");
 
-		Zymurgy::$db->query("CREATE TABLE `zcm_form_regex` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_regex` (
   `id` bigint(20) unsigned NOT NULL auto_increment,
   `disporder` bigint(20) default NULL,
   `name` varchar(35) default NULL,
@@ -238,6 +238,8 @@ class Form extends PluginBase
 	function Upgrade()
 	{
 		$diemsg = "Unable to upgrade Form plugin: ";
+		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
+
 		if ($this->dbrelease < 2)
 		{
 			//Upgrade to r2 - capture/export support
@@ -246,9 +248,8 @@ class Form extends PluginBase
 			//Need to be able to flush data from any export we want from the server side.
 			//Capture table needs to link to which export that capture belongs to.
 			//Null export info in capture means it's fresh.
-			@Zymurgy::$db->query("alter table zcm_form_capture add export int");// or die($diemsg.Zymurgy::$db->error());
-			@Zymurgy::$db->query("alter table zcm_form_capture add index(export)");// or die($diemsg.Zymurgy::$db->error());
-			Zymurgy::$db->query("CREATE TABLE `zcm_form_export` (
+
+			Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_export` (
 				  `id` int(11) NOT NULL auto_increment,
 				  `exptime` datetime default NULL,
 				  `expuser` int(11) default NULL,
@@ -257,13 +258,30 @@ class Form extends PluginBase
 				  KEY `exptime` (`exptime`),
 				  KEY `instance` (`instance`)
 				)");
+			VerifyColumnExists(
+				"zcm_form_capture",
+				"export",
+				"INTEGER",
+				"");
+			CheckIndexes(
+				"zcm_form_capture",
+				"export",
+				false);
+
 			Zymurgy::$db->query("alter table zcm_form_capture change `values` formvalues text NOT NULL");
 		}
 		if ($this->dbrelease < 3)
 		{
 			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
-			@Zymurgy::$db->query("alter table zcm_form_capture add member bigint");// or die($diemsg.Zymurgy::$db->error());
-			@Zymurgy::$db->query("alter table zcm_form_capture add index(member)");// or die($diemsg.Zymurgy::$db->error());
+			VerifyColumnExists(
+				"zcm_form_capture",
+				"member",
+				"BIGINT",
+				"");
+			CheckIndexes(
+				"zcm_form_capture",
+				"member",
+				false);
 		}
 		if ($this->dbrelease < 4)
 		{
@@ -282,7 +300,7 @@ class Form extends PluginBase
 		}
 		if ($this->dbrelease < 5)
 		{
-			Zymurgy::$db->query("CREATE TABLE `zcm_form_regex` (
+			Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_regex` (
 			  `id` bigint(20) unsigned NOT NULL auto_increment,
 			  `disporder` bigint(20) default NULL,
 			  `name` varchar(35) default NULL,
@@ -335,6 +353,7 @@ class Form extends PluginBase
 						break;
 				}
 			}
+
 			Zymurgy::$db->query("alter table zcm_form_input change validator validator bigint");
 		}
 		$this->CompleteUpgrade();
@@ -343,8 +362,8 @@ class Form extends PluginBase
 	function GetRelease()
 	{
 		return 6; // Added support for PaymentForm, which uses the same db schema
-		return 5; //Added capture/export capabilities to db.
-		//return 3; //Added capture/export capabilities to db.
+		// return 5; //Added capture/export capabilities to db.
+		// return 3; //Added capture/export capabilities to db.
 	}
 
 	function LoadInputData()
