@@ -3,20 +3,39 @@ class Calendar extends PluginBase
 {
 	function Upgrade()
 	{
+		$this->VerifyTableDefinitions();
+		$this->CompleteUpgrade();
+	}
+
+	function VerifyTableDefinitions()
+	{
 		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
 
-		VerifyColumnExists(
-			"calendar",
-			"location",
-			"VARCHAR(80)",
-			"");
-		VerifyColumnExists(
-			"calendar",
-			"instance",
-			"INTEGER",
-			"");
+		$tableDefinitions = array(
+			array(
+				"name" => "calendar",
+				"columns" => array(
+					DefineTableField("id", "INT(10)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("start", "INT(10)", "UNSIGNED NOT NULL DEFAULT '0'"),
+					DefineTableField("end", "INT(10)", "UNSIGNED NOT NULL DEFAULT '0'"),
+					DefineTableField("title", "VARCHAR(60)", "NOT NULL DEFAULT ''"),
+					DefineTableField("location", "VARCHAR(60)", "NOT NULL DEFAULT ''"),
+					DefineTableField("description", "TEXT", "NOT NULL")
+				),
+				"indexes" => array(
+					array(
+						"columns" => array("start", "end"),
+						"unique" => "false",
+						"type" => ""
+					)
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1"
+			)
+		);
 
-		$this->CompleteUpgrade();
+		ProcessTableDefinitions($tableDefinitions);
 	}
 
 	function GetTitle()
@@ -122,45 +141,12 @@ class Calendar extends PluginBase
 
 	function GetConfigItemTypes()
 	{
-		/*
-		//Data types are in the format:
-		//Implemented:
-		//Not Implemented:
-//		"input.$size.$maxlength"
-//		"textarea.$width.$height"
-//		"html.$widthpx.$heightpx"
-//		"radio.".serialize($optionarray)
-//		"drop.".serialize($optionarray)
-//		"attachment"
-//		"money"
-//		"unixdate"
-//		"lookup.$table"
-		return array(
-			'Allow Multi-day Events'=>'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
-			'Events have Location'=>'radio.'.serialize(array('yes'=>'Yes','no'=>'No')),
-			'Date Format'=>'input.30.30',
-			'Date Tag'=>'input.50.50',
-			'Title Tag'=>'input.50.50',
-			'Location Tag'=>'input.50.50',
-			'Description Tag'=>'input.50.50',
-			'Event Separator'=>'textarea.60.5'
-		);
-		*/
 		return;
 	}
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `calendar` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `start` int(10) unsigned NOT NULL default '0',
-  `end` int(10) unsigned NOT NULL default '0',
-  `title` varchar(60) NOT NULL default '',
-  `location` varchar(60) NOT NULL default '',
-  `description` text NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `start` (`start`,`end`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
+		$this->VerifyTableDefinitions();
 	}
 
 	function Render()
