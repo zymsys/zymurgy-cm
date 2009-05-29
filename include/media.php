@@ -121,6 +121,9 @@
 			$tableDefinitions = array_merge(
 				$tableDefinitions,
 				MediaPackageTypePopulator::GetTableDefinitions());
+			$tableDefinitions = array_merge(
+				$tableDefinitions,
+				MediaRestrictionPopulator::GetTableDefinitions());
 
 			ProcessTableDefinitions($tableDefinitions);
 
@@ -129,14 +132,6 @@
 				switch($version)
 				{
 					case 1:
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_restriction` (".
-							"`media_restriction_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-							"`download_limit` INTEGER UNSIGNED NOT NULL,".
-							"`day_limit` INTEGER UNSIGNED NOT NULL,".
-							"PRIMARY KEY (`media_restriction_id`)".
-							") ENGINE = InnoDB;";
-						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_restriction table: ".mysql_error().", $sql");
 
 						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_relation` (".
 							"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".

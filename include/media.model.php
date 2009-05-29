@@ -2686,24 +2686,16 @@
 
 		static function GetTableDefinitions_zcm_media_package_type_allowed_relation()
 		{
-			$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type_allowed_relation` (".
-				"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
-					"NOT NULL AUTO_INCREMENT,".
-				"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
-				"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
-				"`max_instances` INTEGER UNSIGNED NOT NULL,".
-				"PRIMARY KEY (`media_package_type_allowed_relation_id`)".
-				") ENGINE = InnoDB;";
-
 			return array(
-				"name" => "zcm_media_package_type",
+				"name" => "zcm_media_package_type_allowed_relation",
 				"columns" => array(
-					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
-					DefineTableField("package_type", "VARCHAR(50)", "NOT NULL"),
-					DefineTableField("package_type_label", "VARCHAR(50)", "NOT NULL")
+					DefineTableField("media_package_type_allowed_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("max_instances", "INTEGER", "UNSIGNED NOT NULL")
 				),
 				"indexes" => array(),
-				"primarykey" => "media_package_type_id",
+				"primarykey" => "media_package_type_allowed_relation_id",
 				"engine" => "InnoDB"
 			);
 		}
@@ -2773,6 +2765,27 @@
 			Zymurgy::$db->free_result($ri);
 
 			return $mediaRestriction;
+		}
+
+		static function GetTableDefinitions()
+		{
+			return array(
+				MediaRestrictionPopulator::GetTableDefinitions_zcm_media_restriction());
+		}
+
+		static function GetTableDefinitions_zcm_media_restriction()
+		{
+			return array(
+				"name" => "zcm_media_restriction",
+				"columns" => array(
+					DefineTableField("media_restriction_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("download_limit", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("day_limit", "INTEGER", "UNSIGNED NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_restriction_id",
+				"engine" => "InnoDB"
+			);
 		}
 	}
 
@@ -3276,6 +3289,29 @@
 
 			Zymurgy::$db->query($sql)
 				or die("Could not delete relation: ".mysql_error().", $sql");
+		}
+
+		static function GetTableDefinitions()
+		{
+			return array(
+				MediaRelationPopulator::GetTableDefinitions_zcm_media_relation());
+		}
+
+		static function GetTableDefinitions_zcm_media_relation()
+		{
+			return array(
+				"name" => "zcm_media_relation",
+				"columns" => array(
+					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("relation_type", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("relation_type_label", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("allowed_mimetypes", "VARCHAR(200)", ""),
+					DefineTableField("thumbnails", "VARCHAR(50)", "")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_relation_id",
+				"engine" => "InnoDB"
+			);
 		}
 	}
 ?>
