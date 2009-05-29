@@ -3,19 +3,18 @@ class Calendar extends PluginBase
 {
 	function Upgrade()
 	{
-		if ($this->dbrelease == $this->GetRelease()) return;
+		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
 
-		if($this->dbrelease < 2)
-		{
-			Zymurgy::$db->query("alter table calendar add location varchar(80)")
-				or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
-		}
-
-		if($this->dbrelease < 3)
-		{
-			Zymurgy::$db->query("alter table calendar add instance integer")
-				or die("Coulnd't upgrade to Calendar version 2: ".Zymurgy::$db->error());
-		}
+		VerifyColumnExists(
+			"calendar",
+			"location",
+			"VARCHAR(80)",
+			"");
+		VerifyColumnExists(
+			"calendar",
+			"instance",
+			"INTEGER",
+			"");
 
 		$this->CompleteUpgrade();
 	}
@@ -152,7 +151,7 @@ class Calendar extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE `calendar` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `calendar` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `start` int(10) unsigned NOT NULL default '0',
   `end` int(10) unsigned NOT NULL default '0',
