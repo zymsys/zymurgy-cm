@@ -380,7 +380,7 @@ if(!isset($_GET["debug"]))
 
 		// die();
 
-		echo("Initializing plugin<br>");
+		echo("---- Initializing plugin<br>");
 
 		$plugin->Initialize();
 	}
