@@ -12,35 +12,6 @@ echo("Connecting to database...");
 echo("done.<br>");
 echo("Updating table definitions...");
 
-$newsitetext = array(
-	'inputspec'=>"ALTER TABLE `zcm_sitetext` ADD `inputspec` VARCHAR( 100 ) DEFAULT 'html.600.400' NOT NULL ;",
-	'category'=>array("ALTER TABLE `zcm_sitetext` ADD `category` bigint(20) default '0'",
-		"ALTER TABLE `zcm_sitetext` ADD INDEX (`category`)"),
-	'plainbody'=>array("alter table zcm_sitetext add plainbody text after body",
-		"alter table zcm_sitetext add fulltext(plainbody)")
-);
-
-$newplugininstance = array(
-	'private'=>"alter table zcm_plugininstance  add `private` tinyint default 0"
-);
-
-$newpasswd = array(
-	'eula'=>"alter table zcm_passwd add `eula` tinyint default 0"
-);
-
-$newcustomtable = array(
-	'selfref'=>"alter table zcm_customtable add selfref varchar(30)",
-	'ismember'=>"alter table zcm_customtable add ismember tinyint after hasdisporder"
-);
-
-$newconfig = array(
-	'inputspec'=>"alter table zcm_config add `inputspec` varchar(100) default 'input.60.1024' NOT NULL"
-);
-
-$newmember = array(
-	'mpkey'=>"alter table zcm_member add `mpkey` varchar(40) default NULL"
-);
-
 $newsitepage = array(
 	'template'=>"alter table zcm_sitepage add template bigint default 1",
 	'linkurl'=>"alter table zcm_sitepage add linkurl varchar(40) after linktext"
@@ -50,18 +21,65 @@ include('upgradelib.php');
 
 RenameOldTables();
 $newtables = CreateMissingTables();
-CheckColumns('zcm_sitetext',$newsitetext);
-CheckColumns('zcm_passwd',$newpasswd);
-CheckColumns('zcm_plugininstance',$newplugininstance);
-CheckColumns('zcm_customtable',$newcustomtable);
-CheckColumns('zcm_config',$newconfig);
-CheckColumns('zcm_member',$newmember);
+
+VerifyColumnExists(
+	"zcm_sitetext",
+	"inputspec",
+	"VARCHAR(100)",
+	"DEFAULT 'html.600.400' NOT NULL");
+VerifyColumnExists(
+	"zcm_sitetext",
+	"category",
+	"BIGINT(20)",
+	"DEFAULT '0'");
+VerifyColumnExists(
+	"zcm_sitetext",
+	"plainbody",
+	"TEXT",
+	"AFTER `body`");
+
+VerifyColumnExists(
+	"zcm_passwd",
+	"eula",
+	"TINYINT",
+	"DEFAULT 0");
+
+VerifyColumnExists(
+	"zcm_plugininstance",
+	"private",
+	"TINYINT",
+	"DEFAULT 0");
+
+VerifyColumnExists(
+	"zcm_customtable",
+	"selfref",
+	"VARCHAR(30)",
+	"");
+VerifyColumnExists(
+	"zcm_customtable",
+	"ismember",
+	"TINYINT",
+	"AFTER `hasdisporder`");
+
+VerifyColumnExists(
+	"zcm_config",
+	"inputspec",
+	"VARCHAR(100)",
+	"DEFAULT 'input.60.1024' NOT NULL");
+
+VerifyColumnExists(
+	"zcm_member",
+	"mpkey",
+	"VARCHAR(40)",
+	"DEFAULT NULL");
+
 $sitepagecols = CheckColumns('zcm_sitepage',$newsitepage);
 
 CheckIndexes('zcm_customtable',array('navname'));
 CheckIndexes('zcm_member',array('mpkey'),true);
 CheckIndexes('zcm_sitepage',array('template'));
 CheckIndexes("zcm_sitetext", array("plainbody"), false, "FULLTEXT");
+CheckIndexes("zcm_sitetext", array("category"), false);
 
 echo("done.<br>");
 
