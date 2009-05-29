@@ -15,16 +15,7 @@ class FlashReliefThumbGallery extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_fr_galleryimage` (
-		  `id` int(11) NOT NULL auto_increment,
-		  `instance` int(11) default NULL,
-		  `image` varchar(60) default NULL,
-		  `link` varchar(200) default NULL,
-		  `caption` varchar(200) default NULL,
-		  `disporder` int(11) default NULL,
-		  PRIMARY KEY  (`id`),
-		  KEY `instance` (`instance`),
-		  KEY `disporder` (`disporder`))");
+		$this->VerifyTableDefinitions();
 	}
 
 	function GetRelease()
@@ -35,15 +26,35 @@ class FlashReliefThumbGallery extends PluginBase
 
 	function Upgrade()
 	{
+		$this->VerifyTableDefinitions();
+		$this->CompleteUpgrade();
+	}
+
+	function VerifyTableDefinitions()
+	{
 		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
 
-		VerifyColumnExists(
-			"zcm_fr_galleryimage",
-			"link",
-			"VARCHAR(200)",
-			"");
+		$tableDefinitions = array(
+			array(
+				"name" => "zcm_fr_galleryimage",
+				"columns" => array(
+					DefineTableField("id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("image", "VARCHAR(60)", "DEFAULT NULL"),
+					DefineTableField("link", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("caption", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("disporder", "INTEGER", "UNSIGNED DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "instance", "unique" => "false", "type" => ""),
+					array("columns" => "disporder", "unique" => "false", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			)
+		);
 
-		$this->CompleteUpgrade();
+		ProcessTableDefinitions($tableDefinitions);
 	}
 
 	function GetUninstallSQL()
