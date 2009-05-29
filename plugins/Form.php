@@ -137,53 +137,6 @@ class Form extends PluginBase
 	{
 		$this->VerifyTableDefinitions();
 
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_input` (
-  `id` int(11) NOT NULL auto_increment,
-  `instance` int(11) NOT NULL default '0',
-  `inputtype` int(11) NOT NULL default '0',
-  `caption` text NOT NULL,
-  `header` varchar(40) NOT NULL default '',
-  `disporder` int(11) NOT NULL default '0',
-  `defaultvalue` text NOT NULL,
-  `isrequired` smallint(6) NOT NULL default '0',
-  `validator` bigint,
-  `validatormsg` text NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `instance` (`instance`,`disporder`)
-)");
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_inputtype` (
-  `id` int(11) NOT NULL auto_increment,
-  `takesxtra` smallint(6) NOT NULL default '0',
-  `name` varchar(60) NOT NULL default '',
-  `specifier` text NOT NULL,
-  PRIMARY KEY  (`id`)
-)");
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_export` (
-  `id` int(11) NOT NULL auto_increment,
-  `exptime` datetime default NULL,
-  `expuser` int(11) default NULL,
-  `instance` int(11) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `exptime` (`exptime`),
-  KEY `instance` (`instance`)
-)");
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_header` (
-  `id` int(11) NOT NULL auto_increment,
-  `instance` int(11) default NULL,
-  `header` varchar(60) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `instance` (`instance`)
-)");
-
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_regex` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `disporder` bigint(20) default NULL,
-  `name` varchar(35) default NULL,
-  `regex` text,
-  UNIQUE KEY `id` (`id`),
-  KEY `disporder` (`disporder`)
-)");
-
 		Zymurgy::$db->query("INSERT INTO `zcm_form_inputtype` VALUES
 			(1,0,'Short Text (30 characters)','input.30.30'),
 			(2,0,'Medium Text (60 characters)','input.30.60'),
@@ -223,6 +176,80 @@ class Form extends PluginBase
 					array("columns" => "export", "unique" => false, "type" => ""),
 					array("columns" => "member", "unique" => false, "type" => ""),
 					array("columns" => "instance, submittime", "unique" => false, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			),
+			array(
+				"name" => "zcm_form_input",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("inputtype", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("caption", "TEXT", "NOT NULL"),
+					DefineTableField("header", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
+					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("defaultvalue", "TEXT", "NOT NULL"),
+					DefineTableField("isrequired", "SMALLINT(6)", "NOT NULL DEFAULT '0'",
+					DefineTableField("validator", "BIGINT", ""),
+					DefineTableField("validatormsg", "TEXT", "NOT NULL"))
+				),
+				"indexes" => array(
+					array("columns" => "instance, disporder", "unique" => "false", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			),
+			array(
+				"name" => "zcm_form_inputtype",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("takesxtra", "SMALLINT(6)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("name", "VARCHAR(60)", "NOT NULL DEFAULT ''"),
+					DefineTableField("specifier", "TEXT", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			),
+			array(
+				"name" => "zcm_form_export",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("exptime", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("expuser", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("instance", "INT(11)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "exptime", "unique" => "false", "type" => ""),
+					array("columns" => "instance", "unique" => "false", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			),
+			array(
+				"name" => "zcm_form_header",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("header", "VARCHAR(60)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "instance", "unique" => "false", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			),
+			array(
+				"name" => "zcm_form_regex",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("name", "VARCHAR(35)", "DEFAULT NULL"),
+					DefineTableField("regex", "TEXT", "")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => "false", "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -269,16 +296,6 @@ class Form extends PluginBase
 			//Capture table needs to link to which export that capture belongs to.
 			//Null export info in capture means it's fresh.
 
-			Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_export` (
-				  `id` int(11) NOT NULL auto_increment,
-				  `exptime` datetime default NULL,
-				  `expuser` int(11) default NULL,
-				  `instance` int(11) default NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `exptime` (`exptime`),
-				  KEY `instance` (`instance`)
-				)");
-
 			Zymurgy::$db->query("alter table zcm_form_capture change `values` formvalues text NOT NULL");
 		}
 		if ($this->dbrelease < 3)
@@ -302,14 +319,6 @@ class Form extends PluginBase
 		}
 		if ($this->dbrelease < 5)
 		{
-			Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_regex` (
-			  `id` bigint(20) unsigned NOT NULL auto_increment,
-			  `disporder` bigint(20) default NULL,
-			  `name` varchar(35) default NULL,
-			  `regex` text,
-			  UNIQUE KEY `id` (`id`),
-			  KEY `disporder` (`disporder`))");
-			Zymurgy::$db->query($this->getDefaultRegexInsert());
 			$ri = Zymurgy::$db->query("select id,validator from zcm_form_input");
 			$reregex = array();
 			while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
