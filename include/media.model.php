@@ -1117,6 +1117,34 @@
 				$filepath."raw.jpg",
 				$thumbpath);
 		}
+
+		static function GetTableDefinitions()
+		{
+			return array(
+				MediaFilePopulator::GetTableDefinitions_zcm_media_file());
+		}
+
+		static function GetTableDefinitions_zcm_media_file()
+		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
+			return array(
+				"name" => "zcm_media_file",
+				"columns" => array(
+					DefineTableField("media_file_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("member_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("mimetype", "VARCHAR(45)", "NOT NULL"),
+					DefineTableField("extension", "VARCHAR(10)", "NOT NULL"),
+					DefineTableField("display_name", "VARCHAR(100)", "NOT NULL"),
+					DefineTableField("price", "INTEGER", "UNSIGNED"),
+					DefineTableField("media_restriction_id", "DECIMAL(8,2)", "UNSIGNED"),
+					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_file_id",
+				"engine" => "InnoDB"
+			);
+		}
 	}
 
 	/**
@@ -2642,7 +2670,7 @@
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve media restriction: ".mysql_error().", $sql");
 
-			$restriction_id = null;
+			$mediaRestriction = null;
 
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{

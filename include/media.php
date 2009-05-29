@@ -108,7 +108,10 @@
 
 		static function Upgrade($currentVersion, $targetVersion)
 		{
-			require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
+			$tableDefinitions = MediaFilePopulator::GetTableDefinitions();
+			ProcessTableDefinitions($tableDefinitions);
 
 			for($version = $currentVersion + 1; $version <= $targetVersion; $version++)
 			{
@@ -133,6 +136,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_relation table: ".mysql_error().", $sql");
 
+						/*
 						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file` (".
 							"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`member_id` INTEGER UNSIGNED NOT NULL,".
@@ -144,6 +148,7 @@
 							") ENGINE = InnoDB;";
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_file table: ".mysql_error().", $sql");
+						*/
 
 						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file_relation` (".
 							"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
@@ -184,11 +189,13 @@
 							"allowed_mimetypes",
 							"VARCHAR(200)",
 							"AFTER `relation_type_label`");
+						/*
 						VerifyColumnExists(
 							"zcm_media_file",
 							"media_relation_id",
 							"INTEGER UNSIGNED",
 							"AFTER `media_restriction_id`");
+						*/
 
 						break;
 
@@ -223,11 +230,13 @@
 						break;
 
 					case 4:
+						/*
 						VerifyColumnExists(
 							"zcm_media_file",
 							"price",
 							"DECIMAL(8,2) UNSIGNED",
 							"AFTER `display_name`");
+						*/
 						VerifyColumnExists(
 							"zcm_media_package",
 							"price",
@@ -2064,7 +2073,7 @@
 			// (ZymurgyRoot)/media.php?action=uninstall
 
 			if(
-				$action !== "install" && $action !== "uninstall" &&
+				// $action !== "install" && $action !== "uninstall" &&
 				method_exists($this, $action))
 			{
 				call_user_method($action, $this);

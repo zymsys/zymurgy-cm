@@ -211,4 +211,211 @@ function VerifyColumnExists(
 			or die("Could not add $name to $table: ".mysql_error().", $sql");
 	}
 }
+
+/**
+ * Create a table field definition array. Used in the code that defines
+ * the table structure of Zymurgy:CM components
+ *
+ * @param string $name
+ * @param string $type
+ * @param string $params
+ * @return array
+ */
+function DefineTableField(
+	$name,
+	$type,
+	$params)
+{
+	return array(
+		"name" => $name,
+		"type" => $type,
+		"params" => $params);
+}
+
+/**
+ * Create/alter the table structure in the database to match the given table
+ * definitions.
+ *
+ * @param array $tableDefinitions
+ */
+function ProcessTableDefinitions(
+	$tableDefinitions)
+{
+	if(!AreTableDefinitionsValid($tableDefinitions))
+	{
+		die("Errors found in table definition. Aborting.");
+	}
+
+	foreach($tableDefinitions as $tableDefinition)
+	{
+		// If the table does not exist yet, generate and run the
+		// CREATE TABLE statement for it.
+		$createSQL = "CREATE TABLE IF NOT EXISTS `{0}` ( {1}, PRIMARY KEY ( {2} ) ) ENGINE = {3};";
+
+		$createSQL = str_replace("{0}", $tableDefinition["name"], $createSQL);
+		$createSQL = str_replace("{1}", GetAllColumnSQL($tableDefinition), $createSQL);
+		$createSQL = str_replace("{2}", $tableDefinition["primarykey"], $createSQL);
+		$createSQL = str_replace("{3}", $tableDefinition["engine"], $createSQL);
+
+		mysql_query($createSQL)
+			or die("Could not create table {$tableDefinition["name"]}: ".mysql_error().", $createSQL");
+
+		// If the table already exists, make sure any fields that
+		// have been defined since the last upgrade are properly
+		// added
+		foreach($tableDefinition["columns"] as $column)
+		{
+			VerifyColumnExists(
+				$tableDefinition["name"],
+				$column["name"],
+				$column["type"],
+				$column["params"]);
+		}
+
+		// Make sure any indexs that have been defined since the
+		// last upgrade are properly added
+		foreach($tableDefinition["indexes"] as $index)
+		{
+			CheckIndexes(
+				$tableDefinition["name"],
+				array($index["columns"]),
+				$index["unique"],
+				$index["type"]);
+		}
+	}
+}
+
+/**
+ * Validate the given table definitions.
+ *
+ * @param array $tableDefinitions
+ * @return boolean
+ */
+function AreTableDefinitionsValid(
+	$tableDefinitions)
+{
+	$tableIndex = 0;
+	$isValid = true;
+
+	foreach($tableDefinitions as $tableDefinition)
+	{
+		if(!array_key_exists("name", $tableDefinition))
+		{
+			echo("-- name key missing for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+
+		if(!array_key_exists("columns", $tableDefinition))
+		{
+			echo("-- columns key missing for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+		else if(!is_array($tableDefinition["columns"]))
+		{
+			echo("-- columns key must be array for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+		else
+		{
+			$columnIndex = 0;
+
+			foreach($tableDefinition["columns"] as $column)
+			{
+				if(!array_key_exists("name", $column))
+				{
+					echo("-- name key missing for Column $columnIndex in Table Definition $tableIndex<br>");
+					$isValid = false;
+				}
+
+				if(!array_key_exists("type", $column))
+				{
+					echo("-- type key missing for Column $columnIndex in Table Definition $tableIndex<br>");
+					$isValid = false;
+				}
+
+				if(!array_key_exists("params", $column))
+				{
+					echo("-- params key missing for Column $columnIndex in Table Definition $tableIndex<br>");
+				}
+
+				$columnIndex++;
+			}
+		}
+
+		if(!array_key_exists("indexes", $tableDefinition))
+		{
+			echo("-- indexes key missing for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+		else if(!is_array($tableDefinition["indexes"]))
+		{
+			echo("-- indexes key must be an array for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+		else
+		{
+			$indexIndex = 0;
+
+			foreach($tableDefinition["indexes"] as $index)
+			{
+				if(!array_key_exists("columns", $index))
+				{
+					echo("-- columns key missing for Index $indexIndex in Table Definition $tableIndex<br>");
+					$isValid = false;
+				}
+
+				if(!array_key_exists("unique", $index))
+				{
+					echo("-- unique key missing for Index $indexIndex in Table Definition $tableIndex<br>");
+					$isValid = false;
+				}
+
+				if(!array_key_exists("type", $index))
+				{
+					echo("-- type key missing for Index $indexIndex in Table Definition $tableIndex<br>");
+					$isValid = false;
+				}
+
+				$indexIndex++;
+			}
+		}
+
+		if(!array_key_exists("primarykey", $tableDefinition))
+		{
+			echo("-- primarykey key missing for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+
+		if(!array_key_exists("engine", $tableDefinition))
+		{
+			echo("-- engine key missing for Table Definition $tableIndex<br>");
+			$isValid = false;
+		}
+
+		$tableIndex++;
+	}
+
+	return $isValid;
+}
+
+/**
+ * Get the full SQL for the column definitions in the given table definition.
+ * This is used by ProcessTableDefinitions() to build the CREATE TABLE statement.
+ *
+ * @param array $tableDefinition
+ * @return string
+ */
+function GetAllColumnSQL(
+	$tableDefinition)
+{
+	$columnSQL = array();
+
+	foreach($tableDefinition["columns"] as $column)
+	{
+		$columnSQL[] = "`{$column["name"]}` {$column["type"]} {$column["params"]}";
+	}
+
+	return implode(", ", $columnSQL);
+}
+
 ?>
