@@ -111,8 +111,17 @@
 			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 			$tableDefinitions = array();
-			$tableDefinitions = array_merge($tableDefinitions, MediaFilePopulator::GetTableDefinitions());
-			$tableDefinitions = array_merge($tableDefinitions, MediaPackagePopulator::GetTableDefinitions());
+
+			$tableDefinitions = array_merge(
+				$tableDefinitions,
+				MediaFilePopulator::GetTableDefinitions());
+			$tableDefinitions = array_merge(
+				$tableDefinitions,
+				MediaPackagePopulator::GetTableDefinitions());
+			$tableDefinitions = array_merge(
+				$tableDefinitions,
+				MediaPackageTypePopulator::GetTableDefinitions());
+
 			ProcessTableDefinitions($tableDefinitions);
 
 			for($version = $currentVersion + 1; $version <= $targetVersion; $version++)
@@ -171,16 +180,6 @@
 						break;
 
 					case 3:
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type` (".
-							"`media_package_type_id` INTEGER UNSIGNED ".
-								"NOT NULL AUTO_INCREMENT,".
-							"`package_type` VARCHAR(50) NOT NULL,".
-							"`package_type_label` VARCHAR(50) NOT NULL,".
-							"PRIMARY KEY (`media_package_type_id`)".
-							") ENGINE = InnoDB;";
-						Zymurgy::$db->query($sql)
-						 	or die("Could not create zcm_media_package_type table: ".mysql_error().", $sql");
-
 						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type_allowed_relation` (".
 							"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
 								"NOT NULL AUTO_INCREMENT,".

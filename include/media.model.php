@@ -2645,6 +2645,29 @@
 			Zymurgy::$db->query($sql)
 				or die("Could not delete allowed relation: ".mysql_error().", $sql");
 		}
+
+		static function GetTableDefinitions()
+		{
+			return array(
+				MediaPackageTypePopulator::GetTableDefinitions_zcm_media_package_type());
+		}
+
+		static function GetTableDefinitions_zcm_media_package_type()
+		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
+			return array(
+				"name" => "zcm_media_package_type",
+				"columns" => array(
+					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("package_type", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("package_type_label", "VARCHAR(50)", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_package_type_id",
+				"engine" => "InnoDB"
+			);
+		}
 	}
 
 	class MediaRestriction
