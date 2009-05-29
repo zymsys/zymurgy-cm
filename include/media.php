@@ -169,17 +169,6 @@
 						break;
 
 					case 3:
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type_allowed_relation` (".
-							"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
-								"NOT NULL AUTO_INCREMENT,".
-							"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
-							"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
-							"`max_instances` INTEGER UNSIGNED NOT NULL,".
-							"PRIMARY KEY (`media_package_type_allowed_relation_id`)".
-							") ENGINE = InnoDB;";
-						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_package_type_allowed_relation table: ".mysql_error().", $sql");
-
 
 						break;
 
