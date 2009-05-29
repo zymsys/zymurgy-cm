@@ -15,7 +15,7 @@ class ImageGallery extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE `zcm_galleryimage` (
+		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_galleryimage` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `instance` int(11) default NULL,
 		  `image` varchar(60) default NULL,
@@ -37,8 +37,13 @@ class ImageGallery extends PluginBase
 	function Upgrade()
 	{
 		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
-		$newfrgalleryimage = array('link'=>'alter table zcm_galleryimage add link varchar(200)');
-		CheckColumns('zcm_galleryimage',$newfrgalleryimage);
+
+		VerifyColumnExists(
+			"zcm_galleryimage",
+			"link",
+			"VARCHAR(200)",
+			"");
+
 		$this->CompleteUpgrade();
 	}
 
