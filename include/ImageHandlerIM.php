@@ -32,6 +32,10 @@ class ZymurgyImageHandlerImageMagick extends ZymurgyImageHandler
 	{
 		$cmd = Zymurgy::$config['ConvertPath']."convert -geometry $width x $height $srcfile $dstfile";
 		$out = system($cmd,$r);
+		if ($out === false)
+		{
+			die("Unable to execute GD ($cmd)");
+		}
 		return $r;
 	}
 	

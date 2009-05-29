@@ -1238,7 +1238,9 @@ class DataGrid
 				echo "</p>";
 			}
 			echo implode($this->pretext); //Useful to initialize certain javascript widgets.
-			$formid = $this->DataSet->masterkey.'-'.$dsr->values[$this->DataSet->masterkey];
+			$formid = array_key_exists($this->DataSet->masterkey,$dsr->values) ?
+				$this->DataSet->masterkey.'-'.$dsr->values[$this->DataSet->masterkey] :
+				$this->DataSet->masterkey;
 			if ($this->SaveDrafts)
 			{
 				//Count fckeditors so we can get our initial state after they have rendered.

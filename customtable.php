@@ -16,7 +16,7 @@ if ($detailfor > 0)
 }
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
-	$ek = 0 + $_GET['editkey'];
+	$ek = array_key_exists('editkey',$_GET) ? 0 + $_GET['editkey'] : 0;
 	$tbl = Zymurgy::$db->get("select * from zcm_customtable where id=$ek");
 	$tblname = empty($tbl['navname']) ? $tbl['tname'] : $tbl['navname'];
 	$crumbs[''] = "Edit $tblname";

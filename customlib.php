@@ -102,7 +102,7 @@ function inputspec2sqltype($inputspec)
 			break;
 		case "drop":
 		case "radio":
-			$ritems = InputWidget::HackedUnserialize($params);
+			$ritems = ZIW_RadioDrop::HackedUnserialize($params);
 			$maxsz = 0;
 			foreach ($ritems as $value)
 			{

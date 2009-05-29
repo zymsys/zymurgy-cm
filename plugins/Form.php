@@ -285,7 +285,7 @@ class Form extends PluginBase
 		$this->VerifyTableDefinitions();
 
 		$diemsg = "Unable to upgrade Form plugin: ";
-		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
+		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 		if ($this->dbrelease < 2)
 		{

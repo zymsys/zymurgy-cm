@@ -216,6 +216,7 @@ class PluginBase
 		{
 			if($extension->IsEnabled($this) && method_exists($extension, $methodName))
 			{
+				//call_user_func($methodName, $extension, $this);
 				call_user_method($methodName, $extension, $this);
 			}
 		}
