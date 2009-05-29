@@ -1929,6 +1929,32 @@
 				}
 			}
 		}
+
+		static function GetTableDefinitions()
+		{
+			return array(
+				MediaPackagePopulator::GetTableDefinitions_zcm_media_package());
+		}
+
+		static function GetTableDefinitions_zcm_media_package()
+		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
+			return array(
+				"name" => "zcm_media_package",
+				"columns" => array(
+					DefineTableField("media_package_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("member_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("display_name", "VARCHAR(100)", "NOT NULL"),
+					DefineTableField("price", "INTEGER", "UNSIGNED"),
+					DefineTableField("media_restriction_id", "DECIMAL(8,2)", "UNSIGNED"),
+					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_package_id",
+				"engine" => "InnoDB"
+			);
+		}
 	}
 
 	/**
