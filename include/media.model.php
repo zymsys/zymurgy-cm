@@ -1,5 +1,6 @@
 <?php
 	ini_set("display_errors", 1);
+	require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 	/*
 		Zymurgy:CM Media File Component
@@ -1126,8 +1127,6 @@
 
 		static function GetTableDefinitions_zcm_media_file()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
-
 			return array(
 				"name" => "zcm_media_file",
 				"columns" => array(
@@ -1933,13 +1932,12 @@
 		static function GetTableDefinitions()
 		{
 			return array(
-				MediaPackagePopulator::GetTableDefinitions_zcm_media_package());
+				MediaPackagePopulator::GetTableDefinitions_zcm_media_package(),
+				MediaPackagePopulator::GetTableDefinitions_zcm_media_file_package());
 		}
 
 		static function GetTableDefinitions_zcm_media_package()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
-
 			return array(
 				"name" => "zcm_media_package",
 				"columns" => array(
@@ -1952,6 +1950,24 @@
 				),
 				"indexes" => array(),
 				"primarykey" => "media_package_id",
+				"engine" => "InnoDB"
+			);
+		}
+
+		static function GetTableDefinitions_zcm_media_file_package()
+		{
+
+			return array(
+				"name" => "zcm_media_file_package",
+				"columns" => array(
+					DefineTableField("media_file_package_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("media_file_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("media_package_id", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("disporder", "INTEGER", "UNSIGNED NOT NULL"),
+					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_file_package_id",
 				"engine" => "InnoDB"
 			);
 		}
@@ -2649,12 +2665,35 @@
 		static function GetTableDefinitions()
 		{
 			return array(
-				MediaPackageTypePopulator::GetTableDefinitions_zcm_media_package_type());
+				MediaPackageTypePopulator::GetTableDefinitions_zcm_media_package_type(),
+				MediaPackageTypePopulator::GetTableDefinitions_zcm_media_package_type_allowed_relation());
 		}
 
 		static function GetTableDefinitions_zcm_media_package_type()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+			return array(
+				"name" => "zcm_media_package_type",
+				"columns" => array(
+					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("package_type", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("package_type_label", "VARCHAR(50)", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "media_package_type_id",
+				"engine" => "InnoDB"
+			);
+		}
+
+		static function GetTableDefinitions_zcm_media_package_type_allowed_relation()
+		{
+			$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type_allowed_relation` (".
+				"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
+					"NOT NULL AUTO_INCREMENT,".
+				"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
+				"`media_relation_id` INTEGER UNSIGNED NOT NULL,".
+				"`max_instances` INTEGER UNSIGNED NOT NULL,".
+				"PRIMARY KEY (`media_package_type_allowed_relation_id`)".
+				") ENGINE = InnoDB;";
 
 			return array(
 				"name" => "zcm_media_package_type",

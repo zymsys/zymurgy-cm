@@ -157,17 +157,6 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_file_relation table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file_package` (".
-							"`media_file_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
-							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
-							"`media_package_id` INTEGER UNSIGNED NOT NULL,".
-							"`disporder` INTEGER UNSIGNED NOT NULL,".
-							"`media_relation_id` INTEGER NOT NULL,".
-							"PRIMARY KEY (`media_file_package_id`)".
-							") ENGINE = InnoDB;";
-						Zymurgy::$db->query($sql)
-							or die("Could not create zcm_media_file_package table: ".mysql_error().", $sql");
-
 						break;
 
 					case 2:
