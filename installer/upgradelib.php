@@ -168,4 +168,47 @@ function CheckColumns($table,$columns)
 	}
 	return $cols;
 }
+
+/**
+ * Check that columns exist by looking at the keys of $columns.
+ *
+ * ZK: This function performs the same function as CheckColumns(), but does not
+ * require full ALTER TABLE statements to be passed in as parameters, and only
+ * works on one column at a time. This makes the code calling this function much
+ * easier to read.
+ *
+ * @param string $table
+ * @param string $name
+ * @param string $type
+ * @param string $params
+ */
+function VerifyColumnExists(
+	$table,
+	$name,
+	$type,
+	$params)
+{
+	$fieldExists = false;
+
+	$sql = "SHOW COLUMNS FROM `$table` LIKE '$name'";
+	$ri = mysql_query($sql)
+		or die("Table $table does not exist.");
+
+	if(mysql_num_rows($ri) > 0)
+	{
+		$row = mysql_fetch_array($ri);
+
+		if($row["Field"] == $name)
+		{
+			$fieldExists = true;
+		}
+	}
+
+	if(!$fieldExists)
+	{
+		$sql = "ALTER TABLE `$table` ADD COLUMN `$name` $type $params";
+		mysql_query($sql)
+			or die("Could not add $name to $table: ".mysql_error().", $sql");
+	}
+}
 ?>

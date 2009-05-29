@@ -211,7 +211,7 @@ if($installedVersion < $targetVersion)
 }
 else
 {
-	echo("-- No install/upgrade required");
+	echo("-- No install/upgrade required<br>");
 }
 
 // ----------
@@ -308,7 +308,10 @@ echo("Done.<br>");
 // END - Install plugins
 // ----------
 
-header('Location: ../index.php');
+if(!isset($_GET["debug"]))
+{
+	header('Location: ../index.php');
+}
 
 	function  ExecuteAdd($source)
 	{

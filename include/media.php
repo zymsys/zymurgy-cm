@@ -76,19 +76,19 @@
 
 				// If none of the columns are found, return as version 1.
 
-				$sql = "show columns from `zcm_media_relation` like 'thumbnails'";
+				$sql = "SHOW COLUMNS FROM `zcm_media_relation` LIKE 'thumbnails'";
 				$fieldExists = Zymurgy::$db->get($sql);
 				if(isset($fieldExists[0]) && $fieldExists[0] == 'thumbnails') return 5;
 
-				$sql = "show columns from `zcm_media_file` like 'price'";
+				$sql = "SHOW COLUMNS FROM `zcm_media_file` LIKE 'price'";
 				$fieldExists = Zymurgy::$db->get($sql);
 				if(isset($fieldExists[0]) && $fieldExists[0] == 'price') return 4;
 
-				$sql = "show columns from `zcm_media_package` like 'media_package_type_id'";
+				$sql = "SHOW COLUMNS FROM `zcm_media_package` LIKE 'media_package_type_id'";
 				$fieldExists = Zymurgy::$db->get($sql);
 				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_package_type_id') return 3;
 
-				$sql = "show columns from `zcm_media_file` like 'media_relation_id'";
+				$sql = "SHOW COLUMNS FROM `zcm_media_file` LIKE 'media_relation_id'";
 				$fieldExists = Zymurgy::$db->get($sql);
 				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_relation_id') return 2;
 
@@ -108,12 +108,14 @@
 
 		static function Upgrade($currentVersion, $targetVersion)
 		{
+			require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
+
 			for($version = $currentVersion + 1; $version <= $targetVersion; $version++)
 			{
 				switch($version)
 				{
 					case 1:
-						$sql = "CREATE TABLE `zcm_media_restriction` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_restriction` (".
 							"`media_restriction_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`download_limit` INTEGER UNSIGNED NOT NULL,".
 							"`day_limit` INTEGER UNSIGNED NOT NULL,".
@@ -122,7 +124,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_restriction table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_relation` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_relation` (".
 							"`media_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`relation_type` VARCHAR(50) NOT NULL,".
 							"`relation_type_label` VARCHAR(50) NOT NULL,".
@@ -131,7 +133,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_relation table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_file` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file` (".
 							"`media_file_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`member_id` INTEGER UNSIGNED NOT NULL,".
 							"`mimetype` VARCHAR(45) NOT NULL,".
@@ -143,7 +145,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_file table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_file_relation` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file_relation` (".
 							"`media_file_relation_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
 							"`related_media_file_id` INTEGER UNSIGNED NOT NULL,".
@@ -153,7 +155,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_file_relation table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_package` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package` (".
 							"`media_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`member_id` INTEGER UNSIGNED NOT NULL,".
 							"`display_name` VARCHAR(100) NOT NULL,".
@@ -163,7 +165,7 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_package table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_file_package` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_file_package` (".
 							"`media_file_package_id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 							"`media_file_id` INTEGER UNSIGNED NOT NULL,".
 							"`media_package_id` INTEGER UNSIGNED NOT NULL,".
@@ -177,20 +179,21 @@
 						break;
 
 					case 2:
-						$sql = "ALTER TABLE `zcm_media_relation` ".
-							"ADD COLUMN `allowed_mimetypes` VARCHAR(200) AFTER `relation_type_label`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
-
-						$sql = "ALTER TABLE `zcm_media_file` ".
-							"ADD COLUMN `media_relation_id` INTEGER UNSIGNED AFTER `media_restriction_id`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_file table: ".mysql_error().", $sql");
+						VerifyColumnExists(
+							"zcm_media_relation",
+							"allowed_mimetypes",
+							"VARCHAR(200)",
+							"AFTER `relation_type_label`");
+						VerifyColumnExists(
+							"zcm_media_file",
+							"media_relation_id",
+							"INTEGER UNSIGNED",
+							"AFTER `media_restriction_id`");
 
 						break;
 
 					case 3:
-						$sql = "CREATE TABLE `zcm_media_package_type` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type` (".
 							"`media_package_type_id` INTEGER UNSIGNED ".
 								"NOT NULL AUTO_INCREMENT,".
 							"`package_type` VARCHAR(50) NOT NULL,".
@@ -200,7 +203,7 @@
 						Zymurgy::$db->query($sql)
 						 	or die("Could not create zcm_media_package_type table: ".mysql_error().", $sql");
 
-						$sql = "CREATE TABLE `zcm_media_package_type_allowed_relation` (".
+						$sql = "CREATE TABLE IF NOT EXISTS `zcm_media_package_type_allowed_relation` (".
 							"`media_package_type_allowed_relation_id` INTEGER UNSIGNED ".
 								"NOT NULL AUTO_INCREMENT,".
 							"`media_package_type_id` INTEGER UNSIGNED NOT NULL,".
@@ -211,31 +214,35 @@
 						Zymurgy::$db->query($sql)
 							or die("Could not create zcm_media_package_type_allowed_relation table: ".mysql_error().", $sql");
 
-						$sql = "ALTER TABLE `zcm_media_package` ".
-							"ADD COLUMN `media_package_type_id` INTEGER UNSIGNED NOT NULL ".
-								"AFTER `media_restriction_id`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
+						VerifyColumnExists(
+							"zcm_media_package",
+							"media_package_type_id",
+							"INTEGER UNSIGNED NOT NULL",
+							"AFTER `media_restriction_id`");
 
 						break;
 
 					case 4:
-						$sql = "ALTER TABLE `zcm_media_file` ".
-							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_file table: ".mysql_error().", $sql");
+						VerifyColumnExists(
+							"zcm_media_file",
+							"price",
+							"DECIMAL(8,2) UNSIGNED",
+							"AFTER `display_name`");
+						VerifyColumnExists(
+							"zcm_media_package",
+							"price",
+							"DECIMAL(8,2) UNSIGNED",
+							"AFTER `display_name`");
 
-						$sql = "ALTER TABLE `zcm_media_package` ".
-							"ADD COLUMN `price` DECIMAL(8,2) UNSIGNED AFTER `display_name`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_package table: ".mysql_error().", $sql");
 						break;
 
 					case 5:
-						$sql = "ALTER TABLE `zcm_media_relation` ".
-							"ADD COLUMN `thumbnails` VARCHAR(50) AFTER `relation_type_label`;";
-						Zymurgy::$db->query($sql)
-							or die("Could not upgrade zcm_media_relation table: ".mysql_error().", $sql");
+						VerifyColumnExists(
+							"zcm_media_relation",
+							"thumbnails",
+							"VARCHAR(50)",
+							"AFTER `relation_type_label`");
+
 						break;
 
 					default:
@@ -246,28 +253,28 @@
 
 		static function Uninstall()
 		{
-			$sql = "DROP TABLE `zcm_media_package_type_allowed_relation`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_package_type_allowed_relation`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_package_type`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_package_type`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_file_package`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_file_package`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_package`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_package`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_file_relation`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_file_relation`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_file`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_file`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_relation`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_relation`";
 			Zymurgy::$db->query($sql);
 
-			$sql = "DROP TABLE `zcm_media_restriction`";
+			$sql = "DROP TABLE IF EXISTS `zcm_media_restriction`";
 			Zymurgy::$db->query($sql);
 		}
 	}
