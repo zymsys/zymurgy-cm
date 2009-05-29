@@ -50,7 +50,19 @@ class BoboTea extends PluginBase
 
 	function Initialize()
 	{
-		mysql_query('create table bobotea(int id)');
+		$tableDefinitions = array(
+			array(
+				"name" => "bobotea",
+				"columns" => array(
+					DefineTableField("id", "INTEGER", "UNSIGNED NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			)
+		);
+
+		ProcessTableDefinitions($tableDefinitions);
 	}
 
 	function Render()
