@@ -30,7 +30,7 @@
 
 		private function CreatePaymentResponseTable()
 		{
-			$sql = "CREATE TABLE `zcm_form_paymentresponse` (".
+			$sql = "CREATE TABLE IF NOT EXISTS `zcm_form_paymentresponse` (".
 				"`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,".
 				"`instance` INTEGER UNSIGNED NOT NULL,".
 				"`invoice_id` VARCHAR(50) NOT NULL,".
