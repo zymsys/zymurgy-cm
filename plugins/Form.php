@@ -135,20 +135,8 @@ class Form extends PluginBase
 
 	function Initialize()
 	{
-		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_capture` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `instance` int(11) NOT NULL default '0',
-  `submittime` datetime NOT NULL default '0000-00-00 00:00:00',
-  `ip` varchar(15) NOT NULL default '',
-  `useragent` varchar(80) NOT NULL default '',
-  `export` int(11),
-  `formvalues` text NOT NULL,
-  `member` bigint,
-  PRIMARY KEY  (`id`),
-  KEY export (export),
-  KEY member (member),
-  KEY `instance` (`instance`,`submittime`)
-)");
+		$this->VerifyTableDefinitions();
+
 		Zymurgy::$db->query("CREATE TABLE IF NOT EXISTS `zcm_form_input` (
   `id` int(11) NOT NULL auto_increment,
   `instance` int(11) NOT NULL default '0',
@@ -214,6 +202,36 @@ class Form extends PluginBase
 			Zymurgy::$db->query($this->getDefaultRegexInsert());
 	}
 
+	private function VerifyTableDefinitions()
+	{
+		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
+		$tableDefinitions = array(
+			array(
+				"name" => "zcm_form_capture",
+				"columns" => array(
+					DefineTableField("id", "INT(10)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("instance", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("submittime", "DATETIME", "NOT NULL DEFAULT '0000-00-00 00:00:00'"),
+					DefineTableField("ip", "VARCHAR(15)", "NOT NULL DEFAULT ''"),
+					DefineTableField("useragent", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+					DefineTableField("export", "INT(11)", ""),
+					DefineTableField("formvalues", "TEXT", "NOT NULL"),
+					DefineTableField("member", "BIGINT", "")
+				),
+				"indexes" => array(
+					array("columns" => "export", "unique" => false, "type" => ""),
+					array("columns" => "member", "unique" => false, "type" => ""),
+					array("columns" => "instance, submittime", "unique" => false, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "InnoDB"
+			)
+		);
+
+		ProcessTableDefinitions($tableDefinitions);
+	}
+
 	private function getDefaultRegexInsert()
 	{
 		$defaultregex = array(
@@ -237,6 +255,8 @@ class Form extends PluginBase
 
 	function Upgrade()
 	{
+		$this->VerifyTableDefinitions();
+
 		$diemsg = "Unable to upgrade Form plugin: ";
 		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
 
@@ -258,30 +278,12 @@ class Form extends PluginBase
 				  KEY `exptime` (`exptime`),
 				  KEY `instance` (`instance`)
 				)");
-			VerifyColumnExists(
-				"zcm_form_capture",
-				"export",
-				"INTEGER",
-				"");
-			CheckIndexes(
-				"zcm_form_capture",
-				"export",
-				false);
 
 			Zymurgy::$db->query("alter table zcm_form_capture change `values` formvalues text NOT NULL");
 		}
 		if ($this->dbrelease < 3)
 		{
 			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
-			VerifyColumnExists(
-				"zcm_form_capture",
-				"member",
-				"BIGINT",
-				"");
-			CheckIndexes(
-				"zcm_form_capture",
-				"member",
-				false);
 		}
 		if ($this->dbrelease < 4)
 		{
