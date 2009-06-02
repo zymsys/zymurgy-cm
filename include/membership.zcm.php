@@ -206,6 +206,156 @@
 		}
 	}
 
+	class Group
+	{
+		private $m_id;
+		private $m_name;
+
+		private $m_errors = array();
+
+		public function get_id()
+		{
+			return $this->m_id;
+		}
+
+		public function set_id($newValue)
+		{
+			$this->m_id = $newValue;
+		}
+
+		public function get_name()
+		{
+			return $this->m_name;
+		}
+
+		public function set_name($newValue)
+		{
+			$this->m_name = $newValue;
+		}
+
+		public function get_errors()
+		{
+			return $this->m_errors;
+		}
+
+		public function validate()
+		{
+			$isValid = true;
+
+			if(strlen($this->m_name) <= 0)
+			{
+				$this->m_errors[] = "Name is required.";
+				$isValid = false;
+			}
+
+			return $isValid;
+		}
+	}
+
+	class GroupPopulator
+	{
+		public function PopulateAll()
+		{
+			return GroupPopulator::PopulateMultiple("1 = 1");
+		}
+
+		public function PopulateMultiple($criteria)
+		{
+			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE $criteria";
+
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve list of groups: ".Zymurgy::$db->error().", $sql");
+
+			$groups = array();
+
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$group = new Group();
+
+				$group->set_id($row["id"]);
+				$group->set_name($row["name"]);
+
+				$groups[] = $group;
+			}
+
+			return $groups;
+		}
+
+		public function PopulateByID($id)
+		{
+			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE `id` = '".
+				Zymurgy::$db->escape_string($id).
+				"'";
+
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not retrieve group: ".Zymurgy::$db->error().", $sql");
+
+			$group = new Group();
+
+			if(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				$group->set_id($row["id"]);
+				$group->set_name($row["name"]);
+			}
+
+			return $group;
+		}
+
+		public function PopulateFromForm()
+		{
+			$group = new Group();
+
+			$group->set_id($_POST["id"]);
+			$group->set_name($_POST["name"]);
+
+			return $group;
+		}
+
+		public static function SaveGroup($group)
+		{
+			if($group->get_id() <= 0)
+			{
+				$sql = "INSERT INTO `zcm_groups` ( `name` ) VALUES ( '".
+					Zymurgy::$db->escape_string($group->get_name()).
+					"' )";
+
+				Zymurgy::$db->query($sql)
+					or die("Could not insert group record: ".Zymurgy::$db->error().", $sql");
+
+				$group->set_id(
+					Zymurgy::$db->insert_id());
+			}
+			else
+			{
+				$sql = "UPDATE `zcm_groups` SET `name` = '".
+					Zymurgy::$db->escape_string($group->get_name()).
+					"' WHERE `id` = '".
+					Zymurgy::$db->escape_string($group->get_id()).
+					"'";
+
+				Zymurgy::$db->query($sql)
+					or die("Could not update group record: ".Zymurgy::$db->error().", $sql");
+			}
+		}
+
+		public static function DeleteGroup($id)
+		{
+			$sql = "DELETE FROM `zcm_membergroup` WHERE `groupid` = '".
+				Zymurgy::$db->escape_string($id).
+				"'";
+
+			Zymurgy::$db->query($sql)
+				or die("Could not delete member group associations: ".Zymurgy::$db->error().", $sql");
+
+			$sql = "DELETE FROM `zcm_groups` WHERE `id` = '".
+				Zymurgy::$db->escape_string($id).
+				"'";
+
+			Zymurgy::$db->query($sql)
+				or die("Could not delete group record: ".Zymurgy::$db->error().", $sql");
+		}
+	}
+
 	class MemberView
 	{
 		public static function DisplayList($members)
@@ -383,6 +533,148 @@
 		}
 	}
 
+	class GroupView
+	{
+		public static function DisplayList($groups)
+		{
+			$breadcrumbTrail = "Membership Groups";
+
+			include("header.php");
+			include('datagrid.php');
+
+			DumpDataGridCSS();
+
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Group Name</td>");
+			echo("<td>&nbsp;</td>");
+			echo("</tr>");
+
+			$cntr = 1;
+
+			foreach($groups as $group)
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"editmember.php?action=edit_group&amp;id=".
+					$group->get_id().
+					"\">".
+					$group->get_name().
+					"</td>");
+				echo("<td><a href=\"editmember.php?action=delete_group&amp;id=".
+					$group->get_id().
+					"\">Delete</a></td>");
+
+				$cntr++;
+			}
+
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"2\"><a style=\"color: white;\" href=\"editmember.php?action=add_group\">".
+				"Add Membership Group".
+				"</a></td>");
+
+			echo("</table>");
+
+			include("footer.php");
+		}
+
+		public function DisplayEditForm($group, $action)
+		{
+			$breadcrumbTrail = "<a href=\"editmember.php?action=list_groups\">".
+				"Membership Groups".
+				"</a> &gt; ".
+				"Edit Membership Group";
+
+			include("header.php");
+			include('datagrid.php');
+
+			DumpDataGridCSS();
+
+			$widget = new InputWidget();
+
+			$errors = $group->get_errors();
+
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">\n");
+				echo("<div style=\"color: red\">Error</div>\n");
+				echo("<ul>\n");
+
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>\n");
+				}
+
+				echo("</ul>\n");
+				echo("</div>\n");
+			}
+
+			echo("<form name=\"frm\" action=\"editmember.php\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+			echo("<input type=\"hidden\" name=\"action\" value=\"$action\">\n");
+			echo("<input type=\"hidden\" name=\"id\" value=\"".$group->get_id()."\">\n");
+
+			echo("<table>");
+
+			echo("<tr>\n");
+			echo("<td>Name:</td>\n");
+			echo("<td>");
+			$widget->Render("input.30.100", "name", $group->get_name());
+			echo("</td>\n");
+			echo("</tr>\n");
+
+			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
+			echo("<tr>");
+			echo("<td>&nbsp;</td>");
+			echo("<td><input type=\"submit\" value=\"".
+				"Save".
+				"\"></td>");
+			echo("</tr>");
+
+			echo("</table>\n");
+			echo("</form>\n");
+
+			include("footer.php");
+		}
+
+		static function DisplayDeleteForm($group)
+		{
+			$breadcrumbTrail = "<a href=\"editmember.php?action=list_groups\">".
+				"Membership Groups".
+				"</a> &gt; ".
+				"Delete Membership Group";
+
+			include("header.php");
+
+			echo("<form name=\"frm\" action=\"editmember.php\" method=\"POST\">");
+
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_delete_group\">");
+			echo("<input type=\"hidden\" name=\"id\" value=\"".
+				$group->get_id()."\">");
+
+			echo("<p>".
+				"Are you sure you want to delete this membership group:".
+				"</p>");
+			echo("<p>".
+				"Name:".
+				" ".
+				$group->get_name().
+				"</p>");
+
+			echo("<p>");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"".
+				"Yes".
+				"\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"".
+				"No".
+				"\" onclick=\"window.location.href='editmember.php?action=list_groups';\">");
+			echo("</p>");
+
+			echo("</form>");
+
+			include("footer.php");
+		}
+	}
+
 	class MembershipController
 	{
 		public function Execute($action)
@@ -466,6 +758,77 @@
 			MemberPopulator::DeleteMember($_POST["id"]);
 
 			header("Location: editmember.php?action=list_members");
+		}
+
+		private function list_groups()
+		{
+			$groups = GroupPopulator::PopulateAll();
+
+			GroupView::DisplayList($groups);
+		}
+
+		private function add_group()
+		{
+			$group = new Group();
+
+			GroupView::DisplayEditForm($group, "act_add_group");
+		}
+
+		private function edit_group()
+		{
+			$group = GroupPopulator::PopulateByID($_GET["id"]);
+
+			GroupView::DisplayEditForm($group, "act_edit_group");
+		}
+
+		private function act_add_group()
+		{
+			return $this->update_group("act_add_group");
+		}
+
+		private function act_edit_group()
+		{
+			return $this->update_group("act_edit_group");
+		}
+
+		private function update_group($action)
+		{
+			if($action == null)
+			{
+				die("update_group may not be called via the controller action");
+			}
+
+			$group = GroupPopulator::PopulateFromForm();
+
+			if(!$group->validate($action))
+			{
+				GroupView::DisplayEditForm($group, $action);
+			}
+			else
+			{
+				if(GroupPopulator::SaveGroup($group))
+				{
+					GroupView::DisplayEditForm($group, $action);
+				}
+				else
+				{
+					header("Location: editmember.php?action=list_groups");
+				}
+			}
+		}
+
+		private function delete_group()
+		{
+			$group = GroupPopulator::PopulateByID($_GET["id"]);
+
+			GroupView::DisplayDeleteForm($group);
+		}
+
+		private function act_delete_group()
+		{
+			GroupPopulator::DeleteGroup($_POST["id"]);
+
+			header("Location: editmember.php?action=list_groups");
 		}
 	}
 ?>
