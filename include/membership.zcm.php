@@ -7,6 +7,8 @@
 		private $m_registration_date;
 		private $m_last_authorized;
 
+		private $m_groups = array();
+
 		private $m_errors = array();
 
 		public function get_id()
@@ -57,6 +59,33 @@
 		public function set_last_authorized($newValue)
 		{
 			$this->m_last_authorized = $newValue;
+		}
+
+		public function get_group_count()
+		{
+			return count($this->m_groups);
+		}
+
+		public function get_group($index)
+		{
+			return $this->m_groups[$index];
+		}
+
+		public function add_group($newGroup)
+		{
+			$this->m_groups[] = $newGroup;
+
+			return count($this->m_groups);
+		}
+
+		public function remove_group($index)
+		{
+			unset($this->m_groups[$index]);
+		}
+
+		public function clear_groups()
+		{
+			$this->m_groups = array();
 		}
 
 		public function get_errors()
@@ -134,6 +163,8 @@
 				$member->set_password($row["password"]);
 				$member->set_registration_date($row["regtime"]);
 				$member->set_last_authorized($row["lastauth"]);
+
+				GroupPopulator::PopulateByMemberID($member);
 			}
 
 			return $member;
@@ -204,6 +235,34 @@
 			Zymurgy::$db->query($sql)
 				or die("Could not delete member record: ".Zymurgy::$db->error().", $sql");
 		}
+
+		public static function AddMemberToGroup(
+			$memberID,
+			$groupID)
+		{
+			$sql = "INSERT IGNORE INTO `zcm_membergroup` ( `memberid`, `groupid` ) VALUES ( '".
+				Zymurgy::$db->escape_string($memberID).
+				"', '".
+				Zymurgy::$db->escape_string($groupID).
+				"')";
+
+			Zymurgy::$db->query($sql)
+				or die("Could not add member to group: ".Zymurgy::$db->error().", $sql");
+		}
+
+		public static function DeleteMemberFromGroup(
+			$memberID,
+			$groupID)
+		{
+			$sql = "DELETE FROM `zcm_membergroup` WHERE `memberid` = '".
+				Zymurgy::$db->escape_string($memberID).
+				"' AND `groupid` = '".
+				Zymurgy::$db->escape_string($groupID).
+				"'";
+
+			Zymurgy::$db->query($sql)
+				or die("Could not delete member from group: ".Zymurgy::$db->error().", $sql");
+		}
 	}
 
 	class Group
@@ -254,12 +313,33 @@
 
 	class GroupPopulator
 	{
-		public function PopulateAll()
+		public static function PopulateAll()
 		{
 			return GroupPopulator::PopulateMultiple("1 = 1");
 		}
 
-		public function PopulateMultiple($criteria)
+		public static function PopulateAllMemberNotIn($memberID)
+		{
+			return GroupPopulator::PopulateMultiple(
+				"NOT EXISTS(SELECT 1 FROM `zcm_membergroup` WHERE `memberid` = '".
+				Zymurgy::$db->escape_string($memberID).
+				"' AND `zcm_membergroup`.`groupid` = `zcm_groups`.`id`)");
+		}
+
+		public static function PopulateByMemberID(&$member)
+		{
+			$groups = GroupPopulator::PopulateMultiple(
+				"EXISTS(SELECT 1 FROM `zcm_membergroup` WHERE `memberid` = '".
+				Zymurgy::$db->escape_string($member->get_id()).
+				"' AND `zcm_membergroup`.`groupid` = `zcm_groups`.`id`)");
+
+			foreach($groups as $group)
+			{
+				$member->add_group($group);
+			}
+		}
+
+		public static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE $criteria";
 
@@ -281,7 +361,7 @@
 			return $groups;
 		}
 
-		public function PopulateByID($id)
+		public static function PopulateByID($id)
 		{
 			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE `id` = '".
 				Zymurgy::$db->escape_string($id).
@@ -301,7 +381,7 @@
 			return $group;
 		}
 
-		public function PopulateFromForm()
+		public static function PopulateFromForm()
 		{
 			$group = new Group();
 
@@ -421,6 +501,10 @@
 			include("header.php");
 			include('datagrid.php');
 
+			// echo("<pre>");
+			// print_r($member);
+			// echo("</pre>");
+
 			DumpDataGridCSS();
 
 			$widget = new InputWidget();
@@ -477,6 +561,50 @@
 				echo("<td>Last Authorized:</td>\n");
 				echo("<td>".$member->get_last_authorized()."</td>\n");
 				echo("</tr>\n");
+
+				echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
+				echo("<tr>\n");
+				echo("<td valign=\"top\">Groups:</td>\n");
+				echo("<td>\n");
+
+				echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+
+				echo("<tr class=\"DataGridHeader\">");
+				echo("<td>Name</td>");
+				echo("<td>&nbsp;</td>");
+				echo("</tr>");
+
+				$groupCount = $member->get_group_count();
+
+				for($groupIndex = 0; $groupIndex < $groupCount; $groupIndex++)
+				{
+					$group = $member->get_group($groupIndex);
+
+					echo("<tr class=\"".($groupIndex % 2 ? "DataGridRowAlternate" : "DataGridRow")."\">\n");
+					echo("<td>".
+						$group->get_name().
+						"</td>");
+					echo("<td><a href=\"editmember.php?action=delete_member_group&amp;memberid=".
+						$member->get_id().
+						"&amp;groupid=".
+						$group->get_id().
+						"\">Delete</a></td>");
+					echo("</tr>\n");
+				}
+
+				echo("<tr class=\"DataGridHeader\">");
+				echo("<td colspan=\"2\"><a style=\"color: white;\" ".
+					"href=\"editmember.php?action=add_member_group&amp;id=".
+					$member->get_id().
+					"\">".
+					"Add Member to Membership Group".
+					"</a></td>");
+
+				echo("</table>");
+
+				echo("</td>\n");
+				echo("</tr>\n");
 			}
 
 			echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
@@ -528,6 +656,96 @@
 			echo("</p>");
 
 			echo("</form>");
+
+			include("footer.php");
+		}
+
+		public static function DisplayGroups($groups, $memberID, $errors)
+		{
+			$breadcrumbTrail = "<a href=\"editmember.php?action=list_members\">".
+				"Members".
+				"</a> &gt; <a href=\"editmember.php?action=edit_member&amp;id=".
+				$memberID.
+				"\">".
+				"Edit Member".
+				"</a> &gt; ".
+				"Add Member to Membership Group";
+
+			include("header.php");
+			include('datagrid.php');
+
+			// echo("<pre>");
+			// print_r($member);
+			// echo("</pre>");
+
+			DumpDataGridCSS();
+
+			if(count($errors) > 0)
+			{
+				echo("<div style=\"background-color: rgb(253, 238, 179); border: 2px solid red; padding: 10px; margin-bottom: 10px;\">\n");
+				echo("<div style=\"color: red\">Error</div>\n");
+				echo("<ul>\n");
+
+				foreach($errors as $error)
+				{
+					echo("<li>$error</li>\n");
+				}
+
+				echo("</ul>\n");
+				echo("</div>\n");
+			}
+
+			echo("<form name=\"frm\" action=\"editmember.php\" method=\"POST\">");
+
+			echo("<input type=\"hidden\" name=\"action\" value=\"act_add_member_group\">");
+			echo("<input type=\"hidden\" name=\"id\" value=\"".
+				$memberID."\">");
+
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>&nbsp;</td>");
+			echo("<td>Name</td>");
+			echo("</tr>");
+
+			$cntr = 1;
+
+			foreach($groups as $group)
+			{
+				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">\n");
+				echo("<td><input type=\"radio\" name=\"groupid\" id=\"group".
+					$group->get_id().
+					"\" value=\"".
+					$group->get_id().
+					"\"></td>\n");
+				echo("<td><label for=\"group".
+					$group->get_id().
+					"\">".
+					$group->get_name().
+					"</label></td>\n");
+				echo("</tr>\n");
+
+				$cntr++;
+			}
+
+			echo("<tr class=\"DataGridHeader\">");
+			echo("<td colspan=\"2\">&nbsp;</td>");
+			echo("</tr>");
+
+			echo("</table>\n");
+
+			echo("<p>");
+			echo("<input style=\"width: 80px; margin-right: 10px;\" type=\"submit\" value=\"".
+				"Save".
+				"\">");
+			echo("<input style=\"width: 80px;\" type=\"button\" value=\"".
+				"Cancel".
+				"\" onclick=\"window.location.href='editmember.php?action=edit_member&amp;id=".
+				$memberID.
+				"';\">");
+			echo("</p>");
+
+			echo("</form>\n");
 
 			include("footer.php");
 		}
@@ -758,6 +976,45 @@
 			MemberPopulator::DeleteMember($_POST["id"]);
 
 			header("Location: editmember.php?action=list_members");
+		}
+
+		private function add_member_group()
+		{
+			$groups = GroupPopulator::PopulateAllMemberNotIn($_GET["id"]);
+
+			MemberView::DisplayGroups($groups, $_GET["id"], array());
+		}
+
+		private function act_add_member_group()
+		{
+			if(!isset($_POST["groupid"]))
+			{
+				$groups = GroupPopulator::PopulateAllMemberNotIn($_POST["id"]);
+
+				MemberView::DisplayGroups(
+					$groups,
+					$_POST["id"],
+					array("A membership group must be selected."));
+			}
+			else
+			{
+				MemberPopulator::AddMemberToGroup(
+					$_POST["id"],
+					$_POST["groupid"]);
+
+				header("Location: editmember.php?action=edit_member&id=".
+					$_POST["id"]);
+			}
+		}
+
+		private function delete_member_group()
+		{
+			MemberPopulator::DeleteMemberFromGroup(
+				$_GET["memberid"],
+				$_GET["groupid"]);
+
+				header("Location: editmember.php?action=edit_member&id=".
+					$_GET["memberid"]);
 		}
 
 		private function list_groups()
