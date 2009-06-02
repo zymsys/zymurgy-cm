@@ -1604,6 +1604,33 @@ class FormAddToCustomTable implements PluginExtension
 			}
 		}
 
+		$memberTableSQL = "SELECT `ismember` FROM `zcm_customtable` WHERE ".
+			"`zcm_customtable`.`tname` = '".
+			Zymurgy::$db->escape_string($plugin->GetConfigValue('Custom Table Name')).
+			"'";
+		$memberTableRI = Zymurgy::$db->query($memberTableSQL)
+			or die("Could not get settings for custom table: ".Zymurgy::$db->error().", $memberTableSQL");
+
+		$isMemberTable = false;
+
+		if(($memberTableRow = Zymurgy::$db->fetch_array($memberTableRI)) !== FALSE)
+		{
+			$isMemberTable = ($memberTableRow["ismember"] == 1);
+		}
+
+		if($isMemberTable)
+		{
+			$fieldList["member"] = Zymurgy::$member["id"];
+
+			// echo("<pre>");
+			// print_r($fieldList);
+			// echo("<br>");
+			// print_r(Zymurgy::$member);
+			// echo("</pre>");
+
+			// die();
+		}
+
 		$insertSQL = "INSERT INTO `{0}` ( {1} ) VALUES ( '{2}' )";
 		$insertSQL = str_replace(
 			"{0}",
