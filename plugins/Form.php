@@ -774,6 +774,7 @@ function Validate$name(me) {
 		$extensions[] = new FormAddToCustomTable();
 		$extensions[] = new FormCaptureToDatabase();
 		$extensions[] = new FormExportFromDatabase();
+		$extensions[] = new FormPrefillFromMemberCustomTable();
 
 		if(file_exists(Zymurgy::$root."/zymurgy/custom/plugins/Form.php"))
 		{
@@ -1651,6 +1652,123 @@ class FormAddToCustomTable implements PluginExtension
 			or die("Could not insert record into custom table: ".mysql_error().", $insertSQL");
 
 		return;
+	}
+}
+
+class FormPrefillFromMemberCustomTable implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "Prefill from Member's Custom Table";
+	}
+
+	public function GetDescription()
+	{
+		return "<p>When a form is displayed, the fields in the form can be ".
+			"automatically filled in based on the data in a Custom Table.</p>".
+			"<p>This extension assumes that the Form is only visible to ".
+			"logged in Members of your web site, and that the Custom Table ".
+			"being used to pre-fill the data is a Member table.</p>".
+			"<p>To work properly, the Export Table Header for the field in the ".
+			"form must match the field name in the Custom Table. Fields that do ".
+			"not match will be ignored.</p>";
+	}
+
+	public function IsEnabled($plugin)
+	{
+		return $plugin->GetConfigValue('Prefill Fields using Member Custom Table') == "on";
+	}
+
+	public function GetConfigItems()
+	{
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => "Prefill Fields using Member Custom Table",
+			"default" => "",
+			"inputspec" => "checkbox",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Custom Table with Prefill Data",
+			"default" => "",
+			"inputspec" => $this->GetCustomTableInputSpec(),
+			"authlevel" => 0);
+
+		return $configItems;
+	}
+
+	private function GetCustomTableInputSpec()
+	{
+		$sql = "SELECT `tname` FROM `zcm_customtable` WHERE `ismember` = '1' ORDER BY `tname`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of member custom tables: ".Zymurgy::$db->error().", $sql");
+
+		$groups = array();
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$groups[] = $row["tname"];
+		}
+
+		Zymurgy::$db->free_result($ri);
+
+		return "drop.".implode(",", $groups);
+	}
+
+	public function GetCommands()
+	{
+		return array();
+	}
+
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("FormPrefillFromMemberCustomTable: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+
+	public function LoadFormData($plugin)
+	{
+		$this->ConfirmPluginCompatability($plugin);
+
+		//die("FormPrefillFromMemberCustomTable.LoadFormData called");
+		// echo("<pre>");
+		// print_r($plugin->InputRows);
+		// echo("</pre><br>");
+
+		$sql = "SELECT * FROM `".
+			$plugin->GetConfigValue("Custom Table with Prefill Data").
+			"` WHERE `member` = '".
+			Zymurgy::$member["id"].
+			"' LIMIT 0, 1";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not get information from member custom table: ".Zymurgy::$db->error().", $sql");
+
+		//die($sql);
+
+		if(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			foreach($row as $key => $value)
+			{
+				if(!is_numeric($key))
+				{
+					// echo("Setting default for $key to $value<br>");
+
+					for($inputIndex = 0; $inputIndex < count($plugin->InputRows); $inputIndex++)
+					{
+						if($plugin->InputRows[$inputIndex]["header"] == $key)
+						{
+							$plugin->InputRows[$inputIndex]["defaultvalue"] = $value;
+						}
+					}
+				}
+			}
+		}
+
+		// echo("<pre>");
+		// print_r($plugin->InputRows);
+		// echo("</pre><br>");
 	}
 }
 ?>
