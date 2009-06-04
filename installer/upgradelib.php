@@ -248,6 +248,8 @@ function ProcessTableDefinitions(
 
 	foreach($tableDefinitions as $tableDefinition)
 	{
+		echo("---- ".$tableDefinition["name"]."<br>");
+
 		// If the table does not exist yet, generate and run the
 		// CREATE TABLE statement for it.
 		$createSQL = "CREATE TABLE IF NOT EXISTS `{0}` ( {1}, PRIMARY KEY ( {2} ) ) ENGINE = {3};";

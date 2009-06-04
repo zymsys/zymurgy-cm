@@ -1,152 +1,315 @@
 <?
+	/* array("columns" => "export", "unique" => false, "type" => "") */
+
+	$baseTableDefinitions = array();
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetAuthenticationTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetConfigurationTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetSimpleContentTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPluginTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetMembershipTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetCustomTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetHelpTableDefinitions());
+
+	function GetAuthenticationTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_passwd",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("username", "VARCHAR(20)", "NOT NULL DEFAULT ''"),
+					DefineTableField("password", "VARCHAR(20)", "NOT NULL DEFAULT ''"),
+					DefineTableField("email", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+					DefineTableField("fullname", "VARCHAR(60)", "NOT NULL DEFAULT ''"),
+					DefineTableField("admin", "TINYINT(4)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("eula", "TINYINT(4)", "NOT NULL DEFAULT '0'")
+				),
+				"indexes" => array(
+					array("columns" => "username, password", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetConfigurationTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_config",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
+					DefineTableField("value", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
+					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("inputspec", "VARCHAR(100)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetSimpleContentTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_meta",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("document", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+					DefineTableField("description", "TEXT", "NOT NULL"),
+					DefineTableField("keywords", "TEXT", "NOT NULL"),
+					DefineTableField("title", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+					DefineTableField("mtime", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("changefreq", "VARCHAR(10)", "DEFAULT 'monthly'"),
+					DefineTableField("priority", "TINYINT(4)", "DEFAULT '5'")
+				),
+				"indexes" => array(
+					array("columns" => "document", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_sitetext",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("tag", "VARCHAR(35)", "NOT NULL DEFAULT ''"),
+					DefineTableField("body", "LONGTEXT", "NOT NULL"),
+					DefineTableField("plainbody", "LONGTEXT", "NOT NULL"),
+					DefineTableField("inputspec", "VARCHAR(100)", "NOT NULL DEFAULT 'html.600.400'"),
+					DefineTableField("category", "BIGINT(20)", "DEFAULT '0'")
+				),
+				"indexes" => array(
+					array("columns" => "tag", "unique" => FALSE, "type" => ""),
+					array("columns" => "category", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_stcategory",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(60)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "name", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_textpage",
+				"columns" => array(
+					DefineTableField("metaid", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("sitetextid", "INT(11)", "NOT NULL DEFAULT '0'")
+				),
+				"indexes" => array(
+					array("columns" => "metaid", "unique" => FALSE, "type" => ""),
+					array("columns" => "sitetextid", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "metaid, sitetextid",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetPluginTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_plugin",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("release", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("title", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
+					DefineTableField("name", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
+					DefineTableField("enabled", "SMALLINT(6)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("uninstallsql", "TEXT", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "enabled", "unique" => FALSE, "type" => ""),
+					array("columns" => "name", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_pluginconfig",
+				"columns" => array(
+					DefineTableField("plugin", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("instance", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("key", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
+					DefineTableField("value", "TEXT", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "`plugin`, `instance`, `key`",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_plugininstance",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("plugin", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("name", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
+					DefineTableField("private", "TINYINT(4)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "plugin", "unique" => FALSE, "type" => ""),
+					array("columns" => "private", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetMembershipTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_member",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("email", "VARCHAR(80)", "DEFAULT NULL"),
+					DefineTableField("password", "VARCHAR(32)", "DEFAULT NULL"),
+					DefineTableField("regtime", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("lastauth", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("formdata", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("authkey", "VARCHAR(32)", "DEFAULT NULL"),
+					DefineTableField("orgunit", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("mpkey", "VARCHAR(40)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "email", "unique" => TRUE, "type" => ""),
+					array("columns" => "mpkey", "unique" => TRUE, "type" => ""),
+					array("columns" => "email, password", "unique" => FALSE, "type" => ""),
+					array("columns" => "regtime", "unique" => FALSE, "type" => ""),
+					array("columns" => "lastauth", "unique" => FALSE, "type" => ""),
+					array("columns" => "authkey", "unique" => FALSE, "type" => ""),
+					array("columns" => "orgunit", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_memberaudit",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("member", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("audittime", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("remoteip", "VARCHAR(15)", "DEFAULT NULL"),
+					DefineTableField("realip", "VARCHAR(15)", "DEFAULT NULL"),
+					DefineTableField("audit", "TEXT", "")
+				),
+				"indexes" => array(
+					array("columns" => "member, audittime", "unique" => FALSE, "type" => ""),
+					array("columns" => "remoteip", "unique" => FALSE, "type" => ""),
+					array("columns" => "realip", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_groups",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(50)", "DEFAULT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_membergroup",
+				"columns" => array(
+					DefineTableField("memberid", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("groupid", "INT(11)", "NOT NULL DEFAULT '0'")
+				),
+				"indexes" => array(
+					array("columns" => "memberid", "unique" => FALSE, "type" => ""),
+					array("columns" => "groupid", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "memberid, groupid",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetCustomTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_customtable",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("tname", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("detailfor", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("hasdisporder", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "detailfor", "unique" => FALSE, "type" => ""),
+					array("columns" => "disporder", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_customfield",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("tableid", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("cname", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("inputspec", "TEXT", ""),
+					DefineTableField("caption", "TEXT", ""),
+					DefineTableField("indexed", "VARCHAR(1)", "DEFAULT NULL"),
+					DefineTableField("gridheader", "VARCHAR(30)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetHelpTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_help",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("parent", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("authlevel", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("title", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("body", "TEXT", ""),
+					DefineTableField("plain", "TEXT", "")
+				),
+				"indexes" => array(
+					array("columns" => "authlevel", "unique" => FALSE, "type" => ""),
+					array("columns" => "title", "unique" => FALSE, "type" => ""),
+					array("columns" => "title, plain", "unique" => FALSE, "type" => "FULLTEXT")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
 $tables = array(
-		'zcm_passwd'=>"CREATE TABLE `zcm_passwd` (
-  `id` int(11) NOT NULL auto_increment,
-  `username` varchar(20) NOT NULL default '',
-  `password` varchar(20) NOT NULL default '',
-  `email` varchar(80) NOT NULL default '',
-  `fullname` varchar(60) NOT NULL default '',
-  `admin` tinyint(4) NOT NULL default '0',
-  `eula` tinyint(4) default '0',
-  PRIMARY KEY  (`id`),
-  KEY `userpass` (`username`,`password`))",
-		'zcm_meta'=>"CREATE TABLE `zcm_meta` (
-  `id` int(11) NOT NULL auto_increment,
-  `document` varchar(80) NOT NULL default '',
-  `description` text NOT NULL,
-  `keywords` text NOT NULL,
-  `title` varchar(80) NOT NULL default '',
-  `mtime` bigint(20) NOT NULL default '0',
-  `changefreq` varchar(10) default 'monthly',
-  `priority` tinyint(4) default '5',
-  PRIMARY KEY  (`id`),
-  KEY `document` (`document`))",
-		'zcm_sitetext'=>"CREATE TABLE `zcm_sitetext` (
-  `id` int(11) NOT NULL auto_increment,
-  `tag` varchar(35) NOT NULL default '',
-  `body` longtext NOT NULL,
-  `plainbody` longtext NOT NULL,
-  `inputspec` VARCHAR( 100 ) DEFAULT 'html.600.400' NOT NULL,
-  `category` bigint(20) default '0',
-  PRIMARY KEY  (`id`),
-  KEY `tag` (`tag`),
-  KEY `category` (`category`))",
-		'zcm_stcategory'=>"CREATE TABLE `zcm_stcategory` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `name` varchar(60) default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `name` (`name`))",
-  		'zcm_textpage'=>"CREATE TABLE `zcm_textpage` (
-  `metaid` int(11) NOT NULL default '0',
-  `sitetextid` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`metaid`,`sitetextid`),
-  KEY `metaid` (`metaid`),
-  KEY `sitetextid` (`sitetextid`))",
-		'zcm_config'=>"CREATE TABLE `zcm_config` (
-  `id` int(11) NOT NULL auto_increment,
-  `name` varchar(40) NOT NULL default '',
-  `value` varchar(100) NOT NULL default '',
-  `disporder` int(11) NOT NULL default '0',
-  `inputspec` varchar(100) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `disporder` (`disporder`))",
-		'zcm_plugin'=>"CREATE TABLE `zcm_plugin` (
-  `id` int(11) NOT NULL auto_increment,
-  `release` int(11) NOT NULL default '0',
-  `title` varchar(50) NOT NULL default '',
-  `name` varchar(50) NOT NULL default '',
-  `enabled` smallint(6) NOT NULL default '0',
-  `uninstallsql` text NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `enabled` (`enabled`),
-  KEY `source` (`name`))",
-		'zcm_pluginconfig'=>"CREATE TABLE `zcm_pluginconfig` (
-  `plugin` int(11) NOT NULL default '0',
-  `instance` int(11) NOT NULL default '0',
-  `key` varchar(50) NOT NULL default '',
-  `value` text NOT NULL,
-  PRIMARY KEY  (`plugin`,`instance`,`key`))",
-		'zcm_plugininstance'=>"CREATE TABLE `zcm_plugininstance` (
-  `id` int(11) NOT NULL auto_increment,
-  `plugin` int(11) NOT NULL default '0',
-  `name` varchar(50) NOT NULL default '',
-  `private` tinyint(4) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `plugin` (`plugin`),
-  KEY `private` (`private`))",
-		'zcm_member'=>"CREATE TABLE `zcm_member` (
-  `id` int(11) NOT NULL auto_increment,
-  `email` varchar(80) default NULL,
-  `password` varchar(32) default NULL,
-  `regtime` datetime default NULL,
-  `lastauth` datetime default NULL,
-  `formdata` int(11) default NULL,
-  `authkey` varchar(32) default NULL,
-  `orgunit` int(11) default NULL,
-  `mpkey` varchar(40) default NULL,
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `email_3` (`email`),
-  UNIQUE KEY `mpkey` (`mpkey`),
-  KEY `email` (`email`,`password`),
-  KEY `regtime` (`regtime`),
-  KEY `lastauth` (`lastauth`),
-  KEY `authkey` (`authkey`),
-  KEY `orgunit` (`orgunit`))",
-		'zcm_memberaudit'=>"CREATE TABLE `zcm_memberaudit` (
-  `id` int(11) NOT NULL auto_increment,
-  `member` int(11) default NULL,
-  `audittime` datetime default NULL,
-  `remoteip` varchar(15) default NULL,
-  `realip` varchar(15) default NULL,
-  `audit` text,
-  PRIMARY KEY  (`id`),
-  KEY `member` (`member`,`audittime`),
-  KEY `remoteip` (`remoteip`),
-  KEY `realip` (`realip`))",
-		'zcm_membergroup'=>"CREATE TABLE `zcm_membergroup` (
-  `memberid` int(11) NOT NULL default '0',
-  `groupid` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`memberid`,`groupid`),
-  KEY `memberid` (`memberid`),
-  KEY `groupid` (`groupid`))",
-		'zcm_groups'=>"CREATE TABLE `zcm_groups` (
-  `id` int(11) NOT NULL auto_increment,
-  `name` varchar(50) default NULL,
-  PRIMARY KEY  (`id`))",
-		'zcm_customtable'=>"CREATE TABLE `zcm_customtable` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `disporder` bigint(20) default NULL,
-  `tname` varchar(30) default NULL,
-  `detailfor` bigint(20) default '0',
-  `hasdisporder` tinyint(4) default NULL,
-  `navname` varchar(30) default NULL,
-  `selfref` varchar(30) default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `detailfor` (`detailfor`),
-  KEY `disporder` (`disporder`))",
-		'zcm_customfield'=>"CREATE TABLE `zcm_customfield` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `disporder` bigint(20) default NULL,
-  `tableid` bigint(20) default NULL,
-  `cname` varchar(30) default NULL,
-  `inputspec` text,
-  `caption` text,
-  `indexed` varchar(1) default NULL,
-  `gridheader` varchar(30) default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `disporder` (`disporder`))",
-		'zcm_help'=>"CREATE TABLE `zcm_help` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `parent` bigint(20) default NULL,
-  `disporder` bigint(20) default NULL,
-  `authlevel` tinyint(4) default NULL,
-  `title` varchar(200) default NULL,
-  `body` text,
-  `plain` text,
-  UNIQUE KEY `id` (`id`),
-  KEY `authlevel` (`authlevel`),
-  KEY `title` (`title`),
-  FULLTEXT KEY `title_2` (`title`,`plain`))",
 	'zcm_helpalso'=>"CREATE TABLE `zcm_helpalso` (
   `help` bigint(20) NOT NULL default '0',
   `seealso` bigint(20) NOT NULL default '0',

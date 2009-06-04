@@ -1,7 +1,9 @@
 <?
+// ini_set("display_errors", 1);
 ob_start();
 require_once("../cmo.php");
 require_once('../config/config.php');
+include('upgradelib.php');
 include('tables.php');
 
 echo("Connecting to database...");
@@ -10,16 +12,19 @@ echo("Connecting to database...");
 // mysql_select_db($ZymurgyConfig['mysqldb']);
 
 echo("done.<br>");
-echo("Updating table definitions...");
+echo("Updating table definitions...<br>");
 
 $newsitepage = array(
 	'template'=>"alter table zcm_sitepage add template bigint default 1",
 	'linkurl'=>"alter table zcm_sitepage add linkurl varchar(40) after linktext"
 );
 
-include('upgradelib.php');
-
 RenameOldTables();
+
+ProcessTableDefinitions(
+	$baseTableDefinitions);
+
+// ZK: Deprecated
 $newtables = CreateMissingTables();
 
 VerifyColumnExists(
