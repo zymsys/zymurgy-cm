@@ -185,6 +185,8 @@
 
 	class PaypalIPNProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
+		protected $m_PayPalCmd = "_xclick";
+		
 		public function PaypalIPNProcessor()
 		{
 			$this->m_billingInformation = new BillingInformation();
@@ -232,6 +234,11 @@
 		{
 			return "txn_id";
 		}
+		
+		public function RenderCmdInformation()
+		{
+			$output .= $this->RenderHiddenInput("amount", $this->m_amount);
+		}
 
 		public function Process()
 		{
@@ -241,12 +248,12 @@
 				Zymurgy::$config["PaypalIPN.URL"].
 				"\">\n";
 
-			$output .= $this->RenderHiddenInput("cmd", "_xclick");
+			$output .= $this->RenderHiddenInput("cmd", $this->m_PayPalCmd);
 			$output .= $this->RenderHiddenInput("page_style", Zymurgy::$config["PaypalIPN.PageStyle"]);
 			$output .= $this->RenderHiddenInput("business", Zymurgy::$config["PaypalIPN.Business"]);
 			$output .= $this->RenderHiddenInput("item_name", $this->m_invoiceID);
 			$output .= $this->RenderHiddenInput("currency_code", Zymurgy::$config["PaypalIPN.CurrencyCode"]);
-			$output .= $this->RenderHiddenInput("amount", $this->m_amount);
+			$output .= $this->RenderCmdInformation();
 			$output .= $this->RenderBillingInformation();
 
 			$output .= $this->RenderOptionalHiddenInput("return", $this->m_returnURL);

@@ -224,12 +224,30 @@ function VerifyColumnExists(
 function DefineTableField(
 	$name,
 	$type,
-	$params)
+	$params = '')
 {
 	return array(
 		"name" => $name,
 		"type" => $type,
 		"params" => $params);
+}
+
+/**
+ * Create an index definition array. Used in the code that defines
+ * the table structure of Zymurgy:CM components
+ *
+ * @param string $columns
+ * @param boolean $unique
+ * @param string $itype
+ * @return array
+ */
+function DefineIndexField($columns,$unique = false,$itype='')
+{
+	return array(
+		"columns" => $columns, 
+		"unique" => $unique, 
+		"type" => $itype
+	);
 }
 
 /**
