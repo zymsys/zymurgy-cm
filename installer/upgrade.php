@@ -25,7 +25,7 @@ ProcessTableDefinitions(
 	$baseTableDefinitions);
 
 // ZK: Deprecated
-$newtables = CreateMissingTables();
+// $newtables = CreateMissingTables();
 
 VerifyColumnExists(
 	"zcm_sitetext",
@@ -89,16 +89,16 @@ CheckIndexes("zcm_sitetext", array("category"), false);
 echo("done.<br>");
 
 //print_r($newtables); exit;
-if (array_search('zcm_template',$newtables)!==false)
-{
+// if (array_search('zcm_template',$newtables)!==false)
+//{
 	//Create default templates
-	mysql_query("insert into zcm_template (name,path) values ('Simple','/zymurgy/templates/simple.php')");
-	$stid = mysql_insert_id();
-	mysql_query("insert into zcm_template (name,path) values ('URL Link','/zymurgy/templates/link.php')");
-	$ulid = mysql_insert_id();
-	mysql_query("insert into zcm_templatetext (template,tag,inputspec) values ($stid,'Body','html.600.400')");
-	mysql_query("insert into zcm_templatetext (template,tag,inputspec) values ($ulid,'Link URL','input.60.255')");
-}
+	mysql_query("insert ignore into zcm_template (id, name, path) values ('1', 'Simple','/zymurgy/templates/simple.php')");
+	//$stid = mysql_insert_id();
+	mysql_query("insert ignore into zcm_template (id, name,path) values ('2', 'URL Link','/zymurgy/templates/link.php')");
+	//$ulid = mysql_insert_id();
+	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('1','1','Body','html.600.400')");
+	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
+//}
 
 echo("Renaming plugin configuration items...");
 
@@ -312,17 +312,24 @@ foreach ($plugins as $source=>$state)
 
 echo("Testing for extended third-party components...<br>");
 
-require_once("../jscalendar/calendar.php");
-
-$cal = new DHTML_Calendar(
-	"/zymurgy/jscalendar/",
-	'en',
-	'calendar-win2k-2',
-	false);
-
-if(!method_exists($cal, "SetFieldPrefix"))
+if(!file_exists("../jscalendar/calendar.php"))
 {
 	die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");
+}
+else
+{
+	require_once("../jscalendar/calendar.php");
+
+	$cal = new DHTML_Calendar(
+		"/zymurgy/jscalendar/",
+		'en',
+		'calendar-win2k-2',
+		false);
+
+	if(!method_exists($cal, "SetFieldPrefix"))
+	{
+		die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");
+	}
 }
 
 echo("Done.<br>");

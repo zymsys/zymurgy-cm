@@ -1,10 +1,13 @@
 <?
+include("upgradelib.php");
 include('tables.php');
 
-function CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterEmail)
+ffunction CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterEmail)
 {
-	global $tables;
-	
+	global $baseTableDefinitions;
+	ProcessTableDefinitions($baseTableDefinitions);
+
+	$tables = array();
 	$tables['ipasswd'] = "insert into zcm_passwd (username,password,fullname,email,admin) values ('".
 		mysql_escape_string($webmasterLogin)."','".
 		mysql_escape_string($webmasterPassword)."','".
@@ -24,6 +27,7 @@ function CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterE
 	}
 }
 
+
 function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,$siteURL,$siteTitle,
 	$siteDescription,$siteKeywords,$imageMagikPath='')
 {
@@ -31,7 +35,7 @@ function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,
 	$siteTitle = str_replace("'","\\'",$siteTitle);
 	$siteKeywords = str_replace("'","\\'",$siteKeywords);
 	$siteDescription = str_replace("'","\\'",$siteDescription);
-	
+
 	//Remove trailing slash if it is included.
 	if (substr($imageMagikPath,-1)=='/')
 	{

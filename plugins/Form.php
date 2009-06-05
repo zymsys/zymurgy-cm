@@ -155,7 +155,7 @@ class Form extends PluginBase
 			Zymurgy::$db->query($this->getDefaultRegexInsert());
 	}
 
-	private function VerifyTableDefinitions()
+	protected function VerifyTableDefinitions()
 	{
 		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 

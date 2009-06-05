@@ -9,7 +9,7 @@ class Calendar extends PluginBase
 
 	function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root."/zymurgy/install/upgradelib.php");
+		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 		$tableDefinitions = array(
 			array(
@@ -24,11 +24,7 @@ class Calendar extends PluginBase
 					DefineTableField("description", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(
-					array(
-						"columns" => array("start", "end"),
-						"unique" => "false",
-						"type" => ""
-					)
+					array("columns" => "start, end", "unique" => "false", "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1"
