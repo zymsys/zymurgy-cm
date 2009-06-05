@@ -24,9 +24,12 @@ class PayPalCartAdd extends PaypalIPNProcessor
 
 	function __construct()
 	{
-		$this->m_PayPalCmd = "_cart";
+		$additionalItems = array("PaypalIPN.AddToCartText");
 
-		parent::__construct();
+		parent::__construct($additionalItems);
+
+		$this->m_PayPalCmd = "_cart";
+		$this->m_buttonText = Zymurgy::$config["PaypalIPN.AddToCartText"];
 	}
 
 	public function RenderCmdInformation()
@@ -72,6 +75,11 @@ class PayPalCart extends PluginBase
 	{
 		$r = array();
 
+		$this->BuildMenuItem(
+			$r,
+			"View items",
+			"pluginadmin.php?pid={pid}&iid={iid}&name={name}",
+			0);
 		$this->BuildSettingsMenuItem($r);
 		$this->BuildDeleteMenuItem($r);
 
@@ -167,6 +175,16 @@ class PayPalCart extends PluginBase
 
 		echo "</tbody>\r\n";
 
+		$cart = new PaypalIPNProcessor();
+		$cart->SetPaypalCommand("_cart");
+
+		echo "<tfoot>\r\n";
+		echo "<tr>\r\n";
+		echo "<td colspan=\"3\" align=\"right\" class=\"itemcommand\">\r\n";
+		echo $cart->Process();
+		echo "</td>\r\n";
+		echo "</tr>\r\n";
+
 		echo "</table>\r\n";
 	}
 
@@ -197,8 +215,8 @@ class PayPalCart extends PluginBase
 		$dg = new DataGrid($ds);
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Values','values');
-		$dg->AddInput('name','Name:',50,64);
-		$dg->AddInput('values','Values:',50,200);
+		$dg->AddInput('name','Name:',64,50);
+		$dg->AddInput('values','Values:',200,50);
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
 		$dg->insertlabel = 'Add New Item Option';
@@ -215,13 +233,13 @@ class PayPalCart extends PluginBase
 		$dg->UsePennies = true;
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Amount','amount');
-		$dg->AddInput('name','Name:',50,127);
+		$dg->AddInput('name','Name:',127,50);
 		$dg->AddMoneyEditor('amount','Amount');
-		$dg->AddMoneyEditor('handling','Handling');
-		$dg->AddMoneyEditor('shipping','Shipping');
-		$dg->AddEditor('tax','Tax Override:','float');
-		$dg->AddEditor('weight','Weight:','float');
-		$dg->AddDropListEditor('weightunit','Weight Unit:',array('lbs'=>'lbs','kgs'=>'kgs'));
+		// $dg->AddMoneyEditor('handling','Handling');
+		// $dg->AddMoneyEditor('shipping','Shipping');
+		// $dg->AddEditor('tax','Tax Override:','float');
+		// $dg->AddEditor('weight','Weight:','float');
+		// $dg->AddDropListEditor('weightunit','Weight Unit:',array('lbs'=>'lbs','kgs'=>'kgs'));
 		$dg->AddButton('Options',$dg->BuildSelfReference(array()).'&ppcio={0}');
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();

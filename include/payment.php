@@ -186,16 +186,19 @@
 	class PaypalIPNProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		protected $m_PayPalCmd = "_xclick";
+		protected $m_buttonText = "";
 
-		public function PaypalIPNProcessor()
+		public function PaypalIPNProcessor(
+			$additionalItems = array())
 		{
 			$this->m_billingInformation = new BillingInformation();
 			$this->m_paymentTransaction = new PaymentTransaction();
+			$this->m_buttonText = Zymurgy::$config["PaypalIPN.SubmitText"];
 
-			$this->ValidateConfiguration();
+			$this->ValidateConfiguration($additionalItems);
 		}
 
-		private function ValidateConfiguration()
+		private function ValidateConfiguration($additionalItems)
 		{
 			$issues = "";
 			$isValid = true;
@@ -209,6 +212,11 @@
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.SubmitText");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CallbackServer");
 			$isValid = $this->ValidateConfigurationItem($issue, "PaypalIPN.CallbackPort");
+
+			foreach($additionalItems as $item)
+			{
+				$isValid = $this->ValidateConfigurationItem($issue, $item);
+			}
 
 			if(!$isValid)
 			{
@@ -235,11 +243,30 @@
 			return "txn_id";
 		}
 
+		public function GetPaypalCommand()
+		{
+			return $this->m_PayPalCmd;
+		}
+
+		public function SetPaypalCommand($newValue)
+		{
+			$this->m_PayPalCmd = $newValue;
+		}
+
 		public function RenderCmdInformation()
 		{
 			$output = "";
 
-			$output .= $this->RenderHiddenInput("amount", $this->m_amount);
+			switch($this->m_PayPalCmd)
+			{
+				case "_cart":
+					$output .= $this->RenderHiddenInput("display", "1");
+					break;
+
+				default:
+					$output .= $this->RenderHiddenInput("amount", $this->m_amount);
+					break;
+			}
 
 			return $output;
 		}
@@ -264,7 +291,7 @@
 			$output .= $this->RenderOptionalHiddenInput("cancel_return", $this->m_cancelURL);
 			$output .= $this->RenderOptionalHiddenInput("notify_url", $this->m_notifyURL);
 
-			$output .= $this->RenderSubmitButton(Zymurgy::$config["PaypalIPN.SubmitText"]);
+			$output .= $this->RenderSubmitButton($this->m_buttonText);
 
 			$output .= "</form>\n";
 
