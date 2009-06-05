@@ -2,7 +2,7 @@
 include("upgradelib.php");
 include('tables.php');
 
-ffunction CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterEmail)
+function CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterEmail)
 {
 	global $baseTableDefinitions;
 	ProcessTableDefinitions($baseTableDefinitions);
