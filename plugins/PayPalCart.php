@@ -11,7 +11,7 @@ class PayPalCartItemOption
 	public $value;
 }
 
-class PayPalCartAdd extends PaypalIPNProcessor 
+class PayPalCartAdd extends PaypalIPNProcessor
 {
 	public $itemamount;
 	public $itemhandling;
@@ -21,15 +21,28 @@ class PayPalCartAdd extends PaypalIPNProcessor
 	public $tax;
 	public $weight;
 	public $weightunit;
-	
+
 	function __construct()
 	{
 		$this->m_PayPalCmd = "_cart";
+
+		parent::__construct();
 	}
-	
+
 	public function RenderCmdInformation()
 	{
-		$output = $this->RenderHiddenInput("amount", 1);
+		$output = "";
+
+		$output .= $this->RenderHiddenInput("amount", $this->itemamount);
+		$output .= $this->RenderHiddenInput("add", 1);
+
+		return $output;
+	}
+
+	public function Process()
+	{
+		$this->SetInvoiceID($this->itemname);
+		parent::Process();
 	}
 }
 
@@ -67,18 +80,6 @@ class PayPalCart extends PluginBase
 
 	function GetConfigItemTypes()
 	{
-		//Data types are in the format:
-		//Implemented:
-		//Not Implemented:
-//		"input.$size.$maxlength"
-//		"textarea.$width.$height"
-//		"html.$widthpx.$heightpx"
-//		"radio.".serialize($optionarray)
-//		"drop.".serialize($optionarray)
-//		"attachment"
-//		"money"
-//		"unixdate"
-//		"lookup.$table"
 		return array();
 	}
 
@@ -140,16 +141,32 @@ class PayPalCart extends PluginBase
 			Zymurgy::$db->free_result($ri);
 			$items[$key]['options'] = $options;
 		}
-		echo "<table>\r\n";
+		echo "<table class=\"zcmcart\">\r\n";
+
+		echo "<thead>\r\n";
+		echo "<th class=\"itemname\">Item</th>\r\n";
+		echo "<th class=\"itemamount\">Price</th>\r\n";
+		echo "<th class=\"itemcommand\">&nbsp;</th>\r\n";
+		echo "</thead>\r\n";
+
+		echo "<tbody>\r\n";
+
 		foreach ($items as $item)
 		{
 			$ppca = new PayPalCartAdd();
 			$ppca->itemname = $item['name'];
 			$ppca->itemamount = $item['amount'] / 100;
-			echo "<tr><td>{$item['name']}</td><td>{$item['amount']}</td><td>";
+			echo "<tr>\r\n";
+			echo "<td class=\"itemname\">{$ppca->itemname}</td>\r\n";
+			echo "<td class=\"itemamount\">\${$ppca->itemamount}</td>";
+			echo "<td class=\"itemcommand\">";
 			$ppca->Process();
-			echo "</td></tr>\r\n";
+			echo "</td>\r\n";
+			echo "</tr>\r\n";
 		}
+
+		echo "</tbody>\r\n";
+
 		echo "</table>\r\n";
 	}
 
@@ -164,41 +181,41 @@ class PayPalCart extends PluginBase
 		{
 			$this->RenderItemOptionAdmin();
 		}
-		else 
+		else
 		{
 			$this->RenderItemAdmin();
 		}
 	}
-	
+
 	function RenderItemOptionAdmin()
 	{
 		$ppcio = 0 + $_GET['ppcio'];
-		
+
 		$ds = new DataSet('zcm_paypalcartitemoption','id');
 		$ds->AddColumns('id','paypalcartitem','name','values');
-		
+
 		$dg = new DataGrid($ds);
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Values','values');
-		$dg->AddInput('name','Name:',64,64);
-		$dg->AddInput('values','Values:',200,200);
+		$dg->AddInput('name','Name:',50,64);
+		$dg->AddInput('values','Values:',50,200);
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
 		$dg->insertlabel = 'Add New Item Option';
 		$dg->AddConstant('paypalcartitem',$ppcio);
 		$dg->Render();
 	}
-	
+
 	function RenderItemAdmin()
 	{
 		$ds = new DataSet('zcm_paypalcartitem','id');
 		$ds->AddColumns('id','instance','amount','handling','shipping','tax','weight','weightunit','name');
-		
+
 		$dg = new DataGrid($ds);
 		$dg->UsePennies = true;
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Amount','amount');
-		$dg->AddInput('name','Name:',127,127);
+		$dg->AddInput('name','Name:',50,127);
 		$dg->AddMoneyEditor('amount','Amount');
 		$dg->AddMoneyEditor('handling','Handling');
 		$dg->AddMoneyEditor('shipping','Shipping');

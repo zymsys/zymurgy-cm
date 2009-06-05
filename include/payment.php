@@ -186,7 +186,7 @@
 	class PaypalIPNProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		protected $m_PayPalCmd = "_xclick";
-		
+
 		public function PaypalIPNProcessor()
 		{
 			$this->m_billingInformation = new BillingInformation();
@@ -234,10 +234,14 @@
 		{
 			return "txn_id";
 		}
-		
+
 		public function RenderCmdInformation()
 		{
+			$output = "";
+
 			$output .= $this->RenderHiddenInput("amount", $this->m_amount);
+
+			return $output;
 		}
 
 		public function Process()
