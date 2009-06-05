@@ -29,7 +29,7 @@
 			$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
 		}
 
-//		$fieldLog = "";
+		// $fieldLog = "";
 
 		foreach ($configItems as $configItem)
 		{
@@ -62,6 +62,23 @@
 							die("Error (".Zymurgy::$db->errno().") adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
 					}
 				}
+
+				$configValues[$configItem["name"]] = $_POST[$inputField];
+			}
+			else
+			{
+				$sql = "UPDATE `zcm_pluginconfig` SET `value` = NULL WHERE (`key` = '".
+					Zymurgy::$db->escape_string($configItem["name"]).
+					"') AND (`plugin` = '".
+					Zymurgy::$db->escape_string($plugin->pid).
+					"') AND (`instance` = '".
+					Zymurgy::$db->escape_string($plugin->iid).
+					"')";
+
+				Zymurgy::$db->query($sql)
+					or die("Could not clear config item: ".Zymurgy::$db->error().", $sql");
+
+				$configValues[$configItem["name"]] = "";
 			}
 		}
 
@@ -70,7 +87,8 @@
 //		else
 //			header("Location: pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($po->InstanceName));
 
-		$message .= "Settings saved."; // <br>$fieldLog";
+		$message .= "Settings saved.";
+		// $message .= "<br>$fieldLog";
 	}
 
 	echo("<table>");
