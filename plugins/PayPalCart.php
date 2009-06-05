@@ -63,7 +63,15 @@ class PayPalCart extends PluginBase
 
 	function GetConfigItems()
 	{
-		return array();
+		$configItems = array();
+
+		$configItems["Name"] = array(
+			"name" => "Name",
+			"default" => "My New Form",
+			"inputspec" => "input.50.100",
+			"authlevel" => 2);
+
+		return $configItems;
 	}
 
 	function GetDefaultConfig()
@@ -162,8 +170,12 @@ class PayPalCart extends PluginBase
 		foreach ($items as $item)
 		{
 			$ppca = new PayPalCartAdd();
+
 			$ppca->itemname = $item['name'];
 			$ppca->itemamount = $item['amount'] / 100;
+			$ppca->SetReturnURL(
+				"http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
+
 			echo "<tr>\r\n";
 			echo "<td class=\"itemname\">{$ppca->itemname}</td>\r\n";
 			echo "<td class=\"itemamount\">\${$ppca->itemamount}</td>";
@@ -177,6 +189,8 @@ class PayPalCart extends PluginBase
 
 		$cart = new PaypalIPNProcessor();
 		$cart->SetPaypalCommand("_cart");
+		$cart->SetReturnURL(
+			"http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
 
 		echo "<tfoot>\r\n";
 		echo "<tr>\r\n";
