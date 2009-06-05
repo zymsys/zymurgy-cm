@@ -9,6 +9,10 @@
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetMembershipTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetCustomTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetHelpTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetNavigationTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVersionControlTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVisitTrackingTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPageTableDefinitions());
 
 	function GetAuthenticationTableDefinitions()
 	{
@@ -305,116 +309,225 @@
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_helpalso",
+				"columns" => array(
+					DefineTableField("help", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("seealso", "BIGINT(20)", "NOT NULL DEFAULT '0'")
+				),
+				"indexes" => array(),
+				"primarykey" => "help, seealso",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_helpindex",
+				"columns" => array(
+					DefineTableField("phrase", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("help", "BIGINT(20)", "NOT NULL DEFAULT '0'")
+				),
+				"indexes" => array(),
+				"primarykey" => "phrase, help",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_helpindexphrase",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("phrase", "VARCHAR(200)", "DEFAULT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
 			)
 		);
 	}
 
-$tables = array(
-	'zcm_helpalso'=>"CREATE TABLE `zcm_helpalso` (
-  `help` bigint(20) NOT NULL default '0',
-  `seealso` bigint(20) NOT NULL default '0',
-  PRIMARY KEY  (`help`,`seealso`))",
-	'zcm_helpindex'=>"CREATE TABLE `zcm_helpindex` (
-  `phrase` bigint(20) NOT NULL default '0',
-  `help` bigint(20) NOT NULL default '0',
-  PRIMARY KEY  (`phrase`,`help`))",
-	'zcm_helpindexphrase'=>"CREATE TABLE `zcm_helpindexphrase` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `phrase` varchar(200) default NULL,
-  UNIQUE KEY `id` (`id`))",
-	'zcm_nav'=>"CREATE TABLE `zcm_nav` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `disporder` bigint(20) default NULL,
-  `parent` bigint(20) default '0',
-  `navname` varchar(60) default NULL,
-  `navtype` enum('URL','Custom Table','Plugin','Sub-Menu') default NULL,
-  `navto` varchar(200) default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `disporder` (`disporder`),
-  KEY `parent` (`parent`))",
-	'zcm_draft'=>"CREATE TABLE `zcm_draft` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `saved` datetime default NULL,
-  `form` varchar(80) default NULL,
-  `json` longtext,
-  `keeper` tinyint(4) default '0',
-  UNIQUE KEY `id` (`id`),
-  KEY `form` (`form`),
-  KEY `saved` (`saved`))",
-	'zcm_tracking'=>"CREATE TABLE `zcm_tracking` (
-  `id` varchar(23) default NULL,
-  `created` datetime default NULL,
-  `lastload` datetime default NULL,
-  `member` bigint(20) default NULL,
-  `addr` varchar(15) default NULL,
-  `tag` varchar(30) default NULL,
-  `referrer` text,
-  `ua` text,
-  UNIQUE KEY `id` (`id`),
-  KEY `member` (`member`),
-  KEY `tag` (`tag`),
-  KEY `created` (`created`))",
-	'zcm_pageview'=>"CREATE TABLE `zcm_pageview` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `trackingid` varchar(23) default NULL,
-  `pageid` bigint(20) default NULL,
-  `orphan` tinyint(4) default NULL,
-  `viewtime` datetime default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `pageid` (`pageid`),
-  KEY `orphan` (`orphan`),
-  KEY `trackingid` (`trackingid`),
-  KEY `viewtime` (`viewtime`))",
-	'zcm_sitepage'=>"CREATE TABLE `zcm_sitepage` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `disporder` bigint(20) default NULL,
-  `linktext` varchar(40) default NULL,
-  `parent` bigint(20) default '0',
-  `retire` datetime default NULL,
-  `golive` datetime default NULL,
-  `softlaunch` datetime default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `disporder` (`disporder`),
-  KEY `parent` (`parent`),
-  KEY `retire` (`retire`),
-  KEY `parent_2` (`parent`,`linktext`))",
-	'zcm_sitepageplugin'=>"CREATE TABLE `zcm_sitepageplugin` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `zcm_sitepage` bigint(20) default NULL,
-  `disporder` bigint(20) default NULL,
-  `plugin` text,
-  `align` varchar(6) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `zcm_sitepage` (`zcm_sitepage`),
-  KEY `disporder` (`disporder`))",
-	'zcm_template'=>"CREATE TABLE `zcm_template` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `name` varchar(30) default NULL,
-  `path` varchar(200) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `name` (`name`))",
-	'zcm_pagetext'=>"CREATE TABLE `zcm_pagetext` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `sitepage` bigint(20) NOT NULL default '0',
-  `tag` varchar(35) NOT NULL default '',
-  `body` longtext,
-  PRIMARY KEY  (`id`),
-  KEY `sitepage` (`sitepage`))",
-	'zcm_templatetext'=>"CREATE TABLE `zcm_templatetext` (
-  `id` bigint(20) NOT NULL auto_increment,
-  `template` bigint(20) NOT NULL default 1,
-  `tag` varchar(35) NOT NULL default '',
-  `inputspec` varchar(100) NOT NULL default 'html.600.400',
-  KEY `template` (`template`),
-  KEY `tag` (`tag`),
-  PRIMARY KEY  (`id`))",
-	'zcm_sitepageredirect'=>"CREATE TABLE `zcm_sitepageredirect` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `sitepage` bigint(20) default NULL,
-  `parent` bigint(20) default NULL,
-  `linkurl` varchar(40) default NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `sitepage` (`sitepage`),
-  KEY `parent` (`parent`))"
-  );
+	function GetNavigationTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_nav",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("navname", "VARCHAR(60)", "DEFAULT NULL"),
+					DefineTableField("navtype", "ENUM('URL', 'Custom Table', 'Plugin', 'Sub-Menu')", "DEFAULT NULL"),
+					DefineTableField("navto", "VARCHAR(200)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
+					array("columns" => "parent", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetVersionControlTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_draft",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("saved", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("form", "VARCHAR(80)", "DEFAULT NULL"),
+					DefineTableField("json", "LONGTEXT", ""),
+					DefineTableField("keeper", "TINYINT(4)", "DEFAULT '0'")
+				),
+				"indexes" => array(
+					array("columns" => "form", "unique" => FALSE, "type" => ""),
+					array("columns" => "saved", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetVisitTrackingTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_tracking",
+				"columns" => array(
+					DefineTableField("id", "VARCHAR(23)", "DEFAULT NULL"),
+					DefineTableField("created", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("lastload", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("member", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("addr", "VARCHAR(15)", "DEFAULT NULL"),
+					DefineTableField("tag", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("referrer", "TEXT", ""),
+					DefineTableField("ua", "TEXT", "")
+				),
+				"indexes" => array(
+					array("columns" => "member", "unique" => FALSE, "type" => ""),
+					array("columns" => "tag", "unique" => FALSE, "type" => ""),
+					array("columns" => "created", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_pageview",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("trackingid", "VARCHAR(23)", "DEFAULT NULL"),
+					DefineTableField("pageid", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("orphan", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("viewtime", "DATETIME", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "pageid", "unique" => FALSE, "type" => ""),
+					array("columns" => "orphan", "unique" => FALSE, "type" => ""),
+					array("columns" => "trackingid", "unique" => FALSE, "type" => ""),
+					array("columns" => "viewtime", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetPageTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_sitepage",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("linktext", "VARCHAR(40)", "DEFAULT NULL"),
+					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("retire", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("golive", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("softlaunch", "DATETIME", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
+					array("columns" => "parent", "unique" => FALSE, "type" => ""),
+					array("columns" => "retire", "unique" => FALSE, "type" => ""),
+					array("columns" => "parent, linktext", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_sitepageplugin",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("zcm_sitepage", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("plugin", "TEXT", ""),
+					DefineTableField("align", "VARCHAR(6)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "zcm_sitepage", "unique" => FALSE, "type" => ""),
+					array("columns" => "disporder", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_pagetext",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("sitepage", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("tag", "VARCHAR(35)", "NOT NULL DEFAULT ''"),
+					DefineTableField("body", "LONGTEXT", "")
+				),
+				"indexes" => array(
+					array("columns" => "sitepage", "unique" => "FALSE", "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_template",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("path", "VARCHAR(200)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "name", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_templatetext",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("template", "BIGINT(20)", "NOT NULL DEFAULT 1"),
+					DefineTableField("tag", "VARCHAR(35)", "NOT NULL DEFAULT ''"),
+					DefineTableField("inputspec", "VARCHAR(100)", "NOT NULL DEFAULT 'html.600.400'")
+				),
+				"indexes" => array(
+					array("columns" => "template", "unique" => FALSE, "type" => ""),
+					array("columns" => "tag", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_sitepageredirect",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("sitepage", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("parent", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("linkurl", "VARCHAR(40)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "sitepage", "unique" => FALSE, "type" => ""),
+					array("columns" => "parent", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
 ?>
