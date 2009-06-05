@@ -82,13 +82,23 @@
 			}
 		}
 
-//		if ($issuper)
-//			header('Location: plugin.php');
-//		else
-//			header("Location: pluginadmin.php?pid=$id&iid=$instance&name=".urlencode($po->InstanceName));
+		$extensions = $plugin->GetExtensions();
 
-		$message .= "Settings saved.";
-		// $message .= "<br>$fieldLog";
+		if(count($extensions) > 0)
+		{
+			$message .= "Settings saved.";
+			// $message .= "<br>$fieldLog";
+		}
+		else
+		{
+			header("Location: pluginadmin.php?pid=".
+				$plugin->pid.
+				"&iid=".
+				$plugin->iid.
+				"&name=".urlencode($plugin->InstanceName));
+		}
+
+
 	}
 
 	echo("<table>");
