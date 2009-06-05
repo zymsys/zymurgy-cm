@@ -47,7 +47,7 @@
 					DefineTableField("name", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
 					DefineTableField("value", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
 					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("inputspec", "VARCHAR(100)", "DEFAULT NULL")
+					DefineTableField("inputspec", "VARCHAR(100)", "DEFAULT 'input.60.1024' NOT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => "")
@@ -91,7 +91,8 @@
 				),
 				"indexes" => array(
 					array("columns" => "tag", "unique" => FALSE, "type" => ""),
-					array("columns" => "category", "unique" => FALSE, "type" => "")
+					array("columns" => "category", "unique" => FALSE, "type" => ""),
+					array("columns" => "plainbody", "unique" => FALSE, "type" => "FULLTEXT")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
@@ -257,12 +258,14 @@
 					DefineTableField("tname", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("detailfor", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("hasdisporder", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("ismember", "TINYINT", "DEFAULT NULL"),
 					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
-					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL")
+					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL"),
 				),
 				"indexes" => array(
 					array("columns" => "detailfor", "unique" => FALSE, "type" => ""),
-					array("columns" => "disporder", "unique" => FALSE, "type" => "")
+					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
+					array("columns" => "navname", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
@@ -441,16 +444,19 @@
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("linktext", "VARCHAR(40)", "DEFAULT NULL"),
+					DefineTableField("linkurl", "VARCHAR(40)", "DEFAULT NULL"),
 					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("retire", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("golive", "DATETIME", "DEFAULT NULL"),
-					DefineTableField("softlaunch", "DATETIME", "DEFAULT NULL")
+					DefineTableField("softlaunch", "DATETIME", "DEFAULT NULL"),
+					DefineTableField("template", "BIGINT", "DEFAULT 1")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
 					array("columns" => "parent", "unique" => FALSE, "type" => ""),
 					array("columns" => "retire", "unique" => FALSE, "type" => ""),
-					array("columns" => "parent, linktext", "unique" => FALSE, "type" => "")
+					array("columns" => "parent, linktext", "unique" => FALSE, "type" => ""),
+					array("columns" => "template", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"

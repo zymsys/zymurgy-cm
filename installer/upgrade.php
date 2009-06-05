@@ -14,11 +14,6 @@ echo("Connecting to database...");
 echo("done.<br>");
 echo("Updating table definitions...<br>");
 
-$newsitepage = array(
-	'template'=>"alter table zcm_sitepage add template bigint default 1",
-	'linkurl'=>"alter table zcm_sitepage add linkurl varchar(40) after linktext"
-);
-
 RenameOldTables();
 
 ProcessTableDefinitions(
@@ -26,65 +21,6 @@ ProcessTableDefinitions(
 
 // ZK: Deprecated
 // $newtables = CreateMissingTables();
-
-VerifyColumnExists(
-	"zcm_sitetext",
-	"inputspec",
-	"VARCHAR(100)",
-	"DEFAULT 'html.600.400' NOT NULL");
-VerifyColumnExists(
-	"zcm_sitetext",
-	"category",
-	"BIGINT(20)",
-	"DEFAULT '0'");
-VerifyColumnExists(
-	"zcm_sitetext",
-	"plainbody",
-	"TEXT",
-	"AFTER `body`");
-
-VerifyColumnExists(
-	"zcm_passwd",
-	"eula",
-	"TINYINT",
-	"DEFAULT 0");
-
-VerifyColumnExists(
-	"zcm_plugininstance",
-	"private",
-	"TINYINT",
-	"DEFAULT 0");
-
-VerifyColumnExists(
-	"zcm_customtable",
-	"selfref",
-	"VARCHAR(30)",
-	"");
-VerifyColumnExists(
-	"zcm_customtable",
-	"ismember",
-	"TINYINT",
-	"AFTER `hasdisporder`");
-
-VerifyColumnExists(
-	"zcm_config",
-	"inputspec",
-	"VARCHAR(100)",
-	"DEFAULT 'input.60.1024' NOT NULL");
-
-VerifyColumnExists(
-	"zcm_member",
-	"mpkey",
-	"VARCHAR(40)",
-	"DEFAULT NULL");
-
-$sitepagecols = CheckColumns('zcm_sitepage',$newsitepage);
-
-CheckIndexes('zcm_customtable',array('navname'));
-CheckIndexes('zcm_member',array('mpkey'),true);
-CheckIndexes('zcm_sitepage',array('template'));
-CheckIndexes("zcm_sitetext", array("plainbody"), false, "FULLTEXT");
-CheckIndexes("zcm_sitetext", array("category"), false);
 
 echo("done.<br>");
 
@@ -112,10 +48,13 @@ echo("done.<br>");
 echo("Updating site text category information...");
 
 //Check for old page bodies, and relocate them to new page bodies.
+$sitePageBodyRI = mysql_query("show columns from zcm_sitepage like 'body'");
+if(mysql_num_rows($sitePageBodyRI) > 0)
 if (array_key_exists('body',$sitepagecols))
 {
-	mysql_query("insert into zcm_templatetext (template,tag) values (1,'Body')");
-	$ri = mysql_query("select * from zcm_sitepage");
+	mysql_query("insert ignore into zcm_templatetext (id,template,tag) values (1,1,'Body')");
+	$ri = mysql_query("select * from zcm_sitepage where not exists(select 1 from zcm_pagetext ".
+		"where zcm_pagetext.sitepage = zcm_sitepage.id and zcm_pagetext.tag = 'Body')");
 	while (($row = mysql_fetch_array($ri))!==false)
 	{
 		mysql_query("insert into zcm_pagetext (sitepage,tag,body) values ({$row['id']},'Body','".
@@ -125,21 +64,18 @@ if (array_key_exists('body',$sitepagecols))
 }
 
 //Check for no old linkurl in zcm_sitepage, and populate it if required
-if (!array_key_exists('linkurl',$sitepagecols))
+require_once('../sitenav.php');
+$spu = array();
+$ri = mysql_query("select id,linktext from zcm_sitepage where linkurl is NULL");
+while (($row = mysql_fetch_array($ri))!==false)
 {
-	require_once('../sitenav.php');
-	$spu = array();
-	$ri = mysql_query("select id,linktext from zcm_sitepage");
-	while (($row = mysql_fetch_array($ri))!==false)
-	{
-		$spu[$row['id']] = $row['linktext'];
-	}
-	mysql_free_result($ri);
-	foreach($spu as $id=>$linktext)
-	{
-		mysql_query("update zcm_sitepage set linkurl='".
-			mysql_escape_string(ZymurgySiteNav::linktext2linkpart($linktext))."' where id=$id");
-	}
+	$spu[$row['id']] = $row['linktext'];
+}
+mysql_free_result($ri);
+foreach($spu as $id=>$linktext)
+{
+	mysql_query("update zcm_sitepage set linkurl='".
+		mysql_escape_string(ZymurgySiteNav::linktext2linkpart($linktext))."' where id=$id");
 }
 
 //Check if faulty uncategorized content category exists and fix it.
