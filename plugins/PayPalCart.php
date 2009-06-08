@@ -2,7 +2,7 @@
 /*
 https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables#id085LC0Z0E7U
 */
-
+ini_set("display_errors", 1);
 require_once(Zymurgy::$root.'/zymurgy/include/payment.php');
 
 class PayPalCartItemOption
@@ -100,8 +100,21 @@ class PayPalCart extends PluginBase
 		return array();
 	}
 
-	function Initialize()
+	public function Initialize()
 	{
+		$this->VerifyTableDefinitions();
+	}
+
+	public function Upgrade()
+	{
+		$this->VerifyTableDefinitions();
+		$this->CompleteUpgrade();
+	}
+
+	protected function VerifyTableDefinitions()
+	{
+		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+
 		$tableDefinitions = array(
 			array(
 				"name" => "zcm_paypalcartitem",
@@ -114,8 +127,10 @@ class PayPalCart extends PluginBase
 					DefineTableField("tax", "float"),
 					DefineTableField("weight", "float"),
 					DefineTableField("weightunit", "varchar(3)"),
-					DefineTableField("name", "varchar(127)")
-				),
+					DefineTableField("name", "varchar(127)"),
+					DefineTableField("disporder", "INT(11)", "DEFAULT NULL"),
+					DefineTableField("photo", "VARCHAR(60)", "DEFAULT NULL")
+			),
 				"indexes" => array(
 					DefineIndexField('instance')
 				),
@@ -170,7 +185,7 @@ class PayPalCart extends PluginBase
 		?>
 <script type="text/javascript">
 YAHOO.util.Event.addListener(window, "load", function () {
-	var dlg = new YAHOO.widget.SimpleDialog("simpledialog1", 
+	var dlg = new YAHOO.widget.SimpleDialog("simpledialog1",
 		 { width: "610px",
 		   fixedcenter: true,
 		   visible: false,
