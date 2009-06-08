@@ -820,6 +820,20 @@ class ZIW_Image extends ZIW_Base
 	}
 	
 	/**
+	 * Take posted value(s) and return the value to be stored in the database
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $postname Posted value name
+	 * @return string
+	 */
+	function PostValue($ep,$postname)
+	{
+		$file = $_FILES[$postname];
+		if ($file['type']!='')
+			return $file['type'];
+	}
+	
+	/**
 	 * Render the actual input interface to the user.
 	 *
 	 * @param array $ep Input-spec exploded parts, broken up by .'s
@@ -863,6 +877,20 @@ class ZIW_Attachment extends ZIW_Base
 	function Render($ep,$name,$value)
 	{
 		echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
+	}
+	
+	/**
+	 * Take posted value(s) and return the value to be stored in the database
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $postname Posted value name
+	 * @return string
+	 */
+	function PostValue($ep,$postname)
+	{
+		$file = $_FILES[$postname];
+		if ($file['type']!='')
+			return $file['type'];
 	}
 }
 

@@ -147,7 +147,8 @@ if (!class_exists('Zymurgy'))
 			else
 				$included = (array_key_exists($src,Zymurgy::$otherloaded));
 			if ($included)
-				return '';//"<!-- $src is already loaded. -->"; //Already loaded
+				return '';
+				//return "<!-- $src is already loaded. -->"; //Already loaded
 			if ($isYUI)
 			{
 				Zymurgy::$yuiloaded[$src]='';

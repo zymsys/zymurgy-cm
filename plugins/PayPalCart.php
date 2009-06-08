@@ -15,6 +15,7 @@ class PayPalCartAdd extends PaypalIPNProcessor
 {
 	public $itemamount;
 	public $itemhandling;
+	public $itemphoto;
 	public $itemname;
 	public $options = array();
 	public $shipping;
@@ -139,8 +140,17 @@ class PayPalCart extends PluginBase
 
 	function Render()
 	{
+		echo Zymurgy::YUI('container/assets/skins/sam/container.css');
+		echo Zymurgy::YUI('button/assets/skins/sam/button.css');
+		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+		echo Zymurgy::YUI('animation/animation-min.js');
+		echo Zymurgy::YUI('connection/connection-min.js');
+		echo Zymurgy::YUI('dragdrop/dragdrop-min.js');
+		echo Zymurgy::YUI('element/element-min.js');
+		echo Zymurgy::YUI('button/button-min.js');
+		echo Zymurgy::YUI('container/container-min.js');
 		$items = array();
-		$ri = Zymurgy::$db->run("select * from zcm_paypalcartitem where instance={$this->iid}");
+		$ri = Zymurgy::$db->run("select * from zcm_paypalcartitem where instance={$this->iid} order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$items[$row['id']] = $row;
@@ -149,7 +159,7 @@ class PayPalCart extends PluginBase
 		foreach($items as $key=>$item)
 		{
 			$options = array();
-			$ri = Zymurgy::$db->run("select * from zcm_paypalcartitemoption where paypalcartitem=$key");
+			$ri = Zymurgy::$db->run("select * from zcm_paypalcartitemoption where paypalcartitem=$key order by disporder");
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
 				$options[$row['id']] = $row;
@@ -157,9 +167,40 @@ class PayPalCart extends PluginBase
 			Zymurgy::$db->free_result($ri);
 			$items[$key]['options'] = $options;
 		}
+		?>
+<script type="text/javascript">
+YAHOO.util.Event.addListener(window, "load", function () {
+	var dlg = new YAHOO.widget.SimpleDialog("simpledialog1", 
+		 { width: "610px",
+		   fixedcenter: true,
+		   visible: false,
+		   draggable: false,
+		   close: true,
+		   text: '<div id="LargeImageView"></div>',
+		   constraintoviewport: true
+		 } );
+	dlg.setHeader("Photo");
+	dlg.render("LargeImageDialog");
+	var LargeImageDialogShow = function(e) {
+		var el = document.getElementById('LargeImageView');
+		var iid = this.id.substr(14);
+		el.innerHTML = '<img src="http://www.bentleydistribution.com/zymurgy/file.php?mime=image/jpeg&dataset=zcm_paypalcartitem&datacolumn=photo&id=' + iid + '&w=600&h=650" width="600" height="650" />';
+		dlg.show();
+	};
+		<?
+		foreach($items as $key=>$item)
+		{
+			echo "YAHOO.util.Event.addListener(\"PayPalCartItem{$key}\", \"click\", LargeImageDialogShow);\r\n";
+		}
+		?>
+});
+</script>
+<div class="yui-skin-sam" id="LargeImageDialog"></div>
+		<?
 		echo "<table class=\"zcmcart\">\r\n";
 
 		echo "<thead>\r\n";
+		echo "<th class=\"itemphoto\">Photo</th>\r\n";
 		echo "<th class=\"itemname\">Item</th>\r\n";
 		echo "<th class=\"itemamount\">Price</th>\r\n";
 		echo "<th class=\"itemcommand\">&nbsp;</th>\r\n";
@@ -167,16 +208,18 @@ class PayPalCart extends PluginBase
 
 		echo "<tbody>\r\n";
 
-		foreach ($items as $item)
+		foreach ($items as $key=>$item)
 		{
 			$ppca = new PayPalCartAdd();
 
 			$ppca->itemname = $item['name'];
+			$ppca->itemphoto = $item['photo'];
 			$ppca->itemamount = $item['amount'] / 100;
 			$ppca->SetReturnURL(
 				"http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
 
 			echo "<tr>\r\n";
+			echo "<td class=\"itemphoto\"><img id=\"PayPalCartItem{$key}\" style=\"cursor:pointer\" src=\"/zymurgy/file.php?mime={$ppca->itemphoto}&dataset=zcm_paypalcartitem&datacolumn=photo&id={$key}&w=90&h=120}\" width=\"90\" height=\"120\" alt=\"{$ppca->itemname}\" ></td>\r\n";
 			echo "<td class=\"itemname\">{$ppca->itemname}</td>\r\n";
 			echo "<td class=\"itemamount\">\${$ppca->itemamount}</td>";
 			echo "<td class=\"itemcommand\">";
@@ -224,13 +267,14 @@ class PayPalCart extends PluginBase
 		$ppcio = 0 + $_GET['ppcio'];
 
 		$ds = new DataSet('zcm_paypalcartitemoption','id');
-		$ds->AddColumns('id','paypalcartitem','name','values');
+		$ds->AddColumns('id','disporder','paypalcartitem','name','values');
 
 		$dg = new DataGrid($ds);
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Values','values');
 		$dg->AddInput('name','Name:',64,50);
 		$dg->AddInput('values','Values:',200,50);
+		$dg->AddUpDownColumn('disporder');
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
 		$dg->insertlabel = 'Add New Item Option';
@@ -241,12 +285,14 @@ class PayPalCart extends PluginBase
 	function RenderItemAdmin()
 	{
 		$ds = new DataSet('zcm_paypalcartitem','id');
-		$ds->AddColumns('id','instance','amount','handling','shipping','tax','weight','weightunit','name');
+		$ds->AddColumns('id','disporder','photo','instance','amount','handling','shipping','tax','weight','weightunit','name');
 
 		$dg = new DataGrid($ds);
 		$dg->UsePennies = true;
+		$dg->AddThumbColumn('Photo','photo',90,120);
 		$dg->AddColumn('Name','name');
 		$dg->AddColumn('Amount','amount');
+		$dg->AddEditor('photo','Photo:','image.90.120');
 		$dg->AddInput('name','Name:',127,50);
 		$dg->AddMoneyEditor('amount','Amount');
 		// $dg->AddMoneyEditor('handling','Handling');
@@ -255,6 +301,7 @@ class PayPalCart extends PluginBase
 		// $dg->AddEditor('weight','Weight:','float');
 		// $dg->AddDropListEditor('weightunit','Weight Unit:',array('lbs'=>'lbs','kgs'=>'kgs'));
 		$dg->AddButton('Options',$dg->BuildSelfReference(array()).'&ppcio={0}');
+		$dg->AddUpDownColumn('disporder');
 		$dg->AddEditColumn();
 		$dg->AddDeleteColumn();
 		$dg->insertlabel = 'Add New Item';
