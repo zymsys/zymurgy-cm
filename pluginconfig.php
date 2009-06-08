@@ -140,13 +140,15 @@
 	function GetInstanceName(
 		$instanceID)
 	{
+		$defaultInstance = "Defaults";
+
 		$sql = "SELECT `name` FROM zcm_plugininstance WHERE `id` = '".
 			Zymurgy::$db->escape_string($instanceID).
 			"'";
-		$instanceName = Zymurgy::$db->get($sql)
-			or die("Could not get instance information: ".mysql_error().", $sql");
+		$instanceName = Zymurgy::$db->get($sql);
+		//	or die("Could not get instance information: ".mysql_error().", $sql");
 
-		return $instanceName;
+		return strlen($instanceName) > 0 ? $instanceName : $defaultInstance;
 	}
 
 	function GetConfigItems(
