@@ -244,8 +244,8 @@ function DefineTableField(
 function DefineIndexField($columns,$unique = false,$itype='')
 {
 	return array(
-		"columns" => $columns, 
-		"unique" => $unique, 
+		"columns" => $columns,
+		"unique" => $unique,
 		"type" => $itype
 	);
 }
@@ -266,7 +266,10 @@ function ProcessTableDefinitions(
 
 	foreach($tableDefinitions as $tableDefinition)
 	{
-		echo("---- ".$tableDefinition["name"]."<br>");
+		if(strpos($_SERVER['REQUEST_URI'], "installer/upgrade.php") !== FALSE)
+		{
+			echo("---- ".$tableDefinition["name"]."<br>");
+		}
 
 		// If the table does not exist yet, generate and run the
 		// CREATE TABLE statement for it.
