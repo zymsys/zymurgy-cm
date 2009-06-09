@@ -1,14 +1,14 @@
 function InputParameter()
 {
 	this.description = "";
-	
+
 	this.type = "text";
 	this.size = "5";
 	this.maxlength = "50";
 
 	this.options = new Array();
 	this.optionLoader = "";
-	
+
 	this.value = "";
 
 	this.onchange = "";
@@ -16,57 +16,57 @@ function InputParameter()
 	this.renderedit = function(index)
 	{
 		var output;
-		
+
 		if(this.type == "select")
 		{
 			if(this.optionLoader != "")
 			{
 				this.options = eval(this.optionLoader);
 			}
-			
+
 			output = "<select id=\"param_" + index + "\"";
-			
+
 			if(this.onchange != "")
 			{
 				output = output + " onchange=\"" + this.onchange + "\"";
 			}
-			
+
 			output = output + ">";
-			
+
 			for(var cntr = 0; cntr < this.options.length; cntr++)
 			{
 				var option = this.options[cntr];
-				
+
 				output = output + "<option value=\"" + option + "\"";
-				
+
 				if(option == this.value)
 				{
 					output = output + " selected";
 				}
-				
+
 				output = output + ">" + option + "</option>";
 			}
-			
+
 			output = output + "</select>";
-			
+
 			output = output + "<input type=\"hidden\" id=\"param_" + index + "_default\"";
 			output = output + " value=\"" + this.value + "\">";
 		}
 		else
 		{
 			output = "<input";
-	
+
 			output = output + " id=\"param_" + index + "\"";
-			
+
 			output = output + " type=\"" + this.type + "\"";
-	
+
 			if(this.type == "text")
 			{
 				output = output + " size=\"" + this.size + "\"";
 				output = output + " maxlength=\"" + this.maxlength + "\"";
 				output = output + " value=\"" + this.value + "\"";
 			}
-	
+
 			if(this.type == "checkbox")
 			{
 				if(this.value == "checked")
@@ -74,7 +74,7 @@ function InputParameter()
 						output = output + " checked";
 				}
 			}
-				
+
 			if(this.onchange != "")
 			{
 				output = output + " onchange=\"" + this.onchange + "\"";
@@ -82,7 +82,7 @@ function InputParameter()
 
 			output = output + ">";
 		}
-		
+
 		if(this.onchange != "")
 		{
 			setTimeout(this.onchange, 100);
@@ -140,12 +140,12 @@ function InputSpecifier()
 		var specifiers = GetSupportedSpecifiers();
 		for(var cntr = 0; cntr < specifiers.length; cntr++)
 		{
-			output = output + "<option value=\"" + specifiers[cntr].type + 
-				"\"" + (specifiers[cntr].type == this.type ? " selected" : "") + 
+			output = output + "<option value=\"" + specifiers[cntr].type +
+				"\"" + (specifiers[cntr].type == this.type ? " selected" : "") +
 				">" + specifiers[cntr].description + "</option>";
 		}
 		output = output + "</select></td>";
-		
+
 		output = output + "</tr>";
 
 		output = output + "<tr>";
@@ -168,8 +168,8 @@ function InputSpecifier()
 		output = output + "<tr>";
 		output = output + "<td colspan=\"2\">";
 
-		output = output + "<input type=\"button\" id=\"btnSaveSpecifier\" onclick=\"" + saveCall + "\" value=\"Ok\"> "; 
-		output = output + "<input type=\"button\" id=\"btnCancelSpecifier\" onclick=\"" + cancelCall + "\" value=\"Cancel\">"; 
+		output = output + "<input type=\"button\" id=\"btnSaveSpecifier\" onclick=\"" + saveCall + "\" value=\"Ok\"> ";
+		output = output + "<input type=\"button\" id=\"btnCancelSpecifier\" onclick=\"" + cancelCall + "\" value=\"Cancel\">";
 
 		output = output + "</td>";
 		output = output + "</tr>";
@@ -194,7 +194,7 @@ function InputSpecifier()
 			{
 				parameter.value = control.checked ? "checked" : "";
 			}
-			
+
 			if(parameter.type == "select")
 			{
 				parameter.value = control.options[control.selectedIndex].value;
@@ -578,21 +578,21 @@ function GetSupportedSpecifiers()
 	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());
 	list.push(GetHipAsirraSpecifier());
-	
+
 	return list;
 }
 
 function GetSpecifierFromText(specifierText)
 {
 	specifierText = specifierText + ".";
-	
+
 	var specifierID = specifierText.substr(
-		0, 
+		0,
 		specifierText.indexOf('.'));
 	specifierText = specifierText.substr(
 		specifierText.indexOf('.') + 1,
 		specifierText.length);
-	
+
 	var specifiers = GetSupportedSpecifiers();
 	var specifier = specifiers[0].Clone();
 
@@ -604,7 +604,7 @@ function GetSpecifierFromText(specifierText)
 		{
 			specifier = specifiers[i].Clone();
 
-			break;		
+			break;
 		}
 	}
 
@@ -630,7 +630,7 @@ function initSpecifierDiv()
 	var specs = document.createElement("div");
 	specs.id = 'specifiers';
 	document.body.appendChild(specs);
-	
+
 	//Set CSS for specifiers div
 	YAHOO.util.Dom.setStyle(['specifiers'],'border-width',1);
 	YAHOO.util.Dom.setStyle(['specifiers'],'border-style','solid');
@@ -667,21 +667,28 @@ function editSpecifier(specifierElement)
 		specifierElement,
 		"saveSpecifier('" + specifierElement + "');",
 		"cancelEditSpecifier();");
-		
+
 	document.getElementById("specifiers").style.visibility = "visible";
 	document.getElementById("specifiers").style.display = "block";
 
-	var textPos = YAHOO.util.Dom.getXY(specifierElement); 	
-	textPos[0] += 150;	
+	var textPos = YAHOO.util.Dom.getXY(specifierElement);
+	textPos[0] += 150;
 	textPos[1] += 24;
-	YAHOO.util.Dom.setXY('specifiers', textPos); 		
+	YAHOO.util.Dom.setXY('specifiers', textPos);
+
+	// If the specifierText is empty, then force the dialog
+	// to use the "input" specifier.
+	if(specifierText == ".")
+	{
+		changeSpecifierByText(specifierElement, "input");
+	}
 }
 
 function saveSpecifier(specifierElement)
 {
 	m_specifier.getvaluesfromedit();
 
-	document.getElementById(specifierElement).value = 
+	document.getElementById(specifierElement).value =
 		m_specifier.tableoutput();
 
 	document.getElementById("specifiers").innerHTML = "";
@@ -704,6 +711,11 @@ function changeSpecifier(specifierElement)
 	var specifierText = document.getElementById("specifierType")[specifierIndex].value;
 	// alert(specifierText);
 
+	changeSpecifierByText(specifierElement, specifierText);
+}
+
+function changeSpecifierByText(specifierElement, specifierText)
+{
 	var specifiers = GetSupportedSpecifiers();
 
 	for(var i = 0; i < specifiers.length; i++)
