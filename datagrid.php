@@ -246,11 +246,37 @@ class DataSetRow
 			$clist = array();
 			$vlist = array();
 			$alist = array();
+
 			foreach ($values as $cname=>$val)
 			{
 				$clist[] = "`$cname`";
+
+				// If the user clicked on the Clear button for an attachment,
+				// delete the attachment from the filesystem and clear
+				// the field in the table.
+				if(key_exists("clear{$tname}_{$cname}", $_POST) && $_POST["clear{$tname}_{$cname}"] == "1")
+				{
+					// delete files using the "attachment" inputspec
+					$uploadfolder = Zymurgy::$root."/zymurgy/uploads/";
+					$filepath = $uploadfolder."$tname.$cname.".$this->values["$tname.{$tablekeys[$tname]}"];
+					@unlink($filepath);
+
+					// delete files using the "image" inputspec
+					$datagridfolder = Zymurgy::$root."/UserFiles/DataGrid/$tname.$cname/";
+					$filepath = $datagridfolder.$this->values["$tname.{$tablekeys[$tname]}"]."*.*";
+					$files = glob($filepath);
+					foreach($files as $file)
+					{
+						unlink($file);
+					}
+
+					// clear the table value
+					$val = "";
+				}
+
 				if (!key_exists("$tname.$cname",$this->DataSet->columns))
 					$this->DataSet->AddColumn($cname,true); //Auto create missing columns
+
 				if ($this->DataSet->columns["$tname.$cname"]->quoted)
 				{
 					$vlist[] = "'".Zymurgy::$db->escape_string($val)."'";
@@ -262,6 +288,7 @@ class DataSetRow
 					$alist[] = "`$cname`=$val";
 				}
 			}
+
 			if ($this->edittype == 'UPDATE')
 			{
 				if ($this->DataSet->columns["$tname.{$tablekeys[$tname]}"]->quoted)
@@ -277,20 +304,25 @@ class DataSetRow
 				$sql = "insert into $tname (".implode(",",$clist).") values (".
 					implode(",",$vlist).")";
 			}
+
 			//echo $sql;
 			$ri = Zymurgy::$db->query($sql);
+
 			if ($ri === false)
 			{
 				echo "Error updating record: ".Zymurgy::$db->error()." [$sql]";
 				exit;
 			}
+
 			if ($rid==0)
 			{
 				$rid = Zymurgy::$db->insert_id();
 			}
+
 			$this->values[$this->DataSet->masterkey] = $rid;
 			//echo "[rid:$rid][key:{$this->DataSet->masterkey}][sql:$sql]";exit;
 		}
+
 		//Check for DisplayOrder update required
 		if ($ri && ($this->DataSet->DisplayOrder!='') && ($this->edittype=='INSERT'))
 		{
@@ -1293,14 +1325,14 @@ class DataGrid
 				echo("<script type=\"text/javascript\">\n");
 				foreach($yuihtml as $yuihtmlelement)
 				{
-					echo("YAHOO.util.Event.on('submit', 'click', function() { ".
+					echo("YAHOO.util.Event.on('submitForm', 'click', function() { ".
 						str_replace(".", "_", $yuihtmlelement).
 						"Editor.saveHTML(); });\n");
 				}
 				echo("</script>\n");
 			}
 
-			echo "<tr><td align=\"middle\" colspan=\"2\"><input id=\"submit\" type=\"submit\" value=\"Save\">";
+			echo "<tr><td align=\"middle\" colspan=\"2\"><input id=\"submitForm\" type=\"submit\" value=\"Save\">";
 
 
 			if (!isset($this->customCancelLocation))
@@ -1317,7 +1349,7 @@ class DataGrid
 		echo "<a class=\"yuimenuitemlabel\" href=\"$action\">$name</a>";
 		echo "</li>";
 	}
-	
+
 	function RenderContextMenu($row)
 	{
 		$id = $row->values[$this->DataSet->masterkey];
@@ -1449,7 +1481,7 @@ class DataGrid
 		{
 			echo "<script type=\"text/javascript\">
 			var oZCMDGCM$id = ZymurgyCreateDGCM(['".implode("', '",$contexttriggers)."'],'".$this->DataSet->tables[0]."');
-			</script>";		
+			</script>";
 		}
 	}
 }

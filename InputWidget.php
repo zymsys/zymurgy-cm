@@ -880,7 +880,28 @@ class ZIW_Attachment extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
-		echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
+		$output = "";
+
+		if(strlen($value) > 0)
+		{
+			$dsItems = explode(".", $name);
+			$tableName = $dsItems[0];
+			$fieldName = $dsItems[1];
+
+			$output .= "<input type=\"hidden\" name=\"clear$name\" value=\"0\">";
+			$output .= "Currently: <a href=\"file.php?dataset=$tableName&amp;datacolumn=$fieldName&amp;mime=$value&amp;id={$_GET["editkey"]}\">$value</a>";
+			$output .= " <input type=\"button\" id=\"btnClear$name\" name=\"btnClear$name\" value=\"Clear\" ";
+			$output .= "onclick=\"document.datagridform['clear$name'].value=1;document.datagridform.submit();\">";
+			$output .= " Change to:";
+		}
+
+		$output .= "<input type=\"file\" id=\"$name\" name=\"$name\" />";
+
+		if(strlen($value) > 0)
+		{
+		}
+
+		echo $output;
 	}
 
 	/**
