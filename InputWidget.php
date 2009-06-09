@@ -2,7 +2,7 @@
 class ZIW_Base
 {
 	public $xlatehtmlentities = true;
-	public $extra = array();	
+	public $extra = array();
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -17,7 +17,7 @@ class ZIW_Base
 		else
 			return '';
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -29,7 +29,7 @@ class ZIW_Base
 	{
 		return $display;
 	}
-	
+
 	/**
 	 * Get output needed before any instances of this widget are rendered.
 	 *
@@ -40,7 +40,7 @@ class ZIW_Base
 	{
 		return '';
 	}
-	
+
 	/**
 	 * Return javascript code that should appear above the use of this widget as part of it's initialization.
 	 * Similar to GetPretext, except this is placed inside <script> tags.
@@ -54,7 +54,7 @@ class ZIW_Base
 	{
 		return '';
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -68,7 +68,7 @@ class ZIW_Base
 	}
 }
 
-class ZIW_Input extends ZIW_Base 
+class ZIW_Input extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -84,7 +84,7 @@ class ZIW_Input extends ZIW_Base
 	}
 }
 
-class ZIW_TextArea extends ZIW_Base 
+class ZIW_TextArea extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -100,7 +100,7 @@ class ZIW_TextArea extends ZIW_Base
 	}
 }
 
-class ZIW_Hidden extends ZIW_Base 
+class ZIW_Hidden extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -115,7 +115,7 @@ class ZIW_Hidden extends ZIW_Base
 	}
 }
 
-class ZIW_Password extends ZIW_Base 
+class ZIW_Password extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -129,7 +129,7 @@ class ZIW_Password extends ZIW_Base
 		echo "<input type=\"password\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 			"$name\" value=\"$value\" />";
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -143,7 +143,7 @@ class ZIW_Password extends ZIW_Base
 	}
 }
 
-class ZIW_CheckBox extends ZIW_Base 
+class ZIW_CheckBox extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -160,7 +160,7 @@ class ZIW_CheckBox extends ZIW_Base
 	}
 }
 
-class ZIW_Money extends ZIW_Base 
+class ZIW_Money extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -177,7 +177,7 @@ class ZIW_Money extends ZIW_Base
 		$m = '$'.number_format($m,2,'.',',');
 		echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 	}
-	
+
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -193,7 +193,7 @@ class ZIW_Money extends ZIW_Base
 			$m = $m * 100;
 		return $m;
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -207,7 +207,7 @@ class ZIW_Money extends ZIW_Base
 	}
 }
 
-class ZIW_InputSpec extends ZIW_Base 
+class ZIW_InputSpec extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -225,7 +225,7 @@ class ZIW_InputSpec extends ZIW_Base
 	}
 }
 
-class ZIW_Lookup extends ZIW_Base 
+class ZIW_Lookup extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -238,7 +238,7 @@ class ZIW_Lookup extends ZIW_Base
 	{
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList($name,$value);
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -248,30 +248,34 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Display($ep,$display,$shell)
 	{
-		return $this->extra['lookups'][$ep[1]]->values[$display];
+		$values = $this->extra['lookups'][$ep[1]]->values;
+
+		return array_key_exists($display, $values)
+			? $values[$display]
+			: "";
 	}
 }
 
-abstract class ZIW_AutoCompleteBase extends ZIW_Base 
+abstract class ZIW_AutoCompleteBase extends ZIW_Base
 {
 	static public $ZymurgyAutocompleteZIndex = 9000;
 	static public $acwidth = 200;
 	protected $name;
 	protected $jsname;
 	protected $textvalue;
-	
+
 	abstract function PreRender($ep,$name,$value); //Must set $textvalue
-	
+
 	function RenderJS()
 	{
-		
+
 	}
-	
+
 	function GetHint()
 	{
 		return ''; //Decendants may override this to put a hint into the autocomplete box
 	}
-	
+
 	function Render($ep,$name,$value)
 	{
 		$this->name = $name;
@@ -321,7 +325,7 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 	}
 }
 
-class ZIW_Plugin extends ZIW_AutoCompleteBase 
+class ZIW_Plugin extends ZIW_AutoCompleteBase
 {
 	function PreRender($ep,$name,$value)
 	{
@@ -341,7 +345,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 		echo "</select>";
 		echo "</div>";
 	}
-	
+
 	function RenderJS()
 	{
 		if (empty($this->textvalue))
@@ -375,15 +379,15 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 				var elSel = document.getElementById("'.$this->name.'-plugin");
 				return "/zymurgy/include/plugin.php?pg='.$_GET['d'].'&pi=" + elSel.value + "&q=" + sQuery;
 			};
-			
+
 			';
 	}
-	
+
 	function GetTitle()
 	{
 		return 'Choose a Plugin First';
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -398,12 +402,12 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 	}
 }
 
-class ZIW_AutoComplete extends ZIW_AutoCompleteBase 
+class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 {
 	private $table;
 	private $idcolumn;
 	private $column;
-	
+
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -437,7 +441,7 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 		}
 		return $value;
 	}
-	
+
 	function PreRender($ep,$name,$value)
 	{
 		$this->table = $ep[1];
@@ -445,7 +449,7 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 		$this->column = $ep[3];
 		$this->textvalue = $this->Display($ep,$value,null);
 	}
-	
+
 	function RenderJS()
 	{
 		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/autocomplete.php");
@@ -464,7 +468,7 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
 			';
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -484,7 +488,7 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 	}
 }
 
-class ZIW_RadioDrop extends ZIW_Base 
+class ZIW_RadioDrop extends ZIW_Base
 {
 	/**
 	 * Unserialize source if it begins a: and ends } for items that take arrays.
@@ -506,7 +510,7 @@ class ZIW_RadioDrop extends ZIW_Base
 		}
 		return $r;
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -522,7 +526,7 @@ class ZIW_RadioDrop extends ZIW_Base
 	}
 }
 
-class ZIW_Radio extends ZIW_RadioDrop 
+class ZIW_Radio extends ZIW_RadioDrop
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -545,7 +549,7 @@ class ZIW_Radio extends ZIW_RadioDrop
 	}
 }
 
-class ZIW_Drop extends ZIW_RadioDrop 
+class ZIW_Drop extends ZIW_RadioDrop
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -570,7 +574,7 @@ class ZIW_Drop extends ZIW_RadioDrop
 	}
 }
 
-class ZIW_Time extends ZIW_Base 
+class ZIW_Time extends ZIW_Base
 {
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
@@ -584,7 +588,7 @@ class ZIW_Time extends ZIW_Base
 		$t = strtotime($_POST[$postname]);
 		return date('H:i:s',$t);
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -597,7 +601,7 @@ class ZIW_Time extends ZIW_Base
 		//Convert 24hr clock to hh:mm am/pm
 		return date("g:i a",strtotime($display));
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -613,7 +617,7 @@ class ZIW_Time extends ZIW_Base
 	}
 }
 
-abstract class ZIW_DateBase extends ZIW_Base 
+abstract class ZIW_DateBase extends ZIW_Base
 {
 	protected $unixdate;
 	protected $caloptions = array('firstDay'       => 0, // show Monday first
@@ -622,22 +626,22 @@ abstract class ZIW_DateBase extends ZIW_Base
     protected $calattributes = array('style' => 'width: 15em; color: #840; background-color: #ff8; border: 1px solid #000; text-align: center');
 
 	abstract function SetCalendarParams($date);
-	
+
 	function GetJSFormat()
 	{
 		return '%Y-%m-%d';
 	}
-	
+
 	function GetFormat()
 	{
 		return 'Y-m-d';
 	}
-	
+
 	function ToUnixTime($tm)
 	{
 		return $tm;
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -650,7 +654,7 @@ abstract class ZIW_DateBase extends ZIW_Base
 		//echo "[f:".$this->GetFormat().",tu:".$this->ToUnixTime($display).",d:$display]";
 		return date($this->GetFormat(),$this->ToUnixTime($display));
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -679,7 +683,7 @@ abstract class ZIW_DateBase extends ZIW_Base
 	}
 }
 
-class ZIW_UnixDate extends ZIW_DateBase 
+class ZIW_UnixDate extends ZIW_DateBase
 {
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
@@ -693,7 +697,7 @@ class ZIW_UnixDate extends ZIW_DateBase
 		$dp = explode("-",$_POST[$postname]);
 		return mktime(0,0,0,$dp[1],$dp[2],$dp[0]);
 	}
-	
+
 	function SetCalendarParams($date)
 	{
 		$format = $this->GetJSFormat();
@@ -702,7 +706,7 @@ class ZIW_UnixDate extends ZIW_DateBase
 	}
 }
 
-class ZIW_Date extends ZIW_DateBase 
+class ZIW_Date extends ZIW_DateBase
 {
 	function SetCalendarParams($date)
 	{
@@ -710,25 +714,25 @@ class ZIW_Date extends ZIW_DateBase
 		$this->caloptions['ifFormat'] = $format;
 		$this->calattributes['value'] = strftime($format, $date);
 	}
-	
+
 	function ToUnixTime($tm)
 	{
 		return strtotime($tm);
 	}
 }
 
-abstract class ZIW_DateTimeBase extends ZIW_DateBase 
+abstract class ZIW_DateTimeBase extends ZIW_DateBase
 {
 	function GetFormat()
 	{
 		return 'Y-m-d [g:i A]';
 	}
-	
+
 	function GetJSFormat()
 	{
 		return '%Y-%m-%d [%I:%M %p]';
 	}
-	
+
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -753,10 +757,10 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 				$tp[0] = 0;
 		}
 		return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
-	}	
+	}
 }
 
-class ZIW_UnixDateTime extends ZIW_DateTimeBase 
+class ZIW_UnixDateTime extends ZIW_DateTimeBase
 {
 	function SetCalendarParams($date)
 	{
@@ -767,7 +771,7 @@ class ZIW_UnixDateTime extends ZIW_DateTimeBase
 	}
 }
 
-class ZIW_DateTime extends ZIW_DateTimeBase 
+class ZIW_DateTime extends ZIW_DateTimeBase
 {
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
@@ -781,12 +785,12 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 		$tm = parent::PostValue($ep,$postname);
 		return strftime('%Y-%m-%d %H:%M:%S',$tm);
 	}
-	
+
 	function ToUnixTime($tm)
 	{
 		return strtotime($tm);
 	}
-	
+
 	function SetCalendarParams($date)
 	{
 		$format = '%Y-%m-%d [%I:%M %p]';
@@ -796,7 +800,7 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 	}
 }
 
-class ZIW_Image extends ZIW_Base 
+class ZIW_Image extends ZIW_Base
 {
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
@@ -818,7 +822,7 @@ class ZIW_Image extends ZIW_Base
 		//$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.$ext?".rand(0,99999);
 		return "<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a>";
 	}
-	
+
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -832,7 +836,7 @@ class ZIW_Image extends ZIW_Base
 		if ($file['type']!='')
 			return $file['type'];
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -865,7 +869,7 @@ class ZIW_Image extends ZIW_Base
 	}
 }
 
-class ZIW_Attachment extends ZIW_Base 
+class ZIW_Attachment extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -878,7 +882,7 @@ class ZIW_Attachment extends ZIW_Base
 	{
 		echo "<input type=\"file\" id=\"$name\" name=\"$name\" />";
 	}
-	
+
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -918,7 +922,7 @@ class ZIW_YUIHtml extends ZIW_Base
 		$output .= PageImageLibraryView::RenderJavascript();
 		return $output;
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -1108,13 +1112,13 @@ class ZIW_YUIHtml extends ZIW_Base
 	}
 }
 
-class ZIW_Html extends ZIW_Base 
+class ZIW_Html extends ZIW_Base
 {
 	function __construct()
 	{
 		$this->xlatehtmlentities = false;
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -1158,7 +1162,7 @@ class ZIW_Color extends ZIW_Base
 		$output .= ColorPicker_DialogHTML();
 		return $output;
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -1169,7 +1173,7 @@ class ZIW_Color extends ZIW_Base
 	function Render($ep,$name,$value)
 	{
 		$matchJS = "";
-	
+
 		echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
 		echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
 	}
@@ -1193,7 +1197,7 @@ class ZIW_Theme extends ZIW_Base
 		$output .= Theme_JavaScript();
 		return $output;
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -1247,7 +1251,7 @@ class ZIW_Theme extends ZIW_Base
 	}
 }
 
-class ZIW_HIP extends ZIW_Base 
+class ZIW_HIP extends ZIW_Base
 {
 	/**
 	 * Return javascript code that should appear above the use of this widget as part of it's initialization.
@@ -1282,7 +1286,7 @@ passThroughFormSubmit = false;
 					ok = false;";
 		}
 	}
-	
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -1314,7 +1318,7 @@ passThroughFormSubmit = false;
 class InputWidget
 {
 	static $widgets = array();
-	
+
 	// Stuff caried over from the old php3 world of InputWidget:
 	public $fck = array();
 	public $mypath;
@@ -1326,7 +1330,7 @@ class InputWidget
 	public $OnBeforeAutoInsert;
 	public $OnAutoInsert;
 	public $fckeditorcss = '';
-	
+
 	/**
 	 * Register an InputWidget object for use by the InputWidget shell.
 	 *
@@ -1337,7 +1341,7 @@ class InputWidget
 	{
 		InputWidget::$widgets[$type] = $widget;
 	}
-	
+
 	/**
 	 * Find the Input Widget object for this type and return it.
 	 *
@@ -1350,7 +1354,7 @@ class InputWidget
 			$type = 'default';
 		return InputWidget::$widgets[$type];
 	}
-	
+
 	function PostValue($type,$postname)
 	{
 		$postname = str_replace(' ','_',$postname);
@@ -1359,7 +1363,7 @@ class InputWidget
 		$this->SetExtras($widget);
 		return $widget->PostValue($ep,$postname);
 	}
-	
+
 	function Display($type,$template,$value,$masterkey='')
 	{
 		if ($template == '') return '';
@@ -1369,14 +1373,14 @@ class InputWidget
 		$value = $widget->Display($ep,$value,$this);
 		return str_replace(array("{0}","{ID}"),array($value,$masterkey),$template);
 	}
-	
+
 	static function GetPretext($type)
 	{
 		$tp = explode('.',$type,2);
 		$widget = InputWidget::Get($tp[0]);
 		return $widget->GetPretext($tp);
 	}
-	
+
 	function JSRender($type,$name,$value)
 	{
 		$ep = explode('.',$type);
@@ -1385,7 +1389,7 @@ class InputWidget
 			$value = htmlentities($value);
 		return $widget->JSRender($ep,$name,$value);
 	}
-	
+
 	function SetExtras($widget)
 	{
 		$widget->extra['UsePennies'] = $this->UsePennies;
@@ -1400,7 +1404,7 @@ class InputWidget
 		if (isset($this->fckeditorcss))
 			$widget->extra['fckeditorcss'] = $this->fckeditorcss;
 	}
-	
+
 	function Render(
 		$type,
 		$name,
