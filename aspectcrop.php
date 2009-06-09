@@ -114,6 +114,21 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		{
 			@unlink($thumb);
 		}
+
+		$dsItems = explode(".", $ds);
+		$tableName = $dsItems[0];
+		$fieldName = $dsItems[1];
+
+		$sql = "UPDATE `{0}` SET `{1}` = '' WHERE `id` = '{2}'";
+		$sql = str_replace("{0}", $tableName, $sql);
+		$sql = str_replace("{1}", $fieldName, $sql);
+		$sql = str_replace(
+			"{2}",
+			Zymurgy::$db->escape_string($id),
+			$sql);
+
+		Zymurgy::$db->query($sql)
+			or die("Could not clear field: ".Zymurgy::$db->error().", $sql");
 	}
 	else
 	{
@@ -162,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		}
 		$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg";
 		Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.jpg",$thumbpath);
-		
+
 		//Make smaller grid thumb, if required
 		if ($gd != $d)
 		{
@@ -194,7 +209,7 @@ window.close();
  		<?php
  		if (Zymurgy::$yuitest) echo Zymurgy::YUI("logger/assets/skins/sam/logger.css");
  		echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
- 		echo Zymurgy::YUI("dragdrop/dragdrop-min.js"); 
+ 		echo Zymurgy::YUI("dragdrop/dragdrop-min.js");
  		if (Zymurgy::$yuitest) echo Zymurgy::YUI("logger/logger-min.js");
  		?>
  		<script
@@ -385,14 +400,14 @@ img#imgCropped {
   			<div id="debug">
   			<?
 if (Zymurgy::$yuitest) //Set to false when not debugging
-{  			
+{
 	echo "<table border=\"1\">";
 	foreach ($stats as $caption=>$sz)
 	{
 		echo "<tr><td>$caption</td><td>{$sz[0]}</td><td>{$sz[1]}</td></tr>";
 	}
 	echo "</table>";
-	if (isset($debugmsg)) 
+	if (isset($debugmsg))
 	{
 		echo implode('<hr />',$debugmsg);
 	}
