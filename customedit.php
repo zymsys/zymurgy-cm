@@ -93,10 +93,12 @@ function getdkey($me,$parent,$myd)
 	 * $parent = 1 = Images, id = 1 (d)
 	 */
 	//echo "<div>[{$parent['tname']}: {$parent['detailfor']}]</div>";
-	if ($parent['detailfor']>0)
+	if ($parent['detailfor'] > 0 && strlen($myd) > 0)
 	{
 		$grandparent = gettable($parent['detailfor']);
-		$dkey = Zymurgy::$db->get("select {$grandparent['tname']} from {$parent['tname']} where id=$myd");
+		$dkey = Zymurgy::$db->get(
+			"select {$grandparent['tname']} from {$parent['tname']} where id=$myd",
+			"getdkey: Could not get parent table information");
 		return $dkey;
 	}
 	else
