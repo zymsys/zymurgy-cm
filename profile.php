@@ -1,45 +1,121 @@
 <?
-$breadcrumbTrail = "My Profile";	
+// ini_set("display_errors", 1);
 
-include('header.php');
+$breadcrumbTrail = "My Profile";
+
+include('cmo.php');
+$message = "";
 $showform = true;
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
-	echo "bobo";
+
+	// echo "bobo";
 	if ($_POST['pass1'] != $_POST['pass2'])
 	{
-		echo "<font color='red'>Passwords must match.</font><p>";
+		$message .= "<font color='red'>Passwords must match.</font><p>";
 	}
-	else 
+	else
 	{
 		$showform = false;
-		$sql = "update zcm_passwd set ";
-		if ($_POST['pass1']!='')
-			$sql .= "password='".Zymurgy::$db->escape_string($_POST['pass1'])."', ";
-		$sql .= "email='".Zymurgy::$db->escape_string($_POST['email'])."', ".
-			"fullname='".Zymurgy::$db->escape_string($_POST['fullname'])."' where username='".
-			Zymurgy::$db->escape_string($zauth->authinfo['userid'])."'";
-		$ri = Zymurgy::$db->query($sql);
-		if (!$ri)
+
+		$useMemberSystem = isset(Zymurgy::$config["usersystem"])
+			&& Zymurgy::$config["usersystem"] == "member";
+
+		if($useMemberSystem)
 		{
-			echo Zymurgy::$db->error().": $sql";
+			include("include/membership.zcm.php");
+
+			$isAuthed = Zymurgy::memberauthenticate();
+			$member = MemberPopulator::PopulateByID(Zymurgy::$member["id"]);
+
+			$member->set_email($_POST["email"]);
+			$member->set_fullname($_POST["fullname"]);
+
+			// only reset the password if it was actually provided
+			if(strlen($_POST["pass1"]) > 0)
+			{
+				$member->set_password($_POST["pass1"]);
+			}
+
+			if(!$member->validate())
+			{
+				$message .= "<ul>";
+				foreach($member->get_errors() as $error)
+				{
+					$message .= "<li>$error</li>";
+				}
+				$message .= "</ul>";
+			}
+			else
+			{
+				include_once("ZymurgyAuth.php");
+				$zauth = new ZymurgyAuth();
+				$zauth->GetAuthentication();
+
+				MemberPopulator::SaveMember($member);
+
+				$zauth->authinfo['password'] = $_POST['pass1'];
+				$zauth->authinfo['email'] = $_POST['email'];
+				$zauth->authinfo['fullname'] = $_POST['fullname'];
+
+				if (isset($zauth->authinfo['cookietype']) && $zauth->authinfo['cookietype']=='P')
+					$expires = 5*3600*24*365;
+				else
+					$expires = false;
+
+				$zauth->SetAuth(
+					$expires,$zauth->authinfo['userid'],
+					$_POST['pass1'],
+					"{$_POST['email']},{$_POST['email']},{$_POST['fullname']},1,".
+						$member->get_id().
+						",1",
+					"index.php");
+
+				$message .= "Profile saved.";
+			}
 		}
-		else 
+		else
 		{
-			$zauth->authinfo['password'] = $_POST['pass1'];
-			$zauth->authinfo['email'] = $_POST['email'];
-			$zauth->authinfo['fullname'] = $_POST['fullname'];
-			if ($zauth->authinfo['cookietype']=='P')
-				$expires = 5*3600*24*365;
-			else 
-				$expires = false;
-			$zauth->SetAuth($expires,$zauth->authinfo['userid'],$_POST['pass1'],
-				"{$zauth->authinfo['userid']},{$_POST['email']},{$_POST['fullname']},{$zauth->authinfo['admin']},{$zauth->authinfo['id']},1",
-				"index.php");
+			$sql = "update zcm_passwd set ";
+			if ($_POST['pass1']!='')
+				$sql .= "password='".Zymurgy::$db->escape_string($_POST['pass1'])."', ";
+			$sql .= "email='".Zymurgy::$db->escape_string($_POST['email'])."', ".
+				"fullname='".Zymurgy::$db->escape_string($_POST['fullname'])."' where username='".
+				Zymurgy::$db->escape_string($zauth->authinfo['userid'])."'";
+			$ri = Zymurgy::$db->query($sql);
+			if (!$ri)
+			{
+				echo Zymurgy::$db->error().": $sql";
+			}
+			else
+			{
+				$zauth->authinfo['password'] = $_POST['pass1'];
+				$zauth->authinfo['email'] = $_POST['email'];
+				$zauth->authinfo['fullname'] = $_POST['fullname'];
+				if ($zauth->authinfo['cookietype']=='P')
+					$expires = 5*3600*24*365;
+				else
+					$expires = false;
+				$zauth->SetAuth(
+					$expires,
+					$zauth->authinfo['userid'],
+					$_POST['pass1'],
+					"{$zauth->authinfo['userid']},{$_POST['email']},{$_POST['fullname']},{$zauth->authinfo['admin']},{$zauth->authinfo['id']},1",
+					"index.php");
+			}
 		}
 	}
 }
+
+include("header.php");
+
+if(strlen($message) > 0)
+{
+	echo($message);
+}
 ?>
+
 <form method="POST" action="<?=$_SERVER['REQUEST_URI']?>">
 <table>
 <tr><td align="right">New Password:<br><i>(Leave blank to keep your existing password)</i></td><td><input type="password" name="pass1"></td></tr>

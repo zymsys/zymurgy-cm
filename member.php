@@ -110,12 +110,20 @@ class ZymurgyMember
 
 	static function createauthkey($id)
 	{
+		// die("createauthkey called");
+
 		//Set up the authkey and last auth
 		$authkey = md5(uniqid(rand(),true));
 		$sql = "update zcm_member set lastauth=now(), authkey='$authkey' where id=$id";
 		Zymurgy::$db->query($sql) or die("Unable to set auth info ($sql): ".Zymurgy::$db->error());
+
 		//Set authkey session cookie
 		$_COOKIE['ZymurgyAuth'] = $authkey;
+		$cookieSet = setcookie("ZymurgyAuth", $authkey);
+
+		// die($cookieSet ? "Cookie set" : "Cookie not set");
+		// if(!$cookieSet) die("Could not set cookie.");
+
 		echo "<script language=\"javascript\">
 			<!--
 			document.cookie = \"ZymurgyAuth=$authkey\";
@@ -134,6 +142,8 @@ class ZymurgyMember
 	 */
 	static function memberdologin($userid, $password)
 	{
+		// die("memberdologin called");
+
 		$sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
 			"' and password='".Zymurgy::$db->escape_string($password)."'";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());

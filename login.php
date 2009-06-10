@@ -1,7 +1,10 @@
 <?
+
+// ini_set("display_errors", 1);
 //echo "<pre>"; print_r($_POST); echo "</pre>"; exit;
 $onload = 'onload="document.login.userid.focus();"';
-include('nlheader.php');
+include_once("cmo.php");
+
 if (isset($_POST['userid']))
 {
 	$userid = $_POST['userid'];
@@ -16,7 +19,7 @@ if (isset($_POST['userid']))
 
 	if($useMemberSystem)
 	{
-		$sql = "SELECT `zcm_member`.`id` AS `id`, `email`, `password` ".
+		$sql = "SELECT `zcm_member`.`id` AS `id`, `email`, `password`, `fullname` ".
 			"FROM `zcm_member` ".
 			"INNER JOIN `zcm_membergroup` ON `zcm_membergroup`.`memberid` = `zcm_member`.`id` ".
 			"INNER JOIN `zcm_groups` ON `zcm_groups`.`id` = `zcm_membergroup`.`groupid` ".
@@ -33,22 +36,24 @@ if (isset($_POST['userid']))
 	$ri = Zymurgy::$db->query($sql);
 	if (Zymurgy::$db->num_rows($ri)>0)
 	{
-		include("ZymurgyAuth.php");
+		include_once("ZymurgyAuth.php");
 		$zauth = new ZymurgyAuth();
 		$row=Zymurgy::$db->fetch_array($ri);
 
 		if($useMemberSystem)
 		{
-			Zymurgy::memberauthenticate(
+			Zymurgy::memberdologin(
 				$userid,
 				$passwd);
+
+			// die("Member logged in");
 
 			$zauth->SetAuth(
 				0,
 				$userid,
 				$passwd,
 	//			"{$row['username']},{$row['email']},{$row['fullname']},{$row['admin']},{$row['id']},{$row['eula']}",
-				"{$row['email']},{$row['email']},Registered User,1,{$row['id']},1",
+				"{$row['email']},{$row['email']},{$row['fullname']},1,{$row['id']},1",
 				"index.php");
 		}
 		else
@@ -65,6 +70,9 @@ if (isset($_POST['userid']))
 
 	$error = 'Your username or password are incorrect.';
 }
+
+include('nlheader.php');
+
 ?>
 <form name="login" method="post" action="login.php">
 <div align="center">

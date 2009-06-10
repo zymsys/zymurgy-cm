@@ -4,6 +4,7 @@
 		private $m_id;
 		private $m_email;
 		private $m_password;
+		private $m_fullname;
 		private $m_registration_date;
 		private $m_last_authorized;
 
@@ -39,6 +40,16 @@
 		public function set_password($newValue)
 		{
 			$this->m_password = $newValue;
+		}
+
+		public function get_fullname()
+		{
+			return $this->m_fullname;
+		}
+
+		public function set_fullname($newValue)
+		{
+			$this->m_fullname = $newValue;
 		}
 
 		public function get_registration_date()
@@ -122,7 +133,7 @@
 
 		public static function PopulateMultiple($criteria)
 		{
-			$sql = "SELECT `id`, `email`, `password`, `regtime`, `lastauth` ".
+			$sql = "SELECT `id`, `email`, `password`, `fullname`, `regtime`, `lastauth` ".
 				"FROM `zcm_member` WHERE $criteria";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve members: ".Zymurgy::$db->error().", $sql");
@@ -136,6 +147,7 @@
 				$member->set_id($row["id"]);
 				$member->set_email($row["email"]);
 				$member->set_password($row["password"]);
+				$member->set_fullname($row["fullname"]);
 				$member->set_registration_date($row["regtime"]);
 				$member->set_last_authorized($row["lastauth"]);
 
@@ -147,7 +159,7 @@
 
 		public static function PopulateByID($id)
 		{
-			$sql = "SELECT `id`, `email`, `password`, `regtime`, `lastauth` ".
+			$sql = "SELECT `id`, `email`, `password`, `fullname`, `regtime`, `lastauth` ".
 				"FROM `zcm_member` WHERE `id` = '".
 				Zymurgy::$db->escape_string($id).
 				"'";
@@ -161,6 +173,7 @@
 				$member->set_id($row["id"]);
 				$member->set_email($row["email"]);
 				$member->set_password($row["password"]);
+				$member->set_fullname($row["fullname"]);
 				$member->set_registration_date($row["regtime"]);
 				$member->set_last_authorized($row["lastauth"]);
 
@@ -177,6 +190,7 @@
 			$member->set_id($_POST["id"]);
 			$member->set_email($_POST["email"]);
 			$member->set_password($_POST["password"]);
+			$member->set_fullname($_POST["fullname"]);
 
 			return $member;
 		}
@@ -185,10 +199,13 @@
 		{
 			if($member->get_id() <= 0)
 			{
-				$sql = "INSERT INTO `zcm_member` ( `email`, `password`, `regtime` ) VALUES ( '".
+				$sql = "INSERT INTO `zcm_member` ( `email`, `password`, `fullname`, `regtime` ) ".
+					"VALUES ( '".
 					Zymurgy::$db->escape_string($member->get_email()).
 					"', '".
 					Zymurgy::$db->escape_string($member->get_password()).
+					"', '".
+					Zymurgy::$db->escape_string($member->get_fullname()).
 					"', NOW())";
 
 				Zymurgy::$db->query($sql)
@@ -203,6 +220,8 @@
 					Zymurgy::$db->escape_string($member->get_email()).
 					"', `password` = '".
 					Zymurgy::$db->escape_string($member->get_password()).
+					"', `fullname` = '".
+					Zymurgy::$db->escape_string($member->get_fullname()).
 					"' WHERE `id` = '".
 					Zymurgy::$db->escape_string($member->get_id()).
 					"'";
@@ -474,6 +493,7 @@
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>E-mail Address</td>");
+			echo("<td>Full Name</td>");
 			echo("<td>Registration Date</td>");
 			echo("<td>Last Authorized</td>");
 			echo("<td>&nbsp;</td>");
@@ -490,6 +510,9 @@
 					$member->get_email().
 					"</td>");
 				echo("<td>".
+					$member->get_fullname().
+					"</td>");
+				echo("<td>".
 					$member->get_registration_date().
 					"</td>");
 				echo("<td>".
@@ -504,7 +527,7 @@
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"4\"><a style=\"color: white;\" href=\"editmember.php?action=add_member\">".
+			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"editmember.php?action=add_member\">".
 				"Add Member".
 				"</a></td>");
 
@@ -571,6 +594,14 @@
 			$widget->Render("password.20.50", "password", $member->get_password());
 			echo("</td>\n");
 			echo("</tr>\n");
+
+			echo("<tr>\n");
+			echo("<td>Full Name:</td>\n");
+			echo("<td>");
+			$widget->Render("input.30.100", "fullname", $member->get_fullname());
+			echo("</td>\n");
+			echo("</tr>\n");
+
 
 			if($action == "act_edit_member")
 			{

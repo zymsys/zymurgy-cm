@@ -184,6 +184,7 @@
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("email", "VARCHAR(80)", "DEFAULT NULL"),
 					DefineTableField("password", "VARCHAR(32)", "DEFAULT NULL"),
+					DefineTableField("fullname", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
 					DefineTableField("regtime", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("lastauth", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("formdata", "INT(11)", "DEFAULT NULL"),

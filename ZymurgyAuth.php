@@ -27,6 +27,9 @@ class ZymurgyAuth
 			'extra'=>$extra);
 		ob_clean();
 		header("Location: $location");
+
+		Zymurgy::JSRedirect($location);
+
 		exit;
 	/*?>
 	<script language="JavaScript">
