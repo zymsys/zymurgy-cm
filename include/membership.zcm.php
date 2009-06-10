@@ -269,6 +269,7 @@
 	{
 		private $m_id;
 		private $m_name;
+		private $m_builtin;
 
 		private $m_errors = array();
 
@@ -290,6 +291,18 @@
 		public function set_name($newValue)
 		{
 			$this->m_name = $newValue;
+		}
+
+		public function get_builtin()
+		{
+			return $this->m_builtin;
+		}
+
+		public function set_builtin($newValue)
+		{
+			// echo("Setting builtin to: $newValue (".intval($newValue).")<br>");
+
+			$this->m_builtin = (boolean) $newValue; // intval($newValue) > 0;
 		}
 
 		public function get_errors()
@@ -341,7 +354,7 @@
 
 		public static function PopulateMultiple($criteria)
 		{
-			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE $criteria";
+			$sql = "SELECT `id`, `name`, `builtin` FROM `zcm_groups` WHERE $criteria";
 
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve list of groups: ".Zymurgy::$db->error().", $sql");
@@ -354,6 +367,7 @@
 
 				$group->set_id($row["id"]);
 				$group->set_name($row["name"]);
+				$group->set_builtin($row["builtin"]);
 
 				$groups[] = $group;
 			}
@@ -363,7 +377,7 @@
 
 		public static function PopulateByID($id)
 		{
-			$sql = "SELECT `id`, `name` FROM `zcm_groups` WHERE `id` = '".
+			$sql = "SELECT `id`, `name`, `builtin` FROM `zcm_groups` WHERE `id` = '".
 				Zymurgy::$db->escape_string($id).
 				"'";
 
@@ -376,6 +390,7 @@
 			{
 				$group->set_id($row["id"]);
 				$group->set_name($row["name"]);
+				$group->set_builtin($row["builtin"]);
 			}
 
 			return $group;
@@ -393,6 +408,10 @@
 
 		public static function SaveGroup($group)
 		{
+			// ZK: Note that the Zymurgy:CM GUI does not allow users to
+			// modify built-in groups. Therefore, the built-in field is
+			// not sent as part of the insert/update query.
+
 			if($group->get_id() <= 0)
 			{
 				$sql = "INSERT INTO `zcm_groups` ( `name` ) VALUES ( '".
@@ -427,9 +446,14 @@
 			Zymurgy::$db->query($sql)
 				or die("Could not delete member group associations: ".Zymurgy::$db->error().", $sql");
 
+			// ZK: Note that the Zymurgy:CM GUI does not allow users to
+			// modify built-in groups. The DELETE query has the extra
+			// parameter to make sure that the code cannot delete built-in
+			// groups by mistake.
+
 			$sql = "DELETE FROM `zcm_groups` WHERE `id` = '".
 				Zymurgy::$db->escape_string($id).
-				"'";
+				"' AND NOT `builtin` = 1";
 
 			Zymurgy::$db->query($sql)
 				or die("Could not delete group record: ".Zymurgy::$db->error().", $sql");
@@ -765,6 +789,7 @@
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Group Name</td>");
+			echo("<td>Built-in</td>");
 			echo("<td>&nbsp;</td>");
 			echo("</tr>");
 
@@ -773,20 +798,32 @@
 			foreach($groups as $group)
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
-				echo("<td><a href=\"editmember.php?action=edit_group&amp;id=".
-					$group->get_id().
-					"\">".
-					$group->get_name().
-					"</td>");
-				echo("<td><a href=\"editmember.php?action=delete_group&amp;id=".
-					$group->get_id().
-					"\">Delete</a></td>");
+				if($group->get_builtin())
+				{
+					echo("<td>".
+						$group->get_name().
+						"</td>");
+					echo("<td>Yes</td>");
+					echo("<td>&nbsp;</td>");
+				}
+				else
+				{
+					echo("<td><a href=\"editmember.php?action=edit_group&amp;id=".
+						$group->get_id().
+						"\">".
+						$group->get_name().
+						"</td>");
+					echo("<td>&nbsp;</td>");
+					echo("<td><a href=\"editmember.php?action=delete_group&amp;id=".
+						$group->get_id().
+						"\">Delete</a></td>");
+				}
 
 				$cntr++;
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"2\"><a style=\"color: white;\" href=\"editmember.php?action=add_group\">".
+			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"editmember.php?action=add_group\">".
 				"Add Membership Group".
 				"</a></td>");
 

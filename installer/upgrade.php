@@ -36,7 +36,22 @@ echo("done.<br>");
 	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
 //}
 
-echo("Renaming plugin configuration items...");
+echo("Reconciling Zymurgy:CM membership groups...<br>");
+
+$sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - User', 1 FROM DUAL ".
+	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - User' )";
+mysql_query($sql) or die("Could not add Zymurgy:CM - User membership group: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - Administrator', 1 FROM DUAL ".
+	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Administrator' )";
+mysql_query($sql) or die("Could not add Zymurgy:CM - Administrator membership group: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - Webmaster', 1 FROM DUAL ".
+	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Webmaster' )";
+mysql_query($sql) or die("Could not add Zymurgy:CM - Webmaster membership group: ".mysql_error().", $sql");
+
+echo("done.<br>");
+echo("Renaming plugin configuration items...<br>");
 
 RenamePluginKeys('Form',array(
 	'Results Email From'=>'Email Form Results To Address',
@@ -45,7 +60,7 @@ RenamePluginKeys('Form',array(
 ));
 
 echo("done.<br>");
-echo("Updating site text category information...");
+echo("Updating site text category information...<br>");
 
 //Check for old page bodies, and relocate them to new page bodies.
 $sitePageBodyRI = mysql_query("show columns from zcm_sitepage like 'body'");

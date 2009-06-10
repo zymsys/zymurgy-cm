@@ -225,7 +225,8 @@
 				"name" => "zcm_groups",
 				"columns" => array(
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
-					DefineTableField("name", "VARCHAR(50)", "DEFAULT NULL")
+					DefineTableField("name", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("builtin", "INTEGER", "NOT NULL DEFAULT '0'")
 				),
 				"indexes" => array(),
 				"primarykey" => "id",
