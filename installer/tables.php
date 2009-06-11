@@ -359,7 +359,8 @@
 					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("navname", "VARCHAR(60)", "DEFAULT NULL"),
 					DefineTableField("navtype", "ENUM('URL', 'Custom Table', 'Plugin', 'Sub-Menu')", "DEFAULT NULL"),
-					DefineTableField("navto", "VARCHAR(200)", "DEFAULT NULL")
+					DefineTableField("navto", "VARCHAR(200)", "DEFAULT NULL"),
+					DefineTableField("authlevel", "INT(11)", "NOT NULL DEFAULT 0")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),

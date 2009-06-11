@@ -1,8 +1,8 @@
 <?
-function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars) 
+function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 {
-	$time=date("d M Y H:i:s"); 
-	// Get the error type from the error number 
+	$time=date("d M Y H:i:s");
+	// Get the error type from the error number
 	$errortype = array (1    => "Error",
 	                 2    => "Warning",
 	                 4    => "Parsing Error",
@@ -18,21 +18,22 @@ function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 	                 4096 => "Catchable Fatal Error");
 	$errlevel=$errortype[$errno];
 	if (empty($errlevel)) $errlevel = $errno;
-	
-	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\r\n"; 
+
+	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\r\n";
 }
 
 if (array_key_exists('showerrors',$_GET))
 {
-	error_reporting(0); 
+	error_reporting(0);
 	$old_error_handler = set_error_handler("userErrorHandler");
 }
 
 if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 	$ZymurgyRoot = $_SERVER["APPL_PHYSICAL_PATH"];
-else 
+else
 	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
 require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
+global $zauth;
 $zauth = new ZymurgyAuth();
 $zauth->Authenticate("/zymurgy/login.php");
 $zp = explode(',',$zauth->authinfo['extra']);
@@ -69,10 +70,20 @@ include("header_html.php");
 
 function renderZCMNav($parent)
 {
-	global $donefirstzcmnav;
-	
-	$sql = "select * from zcm_nav where parent=$parent order by disporder";
+	global $donefirstzcmnav, $zauth;
+
+	// echo("zauth: ");
+	// print_r($zauth);
+
+	$sql = "SELECT `id`, `navname`, `navtype`, `navto` FROM `zcm_nav` WHERE `parent` = '".
+		Zymurgy::$db->escape_string($parent).
+		"' AND ( `authlevel` <= '".
+		Zymurgy::$db->escape_string($zauth->authinfo['admin']).
+		"' OR `authlevel` IS NULL ) ORDER BY `disporder`";
+	// $sql = "select * from zcm_nav where parent=$parent order by disporder";
+	// echo($sql);
 	$ri = Zymurgy::$db->run($sql);
+
 	$navs = array();
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
@@ -131,7 +142,7 @@ function renderZCMNav($parent)
     </div>
 </div>
 
-<?php 
+<?php
 if (isset($crumbs))
 {
 	//Build $breadcrumbTrail
@@ -159,7 +170,7 @@ if (isset($crumbs))
 		$breadcrumbTrail = implode(" &gt; ",$crumbbits);
 	}
 }
-if(isset($breadcrumbTrail)) { 
+if(isset($breadcrumbTrail)) {
 ?>
 	<div id="breadcrumbTrail" class="ZymurgyBreadcrumbs">
 		<?= $breadcrumbTrail ?>
