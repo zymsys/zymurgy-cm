@@ -11,7 +11,7 @@ include("cms.php");
 <style type="text/css">
 <!--
 body {
-	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-family: <?= isset(Zymurgy::$config["font"]) ? Zymurgy::$config["font"] : "Verdana, Arial, Helvetica, sans-serif" ?>;
 	font-size:small;
 }
 .ZymurgyHeader {
@@ -72,7 +72,7 @@ body {
 		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"{$ZymurgyConfig['vendorlink']}\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".htmlspecialchars($ZymurgyConfig['vendorname'])."\"></a>"; ?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
-		Zymurgy:CM
+		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
 	</div>
 	<div class="ZymurgyClient">
 		<? if ((isset($ZymurgyConfig['clientlogo'])) && ($ZymurgyConfig['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://{$ZymurgyConfig['sitehome']}/\"><img border=\"0\" src=\"{$ZymurgyConfig['clientlogo']}\" alt=\"".htmlspecialchars($ZymurgyConfig['defaulttitle'])."\"></a>"; ?>
