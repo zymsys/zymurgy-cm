@@ -30,7 +30,7 @@ function navcrumbs($nid)
 		$tid = array_pop($tids);
 		$crumb = array_pop($parents).' Sub-Menu';
 		$crumbs["navigation.php?p=$tid"] = htmlspecialchars($crumb);
-	}	
+	}
 }
 
 $detailfor = array_key_exists('p',$_GET) ? (0 + $_GET['p']) : 0;
@@ -216,7 +216,7 @@ YAHOO.util.Event.onDOMReady(function() {
 				setDestination(smContent);
 				break;
 		}
-	}); 
+	});
 });
 </script>
 <?
@@ -232,7 +232,7 @@ function OnBeforeRenderCell($column,$values,$display)
 		{
 			return "<a href=\"navigation.php?p={$values['zcm_nav.id']}\">Sub-Menu Items</a>";
 		}
-		else 
+		else
 		{
 			return ''; //Display nothing for other types.
 		}
@@ -241,25 +241,40 @@ function OnBeforeRenderCell($column,$values,$display)
 }
 
 $ds = new DataSet('zcm_nav','id');
-$ds->AddColumns('id','disporder','parent','navname','navtype','navto');
+$ds->AddColumns('id','disporder','parent','navname','navtype','navto','authlevel');
 $ds->AddDataFilter('parent',$p);
 
 $dg = new DataGrid($ds);
 $dg->OnBeforeRenderCell = 'OnBeforeRenderCell';
+
 $dg->AddConstant('parent',$p);
+
 $dg->AddColumn('Navigation Name','navname');
 $dg->AddColumn('Type','navtype');
+$dg->AddColumn(
+	"Visible To",
+	"authlevel");
 $dg->AddColumn('','id','<a href="navigation.php?p={0}">Sub-navigation</a>');
-$dg->AddInput('navname','Navigation Name:',60,60);
-$dg->AddDropListEditor('navtype','Navtype',array('URL'=>'URL',
-	'Custom Table'=>'Custom Table',
-	'Plugin'=>'Plugin',
-	'Sub-Menu'=>'Sub-Menu'));
-$dg->AddInput('navto','Destination:',200,80);
 $dg->AddUpDownColumn('disporder');
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'New Navigation Item';
+
+$dg->AddInput('navname','Navigation Name:',60,60);
+$dg->AddDropListEditor('navtype','Navigation Type:',array('URL'=>'URL',
+	'Custom Table'=>'Custom Table',
+	'Plugin'=>'Plugin',
+	'Sub-Menu'=>'Sub-Menu'));
+$dg->AddInput('navto','Destination:',200,80);
+$dg->AddDropListEditor(
+	"authlevel",
+	"Visible To:",
+	array(
+		"0" => "User",
+		"1" => "Administrator",
+		"2" => "Webmaster"
+	));
+
 $dg->Render();
 
 include('footer.php');
