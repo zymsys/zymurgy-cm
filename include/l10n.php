@@ -1,4 +1,6 @@
 <?php
+	ini_set("display_errors", 1);
+
 	/**
 	 * Zymurgy:CM
 	 * Localization Module
@@ -18,14 +20,17 @@
 		private $m_defaultLocale;
 
 		private $m_localeFilepath;
+		private $m_customFilepath;
 
 		public function Locale(
 			$languageCode,
 			$filepath,
+			$customfilepath,
 			$defaultLocale)
 		{
 			$this->m_languageCode = $languageCode;
 			$this->m_localeFilepath = $filepath;
+			$this->m_customFilepath = $customfilepath;
 			$this->m_defaultLocale = $defaultLocale;
 		}
 
@@ -49,37 +54,14 @@
 			}
 			else
 			{
-				$xmlString = file_get_contents(
-					$this->m_localeFilepath);
-
-				// $xpath = "//string[@id='$key']";
-				$xpath = "/";
-				$pathArray = explode(".", $key);
-
-				foreach($pathArray as $pathItem)
+				if(file_exists($this->m_customFilepath))
 				{
-					$xpath .= "/*[@name='$pathItem']";
+					$value = $this->GetStringFromFile($key, $this->m_customFilepath);
 				}
 
-				$xml = new SimpleXMLElement($xmlString);
-				$snippit = $xml->xpath($xpath);
-
-				// print_r($snippit);
-				// echo("<br>");
-
-				if(is_array($snippit) && count($snippit) > 0)
+				if($value == "n/a")
 				{
-					foreach($snippit as $item)
-					{
-						// echo("Processing {$item[0]}.<br>");
-
-						$localeItem = new LocaleItem();
-						$localeItem->Value = $item[0];
-						$localeItem->TimeAdded = time();
-						$this->m_cache[$key] = $localeItem;
-
-						$value = $item[0];
-					}
+					$value = $this->GetStringFromFile($key, $this->m_localeFilepath);
 				}
 			}
 
@@ -88,6 +70,45 @@
 				// echo("From default locale");
 
 				$value = $this->m_defaultLocale->GetString($key);
+			}
+
+			return $value;
+		}
+
+		private function GetStringFromFile($key, $filename)
+		{
+			$value = "n/a";
+
+			$xmlString = file_get_contents($filename);
+
+			// $xpath = "//string[@id='$key']";
+			$xpath = "/";
+			$pathArray = explode(".", $key);
+
+			foreach($pathArray as $pathItem)
+			{
+				$xpath .= "/*[@name='$pathItem']";
+			}
+
+			$xml = new SimpleXMLElement($xmlString);
+			$snippit = $xml->xpath($xpath);
+
+			// print_r($snippit);
+			// echo("<br>");
+
+			if(is_array($snippit) && count($snippit) > 0)
+			{
+				foreach($snippit as $item)
+				{
+					// echo("Processing {$item[0]}.<br>");
+
+					$localeItem = new LocaleItem();
+					$localeItem->Value = $item[0];
+					$localeItem->TimeAdded = time();
+					$this->m_cache[$key] = $localeItem;
+
+					$value = $item[0];
+				}
 			}
 
 			return $value;
@@ -125,6 +146,7 @@
 			$defaultLocale = new Locale(
 				"en",
 				Zymurgy::$root."/zymurgy/include/locale.en.xml",
+				Zymurgy::$root."/zymurgy/custom/locale.en.xml",
 				null);
 			$locales["en"] = $defaultLocale;
 
@@ -140,6 +162,7 @@
 						$locale = new Locale(
 							$languageCode,
 							Zymurgy::$root."/zymurgy/include/".$entry,
+							Zymurgy::$root."/zymurgy/custom/".$entry,
 							$defaultLocale);
 
 						$locales[$languageCode] = $locale;

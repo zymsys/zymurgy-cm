@@ -4,6 +4,7 @@
 		<string name="AllOption">(all)</string>
 		<string name="Filter">Filter</string>
 		<string name="No">No</string>
+		<string name="ProductName">Zymurgy:CM</string>
 		<string name="Yes">Yes</string>
 	</section>
 	<section name="FileUpload">
