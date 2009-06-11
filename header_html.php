@@ -34,7 +34,7 @@ YAHOO.util.Event.onContentReady("zcmnavContentNav", function () {
 <style type="text/css">
 <!--
 body {
-	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-family: <?= isset(Zymurgy::$config["font"]) ? Zymurgy::$config["font"] : "Verdana, Arial, Helvetica, sans-serif" ?>;
 	font-size:small;
 }
 .ZymurgyHeader {
