@@ -1147,12 +1147,12 @@ class DataGrid
 				//Save the data, remove editkey from $_GET and render the grid
 				//foreach($_POST as $k=>$v) echo "$k: $v<br>";
 				$uploads = array();
+				$widget = new InputWidget();
 				foreach ($this->columns as $c)
 				{
 					if (isset($c->editcaption))
 					{
 						$postname = str_replace(".","_",$c->datacolumn);
-						$widget = new InputWidget();
 						$widget->UsePennies = $this->UsePennies;
 						$widget->lookups = $this->lookups;
 						if (isset($this->OnBeforeAutoInsert))
@@ -1299,12 +1299,25 @@ class DataGrid
 				$dsr->values = call_user_func($dsr->DataSet->OnPreRenderEdit,$dsr->values);
 			$yuihtml = array();
 
+			$widget = new InputWidget();
+			$js = array();
+			foreach ($this->columns as $c)
+			{
+				$thisjs = $widget->JSRender($c->editor,$c->datacolumn,array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : '');
+				if (!empty($thisjs))
+					$js[] = $thisjs;
+			}
+			if ($js)
+			{
+				echo "<script type=\"text/javascript\">\r\n";
+				echo implode("\r\n",$js);
+				echo "</script>";
+			}
 			foreach ($this->columns as $c)
 			{
 				if (isset($c->editcaption))
 				{
 					echo "<tr><td align=right>{$c->editcaption}</td><td id=\"cell-{$c->datacolumn}\">";
-					$widget = new InputWidget();
 					$widget->fckeditorpath = $this->fckeditorpath;
 					$widget->UsePennies = $this->UsePennies;
 					$widget->fckeditorcss = $this->fckeditorcss;
@@ -1408,6 +1421,7 @@ class DataGrid
 		echo "</tr>\r\n";
 		$alternate = false;
 		$contexttriggers = array();
+		$widget = new InputWidget();
 		foreach ($this->DataSet->rows as $row)
 		{
 			if ($alternate)
@@ -1421,7 +1435,6 @@ class DataGrid
 			{
 				if ($c->template != '')
 				{
-					$widget = new InputWidget();
 					$widget->lookups = $this->lookups;
 					$widget->UsePennies = $this->UsePennies;
 					$display = $widget->Display($c->editor,$c->template,$row->values[$c->datacolumn],$row->values[$this->DataSet->masterkey]);

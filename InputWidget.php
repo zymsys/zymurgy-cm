@@ -1514,4 +1514,7 @@ InputWidget::Register('color',new ZIW_Color());
 InputWidget::Register('colour',new ZIW_Color());
 InputWidget::Register('hidden',new ZIW_Hidden());
 //InputWidget::Register('',new ZIW_);
+
+if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
+	require_once(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php');
 ?>
