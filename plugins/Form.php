@@ -599,6 +599,26 @@ function Validate$name(me) {
 			{
 				$this->ValidationErrors[$row['fid']] = $vmsg;
 			}
+
+			// -----
+			// ZK: Double check with the field's InputWidget to make sure
+			// the data is valid. This is of particular importance for
+			// dates, which cannot be validated using a regex.
+
+			// print_r($row);
+			$widgetValid = $widget->IsValid($row["specifier"], $input);
+			// $this->ValidationErrors[$row['fid']] = $row['caption']. " Widget Valid: ".$widgetValid;
+
+			if(!$widgetValid)
+			{
+				if (empty($row['validatormsg']))
+					$vmsg = "The field \"{$row['caption']}\" failed to validate.";
+				else
+					$vmsg = $row['validatormsg'];
+
+				$this->ValidationErrors[$row['fid']] = $vmsg;
+				continue;
+	  		}
 		}
 		return (count($this->ValidationErrors)==0);
 	}
