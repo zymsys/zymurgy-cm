@@ -1600,19 +1600,21 @@ class FormAddToCustomTable implements PluginExtension
 
 		$this->ConfirmPluginCompatability($plugin);
 
-		$fieldSQL = "SELECT `cname` FROM `zcm_customfield` INNER JOIN `zcm_customtable` ".
+		$fieldSQL = "SELECT `cname`, `inputspec` FROM `zcm_customfield` INNER JOIN `zcm_customtable` ".
 			"ON `zcm_customtable`.`id` = `zcm_customfield`.`tableid` AND ".
 			"`zcm_customtable`.`tname` = '".
 			Zymurgy::$db->escape_string($plugin->GetConfigValue('Custom Table Name')).
 			"'";
 		$fieldRI = Zymurgy::$db->query($fieldSQL)
-			or die("Could not retrieve list of fields for custom table: ".mysql_error().", $fieldSQL");
+			or die("Could not retrieve list of fields for custom table: ".Zymurgy::$db->error().", $fieldSQL");
 
 		$fieldList = array();
+		$specList = array();
 
 		while(($row = Zymurgy::$db->fetch_array($fieldRI)) !== FALSE)
 		{
 			$fieldList[$row["cname"]] = "";
+			$specList[$row["cname"]] = $row["inputspec"];
 		}
 
 		$values = $plugin->GetValues();
@@ -1621,6 +1623,11 @@ class FormAddToCustomTable implements PluginExtension
 		{
 			if(key_exists($key, $fieldList))
 			{
+				if($specList[$key] == "unixdate" && !is_numeric($value))
+				{
+					$value = strtotime($value);
+				}
+
 				$fieldList[$key] = Zymurgy::$db->escape_string($value);
 			}
 		}
