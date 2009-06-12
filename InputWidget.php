@@ -66,6 +66,21 @@ class ZIW_Base
 	{
 		echo "Don't know how to render a '{$ep[0]}'.";
 	}
+
+	/**
+	 * Determine if the data entered into this widget is valid. Used by form
+	 * validation routines on widgets containing dates.
+	 *
+	 * The base class always returns True. It is up to the derived classes
+	 * to override this and provide true validation.
+	 *
+	 * @param string $value
+	 * @return boolean True, if the data is valide
+	 */
+	function IsValid($value)
+	{
+		return true;
+	}
 }
 
 class ZIW_Input extends ZIW_Base
