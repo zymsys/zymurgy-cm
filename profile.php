@@ -1,21 +1,21 @@
 <?
-// ini_set("display_errors", 1);
-
 $breadcrumbTrail = "My Profile";
+include("header.php");
 
-include('cmo.php');
 $message = "";
 $showform = true;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
-
-	// echo "bobo";
+	if ($zauth->authinfo['password'] != $_POST['passo'])
+	{
+		$message .= "<p><font color='red'>Your existing password was not entered correctly.</font></p>";
+	}
 	if ($_POST['pass1'] != $_POST['pass2'])
 	{
-		$message .= "<font color='red'>Passwords must match.</font><p>";
+		$message .= "<p><font color='red'>Passwords must match.</font></p>";
 	}
-	else
+	if (empty($message))
 	{
 		$showform = false;
 
@@ -108,8 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	}
 }
 
-include("header.php");
-
 if(strlen($message) > 0)
 {
 	echo($message);
@@ -118,6 +116,7 @@ if(strlen($message) > 0)
 
 <form method="POST" action="<?=$_SERVER['REQUEST_URI']?>">
 <table>
+<tr><td align="right">Current Password:<br><i>(For security purposes)</i></td><td><input type="password" name="passo"></td></tr>
 <tr><td align="right">New Password:<br><i>(Leave blank to keep your existing password)</i></td><td><input type="password" name="pass1"></td></tr>
 <tr><td align="right">New Password:<br><i>(Once again just to be sure)</i></td><td><input type="password" name="pass2"></td></tr>
 <tr><td align="right">Email:</td><td><input type="text" name="email" value="<?=$zauth->authinfo['email']?>"></td></tr>
