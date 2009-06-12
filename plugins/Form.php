@@ -568,6 +568,11 @@ function Validate$name(me) {
 		$this->CallExtensionMethod("SendEmail");
 		$this->CallExtensionMethod("CaptureFormData");
 
+		$this->CallExtensionMethod("Forward");
+
+		// If none of the extensions take advantage of the
+		// Forward extension method, display the standard
+		// Thank You message
 		echo $this->GetConfigValue('Thanks');
 	}
 
