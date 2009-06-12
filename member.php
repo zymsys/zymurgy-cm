@@ -178,7 +178,11 @@ class ZymurgyMember
 			echo "not logged in.";
 			exit;
 		}*/
-		Zymurgy::JSRedirect($logoutpage);
+
+		if(strlen($logoutpage) > 0)
+		{
+			Zymurgy::JSRedirect($logoutpage);
+		}
 	}
 
 	/**
