@@ -366,7 +366,8 @@ if (!class_exists('Zymurgy'))
 
 				$_GET['editkey'] = $row['id'];
 				$t = $widget->Display("$type","{0}",$row['body']);
-				if (array_key_exists('zymurgy',$_COOKIE) && $adminui)
+				if (((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
+					(array_key_exists('zymurgy',$_COOKIE) && $adminui))
 				{
 					//Render extra goop to allow in place editing.
 					global $Zymurgy_tooltipcount;

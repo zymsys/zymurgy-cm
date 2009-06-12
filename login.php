@@ -39,6 +39,7 @@ if (isset($_POST['userid']))
 		include_once("ZymurgyAuth.php");
 		$zauth = new ZymurgyAuth();
 		$row=Zymurgy::$db->fetch_array($ri);
+		$landing = array_key_exists('defaultpage',Zymurgy::$config) ? Zymurgy::$config['defaultpage'] : 'index.php';
 
 		if($useMemberSystem)
 		{
@@ -54,7 +55,7 @@ if (isset($_POST['userid']))
 				$passwd,
 	//			"{$row['username']},{$row['email']},{$row['fullname']},{$row['admin']},{$row['id']},{$row['eula']}",
 				"{$row['email']},{$row['email']},{$row['fullname']},1,{$row['id']},1",
-				"index.php");
+				$landing);
 		}
 		else
 		{
@@ -64,7 +65,7 @@ if (isset($_POST['userid']))
 				$passwd,
 	//			"{$row['username']},{$row['email']},{$row['fullname']},{$row['admin']},{$row['id']},{$row['eula']}",
 				"{$row['email']},{$row['email']},Registered User,1,{$row['id']},1",
-				"index.php");
+				$landing);
 		}
 	}
 
