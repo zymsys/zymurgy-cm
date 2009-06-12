@@ -32,7 +32,10 @@ if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 	$ZymurgyRoot = $_SERVER["APPL_PHYSICAL_PATH"];
 else
 	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
+
 require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
+require_once("$ZymurgyRoot/zymurgy/cmo.php");
+
 global $zauth;
 $zauth = new ZymurgyAuth();
 $zauth->Authenticate("/zymurgy/login.php");
@@ -53,16 +56,20 @@ if ((isset($adminlevel)) && ($zauth->authinfo['admin']<$adminlevel))
 	header("Location: login.php");
 	exit;
 }
-if ($zauth->authinfo['eula'] != 1)
+
+$enableEula = !isset(Zymurgy::$config["EnableEULA"]) || !(Zymurgy::$config["EnableEULA"] == "no");
+
+if ($enableEula && $zauth->authinfo['eula'] != 1)
 {
 	header("Location: eula.php");
 	exit;
 }
+
 if (!array_key_exists("zymurgy",$_COOKIE))
 {
 	setcookie("zymurgy",$zauth->authinfo['admin'],null,'/');
 }
-require_once("$ZymurgyRoot/zymurgy/cmo.php");
+
 ob_start();
 
 $includeNav = true;
