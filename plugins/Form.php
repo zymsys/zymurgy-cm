@@ -590,7 +590,18 @@ function Validate$name(me) {
 			//If not required and doesn't exist, just continue.  Think checkboxes.
 			if (($row['isrequired']==0) && (!array_key_exists($fieldname,$_POST)))
 				continue;
-			$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
+
+			$input = "";
+
+			if(!isset($_POST[$fieldname]))
+			{
+				$input = $_POST[$fieldname] = "";
+			}
+			else
+			{
+				$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
+			}
+
 			if (empty($row['validatormsg']))
 				$vmsg = "The field \"{$row['caption']}\" failed to validate.";
 			else
