@@ -2,6 +2,7 @@
 	class Member
 	{
 		private $m_id;
+		private $m_username;
 		private $m_email;
 		private $m_password;
 		private $m_fullname;
@@ -20,6 +21,16 @@
 		public function set_id($newValue)
 		{
 			$this->m_id = $newValue;
+		}
+
+		public function get_username()
+		{
+			return $this->m_username;
+		}
+
+		public function set_username($newValue)
+		{
+			$this->m_username = $newValue;
 		}
 
 		public function get_email()
@@ -108,6 +119,12 @@
 		{
 			$isValid = true;
 
+			if(strlen($this->m_username) <= 0)
+			{
+				$this->m_errors[] = "Username is required.";
+				$isValid = false;
+			}
+
 			if(strlen($this->m_email) <= 0)
 			{
 				$this->m_errors[] = "E-mail Address is required.";
@@ -133,8 +150,8 @@
 
 		public static function PopulateMultiple($criteria)
 		{
-			$sql = "SELECT `id`, `email`, `password`, `fullname`, `regtime`, `lastauth` ".
-				"FROM `zcm_member` WHERE $criteria";
+			$sql = "SELECT `id`, `username`, `email`, `password`, `fullname`, `regtime`, ".
+				"`lastauth` FROM `zcm_member` WHERE $criteria";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve members: ".Zymurgy::$db->error().", $sql");
 
@@ -145,6 +162,7 @@
 				$member = new Member();
 
 				$member->set_id($row["id"]);
+				$member->set_username($row["username"]);
 				$member->set_email($row["email"]);
 				$member->set_password($row["password"]);
 				$member->set_fullname($row["fullname"]);
@@ -159,8 +177,8 @@
 
 		public static function PopulateByID($id)
 		{
-			$sql = "SELECT `id`, `email`, `password`, `fullname`, `regtime`, `lastauth` ".
-				"FROM `zcm_member` WHERE `id` = '".
+			$sql = "SELECT `id`, `username`, `email`, `password`, `fullname`, `regtime`, ".
+				"`lastauth` FROM `zcm_member` WHERE `id` = '".
 				Zymurgy::$db->escape_string($id).
 				"'";
 			$ri = Zymurgy::$db->query($sql)
@@ -171,6 +189,7 @@
 			if(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{
 				$member->set_id($row["id"]);
+				$member->set_username($row["username"]);
 				$member->set_email($row["email"]);
 				$member->set_password($row["password"]);
 				$member->set_fullname($row["fullname"]);
@@ -188,6 +207,7 @@
 			$member = new Member();
 
 			$member->set_id($_POST["id"]);
+			$member->set_username($_POST["username"]);
 			$member->set_email($_POST["email"]);
 			$member->set_password($_POST["password"]);
 			$member->set_fullname($_POST["fullname"]);
@@ -199,8 +219,10 @@
 		{
 			if($member->get_id() <= 0)
 			{
-				$sql = "INSERT INTO `zcm_member` ( `email`, `password`, `fullname`, `regtime` ) ".
-					"VALUES ( '".
+				$sql = "INSERT INTO `zcm_member` ( `username`, `email`, `password`, `fullname`, ".
+					"`regtime` ) VALUES ( '".
+					Zymurgy::$db->escape_string($member->get_username()).
+					"', '".
 					Zymurgy::$db->escape_string($member->get_email()).
 					"', '".
 					Zymurgy::$db->escape_string($member->get_password()).
@@ -216,7 +238,9 @@
 			}
 			else
 			{
-				$sql = "UPDATE `zcm_member` SET `email` = '".
+				$sql = "UPDATE `zcm_member` SET `username` = '".
+					Zymurgy::$db->escape_string($member->get_username()).
+					"', `email` = '".
 					Zymurgy::$db->escape_string($member->get_email()).
 					"', `password` = '".
 					Zymurgy::$db->escape_string($member->get_password()).
@@ -492,6 +516,7 @@
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
+			echo("<td>Username</td>");
 			echo("<td>E-mail Address</td>");
 			echo("<td>Full Name</td>");
 			echo("<td>Registration Date</td>");
@@ -504,6 +529,11 @@
 			foreach($members as $member)
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
+				echo("<td><a href=\"editmember.php?action=edit_member&amp;id=".
+					$member->get_id().
+					"\">".
+					$member->get_username().
+					"</td>");
 				echo("<td><a href=\"editmember.php?action=edit_member&amp;id=".
 					$member->get_id().
 					"\">".
@@ -527,7 +557,7 @@
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"5\"><a style=\"color: white;\" href=\"editmember.php?action=add_member\">".
+			echo("<td colspan=\"6\"><a style=\"color: white;\" href=\"editmember.php?action=add_member\">".
 				"Add Member".
 				"</a></td>");
 
@@ -582,6 +612,13 @@
 			echo("<table>");
 
 			echo("<tr>\n");
+			echo("<td>Username:</td>\n");
+			echo("<td>");
+			$widget->Render("input.20.32", "username", $member->get_username());
+			echo("</td>\n");
+			echo("</tr>\n");
+
+			echo("<tr>\n");
 			echo("<td>E-mail Address:</td>\n");
 			echo("<td>");
 			$widget->Render("input.30.100", "email", $member->get_email());
@@ -591,7 +628,7 @@
 			echo("<tr>\n");
 			echo("<td>Password:</td>\n");
 			echo("<td>");
-			$widget->Render("password.20.50", "password", $member->get_password());
+			$widget->Render("password.20.32", "password", $member->get_password());
 			echo("</td>\n");
 			echo("</tr>\n");
 

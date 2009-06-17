@@ -24,13 +24,15 @@ if (isset($_POST['userid']))
 			"INNER JOIN `zcm_membergroup` ON `zcm_membergroup`.`memberid` = `zcm_member`.`id` ".
 			"INNER JOIN `zcm_groups` ON `zcm_groups`.`id` = `zcm_membergroup`.`groupid` ".
 			"AND `zcm_groups`.`name` = 'Zymurgy:CM - User'".
-			"WHERE `email` = '".
+			"WHERE ( `username` = '".
 			Zymurgy::$db->escape_string($userid).
-			"' AND `password` = '".
+			"' OR `email` = '".
+			Zymurgy::$db->escape_string($userid).
+			"' ) AND `password` = '".
 			Zymurgy::$db->escape_string($passwd).
 			"'";
 
-		// echo($sql);
+		echo($sql);
 	}
 
 	$ri = Zymurgy::$db->query($sql);

@@ -144,9 +144,18 @@ class ZymurgyMember
 	{
 		// die("memberdologin called");
 
-		$sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
-			"' and password='".Zymurgy::$db->escape_string($password)."'";
+		$sql = "SELECT `id` FROM `zcm_member` WHERE ( `username` = '".
+			Zymurgy::$db->escape_string($userid).
+			"' OR `email` = '".
+			Zymurgy::$db->escape_string($userid).
+			"' ) AND `password` = '".
+			Zymurgy::$db->escape_string($password).
+			"'";
+
+		// $sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
+		//	"' and password='".Zymurgy::$db->escape_string($password)."'";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
+
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
 			ZymurgyMember::createauthkey($row['id']);
@@ -358,9 +367,17 @@ class ZymurgyMember
 	{
 		// die("membersignup_CreateMember() Start");
 
-		$sql = "insert into zcm_member(email,password,regtime) values ('".
-			Zymurgy::$db->escape_string($userid)."','".
-			Zymurgy::$db->escape_string($password)."',now())";
+		$sql = "INSERT INTO `zcm_member` ( `username`, `email`, `password`, `regtime` ) VALUES ( '".
+			Zymurgy::$db->escape_string($userid).
+			"', '".
+			Zymurgy::$db->escape_string($userid).
+			"', '".
+			Zymurgy::$db->escape_string($password).
+			"', NOW() )";
+
+		// $sql = "insert into zcm_member(email,password,regtime) values ('".
+		// 	Zymurgy::$db->escape_string($userid)."','".
+		// 	Zymurgy::$db->escape_string($password)."',now())";
 
 		$ri = Zymurgy::$db->query($sql);
 

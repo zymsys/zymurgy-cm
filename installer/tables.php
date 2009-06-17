@@ -182,6 +182,7 @@
 				"name" => "zcm_member",
 				"columns" => array(
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("username", "VARCHAR(32)", "DEFAULT NULL"),
 					DefineTableField("email", "VARCHAR(80)", "DEFAULT NULL"),
 					DefineTableField("password", "VARCHAR(32)", "DEFAULT NULL"),
 					DefineTableField("fullname", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
@@ -193,6 +194,8 @@
 					DefineTableField("mpkey", "VARCHAR(40)", "DEFAULT NULL")
 				),
 				"indexes" => array(
+					array("columns" => "username", "unique" => TRUE, "type" => ""),
+					array("columns" => "username, password", "unique" => FALSE, "type" => ""),
 					array("columns" => "email", "unique" => TRUE, "type" => ""),
 					array("columns" => "mpkey", "unique" => TRUE, "type" => ""),
 					array("columns" => "email, password", "unique" => FALSE, "type" => ""),
