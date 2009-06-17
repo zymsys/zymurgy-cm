@@ -578,6 +578,8 @@ function Validate$name(me) {
 
 	function IsValid()
 	{
+		$widget = new InputWidget();
+
 		$validators = array();
 		$ri = Zymurgy::$db->query("select id,regex from zcm_form_regex");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)

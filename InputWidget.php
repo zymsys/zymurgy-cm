@@ -1459,6 +1459,14 @@ class InputWidget
 			$value = htmlentities($value);
 		$widget->Render($ep,$name,$value);
 	}
+
+	function IsValid($type, $value)
+	{
+		$ep = explode('.',$type);
+		$widget = InputWidget::Get($ep[0]);
+
+		return $widget->IsValid($value);
+	}
 }
 
 class DataGridLookup
