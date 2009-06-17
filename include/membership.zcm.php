@@ -614,14 +614,14 @@
 			echo("<tr>\n");
 			echo("<td>Username:</td>\n");
 			echo("<td>");
-			$widget->Render("input.20.32", "username", $member->get_username());
+			$widget->Render("input.20.80", "username", $member->get_username());
 			echo("</td>\n");
 			echo("</tr>\n");
 
 			echo("<tr>\n");
 			echo("<td>E-mail Address:</td>\n");
 			echo("<td>");
-			$widget->Render("input.30.100", "email", $member->get_email());
+			$widget->Render("input.30.80", "email", $member->get_email());
 			echo("</td>\n");
 			echo("</tr>\n");
 

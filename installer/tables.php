@@ -182,7 +182,7 @@
 				"name" => "zcm_member",
 				"columns" => array(
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
-					DefineTableField("username", "VARCHAR(32)", "DEFAULT NULL"),
+					DefineTableField("username", "VARCHAR(80)", "DEFAULT NULL"),
 					DefineTableField("email", "VARCHAR(80)", "DEFAULT NULL"),
 					DefineTableField("password", "VARCHAR(32)", "DEFAULT NULL"),
 					DefineTableField("fullname", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
