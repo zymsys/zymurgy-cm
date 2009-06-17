@@ -31,6 +31,7 @@ class ZymurgyMember
 	{
 		Zymurgy::$member = array(
 			'id'=>$row['id'],
+			'username'=>$row["username"],
 			'email'=>$row['email'],
 			'password'=>$row['password'],
 			'formdata'=>$row['formdata'],
@@ -145,8 +146,6 @@ class ZymurgyMember
 		// die("memberdologin called");
 
 		$sql = "SELECT `id` FROM `zcm_member` WHERE ( `username` = '".
-			Zymurgy::$db->escape_string($userid).
-			"' OR `email` = '".
 			Zymurgy::$db->escape_string($userid).
 			"' ) AND `password` = '".
 			Zymurgy::$db->escape_string($password).
@@ -486,7 +485,8 @@ class ZymurgyMember
 							$e[] = 'Password is a required field.';
 						if (count($e)==0)
 						{
-							$sql = "insert into zcm_member(email,password,regtime) values ('".
+							$sql = "insert into zcm_member(username,email,password,regtime) values ('".
+								Zymurgy::$db->escape_string($email)."','".
 								Zymurgy::$db->escape_string($email)."','".
 								Zymurgy::$db->escape_string($pass)."',now())";
 							$ri = Zymurgy::$db->query($sql);

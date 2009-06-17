@@ -138,6 +138,16 @@ echo("done<br>");
 
 // ----------
 
+echo("Migrating members from e-mail based logins to username-based logins...<br>");
+
+$sql = "UPDATE `zcm_member` SET `username` = `email` WHERE `username` = '' OR `username` IS NULL";
+mysql_query($sql)
+	or die("Could not migrate memberships: ".mysql_error().", $sql");
+
+echo("done<br>");
+
+// ----------
+
 echo("Renaming plugin configuration items...<br>");
 
 RenamePluginKeys('Form',array(
