@@ -64,12 +64,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 				else
 					$expires = false;
 
+				$authData = array(
+					$_POST["email"],
+					$_POST["email"],
+					$_POST["fullname"],
+					$zauth->authinfo["admin"],
+					$member->get_id(),
+					"1");
+
 				$zauth->SetAuth(
-					$expires,$zauth->authinfo['userid'],
+					$expires,
+					$zauth->authinfo['userid'],
 					$_POST['pass1'],
-					"{$_POST['email']},{$_POST['email']},{$_POST['fullname']},1,".
-						$member->get_id().
-						",1",
+					implode(",", $authData),
 					"index.php");
 
 				$message .= "Profile saved.";
