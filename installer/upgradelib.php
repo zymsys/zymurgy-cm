@@ -1,4 +1,6 @@
 <?php
+// ini_set("display_errors", 1);
+
 $sql = "show tables";
 $ri = mysql_query($sql) or die("Unable to show tables ($sql): ".mysql_error());
 $etables = array();
@@ -100,14 +102,23 @@ function CheckIndexes(
 	$existing = array();
 	$sql = "show index from $table";
 	$ri = mysql_query($sql) or die ("No such table: $table");
+
 	while (($row = mysql_fetch_array($ri))!==FALSE)
 	{
-		$existing[$row['Column_name']] = $row;
+		$existing[$row['Key_name']] = isset($existing[$row["Key_name"]])
+			? $existing[$row["Key_name"]].",".$row["Column_name"]
+			: $row["Column_name"];
 	}
 	mysql_free_result($ri);
+
+	// print_r($existing);
+
 	foreach($indexes as $column)
 	{
-		if (!array_key_exists($column,$existing))
+		$column = str_replace(" ", "", $column);
+		// echo("------ $column<br>");
+
+		if (!in_array($column,$existing))
 		{
 			if ($unique)
 			{

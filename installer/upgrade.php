@@ -36,6 +36,8 @@ echo("done.<br>");
 	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
 //}
 
+// ----------
+
 echo("Reconciling Zymurgy:CM membership groups...<br>");
 
 $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - User', 1 FROM DUAL ".
@@ -51,6 +53,91 @@ $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - Webm
 mysql_query($sql) or die("Could not add Zymurgy:CM - Webmaster membership group: ".mysql_error().", $sql");
 
 echo("done.<br>");
+
+// ----------
+
+echo("Migrating users in zcm_passwd to zcm_member...<br>");
+
+$userSQL = "SELECT `username`, `password`, `email`, `fullname`, `admin` ".
+	"FROM `zcm_passwd`";
+$userRI = mysql_query($userSQL)
+	or die("Could not retrieve user list: ".mysql_error().", $userSQL");
+
+echo(mysql_num_rows($userRI)." users found<br>");
+
+while(($userRow = mysql_fetch_array($userRI)) !== FALSE)
+{
+	echo("-- ".$userRow["username"]."<br>");
+
+	$memberSQL = "SELECT `id` FROM `zcm_member` WHERE `email` = '".
+		mysql_escape_string($userRow["email"]).
+		"' OR `username` = '".
+		mysql_escape_string($userRow["username"]).
+		"'";
+	$memberRI = mysql_query($memberSQL)
+		or die("Could not verify member information: ".mysql_error().", $memberSQL");
+
+	$memberID = 0;
+
+	if(mysql_num_rows($memberRI) > 0)
+	{
+		// echo("---- Found existing member (".$memberRow["id"].")<br>");
+
+		$memberRow = mysql_fetch_array($memberRI);
+		$memberID = $memberRow["id"];
+	}
+	else
+	{
+		// echo("---- Member not found. Adding (new ID: ");
+
+		$insertSQL = "INSERT INTO `zcm_member` ( `username`, `email`, `password`, `fullname` ) VALUES ( '".
+			mysql_escape_string($userRow["username"]).
+			"', '".
+			mysql_escape_string($userRow["email"]).
+			"', '".
+			mysql_escape_string($userRow["password"]).
+			"', '".
+			mysql_escape_string($userRow["fullname"]).
+			"' )";
+		mysql_query($insertSQL)
+			or die("Could not migrate user: ".mysql_error().", $insertSQL");
+		$memberID = mysql_insert_id();
+
+		// echo($memberID.")<br>");
+	}
+
+	if($userRow["admin"] >= 2)
+	{
+		$insertSQL = "INSERT IGNORE INTO `zcm_membergroup` ( `memberid`, `groupid` ) SELECT '".
+			mysql_escape_string($memberID).
+			"', `id` FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Webmaster'";
+		mysql_query($insertSQL)
+			or die("Could not make ".$memberRow["username"]." a webmaster: ".mysql_error().", $insertSQL");
+	}
+
+	if($userRow["admin"] >= 1)
+	{
+		$insertSQL = "INSERT IGNORE INTO `zcm_membergroup` ( `memberid`, `groupid` ) SELECT '".
+			mysql_escape_string($memberID).
+			"', `id` FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Administrator'";
+		mysql_query($insertSQL)
+			or die("Could not make ".$memberRow["username"]." an administrator: ".mysql_error().", $insertSQL");
+	}
+
+	if($userRow["admin"] >= 0)
+	{
+		$insertSQL = "INSERT IGNORE INTO `zcm_membergroup` ( `memberid`, `groupid` ) SELECT '".
+			mysql_escape_string($memberID).
+			"', `id` FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - User'";
+		mysql_query($insertSQL)
+			or die("Could not make ".$memberRow["username"]." a user: ".mysql_error().", $insertSQL");
+	}
+}
+
+echo("done<br>");
+
+// ----------
+
 echo("Renaming plugin configuration items...<br>");
 
 RenamePluginKeys('Form',array(
