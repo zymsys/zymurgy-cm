@@ -137,7 +137,16 @@
 
 			ProcessTableDefinitions($tableDefinitions);
 
-			echo("-- Reconciling Zymurgy:CM built-in media file package types...<br>");
+			echo("-- Reconciling Zymurgy:CM built-in media file data...<br>");
+
+			$sql = "INSERT INTO `zcm_media_relation` ( `relation_type`, `relation_type_label`, ".
+				"`allowed_mimetypes`, `builtin` ) SELECT 'image', 'Image', 'image/jpeg,image/gif', 1 ".
+				"FROM DUAL ".
+				"WHERE NOT EXISTS( SELECT 1 FROM `zcm_media_relation` WHERE `relation_type` = ".
+				"'image' )";
+			mysql_query($sql)
+				or die("Could not add Image: ".mysql_error().", $sql");
+			$imageID = mysql_insert_id();
 
 			$sql = "INSERT INTO `zcm_media_package_type` ( `package_type`, `package_type_label`, ".
 				"`builtin` ) SELECT 'zcmimages', 'Zymurgy:CM Image Library', 1 FROM DUAL ".
@@ -145,6 +154,16 @@
 				"'zcmimages' )";
 			mysql_query($sql)
 				or die("Could not add Zymurgy:CM Image Library: ".mysql_error().", $sql");
+			$imageLibraryID = mysql_insert_id();
+
+			$sql = "INSERT IGNORE INTO `zcm_media_package_type_allowed_relation` ( ".
+				"`media_package_type_id`, `media_relation_id`, `max_instances` ) VALUES ( '".
+				mysql_escape_string($imageLibraryID).
+				"', '".
+				mysql_escape_string($imageID).
+				"', 0)";
+			mysql_query($sql)
+				or die("Could not associate Images with Zymurgy:CM Image Library: ".mysql_error().", $sql");
 
 			echo("-- done.<br>");
 		}
@@ -1715,6 +1734,7 @@
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Type</td>");
 			echo("<td>Label</td>");
+			echo("<td>Built-In</td>");
 			echo("<td>&nbsp;</td>");
 			echo("</tr>");
 
@@ -1723,19 +1743,38 @@
 			foreach($mediaRelations as $mediaRelation)
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
-				echo("<td><a href=\"media.php?action=edit_relation&amp;media_relation_id=".
-					urlencode($mediaRelation->get_media_relation_id())."\">".
-					$mediaRelation->get_relation_type()."</td>");
+
+				if($mediaRelation->get_builtin())
+				{
+					echo("<td>".$mediaRelation->get_relation_type()."</td>");
+				}
+				else
+				{
+					echo("<td><a href=\"media.php?action=edit_relation&amp;media_relation_id=".
+						urlencode($mediaRelation->get_media_relation_id())."\">".
+						$mediaRelation->get_relation_type()."</a></td>");
+				}
+
 				echo("<td>".$mediaRelation->get_relation_label()."</td>");
-				echo("<td><a href=\"media.php?action=delete_relation&amp;media_relation_id=".
-					urlencode($mediaRelation->get_media_relation_id())."\">Delete</a></td>");
+				echo("<td>".($mediaRelation->get_builtin() ? "Yes" : "&nbsp;")."</td>");
+
+				if($mediaRelation->get_builtin())
+				{
+					echo("<td>&nbsp;</td>");
+				}
+				else
+				{
+					echo("<td><a href=\"media.php?action=delete_relation&amp;media_relation_id=".
+						urlencode($mediaRelation->get_media_relation_id())."\">Delete</a></td>");
+				}
+
 				echo("</tr>");
 
 				$cntr++;
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_relation\">Add Relation Type</td>");
+			echo("<td colspan=\"4\"><a style=\"color: white;\" href=\"media.php?action=add_relation\">Add Relation Type</td>");
 
 			echo("</table>");
 

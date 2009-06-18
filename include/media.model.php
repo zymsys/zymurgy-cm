@@ -2952,6 +2952,7 @@
 		private $m_relation_label;
 		private $m_thumbnails;
 		private $m_allowed_mimetypes = "";
+		private $m_builtin;
 
 		private $m_errors = array();
 
@@ -3072,6 +3073,27 @@
 		}
 
 		/**
+		 * Get the built-in flag for this relation. Built-in relations
+		 * cannot be manipulated by the user through the GUI.
+		 *
+		 * @return unknown
+		 */
+		public function get_builtin()
+		{
+			return $this->m_builtin;
+		}
+
+		/**
+		 * Set the built-in flag for this relation.
+		 *
+		 * @param unknown_type $newValue
+		 */
+		public function set_builtin($newValue)
+		{
+			$this->m_builtin = $newValue;
+		}
+
+		/**
 		 * Get the list of errors in the media relation object. This is
 		 * populated as part of the validate() method, and is typically
 		 * called as part of the save process during data input.
@@ -3145,8 +3167,9 @@
 		 */
 		public static function PopulateAll()
 		{
-			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label`, `thumbnails`, ".
-				"`allowed_mimetypes` FROM `zcm_media_relation` ORDER BY `relation_type_label`";
+			$sql = "SELECT `media_relation_id`, `relation_type`, `relation_type_label`, ".
+				"`thumbnails`, `builtin`, `allowed_mimetypes` ".
+				"FROM `zcm_media_relation` ORDER BY `relation_type_label`";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve relation types: ".mysql_error().", $sql");
 
@@ -3161,6 +3184,7 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
+				$mediaRelation->set_builtin($row["builtin"]);
 
 				$mediaRelations[] = $mediaRelation;
 			}
@@ -3178,7 +3202,8 @@
 		 */
 		public static function PopulateByID($media_relation_id)
 		{
-			$sql = "SELECT `relation_type`, `relation_type_label`, `thumbnails`, `allowed_mimetypes` ".
+			$sql = "SELECT `relation_type`, `relation_type_label`, `thumbnails`, ".
+				"`builtin`, `allowed_mimetypes` ".
 				"FROM `zcm_media_relation` WHERE `media_relation_id` = '".
 				Zymurgy::$db->escape_string($media_relation_id)."'";
 			$ri = Zymurgy::$db->query($sql)
@@ -3196,6 +3221,7 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
+				$mediaRelation->set_builtin($row["builtin"]);
 			}
 
 			Zymurgy::$db->free_result($ri);
@@ -3212,7 +3238,7 @@
 		public static function PopulateByType($relation_type)
 		{
 			$sql = "SELECT `media_relation_id`,  `relation_type`, `relation_type_label`, ".
-				"`thumbnails`, `allowed_mimetypes` FROM `zcm_media_relation` ".
+				"`thumbnails`, `allowed_mimetypes`, `builtin` FROM `zcm_media_relation` ".
 				"WHERE `relation_type` = '".
 				Zymurgy::$db->escape_string($relation_type)."'";
 			$ri = Zymurgy::$db->query($sql)
@@ -3234,6 +3260,7 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
+				$mediaRelation->set_builtit($row["builtin"]);
 			}
 
 			Zymurgy::$db->free_result($ri);
@@ -3260,7 +3287,8 @@
 		}
 
 		/**
-		 * Save the media relation to the database.
+		 * Save the media relation to the database. Note that the routine
+		 * does not save the built-in flag.
 		 *
 		 * @param MediaRelation $mediaRelation
 		 */
@@ -3336,7 +3364,8 @@
 					DefineTableField("relation_type", "VARCHAR(50)", "NOT NULL"),
 					DefineTableField("relation_type_label", "VARCHAR(50)", "NOT NULL"),
 					DefineTableField("allowed_mimetypes", "VARCHAR(200)", ""),
-					DefineTableField("thumbnails", "VARCHAR(50)", "")
+					DefineTableField("thumbnails", "VARCHAR(50)", ""),
+					DefineTableField("builtin", "INTEGER", "NOT NULL DEFAULT '0'")
 				),
 				"indexes" => array(),
 				"primarykey" => "media_relation_id",
