@@ -1,5 +1,5 @@
 <?php
-	// ini_set("display_errors", 1);
+	ini_set("display_errors", 1);
 	require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 	/*
@@ -1983,6 +1983,7 @@
 		private $m_media_package_type_id;
 		private $m_package_type;
 		private $m_package_label;
+		private $m_builtin;
 
 		private $m_allowedrelations = array();
 
@@ -2054,6 +2055,27 @@
 		public function set_package_label($newValue)
 		{
 			$this->m_package_label = $newValue;
+		}
+
+		/**
+		 * Get the built-in status of the package type. Users are not able
+		 * to delete built-in package types using the GUI.
+		 *
+		 * @return boolean True, if the package type is built-in.
+		 */
+		public function get_builtin()
+		{
+			return $this->m_builtin;
+		}
+
+		/**
+		 * Set the built-in status of the package type.
+		 *
+		 * @param boolean $newValue
+		 */
+		public function set_builtin($newValue)
+		{
+			$this->m_builtin = $newValue;
 		}
 
 		/**
@@ -2340,7 +2362,7 @@
 		public static function PopulateAll()
 		{
 			$sql = "SELECT `media_package_type_id`, `package_type`, ".
-				"`package_type_label` FROM `zcm_media_package_type`";
+				"`package_type_label`, `builtin` FROM `zcm_media_package_type`";
 
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve list of package types: ".mysql_error().", $sql");
@@ -2354,6 +2376,7 @@
 				$packageType->set_media_package_type_id($row["media_package_type_id"]);
 				$packageType->set_package_type($row["package_type"]);
 				$packageType->set_package_label($row["package_type_label"]);
+				$packageType->set_builtin($row["builtin"]);
 
 				$packageTypes[] = $packageType;
 			}
@@ -2373,7 +2396,7 @@
 		public static function PopulateByID(
 			$media_package_type_id)
 		{
-			$sql = "SELECT `package_type`, `package_type_label` FROM ".
+			$sql = "SELECT `package_type`, `package_type_label`, `builtin` FROM ".
 				"`zcm_media_package_type` WHERE `media_package_type_id` = '".
 				Zymurgy::$db->escape_string($media_package_type_id).
 				"'";
@@ -2391,6 +2414,7 @@
 				$packageType->set_media_package_type_id($media_package_type_id);
 				$packageType->set_package_type($row["package_type"]);
 				$packageType->set_package_label($row["package_type_label"]);
+				$packageType->set_builtin($row["builtin"]);
 			}
 
 			Zymurgy::$db->free_result($ri);
@@ -2408,7 +2432,7 @@
 		public static function PopulateByType(
 			$package_type)
 		{
-			$sql = "SELECT `media_package_type_id`, `package_type_label` FROM ".
+			$sql = "SELECT `media_package_type_id`, `package_type_label`, `builtin` FROM ".
 				"`zcm_media_package_type` WHERE `package_type` = '".
 				Zymurgy::$db->escape_string($package_type).
 				"'";
@@ -2426,6 +2450,7 @@
 				$packageType->set_media_package_type_id($row["media_package_type_id"]);
 				$packageType->set_package_type($package_type);
 				$packageType->set_package_label($row["package_type_label"]);
+				$packageType->set_builtin($row["builtin"]);
 			}
 
 			Zymurgy::$db->free_result($ri);
@@ -2552,6 +2577,9 @@
 		/**
 		 * Save the information on a media package type to the database.
 		 *
+		 * Note that this method does not alter the builtin flag on the record,
+		 * as that cannot be manipulated through the GUI.
+		 *
 		 * @param MediaPackageType $packageType
 		 */
 		public static function SaveMediaPackageType($packageType)
@@ -2676,7 +2704,8 @@
 				"columns" => array(
 					DefineTableField("media_package_type_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
 					DefineTableField("package_type", "VARCHAR(50)", "NOT NULL"),
-					DefineTableField("package_type_label", "VARCHAR(50)", "NOT NULL")
+					DefineTableField("package_type_label", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("builtin", "INTEGER", "NOT NULL DEFAULT '0'")
 				),
 				"indexes" => array(),
 				"primarykey" => "media_package_type_id",

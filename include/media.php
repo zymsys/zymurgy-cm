@@ -60,6 +60,9 @@
 	{
 		static function InstalledVersion()
 		{
+			// ZK: Not sure version detection is actually required any more
+			return 0;
+
 			$sql = "show tables like 'zcm_media_file'";
 			$tableExists = Zymurgy::$db->get($sql);
 
@@ -75,6 +78,10 @@
 				// won't be checked.
 
 				// If none of the columns are found, return as version 1.
+
+				$sql = "SHOW COLUMNS FROM `zcm_media_package_type` LIKE 'builtin'";
+				$fieldExists = Zymurgy::$db->get($sql);
+				if(isset($fieldExists[0]) && $fieldExists[0] == 'builtin') return 6;
 
 				$sql = "SHOW COLUMNS FROM `zcm_media_relation` LIKE 'thumbnails'";
 				$fieldExists = Zymurgy::$db->get($sql);
@@ -98,7 +105,7 @@
 
 		static function Version()
 		{
-			return 5;
+			return 6;
 		}
 
 		static function Install()
@@ -130,34 +137,16 @@
 
 			ProcessTableDefinitions($tableDefinitions);
 
-			for($version = $currentVersion + 1; $version <= $targetVersion; $version++)
-			{
-				switch($version)
-				{
-					case 1:
+			echo("-- Reconciling Zymurgy:CM built-in media file package types...<br>");
 
-						break;
+			$sql = "INSERT INTO `zcm_media_package_type` ( `package_type`, `package_type_label`, ".
+				"`builtin` ) SELECT 'zcmimages', 'Zymurgy:CM Image Library', 1 FROM DUAL ".
+				"WHERE NOT EXISTS( SELECT 1 FROM `zcm_media_package_type` WHERE `package_type` = ".
+				"'zcmimages' )";
+			mysql_query($sql)
+				or die("Could not add Zymurgy:CM Image Library: ".mysql_error().", $sql");
 
-					case 2:
-
-						break;
-
-					case 3:
-
-						break;
-
-					case 4:
-
-						break;
-
-					case 5:
-
-						break;
-
-					default:
-						die("Unsupported version $version");
-				}
-			}
+			echo("-- done.<br>");
 		}
 
 		static function Uninstall()
@@ -1448,6 +1437,7 @@
 			echo("<tr class=\"DataGridHeader\">");
 			echo("<td>Package Type</td>");
 			echo("<td>Label</td>");
+			echo("<td>Built-In</td>");
 			echo("<td>&nbsp;</td>");
 			echo("</tr>");
 
@@ -1456,18 +1446,38 @@
 			foreach($mediaPackageTypes as $mediaPackageType)
 			{
 				echo("<tr class=\"".($cntr % 2 ? "DataGridRow" : "DataGridRowAlternate")."\">");
-				echo("<td><a href=\"media.php?action=edit_media_package_type&amp;media_package_type_id=".
-					$mediaPackageType->get_media_package_type_id()."\">".$mediaPackageType->get_package_type()."</a></td>");
+
+				if($mediaPackageType->get_builtin())
+				{
+					echo("<td>".$mediaPackageType->get_package_type()."</td>");
+				}
+				else
+				{
+					echo("<td><a href=\"media.php?action=edit_media_package_type&amp;media_package_type_id=".
+						$mediaPackageType->get_media_package_type_id()."\">".
+						$mediaPackageType->get_package_type()."</a></td>");
+				}
+
 				echo("<td>".$mediaPackageType->get_package_label()."</td>");
-				echo("<td><a href=\"media.php?action=delete_media_package_type&amp;media_package_type_id=".
-					$mediaPackageType->get_media_package_type_id()."\">Delete</a></td>");
+				echo("<td>".($mediaPackageType->get_builtin() ? "Yes" : "&nbsp;")."</td>");
+
+				if($mediaPackageType->get_builtin())
+				{
+					echo("<td>&nbsp;</td>");
+				}
+				else
+				{
+					echo("<td><a href=\"media.php?action=delete_media_package_type&amp;media_package_type_id=".
+						$mediaPackageType->get_media_package_type_id()."\">Delete</a></td>");
+				}
+
 				echo("</tr>");
 
 				$cntr++;
 			}
 
 			echo("<tr class=\"DataGridHeader\">");
-			echo("<td colspan=\"3\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_type\">Add Media Package Type</td>");
+			echo("<td colspan=\"4\"><a style=\"color: white;\" href=\"media.php?action=add_media_package_type\">Add Media Package Type</td>");
 
 			echo("</table>");
 

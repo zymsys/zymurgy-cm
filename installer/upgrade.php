@@ -271,19 +271,21 @@ echo("Checking media file support...<br>");
 require_once("../cmo.php");
 require_once("../include/media.php");
 
-$installedVersion = MediaFileInstaller::InstalledVersion();
-$targetVersion = MediaFileInstaller::Version();
+MediaFileInstaller::Upgrade(0, 1);
 
-if($installedVersion < $targetVersion)
-{
-	echo("-- Installing/upgrading from version $installedVersion to version $targetVersion");
+// $installedVersion = MediaFileInstaller::InstalledVersion();
+// $targetVersion = MediaFileInstaller::Version();
 
-	MediaFileInstaller::Upgrade($installedVersion, $targetVersion);
-}
-else
-{
-	echo("-- No install/upgrade required<br>");
-}
+// if($installedVersion < $targetVersion)
+// {
+// 	echo("-- Installing/upgrading from version $installedVersion to version $targetVersion<br>");
+//
+//	MediaFileInstaller::Upgrade($installedVersion, $targetVersion);
+// }
+// else
+// {
+//	echo("-- No install/upgrade required<br>");
+// }
 
 // ----------
 // ZK: 2008.11.18
