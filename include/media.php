@@ -2663,25 +2663,38 @@
 
 		private function insert_image_into_yuihtml()
 		{
+			Zymurgy::memberauthenticate();
+
 			$mediaPackages = MediaPackagePopulator::PopulateByOwner(
 				0,
-				"pagelibrary");
+				"zcmimages");
 
 			if(count($mediaPackages) <= 0)
 			{
-				PageImageLibraryView::DisplayNotConfiguredMessage();
+				$mediaPackage = new MediaPackage();
+				$mediaPackage->set_display_name("My Zymurgy:CM Image Library");
+				$member = MediaMemberPopulator::PopulateByID(
+					Zymurgy::$member["id"]);
+				$mediaPackage->set_member($member);
+				$mediaPackageType = MediaPackageTypePopulator::PopulateByType("zcmimages");
+				$mediaPackage->set_packagetype($mediaPackageType);
+
+				MediaPackagePopulator::SaveMediaPackage($mediaPackage);
+
+				// PageImageLibraryView::DisplayNotConfiguredMessage();
 			}
 			else
 			{
 				$mediaPackage = $mediaPackages[0];
-				MediaPackagePopulator::PopulateMediaFiles(
-					$mediaPackage,
-					"image");
-
-				PageImageLibraryView::DisplayImageList(
-					$mediaPackage,
-					$_GET["editor_id"]);
 			}
+
+			MediaPackagePopulator::PopulateMediaFiles(
+				$mediaPackage,
+				"image");
+
+			PageImageLibraryView::DisplayImageList(
+				$mediaPackage,
+				$_GET["editor_id"]);
 		}
 	}
 ?>
