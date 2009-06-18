@@ -3260,7 +3260,7 @@
 				$mediaRelation->set_relation_label($row["relation_type_label"]);
 				$mediaRelation->set_thumbnails($row["thumbnails"]);
 				$mediaRelation->set_allowed_mimetypes($row["allowed_mimetypes"]);
-				$mediaRelation->set_builtit($row["builtin"]);
+				$mediaRelation->set_builtin($row["builtin"]);
 			}
 
 			Zymurgy::$db->free_result($ri);
