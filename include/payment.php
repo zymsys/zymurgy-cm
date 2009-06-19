@@ -1,4 +1,6 @@
 <?php
+	ini_set("display_errors", 1);
+
 	class BillingInformation
 	{
 		public $first_name = "";
@@ -616,6 +618,44 @@
 			$this->m_paymentTransaction->invoice_id = "n/a";
 			$this->m_paymentTransaction->status_code = "Posted Back";
 			$this->m_paymentTransaction->postback_variables = $_POST;
+		}
+
+		public function IsReportedPostVar($var)
+		{
+			return true;
+		}
+	}
+
+	class GoogleCheckoutProcessor extends PaymentProcessor implements IPaymentProcessor
+	{
+		public function GetPaymentProcessorName()
+		{
+			return "Google Checkout";
+		}
+
+		public function GetReturnQueryParameter()
+		{
+			return "merchant_return_link";
+		}
+
+		public function GetCallbackQueryParameter()
+		{
+			return "txn_id";
+		}
+
+		public function GetPaypalCommand()
+		{
+			return $this->m_PayPalCmd;
+		}
+
+		public function Process()
+		{
+
+		}
+
+		public function Callback()
+		{
+
 		}
 
 		public function IsReportedPostVar($var)
