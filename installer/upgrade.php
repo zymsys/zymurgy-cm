@@ -279,6 +279,30 @@ $sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES 
 mysql_query($sql)
 	or die("Could not update Membership Groups feature: ".mysql_error().", $sql");
 
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"6, 6, 'Media Files', 'media.php') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 6, `label` = 'Media Files', `url` = 'media.php'";
+mysql_query($sql)
+	or die("Could not update Media Files feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"7, 7, 'Media Packages', 'media.php?action=list_media_packages') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 7, `label` = 'Media Packages', `url` = 'media.php?action=list_media_packages'";
+mysql_query($sql)
+	or die("Could not update Media Packages feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"8, 8, 'Media Package Types', 'media.php?action=list_media_package_types') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 8, `label` = 'Media Package Types', `url` = 'media.php?action=list_media_package_types'";
+mysql_query($sql)
+	or die("Could not update Media Package Types feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"9, 9, 'Media Relations', 'media.php?action=list_relations') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 9, `label` = 'Media Relations', `url` = 'media.php?action=list_relations'";
+mysql_query($sql)
+	or die("Could not update Media Relations feature: ".mysql_error().", $sql");
+
 echo("done.<br>");
 echo("Updating table definitions...");
 
