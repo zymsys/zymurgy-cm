@@ -232,7 +232,7 @@ YAHOO.util.Event.onDOMReady(function() {
 			setDestination(piContent);
 			break;
 		case 'Zymurgy:CM Feature':
-			lastFeature = elLavTo.value;
+			lastFeature = elNavTo.value;
 			setFeatureContent();
 			setDestination(featureContent);
 			break;

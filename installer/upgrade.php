@@ -250,10 +250,34 @@ if ($count==0)
 }
 
 $sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"1, 1, 'Simple Content', 'sitetext.php') ON DUPLICATE KEY UPDATE ".
+	"1, 2, 'Simple Content', 'sitetext.php') ON DUPLICATE KEY UPDATE ".
 	"`disporder` = 1, `label` = 'Simple Content', `url` = 'sitetext.php'";
 mysql_query($sql)
 	or die("Could not update Simple Content feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"2, 1, 'Pages', 'sitepage.php') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 2, `label` = 'Pages', `url` = 'sitepage.php'";
+mysql_query($sql)
+	or die("Could not update Pages feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"3, 3, 'SEO', 'headtext.php') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 3, `label` = 'SEO', `url` = 'headtext.php'";
+mysql_query($sql)
+	or die("Could not update SEO feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"4, 4, 'Members', 'editmember.php') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 4, `label` = 'Members', `url` = 'editmember.php'";
+mysql_query($sql)
+	or die("Could not update Members feature: ".mysql_error().", $sql");
+
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"5, 5, 'Membership Groups', 'editmember.php?action=list_groups') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 5, `label` = 'Membership Groups', `url` = 'editmember.php?action=list_groups'";
+mysql_query($sql)
+	or die("Could not update Membership Groups feature: ".mysql_error().", $sql");
 
 echo("done.<br>");
 echo("Updating table definitions...");
