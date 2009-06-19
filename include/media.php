@@ -600,6 +600,164 @@
 			echo("</table>");
 		}
 
+		public static function DisplayAddDialog(
+			$mediaFile,
+			$mediaPackage,
+			$mediaRelation,
+			$member,
+			$imageList)
+		{
+			$output = "";
+
+			$output .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n";
+
+ 			$output .= "<html>\n";
+ 			$output .= "<head>\n";
+ 			$output .= "<title>Add File to Library</title>\n";
+			$output .= "<style type=\"text/css\">\n";
+			$output .= "body {\n";
+			$output .= "font-family: ".(isset(Zymurgy::$config["font"]) ? Zymurgy::$config["font"] : "Verdana, Arial, Helvetica, sans-serif").";\n";
+			$output .= "font-size:small;\n";
+			$output .= "}\n";
+			$output .= "</style>\n";
+			$output .= "</head>\n";
+
+			$output .= "<body>\n";
+
+			$output .= "<form name=\"frm\" action=\"media.php\" method=\"POST\" enctype=\"multipart/form-data\">\n";
+
+			$output .= "<input type=\"hidden\" name=\"action\" value=\"act_add_media_file_dialog\">\n";
+			$output .= "<input type=\"hidden\" name=\"media_file_id\" value=\"0\">\n";
+			$output .= "<input type=\"hidden\" name=\"mimetype\" value=\"\">\n";
+			$output .= "<input type=\"hidden\" name=\"extension\" value=\"\">\n";
+			$output .= "<input type=\"hidden\" name=\"price\" value=\"\">\n";
+			$output .= "<input type=\"hidden\" name=\"member_id\" value=\"".
+				$member->get_member_id().
+				"\">\n";
+			$output .= "<input type=\"hidden\" name=\"media_package_id\" value=\"".
+				$mediaPackage->get_media_package_id().
+				"\">\n";
+			$output .= "<input type=\"hidden\" name=\"media_relation_id\" value=\"".
+				$mediaRelation->get_media_relation_id().
+				"\">\n";
+			$output .= "<input type=\"hidden\" name=\"imagelist\" value=\"".
+				$imageList.
+				"\">\n";
+
+			$output .= "<table>\n";
+
+			$output .= "<tr>\n";
+			$output .= "<td>File:</td>\n";
+			$output .= "<td><input type=\"file\" name=\"file\" size=\"20\"></td>\n";
+			$output .= "</tr>\n";
+
+			$output .= "<tr>\n";
+			$output .= "<td>Display Name:</td>\n";
+			$output .= "<td><input type=\"text\" name=\"display_name\" size=\"30\" value=\"".
+				$mediaFile->get_display_name().
+				"\"></td>\n";
+			$output .= "</tr>\n";
+
+			$output .= "<tr><td colspan=\"2\">&nbsp;</td></tr>\n";
+
+			$output .= "<tr>\n";
+			$output .= "<td>&nbsp;</td>\n";
+			$output .= "<td><input type=\"submit\" name=\"cmdOK\" value=\"Add\" style=\"width: 80px;\"> <input type=\"button\" name=\"cmdCancel\" Value=\"Cancel\" onclick=\"window.close();\" style=\"width: 80px;\"></td>\n";
+			$output .= "</tr>\n";
+
+			$output .= "</table>\n";
+
+			if(count($mediaFile->get_errors()) > 0)
+			{
+				$output .= "<ul><li>";
+				$output .= implode("</li><li>", $mediaFile->get_errors());
+				$output .= "</li></ul>\n";
+			}
+
+			$output .= "</form>\n";
+
+			$output .= "</body>\n";
+
+			$output .= "</html>\n";
+
+ 			echo($output);
+		}
+
+		public static function DisplayMediaFileAddedDialog(
+			$imagelist)
+		{
+			$element = str_replace("Editor", "", $imagelist);
+			$element = str_replace("Dialog", "", $element);
+
+			echo("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ");
+			echo("\"http://www.w3.org/TR/html4/loose.dtd\">\n");
+        	echo("<html>\n");
+ 			echo("<head>\n");
+
+			echo Zymurgy::YUI("assets/skins/sam/skin.css");
+			echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+			echo Zymurgy::YUI("element/element-min.js");
+			echo Zymurgy::YUI("connection/connection-min.js");
+			echo Zymurgy::YUI("container/container-min.js");
+			echo Zymurgy::YUI("button/button-min.js");
+			echo Zymurgy::YUI("dragdrop/dragdrop-min.js");
+			echo Zymurgy::YUI("editor/editor-min.js");
+
+
+ 			echo("<script type=\"text/javascript\">\n");
+?>
+			var loadObject = {
+				targetElement: "<?= $element ?>_dlgBody",
+				url: "/zymurgy/media.php?action=insert_image_into_yuihtml" +
+					"&editor_id=<?= $element ?>Editor",
+				handleSuccess:function(o)
+				{
+					// alert("Success");
+					opener.document.getElementById(this.targetElement).innerHTML = o.responseText;
+
+					window.close();
+				},
+				handleFailure:function(o)
+				{
+					// alert("Failure");
+					opener.document.getElementById(this.targetElement).innerHTML =
+						o.status + ": " + o.responseText;
+				},
+				startRequest:function()
+				{
+					opener.document.getElementById(this.targetElement).innerHTML = "Updating...";
+
+					YAHOO.util.Connect.asyncRequest(
+						"GET",
+						this.url,
+						loadCallback,
+						null);
+				}
+			};
+
+			// alert("-- AJAX connection declared");
+
+			var loadCallback =
+			{
+				success: loadObject.handleSuccess,
+				failure: loadObject.handleFailure,
+				scope: loadObject
+			};
+
+			// alert("-- Callback declared");
+
+			function init() {
+				loadObject.startRequest();
+			}
+<?
+			echo("</script>\n");
+			echo("</head>\n");
+			echo("<body onLoad=\"init();\">\n");
+			echo("Please wait while we update the list of images...");
+ 			echo("</body>\n");
+ 			echo("</html>\n");
+		}
+
 		static function DisplayDeleteFrom($mediaFile)
 		{
 			$breadcrumbTrail = "<a href=\"media.php?action=list_media_files\">".
@@ -1946,7 +2104,8 @@
 		public static function DisplayImageList($mediaPackage, $yuiHtmlID)
 		{
 			echo("<input type=\"hidden\" name=\"mediaFileID\" id=\"mediaFileID\" value=\"\">\n");
-			echo("<div style=\"width: 100%; height: 77px; overflow: auto;\">\n");
+			echo("Select your image:\n");
+			echo("<div id=\"{$yuiHtmlID}_imagelist\" style=\"width: 100%; height: 67px; overflow: auto;\">\n");
 			echo("<table cellspacing=\"3\" cellpadding=\"0\" border=\"0\">\n");
 
 			echo("<tr>\n");
@@ -1960,6 +2119,11 @@
 					"/".
 					$mediaFile->get_media_file_id().
 					"raw.jpg";
+
+				if(!file_exists($filepath))
+				{
+					$filepath = str_replace("raw.jpg", ".jpg", $filepath);
+				}
 
 				list($width, $height, $type, $attr) = getimagesize($filepath);
 
@@ -1977,9 +2141,19 @@
 					$mediaFile->get_media_file_id().
 					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
-					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\" style=\"border: 2px solid white;\"></a>\n");
+					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\" ".
+					"style=\"border: 2px solid white;\"></a>\n");
 				echo("</td>\n");
 			}
+
+			echo("<td><a href=\"javascript:;\" onclick=\"window.open('media.php?action=add_media_file_dialog".
+				"&amp;media_package_id=".
+				$mediaPackage->get_media_package_id().
+				"&amp;imagelist=".
+				$yuiHtmlID.
+				"', 'newMediaFileDialog', 'width=350,height=200');\"><img id=\"dlgImg_new\" src=\"images/newImage.gif\" height=\"50\" ".
+				"width=\"50\" style=\"border: 2px solid white;\"></a>\n");
+			echo("</td>\n");
 
 			echo("</tr>\n");
 
@@ -1989,15 +2163,11 @@
 			echo("<table>\n");
 
 			echo("<tr>\n");
-			echo("<td colspan=\"5\">&nbsp;</td>\n");
-			echo("</tr>\n");
-
-			echo("<tr>\n");
-			echo("<td width=\"15%\">Width:</td>");
+			echo("<td width=\"25%\">Width:</td>");
 			echo("<td width=\"15%\"><input type=\"text\" name=\"width\" id=\"mediaFileWidth\" size=\"5\" maxlength=\"3\" value=\"\"></td>\n");
 			echo("<td width=\"15%\">Height:</td>");
 			echo("<td width=\"15%\"><input type=\"text\" name=\"height\" id=\"mediaFileHeight\" size=\"5\" maxlength=\"3\" value=\"\"></td>\n");
-			echo("<td width=\"40%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value, 'false');\"></td>\n");
+			echo("<td width=\"30%\"><input id=\"mediaFileCrop\" type=\"button\" value=\"Crop...\" onClick=\"mf_aspectcrop_popup(document.getElementById('mediaFileID').value, document.getElementById('mediaFileWidth').value + 'x' + document.getElementById('mediaFileHeight').value, 'false');\"></td>\n");
 			echo("</tr>\n");
 
 			echo("<tr>\n");
@@ -2135,6 +2305,72 @@
 				else
 				{
 					header("Location: media.php?action=list_media_files");
+				}
+			}
+		}
+
+		private function add_media_file_dialog()
+		{
+			Zymurgy::memberauthenticate();
+
+			$mediaPackage = MediaPackagePopulator::PopulateById(
+				$_GET["media_package_id"]);
+			$mediaRelation = MediaRelationPopulator::PopulateByType(
+				"image");
+			$member = MediaMemberPopulator::PopulateByID(
+				Zymurgy::$member["id"]);
+
+			MediaFileView::DisplayAddDialog(
+				new MediaFile(),
+				$mediaPackage,
+				$mediaRelation,
+				$member,
+				$_GET["imagelist"]);
+		}
+
+		private function act_add_media_file_dialog()
+		{
+			Zymurgy::memberauthenticate();
+
+			$mediaFile = MediaFilePopulator::PopulateFromForm();
+			$mediaPackage = MediaPackagePopulator::PopulateById(
+				$_POST["media_package_id"]);
+			MediaPackagePopulator::PopulateMediaFiles($mediaPackage, "image");
+			$mediaRelation = MediaRelationPopulator::PopulateByType(
+				"image");
+			$member = MediaMemberPopulator::PopulateByID(
+				Zymurgy::$member["id"]);
+
+			if(!$mediaFile->validate("act_add_media_file"))
+			{
+				MediaFileView::DisplayAddDialog(
+					$mediaFile,
+					$mediaPackage,
+					$mediaRelation,
+					$member,
+					$_POST["imagelist"]);
+			}
+			else
+			{
+				if(MediaFilePopulator::SaveMediaFile($mediaFile))
+				{
+					MediaFileView::DisplayAddDialog(
+						$mediaFile,
+						$mediaPackage,
+						$mediaRelation,
+						$member,
+						$_POST["imagelist"]);
+				}
+				else
+				{
+					MediaPackagePopulator::AddMediaFileToPackage(
+						$mediaPackage->get_media_package_id(),
+						$mediaFile->get_media_file_id(),
+						$mediaRelation->get_media_relation_id(),
+						$mediaPackage->get_media_file_count() + 1);
+
+					MediaFileView::DisplayMediaFileAddedDialog(
+						$_POST["imagelist"]);
 				}
 			}
 		}

@@ -898,12 +898,18 @@
 			if($uploadingFile)
 			{
 				$oldPath = $uploadfolder."/".$mediaFile->get_media_file_id().".*";
-				foreach(glob($oldPath) as $oldFile)
-				{
-					// echo($oldFile."<br>");
-					unlink($oldFile);
-				}
 
+				$files = glob($oldPath);
+				// print_r($files);
+
+				if(is_array($files) && count($files) > 0)
+				{
+					foreach($files as $oldFile)
+					{
+						// echo($oldFile."<br>");
+						unlink($oldFile);
+					}
+				}
 				// die();
 
 				$newPath = $uploadfolder."/".$mediaFile->get_media_file_id().".".$extension;
