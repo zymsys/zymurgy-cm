@@ -225,7 +225,7 @@ $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error
 $count = mysql_result($ri,0,0);
 if ($count==0)
 {
-	$sql = "INSERT INTO `zcm_nav` VALUES
+	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,navname,navtype,navto) VALUES
 		(1,1,0,'Content','Sub-Menu',''),
 		(3,3,0,'Admin','Sub-Menu',''),
 		(4,4,0,'Webmaster','Sub-Menu',''),
