@@ -249,6 +249,12 @@ if ($count==0)
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 }
 
+$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
+	"1, 1, 'Simple Content', 'sitetext.php') ON DUPLICATE KEY UPDATE ".
+	"`disporder` = 1, `label` = 'Simple Content', `url` = 'sitetext.php'";
+mysql_query($sql)
+	or die("Could not update Simple Content feature: ".mysql_error().", $sql");
+
 echo("done.<br>");
 echo("Updating table definitions...");
 

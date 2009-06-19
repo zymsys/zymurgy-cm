@@ -41,9 +41,9 @@ if ($detailfor > 0)
 }
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
-	$ek = 0 + $_GET['editkey'];
+	$ek = isset($_GET["editkey"]) ? 0 + $_GET['editkey'] : 0;
 	$nav = Zymurgy::$db->get("select * from zcm_nav where id=$ek");
-	$navname = $tbl['navname'];
+	$navname = isset($tbl['navname']) ? $tbl['navname'] : "";
 	$crumbs[''] = "Edit $navname";
 }
 
@@ -57,12 +57,15 @@ if (array_key_exists('action',$_GET) || array_key_exists('editkey',$_GET))
 var lasturl = '';
 var lastct = 0;
 var lastpi = 0;
+var lastFeature = 0;
 var urlContent;
 var ctContent;
 var piContent;
+var featureContent;
 var smContent = 'n/a';
 var ctOpts = [];
 var piOpts = [];
+var featureOptions = [];
 
 function loadCtOpts() {
 	var n = 0;
@@ -89,6 +92,31 @@ while (($row = mysql_fetch_array($ri))!==false)
 		addslashes($row['title'])."\"};\r\n";
 }
 mysql_free_result($ri);
+?>
+}
+
+function loadFeatureOptions()
+{
+	var n = 0;
+<?
+	$sql = "SELECT `id`, `label` FROM `zcm_features` ORDER BY `disporder`";
+	$ri = Zymurgy::$db->query($sql)
+		or die("Could not retrieve list of Zymurgy:CM features: ".Zymurgy::$db->error().", $sql");
+
+	echo("// ".
+		Zymurgy::$db->num_rows($ri).
+		" ($sql) \r\n");
+
+	while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+	{
+		echo("\tfeatureOptions[n++] = { id: ".
+			$row["id"].
+			", name: \"".
+			addslashes($row["label"]).
+			"\" };\r\n");
+	}
+
+	Zymurgy::$db->free_result($ri);
 ?>
 }
 
@@ -120,6 +148,10 @@ function setPiContent() {
 	piContent = setDropListContent('updatePiOpt',piOpts,lastpi);
 }
 
+function setFeatureContent() {
+	featureContent = setDropListContent("updateFeatureOptions", featureOptions, lastFeature);
+}
+
 function setNavNameIfBlank(newname,opts) {
 	var el = document.getElementById('zcm_nav.navname');
 	if (el.value=='') {
@@ -144,6 +176,13 @@ function updatePiOpt() {
 	setNavNameIfBlank(lastpi,piOpts);
 }
 
+function updateFeatureOptions()
+{
+	var el = document.getElementById("zcm_nav.navto");
+	lastFeature = el.value;
+	setNavNameIfBlank(lastFeature, featureOptions);
+}
+
 function updateContent() {
 	var elUrl = document.getElementById('zcm_nav.navto');
 	lasturl = elUrl.value;
@@ -151,6 +190,7 @@ function updateContent() {
 
 loadCtOpts();
 loadPiOpts();
+loadFeatureOptions();
 
 function setDestination(content) {
 	var elDest = document.getElementById('cell-zcm_nav.navto');
@@ -191,6 +231,11 @@ YAHOO.util.Event.onDOMReady(function() {
 			setPiContent();
 			setDestination(piContent);
 			break;
+		case 'Zymurgy:CM Feature':
+			lastFeature = elLavTo.value;
+			setFeatureContent();
+			setDestination(featureContent);
+			break;
 		case 'Sub-Menu':
 		default:
 			setDestination(smContent);
@@ -210,6 +255,10 @@ YAHOO.util.Event.onDOMReady(function() {
 			case 'Plugin':
 				setPiContent();
 				setDestination(piContent);
+				break;
+			case 'Zymurgy:CM Feature':
+				setFeatureContent();
+				setDestination(featureContent);
 				break;
 			case 'Sub-Menu':
 			default:
@@ -262,6 +311,7 @@ $dg->insertlabel = 'New Navigation Item';
 
 $dg->AddInput('navname','Navigation Name:',60,60);
 $dg->AddDropListEditor('navtype','Navigation Type:',array('URL'=>'URL',
+	"Zymurgy:CM Feature"=>"Zymurgy:CM Feature",
 	'Custom Table'=>'Custom Table',
 	'Plugin'=>'Plugin',
 	'Sub-Menu'=>'Sub-Menu'));

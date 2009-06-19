@@ -361,13 +361,27 @@
 					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("navname", "VARCHAR(60)", "DEFAULT NULL"),
-					DefineTableField("navtype", "ENUM('URL', 'Custom Table', 'Plugin', 'Sub-Menu')", "DEFAULT NULL"),
+					DefineTableField("navtype", "ENUM('URL', 'Custom Table', 'Plugin', 'Sub-Menu', 'Zymurgy:CM Feature')", "DEFAULT NULL"),
 					DefineTableField("navto", "VARCHAR(200)", "DEFAULT NULL"),
 					DefineTableField("authlevel", "INT(11)", "NOT NULL DEFAULT 0")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
 					array("columns" => "parent", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_features",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("label", "VARCHAR(200)", "NOT NULL"),
+					DefineTableField("url", "VARCHAR(200)", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"

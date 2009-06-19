@@ -121,6 +121,12 @@ function renderZCMNav($parent)
 			case 'URL':
 				$href = $nav['navto'];
 				break;
+			case "Zymurgy:CM Feature":
+				$sql = "SELECT `url` FROM `zcm_features` WHERE `id` = '".
+					Zymurgy::$db->escape_string($nav["navto"]).
+					"'";
+				$href = Zymurgy::$db->get($sql);
+				break;
 		}
 		echo $href."\"";
 		if ($parent==0)
