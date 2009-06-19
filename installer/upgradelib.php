@@ -221,6 +221,26 @@ function VerifyColumnExists(
 		mysql_query($sql)
 			or die("Could not add $name to $table: ".mysql_error().", $sql");
 	}
+	else
+	{
+		$existingFieldType = explode(" ", $row["Type"]);
+
+		if(NormalizeFieldType($existingFieldType[0]) !== NormalizeFieldType($type))
+		{
+			$sql = "ALTER TABLE `$table` MODIFY COLUMN `$name` $type $params";
+			mysql_query($sql)
+				or die("Could not change $table.$name column type: ".mysql_error().", $sql");
+		}
+	}
+}
+
+function NormalizeFieldType($type)
+{
+	$type = strtoupper($type);
+
+	$type = str_replace("INTEGER", "INT(10)", $type);
+
+	return $type;
 }
 
 /**
