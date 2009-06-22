@@ -1,3 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Zymurgy:CM - Content Management</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
+<style type="text/css">
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:small;
+}
+</style>
+</head>
+<body>
 <?
 // ini_set("display_errors", 1);
 ob_start();
@@ -6,13 +20,17 @@ require_once('../config/config.php');
 include('upgradelib.php');
 include('tables.php');
 
-echo("Connecting to database...");
+UpdateStatus("Connecting to database...");
 
 // mysql_connect($ZymurgyConfig['mysqlhost'],$ZymurgyConfig['mysqluser'],$ZymurgyConfig['mysqlpass']);
 // mysql_select_db($ZymurgyConfig['mysqldb']);
 
-echo("done.<br>");
-echo("Updating table definitions...<br>");
+UpdateStatus("-- Connection successful.");
+UpdateStatus("");
+
+// ----------
+
+UpdateStatus("Updating table definitions");
 
 RenameOldTables();
 
@@ -22,23 +40,24 @@ ProcessTableDefinitions(
 // ZK: Deprecated
 // $newtables = CreateMissingTables();
 
-echo("done.<br>");
-
-//print_r($newtables); exit;
-// if (array_search('zcm_template',$newtables)!==false)
-//{
-	//Create default templates
-	mysql_query("insert ignore into zcm_template (id, name, path) values ('1', 'Simple','/zymurgy/templates/simple.php')");
-	//$stid = mysql_insert_id();
-	mysql_query("insert ignore into zcm_template (id, name,path) values ('2', 'URL Link','/zymurgy/templates/link.php')");
-	//$ulid = mysql_insert_id();
-	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('1','1','Body','html.600.400')");
-	mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
-//}
+UpdateStatus("-- Table definitions updated");
+UpdateStatus("");
 
 // ----------
 
-echo("Reconciling Zymurgy:CM membership groups...<br>");
+UpdateStatus("Configuring Simple Template");
+
+mysql_query("insert ignore into zcm_template (id, name, path) values ('1', 'Simple','/zymurgy/templates/simple.php')");
+mysql_query("insert ignore into zcm_template (id, name,path) values ('2', 'URL Link','/zymurgy/templates/link.php')");
+mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('1','1','Body','html.600.400')");
+mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
+
+UpdateStatus("-- Simple template configured");
+UpdateStatus("");
+
+// ----------
+
+UpdateStatus("Configuring Zymurgy:CM Membership Groups");
 
 $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - User', 1 FROM DUAL ".
 	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - User' )";
@@ -52,22 +71,23 @@ $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - Webm
 	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Webmaster' )";
 mysql_query($sql) or die("Could not add Zymurgy:CM - Webmaster membership group: ".mysql_error().", $sql");
 
-echo("done.<br>");
+UpdateStatus("-- Groups configured.");
+UpdateStatus("");
 
 // ----------
 
-echo("Migrating users in zcm_passwd to zcm_member...<br>");
+UpdateStatus("Migrating users from zcm_password to zcm_member");
 
 $userSQL = "SELECT `username`, `password`, `email`, `fullname`, `admin` ".
 	"FROM `zcm_passwd`";
 $userRI = mysql_query($userSQL)
 	or die("Could not retrieve user list: ".mysql_error().", $userSQL");
 
-echo(mysql_num_rows($userRI)." users found<br>");
+UpdateStatus("-- ".mysql_num_rows($userRI)." users found");
 
 while(($userRow = mysql_fetch_array($userRI)) !== FALSE)
 {
-	echo("-- ".$userRow["username"]."<br>");
+	UpdateStatus("---- ".$userRow["username"]);
 
 	$memberSQL = "SELECT `id` FROM `zcm_member` WHERE `email` = '".
 		mysql_escape_string($userRow["email"]).
@@ -134,21 +154,23 @@ while(($userRow = mysql_fetch_array($userRI)) !== FALSE)
 	}
 }
 
-echo("done<br>");
+UpdateStatus("-- Users migrated.");
+UpdateStatus("");
 
 // ----------
 
-echo("Migrating members from e-mail based logins to username-based logins...<br>");
+UpdateStatus("Migrating members from e-mair to username-based logins");
 
 $sql = "UPDATE `zcm_member` SET `username` = `email` WHERE `username` = '' OR `username` IS NULL";
 mysql_query($sql)
 	or die("Could not migrate memberships: ".mysql_error().", $sql");
 
-echo("done<br>");
+UpdateStatus("-- ".mysql_affected_rows()." member(s) migrated.");
+UpdateStatus("");
 
 // ----------
 
-echo("Renaming plugin configuration items...<br>");
+UpdateStatus("Renaming plugin configuration items");
 
 RenamePluginKeys('Form',array(
 	'Results Email From'=>'Email Form Results To Address',
@@ -156,24 +178,46 @@ RenamePluginKeys('Form',array(
 	'Email Subject'=>'Email Form Results Subject'
 ));
 
-echo("done.<br>");
-echo("Updating site text category information...<br>");
+UpdateStatus("-- Done");
+UpdateStatus("");
 
-//Check for old page bodies, and relocate them to new page bodies.
-$sitePageBodyRI = mysql_query("show columns from zcm_sitepage like 'body'");
-if(mysql_num_rows($sitePageBodyRI) > 0)
+// ----------
+
+UpdateStatus("Updating site text category information");-
+
+//Check if faulty uncategorized content category exists and fix it.
+$sql = "select id from zcm_stcategory where name='Uncategorized Content'";
+$ri = mysql_query($sql) or die("Unable to find category ($sql): ".mysql_error());
+if (mysql_num_rows($ri)>0)
 {
-	mysql_query("insert ignore into zcm_templatetext (id,template,tag) values (1,1,'Body')");
-
-	$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body` ) SELECT `id`, 'Body', ".
-		"`body` FROM `zcm_sitepage` WHERE NOT EXISTS(SELECT 1 FROM `zcm_pagetext` WHERE ".
-		"`zcm_pagetext`.`sitepage` = `zcm_sitepage`.`id` AND `zcm_pagetext`.`tag` = 'Body')";
-	mysql_query($sql)
-		or die("Could not migrate page content: ".mysql_query($sql).", $sql");
-
-	mysql_query("alter table zcm_sitepage drop body");
+	$id = 0 + mysql_result($ri,0,0);
+	if ($id > 0)
+	{
+		$sql = "update zcm_sitetext set category=0 where category=$id";
+		mysql_query($sql) or die("Unable to correct default category ($sql): ".mysql_error());
+		$sql = "update zcm_stcategory set id=0 where id=$id";
+		mysql_query($sql) or die("Unable to reset default category id ($sql): ".mysql_error());
+	}
 }
 
+//Make sure category 0 exists for uncategorized content
+$sql = "select * from zcm_stcategory where id=0";
+$ri = mysql_query($sql) or die("Unable to load default category ($sql): ".mysql_error());
+if (mysql_num_rows($ri)==0)
+{
+	$sql = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
+	mysql_query($sql) or die("Unable to create default category ($sql): ".mysql_error());
+	$notzero = mysql_insert_id();
+	$sql = "update zcm_stcategory set id=0 where id=$notzero";
+	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
+}
+
+UpdateStatus("-- Done");
+UpdateStatus("");
+
+// ----------
+
+UpdateStatus("Updating page links");
 
 //Check for no old linkurl in zcm_sitepage, and populate it if required
 require_once('../sitenav.php');
@@ -190,34 +234,34 @@ foreach($spu as $id=>$linktext)
 		mysql_escape_string(ZymurgySiteNav::linktext2linkpart($linktext))."' where id=$id");
 }
 
-//Check if faulty uncategorized content category exists and fix it.
-$sql = "select id from zcm_stcategory where name='Uncategorized Content'";
-$ri = mysql_query($sql) or die("Unable to find category ($sql): ".mysql_error());
-if (mysql_num_rows($ri)>0)
+UpdateStatus("-- Done");
+UpdateStatus("");
+
+// ----------
+
+UpdateStatus("Migrating page content from zcm_sitepage to zcm_pagetext");
+
+//Check for old page bodies, and relocate them to new page bodies.
+$sitePageBodyRI = mysql_query("show columns from zcm_sitepage like 'body'");
+if(mysql_num_rows($sitePageBodyRI) > 0)
 {
-	$id = 0 + mysql_result($ri,0,0);
-	if ($id > 0)
-	{
-		$sql = "update zcm_sitetext set category=0 where category=$id";
-		mysql_query($sql) or die("Unable to correct default category ($sql): ".mysql_error());
-		$sql = "update zcm_stcategory set id=0 where id=$id";
-		mysql_query($sql) or die("Unable to reset default category id ($sql): ".mysql_error());
-	}
-}
-//Make sure category 0 exists for uncategorized content
-$sql = "select * from zcm_stcategory where id=0";
-$ri = mysql_query($sql) or die("Unable to load default category ($sql): ".mysql_error());
-if (mysql_num_rows($ri)==0)
-{
-	$sql = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
-	mysql_query($sql) or die("Unable to create default category ($sql): ".mysql_error());
-	$notzero = mysql_insert_id();
-	$sql = "update zcm_stcategory set id=0 where id=$notzero";
-	mysql_query($sql) or die("Unable to set default category id ($sql): ".mysql_error());
+	mysql_query("insert ignore into zcm_templatetext (id,template,tag) values (1,1,'Body')");
+
+	$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body` ) SELECT `id`, 'Body', ".
+		"`body` FROM `zcm_sitepage` WHERE NOT EXISTS(SELECT 1 FROM `zcm_pagetext` WHERE ".
+		"`zcm_pagetext`.`sitepage` = `zcm_sitepage`.`id` AND `zcm_pagetext`.`tag` = 'Body')";
+	mysql_query($sql)
+		or die("Could not migrate page content: ".mysql_query($sql).", $sql");
+
+	mysql_query("alter table zcm_sitepage drop body");
 }
 
-echo("done.<br>");
-echo("Updating Zymurgy:CM navigation...");
+UpdateStatus("-- Done");
+UpdateStatus("");
+
+// ----------
+
+UpdateStatus("Updating Zymurgy:CM navigation");
 
 function SetNavigationFeature($id, $disporder, $label, $url)
 {
@@ -267,6 +311,8 @@ SetNavigationFeature(18, 23, "- Profile", "profile.php");
 SetNavigationFeature(19, 24, "- Help", "help.php");
 SetNavigationFeature(20, 25, "- Logout", "logout.php");
 
+UpdateStatus("-- Zymurgy:CM Feature list configured");
+
 //Make sure we start with the default navigation structure
 $sql = "select count(*) from zcm_nav";
 $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
@@ -297,9 +343,12 @@ if ($count==0)
 		(20,  6, 0, 0, 'Pages',             'Zymurgy:CM Feature', '2')
 		;";
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
+
+	UpdateStatus("-- Navigation menu set to initial values");
 }
 
-echo("done.<br>");
+UpdateStatus("-- Done");
+UpdateStatus("");
 
 // ----------
 // ZK: 2009.03.24
@@ -307,7 +356,7 @@ echo("done.<br>");
 // Install/upgrade the media file component.
 // ----------
 
-echo("Checking media file support...<br>");
+UpdateStatus("Configuring media file support");
 
 require_once("../cmo.php");
 require_once("../include/media.php");
@@ -331,6 +380,9 @@ MediaFileInstaller::Upgrade(0, 1);
 //	echo("-- No install/upgrade required<br>");
 // }
 
+UpdateStatus("-- Done");
+UpdateStatus("");
+
 // ----------
 // ZK: 2008.11.18
 //
@@ -340,7 +392,7 @@ MediaFileInstaller::Upgrade(0, 1);
 // configuration system.
 // ----------
 
-echo("Installing plugins...<br>");
+UpdateStatus("Configuring plugins");
 
 require_once("../cmo.php");
 require_once('../PluginBase.php');
@@ -361,12 +413,12 @@ while (($entry = readdir($di)) !== false)
 		list($name,$extension) = explode('.',$entry);
 		$plugins[$name] = 'N'; //Start out as (N)ew plugin.
 
-		echo("-- Including $entry<br>");
+		UpdateStatus("-- $entry: Including");
 		require_once("../plugins/$entry");
 	}
 	else
 	{
-		echo "-- Skipping $entry (".implode(', ',$reasons).")<br>";
+		UpdateStatus("-- $entry: Skipping (".implode(', ',$reasons).")");
 	}
 }
 closedir($di);
@@ -400,11 +452,14 @@ foreach ($plugins as $source=>$state)
 	}
 }
 
+UpdateStatus("Done");
+UpdateStatus("");
+
 // ==========
 // Fail if the hacked version of JSCalendar is not available
 // ==========
 
-echo("Testing for extended third-party components...<br>");
+UpdateStatus("Testing for extended third-party components...");
 
 if(!file_exists("../jscalendar/calendar.php"))
 {
@@ -426,15 +481,21 @@ else
 	}
 }
 
-echo("Done.<br>");
+UpdateStatus("Done.");
+UpdateStatus("");
 
 // ----------
-// END - Install plugins
+
+UpdateStatus("Upgrade complete. Please wait while we forward you to the home page, or <a href=\"index.php\">click here</a>.");
+
 // ----------
 
 if(!isset($_GET["debug"]))
 {
-	header('Location: ../index.php');
+	echo("\n\n<script type=\"text/javascript\">\n");
+	echo("window.location.href = '/zymurgy/index.php';\n");
+	echo("</script>");
+	// header('Location: ../index.php');
 }
 
 	function  ExecuteAdd($source)
@@ -490,4 +551,12 @@ if(!isset($_GET["debug"]))
 
 		$plugin->Initialize();
 	}
+
+	function UpdateStatus($msg)
+	{
+		echo $msg."<br>\n";
+		ob_flush();
+	}
 ?>
+</body>
+</html>

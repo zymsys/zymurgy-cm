@@ -137,7 +137,7 @@
 
 			ProcessTableDefinitions($tableDefinitions);
 
-			echo("-- Reconciling Zymurgy:CM built-in media file data...<br>");
+			echo("-- Configuring built-in Zymurgy:CM media types<br>");
 
 			$sql = "INSERT INTO `zcm_media_relation` ( `relation_type`, `relation_type_label`, ".
 				"`allowed_mimetypes`, `builtin` ) SELECT 'image', 'Image', 'image/jpeg,image/gif', 1 ".
@@ -164,8 +164,6 @@
 				"', 0)";
 			mysql_query($sql)
 				or die("Could not associate Images with Zymurgy:CM Image Library: ".mysql_error().", $sql");
-
-			echo("-- done.<br>");
 		}
 
 		static function Uninstall()
