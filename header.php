@@ -82,13 +82,13 @@ function renderZCMNav($parent)
 	// echo("zauth: ");
 	// print_r($zauth);
 
-	$sql = "SELECT `id`, `navname`, `navtype`, `navto` FROM `zcm_nav` WHERE `parent` = '".
+	$sql = "SELECT `zcm_nav`.`id`, `navname`, `navtype`, `navto`, `zcm_features`.`url` ".
+		"FROM `zcm_nav` LEFT JOIN `zcm_features` ON `zcm_features`.`id` = `zcm_nav`.`navto` ".
+		"WHERE `parent` = '".
 		Zymurgy::$db->escape_string($parent).
 		"' AND ( `authlevel` <= '".
-		Zymurgy::$db->escape_string($zauth->authinfo['admin']).
-		"' OR `authlevel` IS NULL ) ORDER BY `disporder`";
-	// $sql = "select * from zcm_nav where parent=$parent order by disporder";
-	// echo($sql);
+		Zymurgy::$db->escape_string($zauth->authinfo["admin"]).
+		"' OR `authlevel` IS NULL ) ORDER BY `zcm_nav`.`disporder`";
 	$ri = Zymurgy::$db->run($sql);
 
 	$navs = array();
@@ -96,8 +96,11 @@ function renderZCMNav($parent)
 	{
 		$navs[] = $row;
 	}
+
 	mysql_free_result($ri);
+
 	if (count($navs)==0) return;
+
 	foreach($navs as $nav)
 	{
 		echo "<li class=\"yuimenuitem";
@@ -122,24 +125,26 @@ function renderZCMNav($parent)
 				$href = $nav['navto'];
 				break;
 			case "Zymurgy:CM Feature":
-				$sql = "SELECT `url` FROM `zcm_features` WHERE `id` = '".
-					Zymurgy::$db->escape_string($nav["navto"]).
-					"'";
-				$href = Zymurgy::$db->get($sql);
+				$href = $nav["url"];
 				break;
 		}
+
 		echo $href."\"";
+
 		if ($parent==0)
 		{
 			echo " style=\"text-align:right\"";
 		}
+
 		echo ">{$nav['navname']}</a>";
+
 		if ($nav['navtype']=='Sub-Menu')
 		{
 			echo "<div id=\"".substr($href,1)."\" class=\"yuimenu\"><div class=\"bd\"><ul>";
 			renderZCMNav($nav['id']);
 			echo "</ul></div></div>";
 		}
+
 		echo "</li>";
 	}
 }
