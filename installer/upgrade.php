@@ -219,36 +219,6 @@ if (mysql_num_rows($ri)==0)
 echo("done.<br>");
 echo("Updating Zymurgy:CM navigation...");
 
-//Make sure we start with the default navigation structure
-$sql = "select count(*) from zcm_nav";
-$ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
-$count = mysql_result($ri,0,0);
-if ($count==0)
-{
-	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,navname,navtype,navto) VALUES
-		(1,1,0,'Content','Sub-Menu',''),
-		(3,3,0,'Admin','Sub-Menu',''),
-		(4,4,0,'Webmaster','Sub-Menu',''),
-		(5,7,0,'Profile','URL','profile.php'),
-		(6,19,0,'Help','URL','help.php'),
-		(7,20,0,'Logout','URL','logout.php'),
-		(8,8,1,'Simple Content','URL','sitetext.php'),
-		(9,9,1,'SEO','URL','headtext.php'),
-		(10,10,3,'User Management','URL','usermng.php'),
-		(11,11,3,'User Activity','URL','useractivity.php'),
-		(12,12,3,'Help Editor','URL','helpeditor.php'),
-		(13,13,4,'Navigation','URL','navigation.php'),
-		(14,14,4,'Master Config','URL','configconfig.php'),
-		(15,15,4,'Plugin Management','URL','plugin.php'),
-		(16,16,4,'Custom Tables','URL','customtable.php'),
-		(17,17,4,'Custom Code','URL','mkcustom.php'),
-		(18,18,4,'Page Templates','URL','templatemgr.php'),
-		(19,5,0,'Appearance','URL','configuration.php'),
-		(20,6,0,'Pages','URL','sitepage.php')
-		;";
-	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
-}
-
 function SetNavigationFeature($id, $disporder, $label, $url)
 {
 	$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( '".
@@ -296,6 +266,38 @@ SetNavigationFeature(17, 22, "- Appearance", "configuration.php");
 SetNavigationFeature(18, 23, "- Profile", "profile.php");
 SetNavigationFeature(19, 24, "- Help", "help.php");
 SetNavigationFeature(20, 25, "- Logout", "logout.php");
+
+//Make sure we start with the default navigation structure
+$sql = "select count(*) from zcm_nav";
+$ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error());
+$count = mysql_result($ri,0,0);
+if ($count==0)
+{
+	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,navname,navtype,navto) VALUES
+		(1,   1, 0, 'Content',           'Sub-Menu',           ''),
+		(3,   3, 0, 'Admin',             'Sub-Menu',           ''),
+		(4,   4, 0, 'Webmaster',         'Sub-Menu',           ''),
+		(5,   7, 0, 'Profile',           'Zymurgy:CM Feature', '18'),
+		(6,  19, 0, 'Help',              'Zymurgy:CM Feature', '19'),
+		(7,  20, 0, 'Logout',            'Zymurgy:CM Feature', '20'),
+		(8,   8, 1, 'Simple Content',    'Zymurgy:CM Feature', '1'),
+		(9,   9, 1, 'SEO',               'Zymurgy:CM Feature', '3'),
+		(10, 10, 3, 'User Management',   'URL',                'usermng.php'),
+		(11, 11, 3, 'User Activity',     'URL',                'useractivity.php'),
+		(21, 12, 3, 'Members',           'Zymurgy:CM Feature', '4'),
+		(22, 13, 3, 'Membership Groups', 'Zymurgy:CM Feature', '5'),
+		(12, 14, 3, 'Help Editor',       'Zymurgy:CM Feature', '10'),
+		(13, 13, 4, 'Navigation',        'Zymurgy:CM Feature', '11'),
+		(14, 14, 4, 'Master Config',     'Zymurgy:CM Feature', '12'),
+		(15, 15, 4, 'Plugin Management', 'Zymurgy:CM Feature', '13'),
+		(16, 16, 4, 'Custom Tables',     'Zymurgy:CM Feature', '14'),
+		(17, 17, 4, 'Custom Code',       'Zymurgy:CM Feature', '15'),
+		(18, 18, 4, 'Page Templates',    'Zymurgy:CM Feature', '16'),
+		(19,  5, 0, 'Appearance',        'Zymurgy:CM Feature', '17'),
+		(20,  6, 0, 'Pages',             'Zymurgy:CM Feature', '2')
+		;";
+	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
+}
 
 echo("done.<br>");
 
