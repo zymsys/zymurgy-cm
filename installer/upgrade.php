@@ -271,15 +271,31 @@ function SetNavigationFeature($id, $disporder, $label, $url)
 		or die("Could not update $label feature: ".mysql_error().", $sql");
 }
 
-SetNavigationFeature(1, 2, "Simple Content", "sitetext.php");
-SetNavigationFeature(2, 1, "Pages", "sitepage.php");
-SetNavigationFeature(3, 3, "SEO", "headtext.php");
-SetNavigationFeature(4, 4, "Members", "editmember.php");
-SetNavigationFeature(5, 5, "Membership Groups", "editmember.php?action=list_groups");
-SetNavigationFeature(6, 6, "Media Files", "media.php");
-SetNavigationFeature(7, 7, "Media Packages", "media.php?action=list_media_packages");
-SetNavigationFeature(8, 8, "Media Package Types", "media.php?action=list_media_package_types");
-SetNavigationFeature(9, 9, "Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(21,  1, "--- Content ---", "");
+SetNavigationFeature(2,   2, "- Pages", "sitepage.php");
+SetNavigationFeature(1,   3, "- Simple Content", "sitetext.php");
+SetNavigationFeature(3,   4, "- SEO", "headtext.php");
+SetNavigationFeature(22,  5, "--- Admin ---", "");
+SetNavigationFeature(4,   6, "- Members", "editmember.php");
+SetNavigationFeature(5,   7, "- Membership Groups", "editmember.php?action=list_groups");
+SetNavigationFeature(10,  8, "- Help Editor", "helpeditor.php");
+SetNavigationFeature(23,  9, "--- Webmaster ---", "");
+SetNavigationFeature(11, 10, "- Navigation", "navigation.php");
+SetNavigationFeature(12, 11, "- Master Config", "configconfig.php");
+SetNavigationFeature(13, 12, "- Plugin Management", "plugin.php");
+SetNavigationFeature(14, 13, "- Custom Tables", "customtable.php");
+SetNavigationFeature(15, 14, "- Custom Code Generator", "mkcustom.php");
+SetNavigationFeature(16, 15, "- Template Manager", "templatemgr.php");
+SetNavigationFeature(24, 16, "--- Media Files ---", "");
+SetNavigationFeature(6,  17, "- Media Files", "media.php");
+SetNavigationFeature(7,  18, "- Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8,  19, "- Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9,  20, "- Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(25, 21, "--- General ---", "");
+SetNavigationFeature(17, 22, "- Appearance", "configuration.php");
+SetNavigationFeature(18, 23, "- Profile", "profile.php");
+SetNavigationFeature(19, 24, "- Help", "help.php");
+SetNavigationFeature(20, 25, "- Logout", "logout.php");
 
 echo("done.<br>");
 
