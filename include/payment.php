@@ -195,9 +195,10 @@
 		{
 			$this->m_billingInformation = new BillingInformation();
 			$this->m_paymentTransaction = new PaymentTransaction();
-			$this->m_buttonText = Zymurgy::$config["PaypalIPN.SubmitText"];
 
 			$this->ValidateConfiguration($additionalItems);
+
+			$this->m_buttonText = Zymurgy::$config["PaypalIPN.SubmitText"];
 		}
 
 		private function ValidateConfiguration($additionalItems)
@@ -628,6 +629,44 @@
 
 	class GoogleCheckoutProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
+
+		public function GoogleCheckoutProcessor(
+			$additionalItems = array())
+		{
+			$this->m_billingInformation = new BillingInformation();
+			$this->m_paymentTransaction = new PaymentTransaction();
+
+			$this->ValidateConfiguration($additionalItems);
+
+			$this->m_buttonText = "";
+		}
+
+		private function ValidateConfiguration($additionalItems)
+		{
+			$issues = "";
+			$isValid = true;
+
+			$isValid = $this->ValidateConfigurationItem($issue, "PaymentProcessor.SilentPost");
+
+			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.URL");
+			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.MerchantID");
+			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.PageStyle");
+			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.CurrencyCode");
+
+			foreach($additionalItems as $item)
+			{
+				$isValid = $this->ValidateConfigurationItem($issue, $item);
+			}
+
+			if(!$isValid)
+			{
+				$issue = "Could not set up Google Checkout Processor: <ul>\n".
+					$issue.
+					"</ul>\n";
+
+				die($issue);
+			}
+		}
 		public function GetPaymentProcessorName()
 		{
 			return "Google Checkout";
@@ -643,14 +682,65 @@
 			return "txn_id";
 		}
 
-		public function GetPaypalCommand()
-		{
-			return $this->m_PayPalCmd;
-		}
-
 		public function Process()
 		{
+			$output = "";
 
+			$output .= "<form name=\"frmPaymentGateway\" method=\"POST\" action=\"".
+			 	Zymurgy::$config["GoogleCheckout.URL"].
+			 	"/api/checkout/v2/checkoutForm/Merchant/".
+			 	Zymurgy::$config["GoogleCheckout.MerchantID"].
+				"\" id=\"BB_BuyButtonForm\" name=\"BB_BuyButtonForm\">\n";
+
+			$output .= $this->RenderHiddenInput("item_name_1", $this->m_invoiceID);
+			$output .= $this->RenderHiddenInput("item_description_1", "");
+			$output .= $this->RenderHiddenInput("item_quantity_1", "1");
+			$output .= $this->RenderHiddenInput("item_price_1", $this->m_amount);
+			$output .= $this->RenderHiddenInput(
+				"item_currency_1",
+				Zymurgy::$config["GoogleCheckout.CurrencyCode"]);
+
+			$output .= $this->RenderOptionalHiddenInput("_charset_", "utf-8");
+
+			$output .= $this->RenderSubmitButton();
+
+			$output .= "</form>\n";
+
+			echo $output;
+		}
+
+		protected function RenderSubmitButton()
+		{
+			$output = "";
+
+			if(Zymurgy::$config["PaymentProcessor.SilentPost"])
+			{
+				$output .= "<script type=\"text/javascript\">\n";
+				$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
+				$output .= "</script>\n";
+
+				$output .= "<noscript>\n";
+				$output .= "<input alt=\"\" src=\"".
+				 	Zymurgy::$config["GoogleCheckout.URL"].
+					"/buttons/buy.gif?merchant_id=".
+				 	Zymurgy::$config["GoogleCheckout.MerchantID"].
+					"&amp;w=117&amp;h=48&amp;style=".
+				 	Zymurgy::$config["GoogleCheckout.PageStyle"].
+					"&amp;variant=text&amp;loc=en_US\" type=\"image\"/>";
+				$output .= "</noscript>\n";
+			}
+			else
+			{
+				$output .= "<input alt=\"\" src=\"".
+				 	Zymurgy::$config["GoogleCheckout.URL"].
+					"/buttons/buy.gif?merchant_id=".
+				 	Zymurgy::$config["GoogleCheckout.MerchantID"].
+					"&amp;w=117&amp;h=48&amp;style=".
+				 	Zymurgy::$config["GoogleCheckout.PageStyle"].
+					"&amp;variant=text&amp;loc=en_US\" type=\"image\"/>";
+			}
+
+   			return $output;
 		}
 
 		public function Callback()

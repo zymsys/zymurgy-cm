@@ -211,15 +211,23 @@ class PluginBase
 	function CallExtensionMethod($methodName)
 	{
 		$extensions = $this->GetExtensions();
+		$returnValue = null;
 
 		foreach($extensions as $extension)
 		{
 			if($extension->IsEnabled($this) && method_exists($extension, $methodName))
 			{
 				//call_user_func($methodName, $extension, $this);
-				call_user_method($methodName, $extension, $this);
+				$result = call_user_method($methodName, $extension, $this);
+
+				if($result !== null)
+				{
+					$returnValue = $result;
+				}
 			}
 		}
+
+		return $returnValue;
 	}
 
 	function BuildExtensionConfig(&$r)

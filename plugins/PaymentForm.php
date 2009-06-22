@@ -49,6 +49,34 @@
 			ProcessTableDefinitions($tableDefinitions);
 		}
 
+		function GetConfigItems()
+		{
+			$configItems = parent::GetConfigItems();
+
+			$configItems["Payment Gateway"] = array(
+				"name" => "Payment Gateway",
+				"default" => "Paypal IPN",
+				"inputspec" => "drop.Paypal IPN,Moneris eSELECT Plus,Authorize.NET,Google Checkout",
+				"authlevel" => 0);
+			$configItems["Item Amount"] = array(
+				"name" => "Item Amount",
+				"default" => "",
+				"inputspec" => "input.10.9",
+				"authlevel" => 0);
+			$configItems["Invoice Prefix"] = array(
+				"name" => "Invoice Prefix",
+				"default" => "Invoice",
+				"inputspec" => "input.30.100",
+				"authlevel" => 0);
+			$configItems["Cancellation URL"] = array(
+				"name" => "Cancellation URL",
+				"default" => "/index.php",
+				"inputspec" => "input.50.200",
+				"authlevel" => 0);
+
+			return $configItems;
+		}
+
 		function GetDefaultConfig()
 		{
 			$r = parent::GetDefaultConfig();
@@ -57,7 +85,7 @@
 				$r,
 				"Payment Gateway",
 				"Paypal IPN",
-				"drop.Paypal IPN, Moneris eSELECT Plus, Authorize.NET");
+				"drop.Paypal IPN,Moneris eSELECT Plus,Authorize.NET,Google Checkout");
 			$this->BuildConfig(
 				$r,
 				"Item Amount",
@@ -155,12 +183,12 @@
 			$id = 0;
 
 			if ($this->GetConfigValue('Email Form Results To Address') != '')
-				$this->SendEmail();
+				$this->CallExtensionMethod("SendEmail");
 
 			// ZK: PaymentForm always captures to the database
 			// TODO: Remove the option from the config
 			//if ($this->GetConfigValue('Capture to Database') == 1)
-			$id = $this->StoreCapture();
+			$id = $this->CallExtensionMethod("CaptureFormData");
 
 			$paymentProcessor = $this->GetPaymentProcessor();
 			$values = $this->GetValues();
@@ -245,6 +273,9 @@
 
 				case "Authorize.NET":
 					return new AuthorizeNetProcessor();
+
+				case "Google Checkout":
+					return new GoogleCheckoutProcessor();
 
 				default:
 					die("The ".$this->GetConfigValue("Payment Gateway")." payment gateway is not supported at this time.");

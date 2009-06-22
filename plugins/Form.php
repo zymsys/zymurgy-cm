@@ -608,14 +608,15 @@ function Validate$name(me) {
 				$vmsg = "The field \"{$row['caption']}\" failed to validate.";
 			else
 				$vmsg = $row['validatormsg'];
+
             if (($row['isrequired']==1) && ($input == ''))
 			{
-				$this->ValidationErrors[$row['fid']] = $vmsg;
+				$this->ValidationErrors[$row['fid']] = $vmsg; // ." (required)";
 				continue;
 			}
 			if (array_key_exists($row['validator'],$validators) && ($validators[$row['validator']]!='') && ($input!='') && (!preg_match('/'.$validators[$row['validator']].'/',$input)))
 			{
-				$this->ValidationErrors[$row['fid']] = $vmsg;
+				$this->ValidationErrors[$row['fid']] = $vmsg; // ." (regex)";
 			}
 
 			// -----
@@ -629,12 +630,7 @@ function Validate$name(me) {
 
 			if(!$widgetValid)
 			{
-				if (empty($row['validatormsg']))
-					$vmsg = "The field \"{$row['caption']}\" failed to validate.";
-				else
-					$vmsg = $row['validatormsg'];
-
-				$this->ValidationErrors[$row['fid']] = $vmsg;
+				$this->ValidationErrors[$row['fid']] = $vmsg; // ." (widget)";
 				continue;
 	  		}
 		}
