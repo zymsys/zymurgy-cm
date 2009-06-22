@@ -273,28 +273,28 @@ $ri = mysql_query($sql) or die("Can't get navigation count ($sql): ".mysql_error
 $count = mysql_result($ri,0,0);
 if ($count==0)
 {
-	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,navname,navtype,navto) VALUES
-		(1,   1, 0, 'Content',           'Sub-Menu',           ''),
-		(3,   3, 0, 'Admin',             'Sub-Menu',           ''),
-		(4,   4, 0, 'Webmaster',         'Sub-Menu',           ''),
-		(5,   7, 0, 'Profile',           'Zymurgy:CM Feature', '18'),
-		(6,  19, 0, 'Help',              'Zymurgy:CM Feature', '19'),
-		(7,  20, 0, 'Logout',            'Zymurgy:CM Feature', '20'),
-		(8,   8, 1, 'Simple Content',    'Zymurgy:CM Feature', '1'),
-		(9,   9, 1, 'SEO',               'Zymurgy:CM Feature', '3'),
-		(10, 10, 3, 'User Management',   'URL',                'usermng.php'),
-		(11, 11, 3, 'User Activity',     'URL',                'useractivity.php'),
-		(21, 12, 3, 'Members',           'Zymurgy:CM Feature', '4'),
-		(22, 13, 3, 'Membership Groups', 'Zymurgy:CM Feature', '5'),
-		(12, 14, 3, 'Help Editor',       'Zymurgy:CM Feature', '10'),
-		(13, 13, 4, 'Navigation',        'Zymurgy:CM Feature', '11'),
-		(14, 14, 4, 'Master Config',     'Zymurgy:CM Feature', '12'),
-		(15, 15, 4, 'Plugin Management', 'Zymurgy:CM Feature', '13'),
-		(16, 16, 4, 'Custom Tables',     'Zymurgy:CM Feature', '14'),
-		(17, 17, 4, 'Custom Code',       'Zymurgy:CM Feature', '15'),
-		(18, 18, 4, 'Page Templates',    'Zymurgy:CM Feature', '16'),
-		(19,  5, 0, 'Appearance',        'Zymurgy:CM Feature', '17'),
-		(20,  6, 0, 'Pages',             'Zymurgy:CM Feature', '2')
+	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,authlevel,navname,navtype,navto) VALUES
+		(1,   1, 0, 0, 'Content',           'Sub-Menu',           ''),
+		(3,   3, 0, 1, 'Admin',             'Sub-Menu',           ''),
+		(4,   4, 0, 2, 'Webmaster',         'Sub-Menu',           ''),
+		(5,   7, 0, 0, 'Profile',           'Zymurgy:CM Feature', '18'),
+		(6,  19, 0, 0, 'Help',              'Zymurgy:CM Feature', '19'),
+		(7,  20, 0, 0, 'Logout',            'Zymurgy:CM Feature', '20'),
+		(8,   8, 1, 0, 'Simple Content',    'Zymurgy:CM Feature', '1'),
+		(9,   9, 1, 0, 'SEO',               'Zymurgy:CM Feature', '3'),
+		(10, 10, 3, 1, 'User Management',   'URL',                'usermng.php'),
+		(11, 11, 3, 1, 'User Activity',     'URL',                'useractivity.php'),
+		(21, 12, 3, 1, 'Members',           'Zymurgy:CM Feature', '4'),
+		(22, 13, 3, 1, 'Membership Groups', 'Zymurgy:CM Feature', '5'),
+		(12, 14, 3, 1, 'Help Editor',       'Zymurgy:CM Feature', '10'),
+		(13, 13, 4, 2, 'Navigation',        'Zymurgy:CM Feature', '11'),
+		(14, 14, 4, 2, 'Master Config',     'Zymurgy:CM Feature', '12'),
+		(15, 15, 4, 2, 'Plugin Management', 'Zymurgy:CM Feature', '13'),
+		(16, 16, 4, 2, 'Custom Tables',     'Zymurgy:CM Feature', '14'),
+		(17, 17, 4, 2, 'Custom Code',       'Zymurgy:CM Feature', '15'),
+		(18, 18, 4, 2, 'Page Templates',    'Zymurgy:CM Feature', '16'),
+		(19,  5, 0, 0, 'Appearance',        'Zymurgy:CM Feature', '17'),
+		(20,  6, 0, 0, 'Pages',             'Zymurgy:CM Feature', '2')
 		;";
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 }
