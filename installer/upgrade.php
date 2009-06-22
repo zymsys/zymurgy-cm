@@ -304,15 +304,6 @@ mysql_query($sql)
 	or die("Could not update Media Relations feature: ".mysql_error().", $sql");
 
 echo("done.<br>");
-echo("Updating table definitions...");
-
-//Run random column type updates
-mysql_query("alter table zcm_sitetext change body body longtext");
-mysql_query("alter table zcm_sitetext change plainbody plainbody longtext");
-mysql_query("alter table zcm_config change value value longtext");
-mysql_query("alter table zcm_config change inputspec inputspec text");
-
-echo("done.<br>");
 
 // ----------
 // ZK: 2009.03.24
@@ -325,6 +316,9 @@ echo("Checking media file support...<br>");
 require_once("../cmo.php");
 require_once("../include/media.php");
 
+// ZK: Because of the new table definition system, the upgrade script for
+// the media file components can now be run every time the base upgrade
+// script is run.
 MediaFileInstaller::Upgrade(0, 1);
 
 // $installedVersion = MediaFileInstaller::InstalledVersion();

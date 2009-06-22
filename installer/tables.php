@@ -45,9 +45,9 @@
 				"columns" => array(
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("name", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
-					DefineTableField("value", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
+					DefineTableField("value", "LONGTEXT", "NOT NULL DEFAULT ''"),
 					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("inputspec", "VARCHAR(100)", "DEFAULT 'input.60.1024' NOT NULL")
+					DefineTableField("inputspec", "TEXT", "DEFAULT 'input.60.1024' NOT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => "")
