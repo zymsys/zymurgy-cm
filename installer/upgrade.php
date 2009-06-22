@@ -162,18 +162,18 @@ echo("Updating site text category information...<br>");
 //Check for old page bodies, and relocate them to new page bodies.
 $sitePageBodyRI = mysql_query("show columns from zcm_sitepage like 'body'");
 if(mysql_num_rows($sitePageBodyRI) > 0)
-if (array_key_exists('body',$sitepagecols))
 {
 	mysql_query("insert ignore into zcm_templatetext (id,template,tag) values (1,1,'Body')");
-	$ri = mysql_query("select * from zcm_sitepage where not exists(select 1 from zcm_pagetext ".
-		"where zcm_pagetext.sitepage = zcm_sitepage.id and zcm_pagetext.tag = 'Body')");
-	while (($row = mysql_fetch_array($ri))!==false)
-	{
-		mysql_query("insert into zcm_pagetext (sitepage,tag,body) values ({$row['id']},'Body','".
-			mysql_escape_string($row['body'])."')");
-	}
+
+	$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body` ) SELECT `id`, 'Body', ".
+		"`body` FROM `zcm_sitepage` WHERE NOT EXISTS(SELECT 1 FROM `zcm_pagetext` WHERE ".
+		"`zcm_pagetext`.`sitepage` = `zcm_sitepage`.`id` AND `zcm_pagetext`.`tag` = 'Body')";
+	mysql_query($sql)
+		or die("Could not migrate page content: ".mysql_query($sql).", $sql");
+
 	mysql_query("alter table zcm_sitepage drop body");
 }
+
 
 //Check for no old linkurl in zcm_sitepage, and populate it if required
 require_once('../sitenav.php');
