@@ -190,9 +190,9 @@ class Form extends PluginBase
 					DefineTableField("header", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
 					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("defaultvalue", "TEXT", "NOT NULL"),
-					DefineTableField("isrequired", "SMALLINT(6)", "NOT NULL DEFAULT '0'",
+					DefineTableField("isrequired", "SMALLINT(6)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("validator", "BIGINT", ""),
-					DefineTableField("validatormsg", "TEXT", "NOT NULL"))
+					DefineTableField("validatormsg", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "instance, disporder", "unique" => "false", "type" => "")
