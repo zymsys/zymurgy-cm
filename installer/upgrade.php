@@ -249,59 +249,37 @@ if ($count==0)
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 }
 
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"1, 2, 'Simple Content', 'sitetext.php') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 1, `label` = 'Simple Content', `url` = 'sitetext.php'";
-mysql_query($sql)
-	or die("Could not update Simple Content feature: ".mysql_error().", $sql");
+function SetNavigationFeature($id, $disporder, $label, $url)
+{
+	$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( '".
+		mysql_escape_string($id).
+		"', '".
+		mysql_escape_string($disporder).
+		"', '".
+		mysql_escape_string($label).
+		"', '".
+		mysql_escape_string($url).
+		"') ON DUPLICATE KEY UPDATE `disporder` = '".
+		mysql_escape_string($disporder).
+		"', `label` = '".
+		mysql_escape_string($label).
+		"', `url` = '".
+		mysql_escape_string($url).
+		"'";
 
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"2, 1, 'Pages', 'sitepage.php') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 2, `label` = 'Pages', `url` = 'sitepage.php'";
-mysql_query($sql)
-	or die("Could not update Pages feature: ".mysql_error().", $sql");
+	mysql_query($sql)
+		or die("Could not update $label feature: ".mysql_error().", $sql");
+}
 
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"3, 3, 'SEO', 'headtext.php') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 3, `label` = 'SEO', `url` = 'headtext.php'";
-mysql_query($sql)
-	or die("Could not update SEO feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"4, 4, 'Members', 'editmember.php') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 4, `label` = 'Members', `url` = 'editmember.php'";
-mysql_query($sql)
-	or die("Could not update Members feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"5, 5, 'Membership Groups', 'editmember.php?action=list_groups') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 5, `label` = 'Membership Groups', `url` = 'editmember.php?action=list_groups'";
-mysql_query($sql)
-	or die("Could not update Membership Groups feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"6, 6, 'Media Files', 'media.php') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 6, `label` = 'Media Files', `url` = 'media.php'";
-mysql_query($sql)
-	or die("Could not update Media Files feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"7, 7, 'Media Packages', 'media.php?action=list_media_packages') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 7, `label` = 'Media Packages', `url` = 'media.php?action=list_media_packages'";
-mysql_query($sql)
-	or die("Could not update Media Packages feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"8, 8, 'Media Package Types', 'media.php?action=list_media_package_types') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 8, `label` = 'Media Package Types', `url` = 'media.php?action=list_media_package_types'";
-mysql_query($sql)
-	or die("Could not update Media Package Types feature: ".mysql_error().", $sql");
-
-$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( ".
-	"9, 9, 'Media Relations', 'media.php?action=list_relations') ON DUPLICATE KEY UPDATE ".
-	"`disporder` = 9, `label` = 'Media Relations', `url` = 'media.php?action=list_relations'";
-mysql_query($sql)
-	or die("Could not update Media Relations feature: ".mysql_error().", $sql");
+SetNavigationFeature(1, 2, "Simple Content", "sitetext.php");
+SetNavigationFeature(2, 1, "Pages", "sitepage.php");
+SetNavigationFeature(3, 3, "SEO", "headtext.php");
+SetNavigationFeature(4, 4, "Members", "editmember.php");
+SetNavigationFeature(5, 5, "Membership Groups", "editmember.php?action=list_groups");
+SetNavigationFeature(6, 6, "Media Files", "media.php");
+SetNavigationFeature(7, 7, "Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8, 8, "Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9, 9, "Media Relations", "media.php?action=list_relations");
 
 echo("done.<br>");
 
