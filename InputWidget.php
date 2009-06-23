@@ -278,6 +278,11 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 	protected $name;
 	protected $jsname;
 	protected $textvalue;
+	
+	function __construct()
+	{
+		$this->xlatehtmlentities = false;
+	}
 
 	abstract function PreRender($ep,$name,$value); //Must set $textvalue
 
