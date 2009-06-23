@@ -278,7 +278,7 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 	protected $name;
 	protected $jsname;
 	protected $textvalue;
-	
+
 	function __construct()
 	{
 		$this->xlatehtmlentities = false;
@@ -351,7 +351,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 	{
 		$ep = explode('&',$value);
 		$pluginvalue = urldecode($ep[0]);
-		$this->textvalue = urldecode($ep[1]);
+		$this->textvalue = isset($ep[1]) ? urldecode($ep[1]) : "";
 		echo "<div style=\"float:left\">";
 		echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
 		$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
@@ -368,6 +368,8 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 
 	function RenderJS()
 	{
+		$d = isset($_GET["d"]) ? $_GET["d"] : 1;
+
 		if (empty($this->textvalue))
 			echo "{$this->jsname}_text.disabled = true;\r\n";
 		echo 'function '.$this->jsname.'_update() {
@@ -390,14 +392,15 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 			Zymurgy.refreshHint('.$this->jsname.'_text);
 			'.$this->jsname.'_update();
 		});
-		var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/plugin.php?pg='.$_GET['d'].'&");
+		var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/plugin.php?pg='.$d.'&");
 			'.$this->jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
 			'.$this->jsname.'_datasource.responseSchema = {fields : ["plugin"]};
 			var '.$this->jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$this->name.'-input","'.$this->name.'-container", '.$this->jsname.'_datasource);
 			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
 			'.$this->jsname.'_autocomp.generateRequest = function(sQuery) {
 				var elSel = document.getElementById("'.$this->name.'-plugin");
-				return "/zymurgy/include/plugin.php?pg='.$_GET['d'].'&pi=" + elSel.value + "&q=" + sQuery;
+				// return "/zymurgy/include/plugin.php?pg='.$d.'&pi=" + elSel.value + "&q=" + sQuery;
+				return "pi=" + elSel.value + "&q=" + sQuery;
 			};
 
 			';
