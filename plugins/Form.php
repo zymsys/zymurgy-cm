@@ -1327,7 +1327,7 @@ class FormExportFromDatabase implements PluginExtension
 			{
 				if (!in_array($key,$headers))
 				{
-					$sql = "insert into zcm_form_header (instance,header) values ({$plugin->iid},'".
+					$sql = "insert ignore into zcm_form_header (instance,header) values ({$plugin->iid},'".
 						Zymurgy::$db->escape_string($key)."')";
 					Zymurgy::$db->query($sql)
 						or die ("Unable to create new header [$key] ($sql): ".Zymurgy::$db->error());
