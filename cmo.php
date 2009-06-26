@@ -931,11 +931,12 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		function pagegadgets()
+		function pagegadgets(
+			$alignFilter = "")
 		{
 			if (isset(Zymurgy::$template))
 			{
-				return Zymurgy::$template->pagegadgets();
+				return Zymurgy::$template->pagegadgets($alignFilter);
 			}
 			else
 			{

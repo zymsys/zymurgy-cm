@@ -355,6 +355,11 @@
 					$this->m_errors[] = Zymurgy::GetLocaleString("MediaFile.Validate.FileRequired");
 					$isValid = false;
 				}
+				else if($this->m_file["size"] <= 0)
+				{
+					$this->m_errors[] = Zymurgy::GetLocaleString("MediaFile.Validate.FileRequired");
+					$isValid = false;
+				}
 			}
 
 			if(isset($this->m_file))

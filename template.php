@@ -9,7 +9,7 @@ class ZymurgyTemplate
 	private $pagetextcache = array();
 	private $inputspeccache = array();
 	private $pagetextids = array();
-	
+
 	function __construct($navpath, $hrefroot = 'pages')
 	{
 		if (empty($navpath))
@@ -42,19 +42,19 @@ class ZymurgyTemplate
 							$doredirect = true;
 							continue;
 						}
-						else 
+						else
 						{
 							$do404 = true;
 							break;
 						}
 					}
-					else 
+					else
 					{
 						$do404 = true;
 						break;
 					}
 				}
-				else 
+				else
 				{
 					$newpath[] = $navpart;
 				}
@@ -83,7 +83,7 @@ class ZymurgyTemplate
 		$this->navpath = $navpath;
 		$this->LoadPageText();
 	}
-	
+
 	private function LoadPageText()
 	{
 		//Load content types
@@ -101,7 +101,7 @@ class ZymurgyTemplate
 		}
 		Zymurgy::$db->free_result($ri);
 	}
-	
+
 	public function pagetext($tag,$type='html.600.400')
 	{
 		if (!array_key_exists($tag,$this->pagetextcache))
@@ -118,7 +118,7 @@ class ZymurgyTemplate
 					Zymurgy::$db->escape_string($type)."')");
 				$this->pagetextids[$tag] = Zymurgy::$db->insert_id();
 			}
-			else 
+			else
 			{
 				$this->pagetextids[$tag] = 0; //Will fail to relate to data, but at this point there's no data anyway.
 			}
@@ -139,7 +139,7 @@ class ZymurgyTemplate
 		$w->editkey = $this->pagetextids[$tag];
 		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
 	}
-	
+
 	public function pageimage($tag,$width,$height,$alt='')
 	{
 		$img = $this->pagetext($tag,"image.$width.$height");
@@ -148,11 +148,27 @@ class ZymurgyTemplate
 			$img = substr($img,0,$ipos)."alt=\"$alt\" ".substr($img,$ipos);
 		return $img;
 	}
-	
-	function pagegadgets()
+
+	function pagegadgets(
+		$alignFilter = "")
 	{
-		$ri = Zymurgy::$db->run("select * from zcm_sitepageplugin where zcm_sitepage=".
-			$this->sitepage['id']." order by disporder");
+		$alignFilterCriteria = "1 = 1";
+
+		if(strlen($alignFilter) > 0)
+		{
+			$alignFilterCriteria = "`align` = '".
+				Zymurgy::$db->escape_string($alignFilter).
+				"'";
+		}
+
+		$sql = "SELECT `plugin`, `align` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
+			Zymurgy::$db->escape_string($this->sitepage["id"]).
+			"' AND ".
+			$alignFilterCriteria.
+			" ORDER BY `disporder`";
+
+		$ri = Zymurgy::$db->run($sql);
+
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$pp = explode('&',$row['plugin']);
@@ -163,12 +179,14 @@ class ZymurgyTemplate
 			echo Zymurgy::plugin(urldecode($pp[0]),$instance);
 			echo "</div>";
 		}
+
 		Zymurgy::$db->free_result($ri);
 	}
 }
+
 Zymurgy::$template = new ZymurgyTemplate((array_key_exists('p',$_GET)) ? $_GET['p'] : '');
 if (file_exists(Zymurgy::$root.Zymurgy::$template->template['path']))
 	require_once(Zymurgy::$root.Zymurgy::$template->template['path']);
-else 
+else
 	echo "This page is trying to use a template from ".Zymurgy::$template->template['path'].", but no such file exists.";
 ?>
