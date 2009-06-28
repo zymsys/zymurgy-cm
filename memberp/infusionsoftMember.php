@@ -5,12 +5,13 @@ class infusionsoftMember extends ZymurgyMember
 	{
 		$isValid = true;
 
+		$issue = '';
 		$isValid = $this->ValidateConfigurationItem($issue, "Infusionsoft URL");
 		$isValid = $this->ValidateConfigurationItem($issue, "Infusionsoft API Key");
 
 		if(!$isValid)
 		{
-			$issue = "Could not set up Paypal IPN Processor: <ul>\n".
+			$issue = "Could not set up Infusionsoft Membership Provider: <ul>\n".
 				$issue.
 				"</ul>\n";
 
@@ -124,9 +125,6 @@ class infusionsoftMember extends ZymurgyMember
 				'Email',
 				'Password'));
 
-		// print_r($r);
-		// die();
-
 		if(is_array($r))
 		{
 			$sid = session_id();
@@ -154,6 +152,35 @@ class infusionsoftMember extends ZymurgyMember
 			Zymurgy::memberaudit("Failed login attempt for [$userid]: $r");
 			return false;
 		}
+	}
+	
+	static function remotelookup($table,$field,$value,$exact=false)
+	{
+		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+		$infusion = new ZymurgyInfusionsoftWrapper();
+
+		$wildcard = $exact ? '' : '%';
+		$ir = $infusion->execute_va('DataService.query',$table,100,0,array($field=>$value.$wildcard),array('Id',$field));
+		$r = array();
+		foreach ($ir->val as $val)
+		{
+			$r[$val['Id']] = $val[$field];
+		}
+		return $r;
+	}
+
+	static function remotelookupbyid($table,$field,$value)
+	{
+		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+		$infusion = new ZymurgyInfusionsoftWrapper();
+
+		$ir = $infusion->execute_va('DataService.query',$table,1,0,array('Id'=>$value),array('Id',$field));
+		$r = array();
+		foreach ($ir->val as $val)
+		{
+			$r[$val['Id']] = $val[$field];
+		}
+		return $r;
 	}
 
 	/**

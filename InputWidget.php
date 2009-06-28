@@ -425,6 +425,100 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 	}
 }
 
+class ZIW_RemoteLookup extends ZIW_AutoCompleteBase
+{
+	private $table;
+	private $idcolumn;
+	private $column;
+
+	/**
+	 * Take posted value(s) and return the value to be stored in the database
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $postname Posted value name
+	 * @return string
+	 */
+	function PostValue($ep,$postname)
+	{
+		$table = $ep[1];
+		$idcolumn = $ep[2];
+		$column = $ep[3];
+		$postvalue = urldecode($_POST[$postname]);
+		$autocreate = array_key_exists(4,$ep) ? ($ep[4] == 'true') : false;
+		$r = Zymurgy::memberremotelookup($table,$column,$postvalue,true);
+		$value = 0;
+		foreach ($r as $key=>$val)
+		{
+			$value = $key;
+		}
+		if (!$value && $autocreate)
+		{
+			//Autocreate unknown entry from autocomplete widget
+			$newrecord = array("$table.$column"=>$postvalue);
+			if (!empty($this->extra['OnBeforeAutoInsert']))
+				$newrecord = call_user_func($this->extra['OnBeforeAutoInsert'], $table, $newrecord);
+			//TODO:  Create remote entry and load ID into $value.
+			if (!empty($this->extra['OnAutoInsert']))
+				call_user_func($this->extra['OnAutoInsert'],$table, $newrecord);
+		}
+		return $value;
+	}
+
+	function PreRender($ep,$name,$value)
+	{
+		$this->table = $ep[1];
+		$this->idcolumn = $ep[2];
+		$this->column = $ep[3];
+		$this->textvalue = $this->Display($ep,$value,null);
+	}
+
+	function RenderJS()
+	{
+		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/acremote.php");
+			'.$this->jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+			'.$this->jsname.'_datasource.responseSchema = {
+				resultsList : "results",
+				fields : ["value"]};
+			var '.$this->jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$this->name.'-input","'.$this->name.'-container", '.$this->jsname.'_datasource);
+			'.$this->jsname.'_autocomp.generateRequest = function(sQuery) {
+				return "/zymurgy/include/acremote.php?t='.urlencode($this->table).'&c='.
+					urlencode($this->column).'&i='.urlencode($this->idcolumn).'&q=" + sQuery;
+			};
+			function '.$this->jsname.'_update() {
+				'.$this->jsname.'_hidden.value = escape('.$this->jsname.'_text.value);
+			}
+			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
+			';
+	}
+
+	/**
+	 * Take a value as it comes from the database, and make it suitable for display
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $display
+	 * @param InputWidget $shell
+	 */
+	function Display($ep,$display,$shell)
+	{
+		$table = $ep[1];
+		$idcolumn = $ep[2];
+		$column = $ep[3];
+		$autocreate = array_key_exists(4,$ep) ? ($ep[4] == 'true') : false;
+		$r = Zymurgy::memberremotelookupbyid($table,$column,$display);
+		if (!is_array($r))
+		{
+			echo "<div>Unexpected result from Infusionsoft: <pre>";
+			print_r($r);
+			echo "</pre></div>";
+		}
+		foreach ($r as $key=>$value)
+		{
+			return $value;
+		}
+		return '';
+	}
+}
+
 class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 {
 	private $table;
@@ -1179,7 +1273,8 @@ class ZIW_Html extends ZIW_Base
 		$fck->Width = $ep[1];
 		$fck->Height = $ep[2];
 		$fck->Value = $value;
-		$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
+		if (array_key_exists('fckeditorcss',$this->extra))
+			$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
 		$fck->Create();
 	}
 }
@@ -1532,6 +1627,7 @@ InputWidget::Register('image',new ZIW_Image());
 InputWidget::Register('html',new ZIW_Html());
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking
+InputWidget::Register('remote',new ZIW_RemoteLookup());
 InputWidget::Register('hip',new ZIW_HIP());
 InputWidget::Register('default',new ZIW_Base());
 InputWidget::Register('password',new ZIW_Password());

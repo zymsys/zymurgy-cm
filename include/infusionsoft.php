@@ -14,7 +14,7 @@ class ZymurgyInfusionsoftWrapper
 
 		if(!$isValid)
 		{
-			$issue = "Could not set up Paypal IPN Processor: <ul>\n".
+			$issue = "Could not set up Infusionsoft Member Provider: <ul>\n".
 				$issue.
 				"</ul>\n";
 

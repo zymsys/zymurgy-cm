@@ -51,6 +51,7 @@ $zauth->authinfo['fullname'] = $zp[2];
 $zauth->authinfo['admin'] = $zp[3];
 $zauth->authinfo['id'] = $zp[4];
 $zauth->authinfo['eula'] = $zp[5];
+//echo "Need $adminlevel, have {$zauth->authinfo['admin']}."; exit;
 if ((isset($adminlevel)) && ($zauth->authinfo['admin']<$adminlevel))
 {
 	header("Location: login.php");

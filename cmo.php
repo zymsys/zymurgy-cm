@@ -132,6 +132,8 @@ if (!class_exists('Zymurgy'))
 		 * @var Locale[]
 		 */
 		public static $Locales = array();
+		
+		private static $remotelookupcache = array();
 
 		/**
 		 * Provides the base functionality for both RequireOnce() and YUI() methods.
@@ -803,6 +805,44 @@ if (!class_exists('Zymurgy'))
 		{
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberform($navname,$exitpage);
+		}
+		
+		static function memberremotelookup($table,$field,$value,$exact=false)
+		{
+			Zymurgy::initializemembership();
+			if (method_exists(Zymurgy::$MemberProvider,'remotelookup'))
+				return Zymurgy::$MemberProvider->remotelookup($table,$field,$value,$exact);
+			else 
+				return array();
+		}
+
+		static function memberremotelookupbyid($table,$field,$value)
+		{
+			if (array_key_exists($table,Zymurgy::$remotelookupcache))
+			{
+				if (array_key_exists($field,Zymurgy::$remotelookupcache[$table]))
+				{
+					if (array_key_exists($value,Zymurgy::$remotelookupcache[$table][$field]))
+					{
+						return Zymurgy::$remotelookupcache[$table][$field][$value];
+					}
+				}
+				else 
+				{
+					Zymurgy::$remotelookupcache[$table][$field] = array();
+				}
+			}
+			else 
+			{
+				Zymurgy::$remotelookupcache[$table] = array($field=>array());
+			}
+			Zymurgy::initializemembership();
+			if (method_exists(Zymurgy::$MemberProvider,'remotelookupbyid'))
+				$r = Zymurgy::$MemberProvider->remotelookupbyid($table,$field,$value);
+			else 
+				$r = false;
+			Zymurgy::$remotelookupcache[$table][$field][$value] = $r;
+			return $r;
 		}
 
 		/**

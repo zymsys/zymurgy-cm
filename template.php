@@ -12,6 +12,7 @@ class ZymurgyTemplate
 
 	function __construct($navpath, $hrefroot = 'pages')
 	{
+		$this->LoadParams();
 		if (empty($navpath))
 		{
 			$this->sitepage = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=0 order by disporder limit 1");
@@ -83,7 +84,25 @@ class ZymurgyTemplate
 		$this->navpath = $navpath;
 		$this->LoadPageText();
 	}
-
+	
+	/**
+	 * Parse get parameters out of REQUEST_URI into $_GET so that things which expect $_GET parameters see them normally.
+	 *
+	 */
+	private function LoadParams()
+	{
+		$ru = explode('?',$_SERVER['REQUEST_URI'],2);
+		if (array_key_exists(1,$ru))
+		{
+			$pp = explode('&',$ru[1]);
+			foreach ($pp as $part)
+			{
+				$get = explode('=',$part,2);
+				$_GET[$get[0]] = array_key_exists(1,$get) ? $get[1] : false;
+			}
+		}
+	}
+	
 	private function LoadPageText()
 	{
 		//Load content types

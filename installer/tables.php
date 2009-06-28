@@ -506,7 +506,7 @@
 					DefineTableField("body", "LONGTEXT", "")
 				),
 				"indexes" => array(
-					array("columns" => "sitepage", "unique" => "FALSE", "type" => "")
+					array("columns" => "sitepage", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
