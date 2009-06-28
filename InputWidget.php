@@ -1611,6 +1611,43 @@ class DataGridLookup
 	}
 }
 
+class ZIW_GMap extends ZIW_Base
+{
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		echo "<textarea id=\"$name\" name=\"".
+			"$name\" rows=\"4\" cols=\"60\">$value</textarea>";
+	}
+	
+	/**
+	 * Take a value as it comes from the database, and make it suitable for display
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $display
+	 * @param InputWidget $shell
+	 */
+	function Display($ep,$display,$shell)
+	{
+		$w = array_key_exists(1,$ep) ? intval($ep[1]) : 0;
+		$h = array_key_exists(2,$ep) ? intval($ep[2]) : 0;
+		$z = array_key_exists(3,$ep) ? intval($ep[3]) : 0;
+		if ($w == 0) $w = 425;
+		if ($h == 0) $h = 350;
+		if ($z == 0) $z = 14;
+		$q = urlencode(str_replace(array("\r","\n"),'',$display));
+		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
+		return "<iframe width=\"$w\" height=\"$h\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\" 
+			src=\"$url\"></iframe><br /><small><a href=\"$url\" target=\"_blank\" style=\"color:#0000FF;text-align:left\">View Larger Map</a></small>";
+	}
+}
+
 InputWidget::Register('input',new ZIW_Input());
 InputWidget::Register('lookup',new ZIW_Lookup());
 InputWidget::Register('textarea',new ZIW_TextArea());
@@ -1640,6 +1677,7 @@ InputWidget::Register('yuihtml',new ZIW_YUIHtml());
 InputWidget::Register('color',new ZIW_Color());
 InputWidget::Register('colour',new ZIW_Color());
 InputWidget::Register('hidden',new ZIW_Hidden());
+InputWidget::Register('gmap',new ZIW_GMap());
 //InputWidget::Register('',new ZIW_);
 
 if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))

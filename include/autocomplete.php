@@ -10,7 +10,7 @@ require_once("../ZymurgyAuth.php");
 $zauth = new ZymurgyAuth();
 $zauth->Authenticate("/zymurgy/login.php");
 
-$oktables = explode(',',array_key_exists('AutocompleteTables',Zymurgy::$config) ? Zymurgy::$config['AutocompleteTables'] : 'zcm_member');
+$oktables = explode(',',array_key_exists('AutocompleteTables',Zymurgy::$config) ? Zymurgy::$config['AutocompleteTables'] : '');
 
 if (array_search($table,$oktables) === false)
 {
