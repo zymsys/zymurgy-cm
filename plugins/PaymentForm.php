@@ -363,6 +363,27 @@
 				$postVarString .= "$key: $value\n";
 			}
 
+			$invoiceID = $transaction->invoice_id;
+
+			if(strpos($invoiceID, $this->GetConfigValue("Invoice Prefix")) === FALSE)
+			{
+				$sql = "SELECT `invoice_id` FROM `zcm_form_paymentresponse` WHERE `post_vars` LIKE ".
+					"'%<google-order-number>".
+					Zymurgy::$db->escape_string($invoiceID).
+					"</google-order-number>%' AND NOT `invoice_id` = ''";
+				$ri = Zymurgy::$db->query($sql)
+					or die("Could not retrieve Invoice based on Google Order Number: ".Zymurgy::$db->error().", $sql");
+
+				if(Zymurgy::$db->num_rows($ri) > 0)
+				{
+					$row = Zymurgy::$db->fetch_array($ri);
+
+					$transaction->invoice_id = $row["invoice_id"];
+				}
+
+				Zymurgy::$db->free_result($ri);
+			}
+
 			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `invoice_id`, ".
 				"`capture_id`, `response_date`, `processor`, `status_code`, `post_vars` ) VALUES ( '".
 				mysql_escape_string($this->iid).
@@ -380,7 +401,7 @@
 				"', '".
 				mysql_escape_string($transaction->status_code).
 				"', '".
-				mysql_escape_string($postVarString).
+				mysql_escape_string($transaction->postback_variables).
 				"' )";
 			//throw(new Exception($sql));
 			Zymurgy::$db->query($sql)
@@ -389,6 +410,8 @@
 
 		function RenderAdminDataManagementDownload()
 		{
+			// die();
+
 			$exported = array();
 			$headers = array();
 			$rows = array();
@@ -470,26 +493,36 @@
 
 						$paymentProcessor = $this->GetPaymentProcessor($row["processor"]);
 
-						$responseFields = explode("\n", $row["post_vars"]);
-
-						foreach($responseFields as $responseField)
+						if($paymentProcessor instanceof GoogleCheckoutProcessor)
 						{
-							$keyValue = explode(":", $responseField);
+							// Google Checkout returns XML instead of a simple POST
+							// dump. Since the Excel XML document cannot display this
+							// raw XML, suppress the output.
+						}
+						else
+						{
+							$responseFields = explode("\n", $row["post_vars"]);
 
-							if(trim($keyValue[0]) !== "" && $paymentProcessor->IsReportedPostVar($keyValue[0]))
+							foreach($responseFields as $responseField)
 							{
-								if(!in_array($keyValue[0], $headers))
-								{
-									$sql = "insert into zcm_form_header (instance,header) values (".
-										"{$this->iid},'".Zymurgy::$db->escape_string($keyValue[0])."')";
-									Zymurgy::$db->query($sql)
-										or die ("Unable to create new header [{$keyValue[0]}] ($sql): ".Zymurgy::$db->error());
-									$headers[] = $keyValue[0];
-								}
+								$keyValue = explode(":", $responseField);
 
-								$baseRow[$keyValue[0]] = $keyValue[1];
+								if(trim($keyValue[0]) !== "" && $paymentProcessor->IsReportedPostVar($keyValue[0]))
+								{
+									if(!in_array($keyValue[0], $headers))
+									{
+										$sql = "insert into zcm_form_header (instance,header) values (".
+											"{$this->iid},'".Zymurgy::$db->escape_string($keyValue[0])."')";
+										Zymurgy::$db->query($sql)
+											or die ("Unable to create new header [{$keyValue[0]}] ($sql): ".Zymurgy::$db->error());
+										$headers[] = $keyValue[0];
+									}
+
+									$baseRow[$keyValue[0]] = htmlentities($keyValue[1]);
+								}
 							}
 						}
+
 
 						$rows[$exportedIndex] = $baseRow;
 					}

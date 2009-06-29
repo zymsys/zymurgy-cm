@@ -1282,6 +1282,7 @@ class FormExportFromDatabase implements PluginExtension
 
 	private function DownloadDataExport($plugin)
 	{
+
 		$exported = array();
 		$headers = array();
 		$rows = array();
@@ -1295,6 +1296,17 @@ class FormExportFromDatabase implements PluginExtension
 			$exported,
 			$headers,
 			$rows);
+
+		// If this is a PaymentForm, which doesn't properly support the extension
+		// system, call its method to add the payment response information
+		if($plugin instanceof PaymentForm)
+		{
+			$plugin->RenderAdminDoDownload_PaymentResponses(
+				$exported,
+				$headers,
+				$rows);
+		}
+
 		$this->RenderExcelSpreadsheet(
 			$plugin,
 			$headers,
@@ -1335,7 +1347,7 @@ class FormExportFromDatabase implements PluginExtension
 				}
 			}
 
-			if ($membercount)
+			if (isset($membercount) && $membercount)
 			{
 				$xrow = array_merge(array('Member ID'=>$row['member'],'Member Email'=>$row['email']),$xrow);
 			}

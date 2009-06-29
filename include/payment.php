@@ -629,7 +629,6 @@
 
 	class GoogleCheckoutProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
-
 		public function GoogleCheckoutProcessor(
 			$additionalItems = array())
 		{
@@ -650,6 +649,7 @@
 
 			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.URL");
 			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.MerchantID");
+			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.MerchantKey");
 			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.PageStyle");
 			$isValid = $this->ValidateConfigurationItem($issue, "GoogleCheckout.CurrencyCode");
 
@@ -745,7 +745,63 @@
 
 		public function Callback()
 		{
+			$this->m_paymentTransaction->processor = $this->GetPaymentProcessorName();
 
+			$postVarString = file_get_contents("php://input");
+			$postVarString = str_replace("xmlns=", "a=", $postVarString);
+			$postVarString = str_replace("UTF-8", "ISO-8859-1", $postVarString);
+			$this->m_paymentTransaction->postback_variables["xml"] = $postVarString;
+
+			$xml = new SimpleXMLElement($postVarString);
+			$notification = $xml[0];
+
+			// Set the default status code, for items where we are not pulling it
+			// from the content of the XML response
+			$this->m_paymentTransaction->status_code = str_replace(
+				"-notification",
+				"",
+				$notification->getName());
+
+			// Set the default invoice ID to the Google Order Number, for items where
+			// we cannot derive the real invoice ID from the XML response. It will then
+			// be up to the consumer (PaymentForm, etc.) to cross-reference the Google
+			// Order Number with the real invoice ID
+			$this->m_paymentTransaction->invoice_id = $notification->{"google-order-number"};
+
+			switch($notification->getName())
+			{
+				case "new-order-notification":
+					$itemPath = $xml->xpath("//item");
+					$item = $itemPath[0];
+					$this->m_paymentTransaction->invoice_id = $item->{"item-name"};
+
+					$this->m_paymentTransaction->status_code = $notification->{"financial-order-state"};
+
+					break;
+
+				case "risk-information-notification":
+					// no change to status code - this callback is informational only
+					break;
+
+				case "order-state-change-notification":
+					$this->m_paymentTransaction->status_code = $notification->{"new-financial-order-state"};
+
+					break;
+
+				case "charge-amount-notification":
+					break;
+
+				case "refund-amount-notification":
+					break;
+
+				case "chargeback-amount-notification":
+					break;
+
+				case "authorization-amount-notification":
+					break;
+			}
+
+			return;
 		}
 
 		public function IsReportedPostVar($var)
