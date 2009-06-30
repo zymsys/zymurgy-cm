@@ -343,7 +343,7 @@ class Form extends PluginBase
 						Zymurgy::$db->query("update zcm_form_input set validator=4 where id=$id");
 						break;
 					default:
-						if(is_numeric($validatior))
+						if(is_numeric($validator))
 						{
 							// Validator is already set by ID. The dbrelease for this plugin was
 							// probably set incorrectly.
