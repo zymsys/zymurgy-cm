@@ -162,11 +162,11 @@
 			}
 		}
 
-		protected function RenderSubmitButton($value)
+		protected function RenderSubmitButton($value, $forceRender = false)
 		{
 			$output = "";
 
-			if(Zymurgy::$config["PaymentProcessor.SilentPost"])
+			if(!$forceRender && Zymurgy::$config["PaymentProcessor.SilentPost"])
 			{
 				$output .= "<script type=\"text/javascript\">\n";
 				$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";
@@ -702,18 +702,18 @@
 
 			$output .= $this->RenderOptionalHiddenInput("_charset_", "utf-8");
 
-			$output .= $this->RenderSubmitButton();
+			$output .= $this->RenderSubmitButton("");
 
 			$output .= "</form>\n";
 
 			echo $output;
 		}
 
-		protected function RenderSubmitButton()
+		public function RenderSubmitButton($value, $forceRender = false)
 		{
 			$output = "";
 
-			if(Zymurgy::$config["PaymentProcessor.SilentPost"])
+			if(!$forceRender && Zymurgy::$config["PaymentProcessor.SilentPost"])
 			{
 				$output .= "<script type=\"text/javascript\">\n";
 				$output .= "setTimeout('document.frmPaymentGateway.submit();', 1000);\n";

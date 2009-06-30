@@ -516,11 +516,18 @@ function Validate$name(me) {
 				}
 			}
 		}
-		echo "<tr><td colspan=\"2\" class=\"SubmitCell\">".$this->GetConfigValue('Footer')."<br /><input type=\"submit\" value=\"".
-			$this->GetConfigValue('Submit Button Text')."\"";
-		echo " /></td></tr>\r\n";
+		echo "<tr><td colspan=\"2\" class=\"SubmitCell\">".$this->GetConfigValue('Footer')."<br />";
+
+		echo($this->RenderSubmitButton());
+		echo "</td></tr>\r\n";
 		echo "</table></form>";
 		return "";
+	}
+
+	function RenderSubmitButton()
+	{
+		return "<input type=\"submit\" value=\"".
+			$this->GetConfigValue('Submit Button Text')."\" />";
 	}
 
 	function GetValues()

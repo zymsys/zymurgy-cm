@@ -178,6 +178,19 @@
 			$this->m_invoiceID = $invoicePrefix . date("YmdHis");
 		}
 
+		function RenderSubmitButton()
+		{
+			if($this->GetConfigValue("Payment Gateway") == "Google Checkout")
+			{
+				$paymentProcessor = $this->GetPaymentProcessor();
+				return $paymentProcessor->RenderSubmitButton("", true);
+			}
+			else
+			{
+				return parent::RenderSubmitButton();
+			}
+		}
+
 		function RenderPaymentForm()
 		{
 			$id = 0;
