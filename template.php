@@ -10,10 +10,17 @@ class ZymurgyTemplate
 	private $inputspeccache = array();
 	private $pagetextids = array();
 
-	function __construct($navpath, $hrefroot = 'pages')
+	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
 		$this->LoadParams();
-		if (empty($navpath))
+		if($id > 0)
+		{
+			$sql = "SELECT `id`, `template` FROM `zcm_sitepage` WHERE `id` = '".
+				Zymurgy::$db->escape_string($id).
+				"' LIMIT 0, 1";
+			$this->sitepage = Zymurgy::$db->get($sql);
+		}
+		else if (empty($navpath))
 		{
 			$this->sitepage = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=0 order by disporder limit 1");
 		}
@@ -84,7 +91,7 @@ class ZymurgyTemplate
 		$this->navpath = $navpath;
 		$this->LoadPageText();
 	}
-	
+
 	/**
 	 * Parse get parameters out of REQUEST_URI into $_GET so that things which expect $_GET parameters see them normally.
 	 *
@@ -102,7 +109,7 @@ class ZymurgyTemplate
 			}
 		}
 	}
-	
+
 	private function LoadPageText()
 	{
 		//Load content types
@@ -203,7 +210,11 @@ class ZymurgyTemplate
 	}
 }
 
-Zymurgy::$template = new ZymurgyTemplate((array_key_exists('p',$_GET)) ? $_GET['p'] : '');
+Zymurgy::$template = new ZymurgyTemplate(
+	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
+	'pages',
+	(array_key_exists('pageid', $_GET)) ? $_GET["pageid"] : 0);
+
 if (file_exists(Zymurgy::$root.Zymurgy::$template->template['path']))
 	require_once(Zymurgy::$root.Zymurgy::$template->template['path']);
 else

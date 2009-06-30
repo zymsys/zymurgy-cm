@@ -51,7 +51,7 @@ function OnBeforeUpdate($values)
 			//We had an old redirect, make sure it points to the new location.
 			Zymurgy::$db->run("update zcm_sitepageredirect set sitepage={$values['zcm_sitepage.id']} where id={$oldredirect['id']}");
 		}
-		else 
+		else
 		{
 			//This is a fresh redirect; create it.
 			Zymurgy::$db->run("insert into zcm_sitepageredirect (sitepage,parent,linkurl) values ({$values['zcm_sitepage.id']}, {$values['zcm_sitepage.parent']}, '".
@@ -82,7 +82,7 @@ if ($templatecount > 1)
 {
 	$dg->AddEditor('template','Template:','lookup.zcm_template.id.name.name');
 }
-else 
+else
 {
 	$dg->AddConstant('template',$defaulttemplate);
 }
@@ -90,6 +90,7 @@ $dg->AddInput('linktext','Menu Text:',40,40);
 $dg->AddEditor('retire','Retire After:','datetime');
 $dg->AddEditor('golive','Go Live:','datetime');
 $dg->AddEditor('softlaunch','Soft Launch:','datetime');
+$dg->AddColumn('View', 'id', '<a href="template.php?pageid={0}">View</a>');
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add New Page';
