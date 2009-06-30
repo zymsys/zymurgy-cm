@@ -467,10 +467,14 @@ class DataSet
 			{
 				die("You have declared a filter for an undeclared column: {$f->columnname}.");
 			}
+
 			if ($this->columns[$f->columnname]->quoted && !($f->value == "null"))
-				$value = "'{$f->value}'";
+				$value = "'".
+					Zymurgy::$db->escape_string($f->value).
+					"'";
 			else
 				$value = $f->value;
+
 			$where[] = "({$f->columnname} {$f->operator} $value)";
 		}
 		return $where;
