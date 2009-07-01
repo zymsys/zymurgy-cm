@@ -298,6 +298,7 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 			YAHOO.util.Dom.setXY(elCnt, [reg.left,reg.bottom]);
 		}
 		fixbutton_'.$this->jsname.'();
+		'.$this->jsname.'_autocomp.dataRequestEvent.subscribe(fixbutton_'.$this->jsname.');
 		';
 	}
 
