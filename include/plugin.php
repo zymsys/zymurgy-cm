@@ -11,11 +11,6 @@ require_once('../cmo.php');
 
 //Store possible answers in $r
 $r = array();
-if (empty($query))
-{
-	//"Page Navigation Name" is a special option, and a magic phrase.  Plugins named "Page Navigation Name" are being silly and won't be tollerated.
-	$r[] = "Page Navigation Name";
-}
 $sql = "select name from zcm_plugininstance where name like '".
 	Zymurgy::$db->escape_string($query)."%' and plugin=$plugin";
 $ri = Zymurgy::$db->run($sql);

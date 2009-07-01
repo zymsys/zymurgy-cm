@@ -16,7 +16,8 @@ if ((YAHOO) &&
 		        }
 		        else // Is closed
 		        {
-		            this.getInputEl().focus(); // Needed to keep widget active
+		        	var elInp = this.getInputEl();
+		            elInp.focus(); // Needed to keep widget active
 		            var me = this;
 		            setTimeout(function() { // sendQuery expands the container
 		            	var oldql = me.minQueryLength;

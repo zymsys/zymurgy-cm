@@ -288,7 +288,17 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 
 	function RenderJS()
 	{
-
+		//Use absolute positioning for AC button since YUI makes the input box absolute.
+		echo 'function fixbutton_'.$this->jsname.'() {
+			var elBtn = document.getElementById("'.$this->name.'-btn");
+			var elInp = document.getElementById("'.$this->name.'-input");
+			var elCnt = document.getElementById("'.$this->name.'-container");
+			var reg = YAHOO.util.Dom.getRegion(elInp);
+			YAHOO.util.Dom.setXY(elBtn, [reg.right-1,reg.top-1]);
+			YAHOO.util.Dom.setXY(elCnt, [reg.left,reg.bottom]);
+		}
+		fixbutton_'.$this->jsname.'();
+		';
 	}
 
 	function GetHint()
@@ -303,10 +313,6 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 		$this->PreRender($ep,$name,$value);
 		echo "<input type=\"hidden\" name=\"$name\" id=\"$name\" value=\"".
 			addslashes($this->textvalue)."\"/>";
-		/*if ($isplugin)
-		{
-			echo "<div style=\"float:left; margin-left:6px\">";
-		}*/
 		echo Zymurgy::YUI('autocomplete/assets/skins/sam/autocomplete.css');
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
 		echo Zymurgy::YUI('datasource/datasource-min.js');
@@ -318,21 +324,22 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 		echo Zymurgy::YUI('datasource/datasource-min.js');
 		echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
 		echo Zymurgy::RequireOnce('/zymurgy/include/cmo.js');
-		echo "<div id=\"{$name}-autocomplete\" style=\"width: ".ZIW_AutoComplete::$acwidth."px\"><input id=\"{$name}-input\" type=\"text\" ";
+		echo "<div id=\"{$name}-autocomplete\"";
+		echo " style=\"display:inline-block\"";
+		echo "><nobr><input id=\"{$name}-input\" type=\"text\" ";
 		$hint = $this->GetHint();
 		if (!empty($hint))
 		{
 			echo "title=\"$hint\" ";
 		}
-		echo "value=\"".htmlentities($this->textvalue)."\" onchange=\"{$this->jsname}_update\" />";
-		echo "<div id=\"{$name}-container\" style=\"z-index:".ZIW_AutoComplete::$ZymurgyAutocompleteZIndex."\"></div></div>";
-		echo "<div style=\"float:left;z-index:".ZIW_AutoComplete::$ZymurgyAutocompleteZIndex.";";
-		echo " margin-left:".(ZIW_AutoComplete::$acwidth+5)."px";
-		echo "\"><input type=\"button\" value=\"&raquo;\" onclick=\"{$this->jsname}_autocomp.toggleContainer(); Zymurgy.toggleText(this,'&raquo;','&laquo;');\" /></div>";
-		echo "</div>";
+		echo "value=\"".htmlentities($this->textvalue)."\" onchange=\"{$this->jsname}_update\" style=\"width:200px\" />";
+		echo "<input id=\"{$name}-btn\" type=\"button\" value=\"...\" onclick=\"{$this->jsname}_autocomp.toggleContainer();\"";
+		echo " />";
+		echo "<div id=\"{$name}-container\" style=\"width:200px; z-index:".ZIW_AutoComplete::$ZymurgyAutocompleteZIndex."\"></div></nobr></div>";
 		echo '<script type="text/javascript">
 			'.$this->jsname.'_text = document.getElementById("'.$name.'-input");
 			'.$this->jsname.'_plugin = document.getElementById("'.$name.'-plugin");
+			'.$this->jsname.'_btn = document.getElementById("'.$name.'-btn");
 			'.$this->jsname.'_hidden = document.getElementById("'.$name.'");
 			';
 		if (!empty($hint))
@@ -352,7 +359,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 		$ep = explode('&',$value);
 		$pluginvalue = urldecode($ep[0]);
 		$this->textvalue = isset($ep[1]) ? urldecode($ep[1]) : "";
-		echo "<div style=\"float:left\">";
+		//echo "<div style=\"float:left\">";
 		echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
 		$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -363,7 +370,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 			echo ">{$row['name']}</option>\r\n";
 		}
 		echo "</select>";
-		echo "</div>";
+		//echo "</div>";
 	}
 
 	function RenderJS()
@@ -371,7 +378,10 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 		$d = isset($_GET["d"]) ? $_GET["d"] : 1;
 
 		if (empty($this->textvalue))
+		{
 			echo "{$this->jsname}_text.disabled = true;\r\n";
+			echo "{$this->jsname}_btn.disabled = true;\r\n";
+		}
 		echo 'function '.$this->jsname.'_update() {
 				if ('.$this->jsname.'_text.disabled || '.$this->jsname.'_plugin.value == 0)
 					'.$this->jsname.'_hidden.value = "&";
@@ -382,11 +392,13 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 			if (this.value == "")
 			{
 				'.$this->jsname.'_text.disabled = true;
+				'.$this->jsname.'_btn.disabled = true;
 				YAHOO.util.Dom.setAttribute('.$this->jsname.'_text,"title","Choose a Plugin First");
 			}
 			else
 			{
 				'.$this->jsname.'_text.disabled = false;
+				'.$this->jsname.'_btn.disabled = false;
 				YAHOO.util.Dom.setAttribute('.$this->jsname.'_text,"title","Select one, or name a new one");
 			}
 			Zymurgy.refreshHint('.$this->jsname.'_text);
@@ -404,6 +416,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 			};
 
 			';
+		parent::RenderJS();
 	}
 
 	function GetTitle()
@@ -489,6 +502,7 @@ class ZIW_RemoteLookup extends ZIW_AutoCompleteBase
 			}
 			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
 			';
+		parent::RenderJS();
 	}
 
 	/**
@@ -584,6 +598,7 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 			}
 			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
 			';
+		parent::RenderJS();
 	}
 
 	/**
