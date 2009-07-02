@@ -33,7 +33,7 @@ class infusionsoftMember extends ZymurgyMember
 	}
 
 	/**
-	 * Try to relate an existing Z:CM member to session data from vtiger.  If a link is found fill $member and create an auth key.
+	 * Try to relate an existing Z:CM member to session data from Infusionsoft.  If a link is found fill $member and create an auth key.
 	 * Returns true if the link could be made.
 	 *
 	 * @return boolean
@@ -45,7 +45,6 @@ class infusionsoftMember extends ZymurgyMember
 		{
 			session_start();
 		}
-
 		if (array_key_exists('customer_id',$_SESSION))
 		{
 			$member = Zymurgy::$db->get("select * from zcm_member where mpkey='".
@@ -124,7 +123,7 @@ class infusionsoftMember extends ZymurgyMember
 				'LastName',
 				'Email',
 				'Password'));
-
+				
 		if(is_array($r))
 		{
 			$sid = session_id();

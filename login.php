@@ -10,7 +10,7 @@ if (isset($_POST['userid']))
 	$userid = $_POST['userid'];
 	$passwd = $_POST['passwd'];
 
-	$sql = "SELECT `zcm_member`.`id` AS `id`, `email`, `password`, `fullname` ".
+	/*$sql = "SELECT `zcm_member`.`id` AS `id`, `email`, `password`, `fullname` ".
 		"FROM `zcm_member` ".
 		"INNER JOIN `zcm_membergroup` ON `zcm_membergroup`.`memberid` = `zcm_member`.`id` ".
 		"INNER JOIN `zcm_groups` ON `zcm_groups`.`id` = `zcm_membergroup`.`groupid` ".
@@ -22,23 +22,24 @@ if (isset($_POST['userid']))
 		"'";
 
 	$ri = Zymurgy::$db->query($sql);
-	if (Zymurgy::$db->num_rows($ri)>0)
+	if (Zymurgy::$db->num_rows($ri)>0)*/
+	if (Zymurgy::memberdologin($userid,$passwd))
 	{
 		include_once("ZymurgyAuth.php");
 		$zauth = new ZymurgyAuth();
-		$row=Zymurgy::$db->fetch_array($ri);
+		//$row=Zymurgy::$db->fetch_array($ri);
+		$row = Zymurgy::$db->get("select * from zcm_member where id={$_SESSION['customer_id']}");
 		$landing = array_key_exists('defaultpage',Zymurgy::$config)
 			? Zymurgy::$config['defaultpage']
 			: 'index.php';
-		Zymurgy::memberdologin(
+		/*Zymurgy::memberdologin(
 			$userid,
-			$passwd);
+			$passwd);*/
 
-		Zymurgy::memberauthenticate();
+		//Zymurgy::memberauthenticate();
 		// dummy call to memberauthorize to populate the group
 		// listing properly
-		//Zymurgy::memberauthorize("idonotexist");
-
+		
 		$isWebmaster = intval(Zymurgy::memberauthorize("Zymurgy:CM - Webmaster"));
 		$isAdministrator = Zymurgy::memberauthorize("Zymurgy:CM - Administrator");
 		$isUser = Zymurgy::memberauthorize("Zymurgy:CM - User");

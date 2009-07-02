@@ -81,7 +81,8 @@ function renderZCMNav($parent)
 	global $donefirstzcmnav, $zauth;
 
 	// echo("zauth: ");
-	// print_r($zauth);
+	//print_r($zauth);
+	print_r(Zymurgy::$member);
 
 	$sql = "SELECT `zcm_nav`.`id`, `navname`, `navtype`, `navto`, `zcm_features`.`url` ".
 		"FROM `zcm_nav` LEFT JOIN `zcm_features` ON `zcm_features`.`id` = `zcm_nav`.`navto` ".
@@ -90,6 +91,7 @@ function renderZCMNav($parent)
 		"' AND ( `authlevel` <= '".
 		Zymurgy::$db->escape_string($zauth->authinfo["admin"]).
 		"' OR `authlevel` IS NULL ) ORDER BY `zcm_nav`.`disporder`";
+	//echo "<div>$sql</div>";
 	$ri = Zymurgy::$db->run($sql);
 
 	$navs = array();

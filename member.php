@@ -48,18 +48,26 @@ class ZymurgyMember
 	 */
 	static function memberauthorize($groupname)
 	{
+		$authorized = false;
+		//echo "<div>Authorizing for [$groupname]: ";
 		if (Zymurgy::memberauthenticate())
 		{
+			//echo "authenticated ";
 			$sql = "select name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
+				echo " Group({$row['name']})";
 				Zymurgy::$member['groups'][] = $row['name'];
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
 		}
-		else
-			return false;
+		else 
+		{
+			//echo "not authenticated ";
+		}
+		//echo "</div>";
+		return $authorized;
 	}
 
 	/**
@@ -111,8 +119,6 @@ class ZymurgyMember
 
 	static function createauthkey($id)
 	{
-		// die("createauthkey called");
-
 		//Set up the authkey and last auth
 		$authkey = md5(uniqid(rand(),true));
 		$sql = "update zcm_member set lastauth=now(), authkey='$authkey' where id=$id";
@@ -150,7 +156,7 @@ class ZymurgyMember
 			"' ) AND `password` = '".
 			Zymurgy::$db->escape_string($password).
 			"'";
-
+		echo "<div>$sql</div>";
 		// $sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
 		//	"' and password='".Zymurgy::$db->escape_string($password)."'";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());

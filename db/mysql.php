@@ -59,6 +59,12 @@ class Zymurgy_DB
 	
 	function fetch_array($result, $result_type = ZYMURGY_FETCH_BOTH)
 	{
+		if (!is_resource($result))
+		{
+			echo "<div>[$result] is not a valid mysql resource.</div>";
+			debug_print_backtrace();
+			exit;
+		}
 		return mysql_fetch_array($result,$result_type);
 	}
 	
