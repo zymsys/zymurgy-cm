@@ -25,10 +25,13 @@ if (isset($_POST['userid']))
 	if (Zymurgy::$db->num_rows($ri)>0)*/
 	if (Zymurgy::memberdologin($userid,$passwd))
 	{
+		Zymurgy::memberauthenticate();
+
 		include_once("ZymurgyAuth.php");
 		$zauth = new ZymurgyAuth();
 		//$row=Zymurgy::$db->fetch_array($ri);
-		$row = Zymurgy::$db->get("select * from zcm_member where id={$_SESSION['customer_id']}");
+		$row = Zymurgy::$db->get("select * from zcm_member where id=".
+			Zymurgy::$member["id"]);
 		$landing = array_key_exists('defaultpage',Zymurgy::$config)
 			? Zymurgy::$config['defaultpage']
 			: 'index.php';
@@ -39,7 +42,7 @@ if (isset($_POST['userid']))
 		//Zymurgy::memberauthenticate();
 		// dummy call to memberauthorize to populate the group
 		// listing properly
-		
+
 		$isWebmaster = intval(Zymurgy::memberauthorize("Zymurgy:CM - Webmaster"));
 		$isAdministrator = Zymurgy::memberauthorize("Zymurgy:CM - Administrator");
 		$isUser = Zymurgy::memberauthorize("Zymurgy:CM - User");
