@@ -1052,8 +1052,47 @@ class ZIW_Attachment extends ZIW_Base
 	}
 }
 
-class ZIW_YUIHtml extends ZIW_Base
+class ZIW_RichTextBase extends ZIW_Base 
 {
+	/**
+	 * Take posted value(s) and return the value to be stored in the database
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $postname Posted value name
+	 * @return string
+	 */
+	function PostValue($ep,$postname)
+	{
+		if (array_key_exists($postname,$_POST))
+		{
+			if (array_key_exists('allowabletags',Zymurgy::$config))
+				return strip_tags($_POST[$postname],Zymurgy::$config['allowabletags']);
+			else 
+				return $_POST[$postname];
+		}
+		else
+			return '';
+	}
+}
+
+class ZIW_YUIHtml extends ZIW_RichTextBase
+{
+	/**
+	 * Return javascript code that should appear above the use of this widget as part of it's initialization.
+	 * Similar to GetPretext, except this is placed inside <script> tags.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 * @return string
+	 */
+	function JSRender($ep,$name,$value)
+	{
+		return "YAHOO.util.Event.on('submitForm', 'click', function() { ".
+						str_replace(".", "_", $name).
+						"Editor.saveHTML(); });\n";
+	}
+	
 	/**
 	 * Get output needed before any instances of this widget are rendered.
 	 *
@@ -1266,7 +1305,7 @@ class ZIW_YUIHtml extends ZIW_Base
 	}
 }
 
-class ZIW_Html extends ZIW_Base
+class ZIW_Html extends ZIW_RichTextBase
 {
 	function __construct()
 	{
@@ -1677,7 +1716,10 @@ InputWidget::Register('datetime',new ZIW_DateTime());
 InputWidget::Register('theme',new ZIW_Theme());
 InputWidget::Register('inputspec',new ZIW_InputSpec());
 InputWidget::Register('image',new ZIW_Image());
-InputWidget::Register('html',new ZIW_Html());
+InputWidget::Register('yuihtml',new ZIW_YUIHtml());
+InputWidget::Register('fckhtml',new ZIW_Html());
+InputWidget::Register('html',InputWidget::Get(
+	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking
 InputWidget::Register('remote',new ZIW_RemoteLookup());
@@ -1689,7 +1731,6 @@ InputWidget::Register('float',new ZIW_Input());
 InputWidget::Register('checkbox',new ZIW_CheckBox());
 InputWidget::Register('money',new ZIW_Money()); //Rounding problem (3.14 -> 3.00!)
 InputWidget::Register('radio',new ZIW_Radio());
-InputWidget::Register('yuihtml',new ZIW_YUIHtml());
 InputWidget::Register('color',new ZIW_Color());
 InputWidget::Register('colour',new ZIW_Color());
 InputWidget::Register('hidden',new ZIW_Hidden());

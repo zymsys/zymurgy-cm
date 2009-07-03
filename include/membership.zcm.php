@@ -1004,7 +1004,8 @@
 		{
 			if(method_exists($this, $action))
 			{
-				call_user_method($action, $this);
+				call_user_func(array($this,$action));
+				//call_user_method($action, $this); - Caused this: Notice: call_user_method() [function.call-user-method]: This function is deprecated, use the call_user_func variety with the array(&$obj, "method") syntax instead in /var/www/vhosts/marketingpowertool.com/httpdocs/zymurgy/include/membership.zcm.php on line 1008
 			}
 			else
 			{

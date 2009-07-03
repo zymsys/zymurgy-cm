@@ -1301,7 +1301,6 @@ class DataGrid
 			$fck = array();
 			if (isset($dsr->DataSet->OnPreRenderEdit))
 				$dsr->values = call_user_func($dsr->DataSet->OnPreRenderEdit,$dsr->values);
-			$yuihtml = array();
 
 			$widget = new InputWidget();
 			$js = array();
@@ -1329,28 +1328,10 @@ class DataGrid
 					$widget->Render($c->editor,$c->datacolumn,
 						array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : '');
 					echo "</td></tr>\r\n";
-
-					if(strpos($c->editor, "yuihtml") === 0)
-					{
-						$yuihtml[] = $c->datacolumn;
-					}
 				}
-			}
-
-			if(count($yuihtml) > 0)
-			{
-				echo("<script type=\"text/javascript\">\n");
-				foreach($yuihtml as $yuihtmlelement)
-				{
-					echo("YAHOO.util.Event.on('submitForm', 'click', function() { ".
-						str_replace(".", "_", $yuihtmlelement).
-						"Editor.saveHTML(); });\n");
-				}
-				echo("</script>\n");
 			}
 
 			echo "<tr><td align=\"middle\" colspan=\"2\"><input id=\"submitForm\" type=\"submit\" value=\"Save\">";
-
 
 			if (!isset($this->customCancelLocation))
 				$this->customCancelLocation = $this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection'));

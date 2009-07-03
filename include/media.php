@@ -2112,6 +2112,7 @@
 			{
 				$mediaFile = $mediaPackage->get_media_file($cntr);
 
+				MediaController::EnsureLocalPathExists();
 				$uploadfolder = Zymurgy::$config["Media File Local Path"];
 				$filepath = $uploadfolder.
 					"/".
@@ -2189,15 +2190,29 @@
 			// (ZymurgyRoot)/media.php?action=install
 			// (ZymurgyRoot)/media.php?action=uninstall
 
+			MediaController::EnsureLocalPathExists();
 			if(
 				// $action !== "install" && $action !== "uninstall" &&
 				method_exists($this, $action))
 			{
-				call_user_method($action, $this);
+				call_user_func(array($this,$action));
+				//call_user_method($action, $this);
 			}
 			else
 			{
 				die("Unsupported action ".$action);
+			}
+		}
+		
+		static function EnsureLocalPathExists()
+		{
+			if (!array_key_exists('Media File Local Path',Zymurgy::$config))
+			{
+				Zymurgy::$config['Media File Local Path'] = Zymurgy::$root.'/UserFiles/DefaultMediaFiles';
+				if (!file_exists(Zymurgy::$config['Media File Local Path']))
+				{
+					mkdir(Zymurgy::$config['Media File Local Path']);
+				}
 			}
 		}
 

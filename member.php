@@ -57,7 +57,6 @@ class ZymurgyMember
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
-				echo " Group({$row['name']})";
 				Zymurgy::$member['groups'][] = $row['name'];
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
