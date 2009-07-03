@@ -62,7 +62,7 @@ class ZymurgyMember
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
 		}
-		else 
+		else
 		{
 			//echo "not authenticated ";
 		}
@@ -126,14 +126,14 @@ class ZymurgyMember
 
 		//Set authkey session cookie
 		$_COOKIE['ZymurgyAuth'] = $authkey;
-		$cookieSet = setcookie("ZymurgyAuth", $authkey);
+		$cookieSet = setcookie("ZymurgyAuth", $authkey, null, "/");
 
 		// die($cookieSet ? "Cookie set" : "Cookie not set");
 		// if(!$cookieSet) die("Could not set cookie.");
 
 		echo "<script language=\"javascript\">
 			<!--
-			document.cookie = \"ZymurgyAuth=$authkey\";
+			document.cookie = \"ZymurgyAuth=$authkey; path=/\";
 			//-->
 			</script>";
 		Zymurgy::memberaudit("Successful login for [$id]");
