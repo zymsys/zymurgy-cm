@@ -155,7 +155,7 @@ class ZymurgyMember
 			"' ) AND `password` = '".
 			Zymurgy::$db->escape_string($password).
 			"'";
-		echo "<div>$sql</div>";
+		// echo "<div>$sql</div>";
 		// $sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
 		//	"' and password='".Zymurgy::$db->escape_string($password)."'";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
