@@ -588,6 +588,7 @@ function Validate$name(me) {
 		$widget = new InputWidget();
 
 		$validators = array();
+
 		$ri = Zymurgy::$db->query("select id,regex from zcm_form_regex");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
 		{
@@ -641,6 +642,11 @@ function Validate$name(me) {
 				continue;
 	  		}
 		}
+
+		$this->ValidationErrors = array_merge(
+			$this->ValidationErrors,
+			$this->CallExtensionMethod("Validate"));
+
 		return (count($this->ValidationErrors)==0);
 	}
 

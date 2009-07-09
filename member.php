@@ -287,7 +287,9 @@ class ZymurgyMember
 					ZymurgyMember::membersignup_UpdatePassword($password);
 				}
 				//Update other user info (XML)
-				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
+				$capture = new FormCaptureToDatabase();
+				$xml = $capture->MakeXML($values);
+				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
 				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 			}
@@ -297,10 +299,13 @@ class ZymurgyMember
 			if ($authed)
 			{
 				//We're logged in so update existing info.
-				$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
-				$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
-				$xml = Zymurgy::$db->result($ri,0,0);
-				$pi->XmlValues = $xml;
+				if(strlen(Zymurgy::$member['formdata']) > 0)
+				{
+					$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
+					$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
+					$xml = Zymurgy::$db->result($ri,0,0);
+					$pi->XmlValues = $xml;
+				}
 				return $pi->Render();
 			}
 			else
