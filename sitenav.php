@@ -56,9 +56,30 @@ class ZymurgySiteNav
 		return str_replace(' ','_',$linktext);
 	}
 	
+	/**
+	 * Recurse through the nav structure to find the chunk under us
+	 *
+	 * @param int $me
+	 * @param array $structpart
+	 * @return array or false if not found
+	 */
+	private function findmyself($me,$structpart)
+	{
+		foreach ($structpart as $key=>$value)
+		{
+			if ($key == $me) return $value;
+			if ($value)
+			{
+				$substruct = $this->findmyself($me,$value);
+				if($substruct) return $substruct;
+			}
+		}
+		return false;
+	}
+	
 	public function render($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$hrefroot = 'pages')
 	{
-		$idpart = ZymurgySiteNav::linktext2linkpart($startpath);
+		$idpart = empty($startpath) ? uniqid() : ZymurgySiteNav::linktext2linkpart($startpath);
 		echo Zymurgy::YUI('fonts/fonts-min.css');
 		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
@@ -76,21 +97,37 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 });
 </script>
 <?
-		$structurestart = $this->structure;
+		if ($currentleveonly)
+		{
+			$structurestart = array();
+			foreach ($this->structure as $key=>$value)
+			{
+				$structurestart[$key] = array();
+			}
+			$this->structure = $structurestart;
+		}
+		else 
+		{
+			$structurestart = $this->structure;
+		}
+		if ($childlevelsonly) {
+			$startpath = Zymurgy::$template->navpath;
+			//$startpath = str_replace('_',' ',Zymurgy::$template->navpath);
+			//echo "<pre>"; print_r(Zymurgy::$template); exit;
+		}
 		$parent = 0;
 		if (!empty($startpath))
 		{
 			$sp = explode('/',$startpath);
 			$anscestors = $sp;
-			echo "<!-- \r\n";
 			while ($sp)
 			{
 				$partname = array_shift($sp);
-				echo "Looking in [$partname]: ";
 				foreach ($this->structureparts[$parent] as $key)
 				{
-					echo "($key: ".$this->items[$key]->linktext.") ";
-					if ($this->items[$key]->linktext == $partname)
+					$correctedkey = $this->linktext2linkpart($this->items[$key]->linktext);
+					//echo "<div>Testing for [$correctedkey == $partname</div>";
+					if ($correctedkey == $partname)
 					{
 						$parent = $key;
 						$structurestart = $structurestart[$key];
@@ -98,16 +135,6 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 					}
 				}
 			}
-			echo "\r\nFound parent: $parent\r\n"; 
-			echo "Structure Parts:\r\n";
-			print_r($this->structureparts); 
-			echo "Complete Structure:\r\n";
-			print_r($this->structure);
-			echo "Structure Start:\r\n";
-			print_r($structurestart);
-			echo "Items:\r\n";
-			print_r($this->items);
-			echo "-->\r\n";
 		}
 		else 
 		{
@@ -119,10 +146,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 			echo " yuimenubarnav";
 		echo "\">\r\n";
 		echo "\t\t<div class=\"bd\" style=\"border-style: none\">\r\n";
-		if ($startpath=='Test/A')
-			$this->renderpart($hrefroot,$ishorizontal,0,($parent == 0) ? $this->structure : $structurestart,$anscestors);
-		else
-			$this->renderpart($hrefroot,$ishorizontal,0,($parent == 0) ? $this->structure : $this->structure[$parent],$anscestors);
+		$this->renderpart($hrefroot,$ishorizontal,0,($parent == 0) ? $this->structure : $this->structure[$parent],$anscestors);
 		echo "\t\t</div>\r\n"; //bd
 		echo "\t</div>\r\n"; //yuimenubar yuimenubarnav
 		echo "</div>\r\n"; //yui-skin-sam

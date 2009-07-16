@@ -340,7 +340,7 @@ if ($count==0)
 		(17, 17, 4, 2, 'Custom Code',       'Zymurgy:CM Feature', '15'),
 		(18, 18, 4, 2, 'Page Templates',    'Zymurgy:CM Feature', '16'),
 		(19,  5, 0, 0, 'Appearance',        'Zymurgy:CM Feature', '17'),
-		(20,  6, 0, 0, 'Pages',             'Zymurgy:CM Feature', '2')
+		(20,  6, 1, 0, 'Pages',             'Zymurgy:CM Feature', '2')
 		;";
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 
