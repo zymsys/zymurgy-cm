@@ -701,6 +701,7 @@
 				Zymurgy::$config["GoogleCheckout.CurrencyCode"]);
 
 			$output .= $this->RenderOptionalHiddenInput("_charset_", "utf-8");
+			$output .= $this->RenderOptionalHiddenInput("checkout-flow-support.merchant-checkout-flow-support.continue-shopping-url", $this->m_returnURL);
 
 			$output .= $this->RenderSubmitButton("");
 
