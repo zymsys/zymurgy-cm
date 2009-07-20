@@ -958,6 +958,17 @@ if (!class_exists('Zymurgy'))
 				return "<div>This page is not linked to a template, so pagetext() can't be used here.</div>";
 			}
 		}
+		static function pagetextraw($tag,$type='html.600.400')
+		{
+			if (isset(Zymurgy::$template))
+			{
+				return Zymurgy::$template->pagetextraw($tag,$type);
+			}
+			else
+			{
+				return "<div>This page is not linked to a template, so pagetextraw() can't be used here.</div>";
+			}
+		}
 
 		static function pageimage($tag,$width,$height,$alt='')
 		{

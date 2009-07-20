@@ -1325,6 +1325,8 @@ class DataGrid
 					$widget->UsePennies = $this->UsePennies;
 					$widget->fckeditorcss = $this->fckeditorcss;
 					$widget->lookups = $this->lookups;
+					$widget->datacolumn = $c->datacolumn;
+					$widget->editkey = array_key_exists('editkey',$_GET) ? 0 + $_GET['editkey'] : 0;
 					$widget->Render($c->editor,$c->datacolumn,
 						array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : '');
 					echo "</td></tr>\r\n";

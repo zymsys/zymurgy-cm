@@ -127,8 +127,8 @@ class ZymurgyTemplate
 		}
 		Zymurgy::$db->free_result($ri);
 	}
-
-	public function pagetext($tag,$type='html.600.400')
+	
+	private function populatepagetextcache($tag,$type)
 	{
 		if (!array_key_exists($tag,$this->pagetextcache))
 		{
@@ -159,11 +159,22 @@ class ZymurgyTemplate
 				Zymurgy::$db->escape_string($type)."' where (template=".$this->sitepage['template'].") and (tag='".
 				Zymurgy::$db->escape_string($tag)."')");
 		}
+	}
+
+	public function pagetext($tag,$type='html.600.400')
+	{
 		require_once(Zymurgy::$root.'/zymurgy/InputWidget.php');
+		$this->populatepagetextcache($tag,$type);
 		$w = new InputWidget();
 		$w->datacolumn = 'zcm_pagetext.body';
 		$w->editkey = $this->pagetextids[$tag];
 		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
+	}
+	
+	public function pagetextraw($tag,$type='html.600.400')
+	{
+		$this->populatepagetextcache($tag,$type);
+		return $this->pagetextcache[$tag];
 	}
 
 	public function pageimage($tag,$width,$height,$alt='')
