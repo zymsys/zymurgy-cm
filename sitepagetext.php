@@ -49,6 +49,7 @@ if ($t)
 	{
 		Zymurgy::$db->run("insert into zcm_pagetext (sitepage,tag) values ($p,'".
 			Zymurgy::$db->escape_string($tag)."')");
+		$currentcontent[] = Zymurgy::$db->insert_id();
 	}
 }
 else 
