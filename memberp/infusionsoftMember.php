@@ -144,12 +144,107 @@ class infusionsoftMember extends ZymurgyMember
 					Zymurgy::$db->escape_string($r['Id'])."')");
 				infusionsoftMember::findmemberfromsession();
 			}
+			$this->syncgroups();
 			return true;
 		}
 		else
 		{
 			Zymurgy::memberaudit("Failed login attempt for [$userid]: $r");
 			return false;
+		}
+	}
+	
+	/**
+	 * Adds any groups not found in Z:CM to Infusion and vice-versa.
+	 * Adds members to any group found in one and not in the other.
+	 */
+	static function syncgroups()
+	{
+		$memberid = $_SESSION['customer_id'];
+		
+		$infusion = new ZymurgyInfusionsoftWrapper();
+		
+		//Get all available groups/tags in Infusionsoft
+		$r = $infusion->execute_va(
+			'DataService.query','ContactGroup',1000,0,array('GroupName'=>'%'),
+			array('Id','GroupName'));
+		$allisgroups = array();
+		foreach ($r->val as $isgroup)
+		{
+			$allisgroups[$isgroup['Id']] = $isgroup['GroupName'];
+		}
+		
+		//Get all available groups/tags in Z:CM
+		$allzcmgroups = array();
+		$ri = Zymurgy::$db->run("select * from zcm_groups");
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$allzcmgroups[$row['id']] = $row['name'];
+		}
+		Zymurgy::$db->free_result($ri);
+		
+		//Get all the groups/tags that belong to this member
+		$r = $infusion->execute_fetch_array_va(
+			'DataService.query',
+			'Contact',
+			1,
+			0,
+			array(
+				'Id'=>$memberid),
+			array(
+				'Groups'));
+		$memberisgroups = array();
+		if (is_array($r) && array_key_exists('Groups',$r))
+		{
+			$membergroupids = explode(',',$r['Groups']);
+			foreach ($membergroupids as $groupid)
+			{
+				$memberisgroups[$groupid] = $allisgroups[$groupid];
+			}
+		}
+		
+		//Get all the groups for this user in Zymurgy:CM
+		$memberzcmgroups = array();
+		$ri = Zymurgy::$db->run("select * from zcm_membergroup where memberid=".Zymurgy::$member['id']);
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$memberzcmgroups[$row['groupid']] = $allzcmgroups[$row['groupid']];
+		}
+		Zymurgy::$db->free_result($ri);
+		
+		//Sync groups which exist in Z:CM but not in Infusionsoft to Infusionsoft
+		$newgroups = array_diff($allzcmgroups,$allisgroups);
+		foreach($newgroups as $newgroupname)
+		{
+			$r = $infusion->execute_va(
+				'DataService.add','ContactGroup',array('GroupName'=>$newgroupname));
+			$allisgroups[$r->val] = $newgroupname;
+		}
+		
+		//Sync groups which exist in Infusionsoft but not in Z:CM to Z:CM
+		$newgroups = array_diff($allisgroups,$allzcmgroups);
+		foreach($newgroups as $newgroupname)
+		{
+			Zymurgy::$db->run("insert into zcm_groups (name) values ('".
+				Zymurgy::$db->escape_string($newgroupname)."')");
+			$allzcmgroups[Zymurgy::$db->insert_id()] = $newgroupname;
+		}
+		
+		//Add missing groups to Infusionsoft from Z:CM
+		$newgroups = array_diff($memberzcmgroups,$memberisgroups);
+		foreach ($newgroups as $newgroupname)
+		{
+			$isid = array_search($newgroupname,$allisgroups);
+			$infusion->execute_va('ContactService.addToGroup',$memberid,$isid);
+		}
+		
+		//Add missing groups to Z:CM from Infusionsoft
+		$newgroups = array_diff($memberisgroups,$memberzcmgroups);
+		foreach ($newgroups as $newgroupname)
+		{
+			$zcmid = 0 + array_search($newgroupname,$allzcmgroups);
+			Zymurgy::$db->run("insert into zcm_membergroup (memberid,groupid) values (".
+				Zymurgy::$member['id'].','.$zcmid.")");
 		}
 	}
 	

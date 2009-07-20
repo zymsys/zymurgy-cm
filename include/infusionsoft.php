@@ -65,7 +65,15 @@ class ZymurgyInfusionsoftWrapper
 	function execute_fetch_array($cmd,$params)
 	{
 		$r = $this->execute($cmd,$params);
-		return count($r->val) > 0 ? $r->val[0] : null;
+		switch(count($r->val))
+		{
+			case 0:
+				return null;
+			case 1:
+				return $r->val[0];
+			default:
+				return $r->val;
+		}
 	}
 
 	/**
