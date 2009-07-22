@@ -1,4 +1,5 @@
 <?
+ob_start();
 require_once('cmo.php');
 require_once('sitenav.php');
 class ZymurgyTemplate
