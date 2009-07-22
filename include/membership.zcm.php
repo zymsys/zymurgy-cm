@@ -253,13 +253,33 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * Member object, or an array of Member objects. Most of the methods
+	 * populate the Member object from the database, but the object may
+	 * also be populated from a web form.
+	 *
+	 */
 	class MemberPopulator
 	{
+		/**
+		 * Retrieve a list of all of the members in the database.
+		 *
+		 * @return array
+		 */
 		public static function PopulateAll()
 		{
 			return MemberPopulator::PopulateMultiple("1 = 1");
 		}
 
+		/**
+		 * Retrieve a list of all of the members in the database that match the
+		 * specified criteria.
+		 *
+		 * @param string $criteria The list of criteria to match against, in SQL
+		 * WHERE clause format.
+		 * @return array
+		 */
 		public static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `id`, `username`, `email`, `password`, `fullname`, `regtime`, ".
@@ -287,6 +307,13 @@
 			return $members;
 		}
 
+		/**
+		 * Retrieve the information on a single member in the database, based on the
+		 * member's ID.
+		 *
+		 * @param int $id
+		 * @return Member
+		 */
 		public static function PopulateByID($id)
 		{
 			$sql = "SELECT `id`, `username`, `email`, `password`, `fullname`, `regtime`, ".
@@ -314,6 +341,12 @@
 			return $member;
 		}
 
+		/**
+		 * Retrieve the information on a single member in the database, based on
+		 * the information in the POST request.
+		 *
+		 * @return Member
+		 */
 		public static function PopulateFromForm()
 		{
 			$member = new Member();
@@ -327,6 +360,11 @@
 			return $member;
 		}
 
+		/**
+		 * Save the member's information to the database.
+		 *
+		 * @param Member $member
+		 */
 		public static function SaveMember($member)
 		{
 			if($member->get_id() <= 0)
@@ -367,6 +405,11 @@
 			}
 		}
 
+		/**
+		 * Delete a single member from the database, based on the member's ID.
+		 *
+		 * @param int $id
+		 */
 		public static function DeleteMember($id)
 		{
 			$sql = "DELETE FROM `zcm_memberaudit` WHERE `member` = '".
@@ -391,6 +434,13 @@
 				or die("Could not delete member record: ".Zymurgy::$db->error().", $sql");
 		}
 
+		/**
+		 * Add a member to a group in the database, based on the member's ID
+		 * and the group's ID.
+		 *
+		 * @param int $memberID
+		 * @param int $groupID
+		 */
 		public static function AddMemberToGroup(
 			$memberID,
 			$groupID)
@@ -405,6 +455,13 @@
 				or die("Could not add member to group: ".Zymurgy::$db->error().", $sql");
 		}
 
+		/**
+		 * Remove a member from a group in the database, based on the member's ID
+		 * and the group's ID.
+		 *
+		 * @param int $memberID
+		 * @param int $groupID
+		 */
 		public static function DeleteMemberFromGroup(
 			$memberID,
 			$groupID)
