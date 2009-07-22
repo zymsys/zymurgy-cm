@@ -477,6 +477,10 @@
 		}
 	}
 
+	/**
+	 * Contains the information and validation routines for a membership group.
+	 *
+	 */
 	class Group
 	{
 		private $m_id;
@@ -485,31 +489,62 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the membership group's ID, as stored in the database.
+		 *
+		 * @return int The ID
+		 */
 		public function get_id()
 		{
 			return $this->m_id;
 		}
 
+		/**
+		 * Set the membership group's ID, as stored in the database.
+		 *
+		 * @param int $newValue
+		 */
 		public function set_id($newValue)
 		{
 			$this->m_id = $newValue;
 		}
 
+		/**
+		 * Get the membership group's name.
+		 *
+		 * @return string
+		 */
 		public function get_name()
 		{
 			return $this->m_name;
 		}
 
+		/**
+		 * Set the membership group's name.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_name($newValue)
 		{
 			$this->m_name = $newValue;
 		}
 
+		/**
+		 * Get the membership group's built-in flag. Built-in groups may
+		 * not be modified using the Zymurgy:CM web front-end.
+		 *
+		 * @return boolean
+		 */
 		public function get_builtin()
 		{
 			return $this->m_builtin;
 		}
 
+		/**
+		 * Set the membership group's built-in flag.
+		 *
+		 * @param boolean $newValue
+		 */
 		public function set_builtin($newValue)
 		{
 			// echo("Setting builtin to: $newValue (".intval($newValue).")<br>");
@@ -517,11 +552,23 @@
 			$this->m_builtin = (boolean) $newValue; // intval($newValue) > 0;
 		}
 
+		/**
+		 * Return the list of errors for the data currently set in the class.
+		 *
+		 * @return unknown
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
+		/**
+		 * Validate the contents of the class, and populate the errors array
+		 * with the list of errors, if any. The list can then be retrieved using
+		 * the get_errors() method.
+		 *
+		 * @return boolean True, if all of the data in the class is valid. Otherwise, false.
+		 */
 		public function validate()
 		{
 			$isValid = true;
