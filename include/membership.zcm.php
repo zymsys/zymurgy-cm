@@ -1,4 +1,8 @@
 <?php
+	/**
+	 * Contains the information and validation routines for a Member.
+	 *
+	 */
 	class Member
 	{
 		private $m_id;
@@ -13,86 +17,173 @@
 
 		private $m_errors = array();
 
+		/**
+		 * Get the member's ID, as stored in the database.
+		 *
+		 * @return int The ID
+		 */
 		public function get_id()
 		{
 			return $this->m_id;
 		}
 
+		/**
+		 * Set the member's ID, as stored in the database.
+		 *
+		 * @param int $newValue The ID
+		 */
 		public function set_id($newValue)
 		{
 			$this->m_id = $newValue;
 		}
 
+		/**
+		 * Get the member's username.
+		 *
+		 * @return string
+		 */
 		public function get_username()
 		{
 			return $this->m_username;
 		}
 
+		/**
+		 * Set the member's username.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_username($newValue)
 		{
 			$this->m_username = $newValue;
 		}
 
+		/**
+		 * Get the member's e-mail address.
+		 *
+		 * @return string
+		 */
 		public function get_email()
 		{
 			return $this->m_email;
 		}
 
+		/**
+		 * Set the member's e-mail address.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_email($newValue)
 		{
 			$this->m_email = $newValue;
 		}
 
+		/**
+		 * Get the member's password.
+		 *
+		 * @return string
+		 */
 		public function get_password()
 		{
 			return $this->m_password;
 		}
 
+		/**
+		 * Set the member's password.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_password($newValue)
 		{
 			$this->m_password = $newValue;
 		}
 
+		/**
+		 * Get the member's full name.
+		 *
+		 * @return string
+		 */
 		public function get_fullname()
 		{
 			return $this->m_fullname;
 		}
 
+		/**
+		 * Set the member's full name.
+		 *
+		 * @param string $newValue
+		 */
 		public function set_fullname($newValue)
 		{
 			$this->m_fullname = $newValue;
 		}
 
+		/**
+		 * Get the user's registration date.
+		 *
+		 * @return unixdate
+		 */
 		public function get_registration_date()
 		{
 			return $this->m_registration_date;
 		}
 
+		/**
+		 * Set the user's registration date.
+		 *
+		 * @param unixdate $newValue
+		 */
 		public function set_registration_date($newValue)
 		{
 			$this->m_registration_date = $newValue;
 		}
 
+		/**
+		 * Get the date the user was last logged in.
+		 *
+		 * @return unixdate
+		 */
 		public function get_last_authorized()
 		{
 			return $this->m_last_authorized;
 		}
 
+		/**
+		 * Set the date the user was last logged in.
+		 *
+		 * @param unixdate $newValue
+		 */
 		public function set_last_authorized($newValue)
 		{
 			$this->m_last_authorized = $newValue;
 		}
 
+		/**
+		 * Get the number of groups the user belongs to.
+		 *
+		 * @return int
+		 */
 		public function get_group_count()
 		{
 			return count($this->m_groups);
 		}
 
+		/**
+		 * Get the information on a group that the user belongs to, at the specified index.
+		 *
+		 * @param int $index
+		 * @return Group
+		 */
 		public function get_group($index)
 		{
 			return $this->m_groups[$index];
 		}
 
+		/**
+		 * Add the member to a group.
+		 *
+		 * @param Group $newGroup
+		 * @return int The number of groups the user belongs to after adding the specified group.
+		 */
 		public function add_group($newGroup)
 		{
 			$this->m_groups[] = $newGroup;
@@ -100,21 +191,42 @@
 			return count($this->m_groups);
 		}
 
+		/**
+		 * Remove the user from the group at the specified index.
+		 *
+		 * @param int $index
+		 */
 		public function remove_group($index)
 		{
 			unset($this->m_groups[$index]);
 		}
 
+		/**
+		 * Clear the list of groups that the user belongs to.
+		 *
+		 */
 		public function clear_groups()
 		{
 			$this->m_groups = array();
 		}
 
+		/**
+		 * Return the list of errors for the data currently set in the class.
+		 *
+		 * @return unknown
+		 */
 		public function get_errors()
 		{
 			return $this->m_errors;
 		}
 
+		/**
+		 * Validate the contents of the class, and populate the errors array
+		 * with the list of errors, if any. The list can then be retrieved using
+		 * the get_errors() method.
+		 *
+		 * @return boolean True, if all of the data in the class is valid. Otherwise, false.
+		 */
 		public function validate()
 		{
 			$isValid = true;
