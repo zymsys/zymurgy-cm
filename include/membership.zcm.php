@@ -583,13 +583,33 @@
 		}
 	}
 
+	/**
+	 * Contains a set of static methods used to populate either a single
+	 * Group object, or an array of Group objects. Most of the methods
+	 * populate the Group object from the database, but the object may
+	 * also be populated from a web form.
+	 *
+	 */
 	class GroupPopulator
 	{
+		/**
+		 * Retrieve a list of all of the membership groups in the database.
+		 *
+		 * @return array
+		 */
 		public static function PopulateAll()
 		{
 			return GroupPopulator::PopulateMultiple("1 = 1");
 		}
 
+		/**
+		 * Retrieve a list of all of the membership groups the specified
+		 * member does NOT belong to. This is typically when presenting the
+		 * admin with a list of the groups the member can be added to.
+		 *
+		 * @param int $memberID
+		 * @return array
+		 */
 		public static function PopulateAllMemberNotIn($memberID)
 		{
 			return GroupPopulator::PopulateMultiple(
@@ -598,6 +618,12 @@
 				"' AND `zcm_membergroup`.`groupid` = `zcm_groups`.`id`)");
 		}
 
+		/**
+		 * Retrieve a list of all of the membership group the specified
+		 * member belongs to.
+		 *
+		 * @param Member $member
+		 */
 		public static function PopulateByMemberID(&$member)
 		{
 			$groups = GroupPopulator::PopulateMultiple(
@@ -611,6 +637,14 @@
 			}
 		}
 
+		/**
+		 * Retrieve a list of all of membership groups based on the specified
+		 * criteria.
+		 *
+		 * @param string $criteria The criteria to match against in SQL WHERE
+		 * clause format.
+		 * @return array
+		 */
 		public static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `id`, `name`, `builtin` FROM `zcm_groups` WHERE $criteria";
@@ -634,6 +668,13 @@
 			return $groups;
 		}
 
+		/**
+		 * Retrieve the information on a single group based on its ID in the
+		 * database.
+		 *
+		 * @param int $id
+		 * @return Group
+		 */
 		public static function PopulateByID($id)
 		{
 			$sql = "SELECT `id`, `name`, `builtin` FROM `zcm_groups` WHERE `id` = '".
@@ -655,6 +696,12 @@
 			return $group;
 		}
 
+		/**
+		 * Retrieve the information on a single group based on the information
+		 * in a form POST.
+		 *
+		 * @return Group
+		 */
 		public static function PopulateFromForm()
 		{
 			$group = new Group();
@@ -665,6 +712,11 @@
 			return $group;
 		}
 
+		/**
+		 * Save the spceified group to the database.
+		 *
+		 * @param Group $group
+		 */
 		public static function SaveGroup($group)
 		{
 			// ZK: Note that the Zymurgy:CM GUI does not allow users to
@@ -696,6 +748,11 @@
 			}
 		}
 
+		/**
+		 * Remove a group from the database based on its ID.
+		 *
+		 * @param int $id
+		 */
 		public static function DeleteGroup($id)
 		{
 			$sql = "DELETE FROM `zcm_membergroup` WHERE `groupid` = '".
