@@ -828,7 +828,15 @@ class ZIW_UnixDate extends ZIW_DateBase
 	function PostValue($ep,$postname)
 	{
 		$dp = explode("-",$_POST[$postname]);
-		return mktime(0,0,0,$dp[1],$dp[2],$dp[0]);
+
+		if(count($dp) >= 3)
+		{
+			return mktime(0,0,0,$dp[1],$dp[2],$dp[0]);
+		}
+		else
+		{
+			"";
+		}
 	}
 
 	function SetCalendarParams($date)
@@ -1052,7 +1060,7 @@ class ZIW_Attachment extends ZIW_Base
 	}
 }
 
-class ZIW_RichTextBase extends ZIW_Base 
+class ZIW_RichTextBase extends ZIW_Base
 {
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
@@ -1067,7 +1075,7 @@ class ZIW_RichTextBase extends ZIW_Base
 		{
 			if (array_key_exists('allowabletags',Zymurgy::$config))
 				return strip_tags($_POST[$postname],Zymurgy::$config['allowabletags']);
-			else 
+			else
 				return $_POST[$postname];
 		}
 		else
@@ -1092,7 +1100,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 						str_replace(".", "_", $name).
 						"Editor.saveHTML(); });\n";
 	}
-	
+
 	/**
 	 * Get output needed before any instances of this widget are rendered.
 	 *
@@ -1680,7 +1688,7 @@ class ZIW_GMap extends ZIW_Base
 		echo "<textarea id=\"$name\" name=\"".
 			"$name\" rows=\"4\" cols=\"60\">$value</textarea>";
 	}
-	
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -1698,7 +1706,7 @@ class ZIW_GMap extends ZIW_Base
 		if ($z == 0) $z = 14;
 		$q = urlencode(str_replace(array("\r","\n"),'',$display));
 		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
-		return "<iframe width=\"$w\" height=\"$h\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\" 
+		return "<iframe width=\"$w\" height=\"$h\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\"
 			src=\"$url\"></iframe><br /><small><a href=\"$url\" target=\"_blank\" style=\"color:#0000FF;text-align:left\">View Larger Map</a></small>";
 	}
 }
