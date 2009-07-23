@@ -97,6 +97,61 @@ class infusionsoftMember extends ZymurgyMember
 	}
 
 	/**
+	 * Is member authorized (by group name) to view this page?
+	 *
+	 * @param string $groupname
+	 * @return boolean
+	 */
+	static function memberauthorize($groupname)
+	{
+		if (infusionsoftMember::memberauthenticate() && count(Zymurgy::$member["groups"]) <= 1)
+		{
+			require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+			$infusion = new ZymurgyInfusionsoftWrapper();
+
+// 			$sql = "select name from zcm_groups";
+// 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
+
+// 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+// 			{
+// 				$inputArray = array(
+// 						'ContactId' => $_SESSION['customer_id'],
+// 						'ContactGroup' => $row["name"]);
+				$inputArray = array(
+						'ContactId' => $_SESSION['customer_id']);
+
+				$r = $infusion->execute_va(
+					'DataService.query',
+					"ContactGroupAssign",
+					99999,
+					0,
+					$inputArray,
+					array(
+						'GroupId',
+						'ContactGroup',
+						'DateCreated'));
+
+// 				echo("<pre>\n");
+// 				print_r($inputArray);
+// 				print_r($r);
+// 				echo("</pre>\n");
+
+				foreach($r->val as $group)
+				{
+					if(!in_array($group["ContactGroup"], Zymurgy::$member["groups"]))
+					{
+						Zymurgy::$member['groups'][] = $group["ContactGroup"];
+					}
+				}
+// 			}
+
+// 			Zymurgy::$db->free_result($ri);
+		}
+
+		return in_array($groupname, Zymurgy::$member['groups']);
+	}
+
+	/**
 	 * Try to log in with the provided user ID and password using vtiger's portal authentication soap service.
 	 * If log in is successful then emulate vtiger's session variables for compatibility with the portal.
 	 *
