@@ -655,7 +655,7 @@ class ZIW_RadioDrop extends ZIW_Base
 	{
 		$ep = explode('.',implode('.',$ep),2); //Otherwise arrays which contain a . will cause it to barf.
 		$ritems = $this->HackedUnserialize($ep[1]);
-		return $ritems[$display];
+		return array_key_exists($display,$ritems) ? $ritems[$display] : array_shift($ritems);
 	}
 }
 
@@ -1110,7 +1110,8 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 	function GetPretext($tp)
 	{
 		$output  = Zymurgy::YUI("assets/skins/sam/skin.css");
-		$output .= Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+		$output .= Zymurgy::YUI("dom/dom-min.js");
+		$output .= Zymurgy::YUI("event/event-min.js");
 		$output .= Zymurgy::YUI("element/element-min.js");
 		$output .= Zymurgy::YUI("connection/connection-min.js");
 		$output .= Zymurgy::YUI("container/container-min.js");
@@ -1133,6 +1134,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
+		echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
 		$dialogName = $this->extra['dialogName'];
 		$tabsetName = $this->extra['tabsetName'];
 		$tabName = $this->extra['tabName'];
@@ -1147,11 +1149,11 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 			"_dlg\"><div class=\"hd\">Insert Image from Library</div><div id=\"".
 			str_replace(".", "_", $name).
 			"_dlgBody\" class=\"bd\"></div></div>");
+		
 
 		echo("<textarea id=\"".
 			str_replace(".", "_", $name).
 			"\" name=\"$name\" cols=\"60\" rows=\"10\">$value</textarea>\r\n");
-
 		?>
 			<script type="text/javascript">
 				var Display<?= str_replace(".", "_", $name) ?>Exists = true;
@@ -1169,8 +1171,11 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 					<?= str_replace(".", "_", $name) ?>Editor = new YAHOO.widget.Editor(
 						'<?= str_replace(".", "_", $name) ?>',
 						myConfig);
+						
+					<?= str_replace(".", "_", $name) ?>Editor.addZCMImageButton();
 
-					<? if($dialogName !== "") { ?>
+					<?= str_replace(".", "_", $name) ?>Editor.render();
+					<?/* if($dialogName !== "") { ?>
 					<?= str_replace(".", "_", $name) ?>Editor.on('windowRender', function() {
 						document.getElementById('<?= $name ?>_div').appendChild(this.get('panel').element);
 					});
@@ -1307,7 +1312,9 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 
 				<? if($dialogName == '') { ?>
 					YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
-				<? } ?>
+				<? } */?>
+				}
+				YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
 			</script>
 		<?
 	}

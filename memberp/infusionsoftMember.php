@@ -199,7 +199,7 @@ class infusionsoftMember extends ZymurgyMember
 					Zymurgy::$db->escape_string($r['Id'])."')");
 				infusionsoftMember::findmemberfromsession();
 			}
-			$this->syncgroups();
+			infusionsoftMember::syncgroups();
 			return true;
 		}
 		else

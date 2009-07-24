@@ -2073,25 +2073,26 @@
 			$output .= "}\n";
 
 			$output .= "function SelectFile(selectedImage, id, displayName, width, height) {\n";
+			$output .= " document.getElementById(\"mediaFileID\").value = id;\n";
+			$output .= " document.getElementById(\"mediaFileAlt\").value = displayName;\n";
+			$output .= " document.getElementById(\"mediaFileWidth\").value = width;\n";
+			$output .= " document.getElementById(\"mediaFileHeight\").value = height;\n";
 			$output .= " imgList = document.getElementsByTagName(\"img\");\n";
-			// $output .= " alert(imgList.length);\n";
+			$output .= " YAHOO.log(imgList.length,'zcm');\n";
 			$output .= " for (cntr = 0; cntr < imgList.length; cntr++) {\n";
 			$output .= "  img = imgList[cntr];\n";
-			// $output .= "  alert('Comparing ' + img.src + ' with ' + selectedImage.src);\n";
-			$output .= "  if(img.src == selectedImage.src) {\n";
-			// $output .= "   alert('match found');\n";
+			$output .= "  YAHOO.log('Comparing ' + img.src + ' with ' + selectedImage.src,'zcm');\n";
+			$output .= "  if ((selectedImage) && (img.src == selectedImage.src)) {\n";
+			$output .= "   YAHOO.log('match found','zcm');\n";
 			$output .= "   border = \"2px solid red\";\n";
-			$output .= "   document.getElementById(\"mediaFileID\").value = id;\n";
-			$output .= "   document.getElementById(\"mediaFileAlt\").value = displayName;\n";
-			$output .= "   document.getElementById(\"mediaFileWidth\").value = width;\n";
-			$output .= "   document.getElementById(\"mediaFileHeight\").value = height;\n";
 			$output .= "  } else {\n";
-			// $output .= "   alert('match not found');\n";
+			$output .= "   YAHOO.log('match not found','zcm');\n";
 			$output .= "   border = \"2px solid white\";\n";
 			$output .= "  }\n";
 			$output .= "  img.style.border = border;\n";
 			// $output .= "  alert(img.style.border + ' = ' + border);\n";
 			$output .= " }\n";
+			$output .= " YAHOO.log('SelectFile done','zcm');\n";
 			$output .= "}\n";
 
 			$output .= "</script>\n";

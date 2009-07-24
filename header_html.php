@@ -123,7 +123,7 @@ div.ZymurgyBreadcrumbs
 	padding: 5px;
 }
 
-.yui-toolbar-mediafile span.yui-toolbar-icon {
+.yui-toolbar-mediafile span.yui-toolbar-icon, .yui-toolbar-zcmimage span.yui-toolbar-icon {
 	background-image: url(/zymurgy/images/zcmLibrary.gif) !important;
 	background-position: 2px 1px !important;
 	left: 5px !important;

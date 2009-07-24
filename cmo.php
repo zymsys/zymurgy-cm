@@ -103,7 +103,7 @@ if (!class_exists('Zymurgy'))
 		 * @var ZymurgyMember
 		 */
 		private static $MemberProvider = null;
-
+		
 		/**
 		 * Member made public to allow Zymurgy::sitetext() to be called without calling
 		 * Zymurgy::headtags() first. This allows pages based on AJAX calls (that contain
@@ -198,6 +198,18 @@ if (!class_exists('Zymurgy'))
 			$r[] = Zymurgy::RequireOnceCore(true,$src);
 			return implode($r);
 		}
+		
+		static function YUILogger()
+		{
+			if (Zymurgy::$yuitest)
+			{
+				?>
+				<script type="text/javascript">
+				var myLogReader = new YAHOO.widget.LogReader();
+				</script>
+				<?
+			}
+		}
 
 		/**
 		 * Return javascript or CSS tags to load the supplied source file if it has not already been loaded by this method.
@@ -218,7 +230,10 @@ if (!class_exists('Zymurgy'))
 
 		static function YUIBaseURL()
 		{
-			return "http://yui.yahooapis.com/2.7.0/build/";
+			if (array_key_exists('yuibaseurl',Zymurgy::$config))
+				return Zymurgy::$config['yuibaseurl'];
+			else 
+				return "http://yui.yahooapis.com/2.7.0/build/";
 		}
 
 		/**
