@@ -9,7 +9,7 @@ if ($templatecount == 0)
 {
 	//Create default template
 	Zymurgy::$db->run("insert into zcm_template (name,path) values ('Simple','/zymurgy/templates/simple.php')");
-	$defaulttemplate = 1;
+	$defaulttemplate = Zymurgy::$db->insert_id();
 }
 else if ($templatecount==1)
 {
