@@ -799,7 +799,10 @@ abstract class ZIW_DateBase extends ZIW_Base
 	{
 		require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
 		$date = $this->unixdate = $this->ToUnixTime($value);
-		if ($date == 0) $date=time();
+
+		// ZK: Disabling
+		// if ($date == 0) $date=time();
+
 		$cal = new DHTML_Calendar(
 			"/zymurgy/jscalendar/",
 			'en',
@@ -884,20 +887,28 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 	function PostValue($ep,$postname)
 	{
 		$pp = explode(" ",$_POST[$postname]);
-		$dp = explode("-",$pp[0]);
-		$tp = explode(":",$pp[1]);
-		$tp[0] = substr($tp[0],1);
-		if ($pp[2]=='PM]')
+
+		if(count($pp) <= 0)
 		{
-			if ($tp[0] < 12)
-				$tp[0] += 12;
+			return "";
 		}
 		else
 		{
-			if ($tp[0]==12)
-				$tp[0] = 0;
+			$dp = explode("-",$pp[0]);
+			$tp = explode(":",$pp[1]);
+			$tp[0] = substr($tp[0],1);
+			if ($pp[2]=='PM]')
+			{
+				if ($tp[0] < 12)
+					$tp[0] += 12;
+			}
+			else
+			{
+				if ($tp[0]==12)
+					$tp[0] = 0;
+			}
+			return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 		}
-		return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 	}
 }
 
@@ -924,7 +935,10 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 	function PostValue($ep,$postname)
 	{
 		$tm = parent::PostValue($ep,$postname);
-		return strftime('%Y-%m-%d %H:%M:%S',$tm);
+
+		return strlen($tm) > 0
+			? strftime('%Y-%m-%d %H:%M:%S',$tm)
+			: "";
 	}
 
 	function ToUnixTime($tm)
@@ -937,7 +951,9 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 		$format = '%Y-%m-%d [%I:%M %p]';
 		$this->caloptions['ifFormat'] = $format;
 		$this->caloptions['showsTime'] = 1;
-		$this->calattributes['value'] = strftime($format, $date);
+
+		if($date > 0)
+			$this->calattributes['value'] = strftime($format, $date);
 	}
 }
 
@@ -1149,7 +1165,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 			"_dlg\"><div class=\"hd\">Insert Image from Library</div><div id=\"".
 			str_replace(".", "_", $name).
 			"_dlgBody\" class=\"bd\"></div></div>");
-		
+
 
 		echo("<textarea id=\"".
 			str_replace(".", "_", $name).
@@ -1171,7 +1187,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 					<?= str_replace(".", "_", $name) ?>Editor = new YAHOO.widget.Editor(
 						'<?= str_replace(".", "_", $name) ?>',
 						myConfig);
-						
+
 					<?= str_replace(".", "_", $name) ?>Editor.addZCMImageButton();
 
 					<?= str_replace(".", "_", $name) ?>Editor.render();
