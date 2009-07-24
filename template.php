@@ -144,10 +144,24 @@ class ZymurgyTemplate
 	private function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
 	{
 		header("HTTP/1.0 404 Not Found");
-		echo "$navpart couldn't be found from $navpath. <!--\r\n";
+
+		echo("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+		echo("<html>\n");
+		echo("<head>\n");
+		echo(Zymurgy::headtags());
+		echo("</head>\n");
+		echo("<body>\n");
+		echo("<h1>Not Found</h1>\n");
+		echo("<p>$navpart couldn't be found from $navpath.</p>\n");
+		echo("<!--\n");
 		print_r($newpath);
 		echo("\n$msg");
-		echo "-->";
+		echo "-->\n";
+		echo("<hr>\n");
+		echo("<i>Zymurgy:CM ".date("F d, Y H:i:s")."</i>\n");
+		echo("</body>\n");
+		echo("</html>\n");
+
 		exit;
 	}
 
