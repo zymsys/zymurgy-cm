@@ -810,7 +810,7 @@ abstract class ZIW_DateBase extends ZIW_Base
 			false);
 
 		$cal->SetFieldPrefix($name);
-		$cal->SetIncludeID(false);
+		$cal->SetIncludeID(true); // false);
 
 		$cal->load_files();
 		$this->SetCalendarParams($date);
