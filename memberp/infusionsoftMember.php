@@ -1,7 +1,7 @@
 <?
 class infusionsoftMember extends ZymurgyMember
 {
-	function insfusionsoftMember()
+	public function insfusionsoftMember()
 	{
 		$isValid = true;
 
@@ -38,7 +38,7 @@ class infusionsoftMember extends ZymurgyMember
 	 *
 	 * @return boolean
 	 */
-	private static function findmemberfromsession()
+	private function findmemberfromsession()
 	{
 		$sid = session_id();
 		if (empty($sid))
@@ -62,8 +62,8 @@ class infusionsoftMember extends ZymurgyMember
 			}
 			if (is_array($member))
 			{
-				ZymurgyMember::populatememberfromrow($member);
-				ZymurgyMember::createauthkey($member['id']);
+				$this->populatememberfromrow($member);
+				$this->createauthkey($member['id']);
 				return true;
 			}
 		}
@@ -75,7 +75,7 @@ class infusionsoftMember extends ZymurgyMember
 	 *
 	 * @return boolean
 	 */
-	static function memberauthenticate()
+	public function memberauthenticate()
 	{
 		$sid = session_id();
 		if (empty($sid))
@@ -93,7 +93,7 @@ class infusionsoftMember extends ZymurgyMember
 				}
 			}
 		}
-		return infusionsoftMember::findmemberfromsession();
+		return $this->findmemberfromsession();
 	}
 
 	/**
@@ -102,9 +102,9 @@ class infusionsoftMember extends ZymurgyMember
 	 * @param string $groupname
 	 * @return boolean
 	 */
-	static function memberauthorize($groupname)
+	public function memberauthorize($groupname)
 	{
-		if (infusionsoftMember::memberauthenticate() && count(Zymurgy::$member["groups"]) <= 1)
+		if ($this->memberauthenticate() && count(Zymurgy::$member["groups"]) <= 1)
 		{
 			require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 			$infusion = new ZymurgyInfusionsoftWrapper();
@@ -159,7 +159,7 @@ class infusionsoftMember extends ZymurgyMember
 	 * @param string $password
 	 * @return boolean
 	 */
-	static function memberdologin($userid, $password)
+	public function memberdologin($userid, $password)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 		$infusion = new ZymurgyInfusionsoftWrapper();
@@ -178,7 +178,7 @@ class infusionsoftMember extends ZymurgyMember
 				'LastName',
 				'Email',
 				'Password'));
-				
+
 		if(is_array($r))
 		{
 			$sid = session_id();
@@ -190,16 +190,16 @@ class infusionsoftMember extends ZymurgyMember
 			$_SESSION['customer_id'] = $r['Id'];
 			$_SESSION['customer_name'] = $r['Email'];
 
-			if (!infusionsoftMember::findmemberfromsession())
+			if (!$this->findmemberfromsession())
 			{
 				//Member isn't yet known to Z:CM, add it.
 				Zymurgy::$db->run("insert into zcm_member (email,password,regtime,lastauth,mpkey) values ('".
 					Zymurgy::$db->escape_string($r['Email'])."','".
 					Zymurgy::$db->escape_string($r['Password'])."',now(),now(),'".
 					Zymurgy::$db->escape_string($r['Id'])."')");
-				infusionsoftMember::findmemberfromsession();
+				$this->findmemberfromsession();
 			}
-			infusionsoftMember::syncgroups();
+			$this->syncgroups();
 			return true;
 		}
 		else
@@ -208,17 +208,17 @@ class infusionsoftMember extends ZymurgyMember
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Adds any groups not found in Z:CM to Infusion and vice-versa.
 	 * Adds members to any group found in one and not in the other.
 	 */
-	static function syncgroups()
+	public function syncgroups()
 	{
 		$memberid = $_SESSION['customer_id'];
-		
+
 		$infusion = new ZymurgyInfusionsoftWrapper();
-		
+
 		//Get all available groups/tags in Infusionsoft
 		$r = $infusion->execute_va(
 			'DataService.query','ContactGroup',1000,0,array('GroupName'=>'%'),
@@ -228,7 +228,7 @@ class infusionsoftMember extends ZymurgyMember
 		{
 			$allisgroups[$isgroup['Id']] = $isgroup['GroupName'];
 		}
-		
+
 		//Get all available groups/tags in Z:CM
 		$allzcmgroups = array();
 		$ri = Zymurgy::$db->run("select * from zcm_groups");
@@ -237,7 +237,7 @@ class infusionsoftMember extends ZymurgyMember
 			$allzcmgroups[$row['id']] = $row['name'];
 		}
 		Zymurgy::$db->free_result($ri);
-		
+
 		//Get all the groups/tags that belong to this member
 		$r = $infusion->execute_fetch_array_va(
 			'DataService.query',
@@ -257,7 +257,7 @@ class infusionsoftMember extends ZymurgyMember
 				$memberisgroups[$groupid] = $allisgroups[$groupid];
 			}
 		}
-		
+
 		//Get all the groups for this user in Zymurgy:CM
 		$memberzcmgroups = array();
 		$ri = Zymurgy::$db->run("select * from zcm_membergroup where memberid=".Zymurgy::$member['id']);
@@ -266,7 +266,7 @@ class infusionsoftMember extends ZymurgyMember
 			$memberzcmgroups[$row['groupid']] = $allzcmgroups[$row['groupid']];
 		}
 		Zymurgy::$db->free_result($ri);
-		
+
 		//Sync groups which exist in Z:CM but not in Infusionsoft to Infusionsoft
 		$newgroups = array_diff($allzcmgroups,$allisgroups);
 		foreach($newgroups as $newgroupname)
@@ -275,7 +275,7 @@ class infusionsoftMember extends ZymurgyMember
 				'DataService.add','ContactGroup',array('GroupName'=>$newgroupname));
 			$allisgroups[$r->val] = $newgroupname;
 		}
-		
+
 		//Sync groups which exist in Infusionsoft but not in Z:CM to Z:CM
 		$newgroups = array_diff($allisgroups,$allzcmgroups);
 		foreach($newgroups as $newgroupname)
@@ -284,7 +284,7 @@ class infusionsoftMember extends ZymurgyMember
 				Zymurgy::$db->escape_string($newgroupname)."')");
 			$allzcmgroups[Zymurgy::$db->insert_id()] = $newgroupname;
 		}
-		
+
 		//Add missing groups to Infusionsoft from Z:CM
 		$newgroups = array_diff($memberzcmgroups,$memberisgroups);
 		foreach ($newgroups as $newgroupname)
@@ -292,7 +292,7 @@ class infusionsoftMember extends ZymurgyMember
 			$isid = array_search($newgroupname,$allisgroups);
 			$infusion->execute_va('ContactService.addToGroup',$memberid,$isid);
 		}
-		
+
 		//Add missing groups to Z:CM from Infusionsoft
 		$newgroups = array_diff($memberisgroups,$memberzcmgroups);
 		foreach ($newgroups as $newgroupname)
@@ -302,8 +302,8 @@ class infusionsoftMember extends ZymurgyMember
 				Zymurgy::$member['id'].','.$zcmid.")");
 		}
 	}
-	
-	static function remotelookup($table,$field,$value,$exact=false)
+
+	public function remotelookup($table,$field,$value,$exact=false)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 		$infusion = new ZymurgyInfusionsoftWrapper();
@@ -318,7 +318,7 @@ class infusionsoftMember extends ZymurgyMember
 		return $r;
 	}
 
-	static function remotelookupbyid($table,$field,$value)
+	public function remotelookupbyid($table,$field,$value)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 		$infusion = new ZymurgyInfusionsoftWrapper();
@@ -333,13 +333,14 @@ class infusionsoftMember extends ZymurgyMember
 	}
 
 	/**
-	 * Clear all Zymurgy and vtiger authentication and log out from both.  Redirect the user to $logoutpage.
+	 * Clear all Zymurgy and Infusionsoft authentication and log out from both.
+	 * Redirect the user to $logoutpage.
 	 *
 	 * @param string $logoutpage
 	 */
-	static function memberlogout($logoutpage)
+	public function memberlogout($logoutpage)
 	{
-		infusionsoftMember::memberauthenticate();
+		$this->memberauthenticate();
 
 		if (is_array(Zymurgy::$member))
 		{
@@ -354,7 +355,7 @@ class infusionsoftMember extends ZymurgyMember
 		Zymurgy::JSRedirect($logoutpage);
 	}
 
-	static function membersignup(
+	public function membersignup(
 		$formname,
 		$useridfield,
 		$passwordfield,
@@ -364,7 +365,7 @@ class infusionsoftMember extends ZymurgyMember
 		$pi = Zymurgy::mkplugin('Form',$formname);
 		$pi->LoadInputData();
 		$userid = $password = $confirm = $firstname = $lastname = '';
-		$authed = Zymurgy::memberauthenticate();
+		$authed = $this->memberauthenticate();
 
 		if ($_SERVER['REQUEST_METHOD']=='POST')
 		{
@@ -377,7 +378,7 @@ class infusionsoftMember extends ZymurgyMember
 			//Look for user id, password and password confirmation fields
 			$values = array(); //Build a new array of inputs except for password.
 
-			infusionsoftMember::membersignup_GetValuesFromInfusionsoftForm(
+			$this->membersignup_GetValuesFromInfusionsoftForm(
 				$pi,
 				$values,
 				$userid,
@@ -390,7 +391,7 @@ class infusionsoftMember extends ZymurgyMember
 				$confirmfield,
 				'firstname',
 				'lastname');
-			infusionsoftMember::membersignup_ValidateInfusionsoftForm(
+			$this->membersignup_ValidateInfusionsoftForm(
 				$pi,
 				$userid,
 				$password,
@@ -418,7 +419,7 @@ class infusionsoftMember extends ZymurgyMember
 			if (!$authed)
 			{
 				//New registration
-				$ri = infusionsoftMember::membersignup_CreateInfusionsoftMember(
+				$ri = $this->membersignup_CreateInfusionsoftMember(
 					$pi,
 					$userid,
 					$password,
@@ -427,7 +428,7 @@ class infusionsoftMember extends ZymurgyMember
 
 				if($ri)
 				{
-					infusionsoftMember::membersignup_AuthenticateNewMember($userid, $password);
+					$this->membersignup_AuthenticateNewMember($userid, $password);
 				}
 			}
 			else
@@ -435,15 +436,17 @@ class infusionsoftMember extends ZymurgyMember
 				//Has email changed?
 				if (Zymurgy::$member['email']!==$userid)
 				{
-					infusionsoftMember::membersignup_UpdateUserID($userid);
+					$this->membersignup_UpdateUserID($userid, $pi);
 				}
 				//Has password changed?
 				if (!empty($password))
 				{
-					infusionsoftMember::membersignup_UpdatePassword($password);
+					$this->membersignup_UpdatePassword($password);
 				}
 				//Update other user info (XML)
-				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
+				$capture = new FormCaptureToDatabase();
+				$xml = $capture->MakeXML($values);
+				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
 				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 			}
@@ -465,7 +468,7 @@ class infusionsoftMember extends ZymurgyMember
 		return '';
 	}
 
-	function membersignup_GetValuesFromInfusionsoftForm(
+	private function membersignup_GetValuesFromInfusionsoftForm(
 		$pi,
 		&$values,
 		&$userid,
@@ -517,7 +520,7 @@ class infusionsoftMember extends ZymurgyMember
 		}
 	}
 
-	function membersignup_ValidateInfusionsoftForm(
+	private function membersignup_ValidateInfusionsoftForm(
 		&$pi,
 		$userid,
 		$password,
@@ -540,7 +543,7 @@ class infusionsoftMember extends ZymurgyMember
 			$pi->ValidationErrors[] = 'Last name is a required field.';
 	}
 
-	function membersignup_CreateInfusionsoftMember(
+	private function membersignup_CreateInfusionsoftMember(
 		&$pi,
 		$userid,
 		$password,

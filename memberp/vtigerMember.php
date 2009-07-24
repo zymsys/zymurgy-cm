@@ -7,7 +7,7 @@ class vtigerMember extends ZymurgyMember
 	 *
 	 * @return boolean
 	 */
-	private static function findmemberfromsession()
+	private function findmemberfromsession()
 	{
 		if (empty($sid))
 		{
@@ -30,8 +30,8 @@ class vtigerMember extends ZymurgyMember
 			}
 			if (is_array($member))
 			{
-				ZymurgyMember::populatememberfromrow($member);
-				ZymurgyMember::createauthkey($member['id']);
+				$this->populatememberfromrow($member);
+				$this->createauthkey($member['id']);
 				return true;
 			}
 		}
@@ -43,7 +43,7 @@ class vtigerMember extends ZymurgyMember
 	 *
 	 * @return boolean
 	 */
-	static function memberauthenticate()
+	public function memberauthenticate()
 	{
 		$sid = session_id();
 		if (empty($sid))
@@ -61,7 +61,7 @@ class vtigerMember extends ZymurgyMember
 				}
 			}
 		}
-		return vtigerMember::findmemberfromsession();
+		return $this->findmemberfromsession();
 	}
 
 	/**
@@ -72,7 +72,7 @@ class vtigerMember extends ZymurgyMember
 	 * @param string $password
 	 * @return boolean
 	 */
-	static function memberdologin($userid, $password)
+	public function memberdologin($userid, $password)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
 		$client = new soapclient2(Zymurgy::$config['vtiger Server Path']."/vtigerservice.php?service=customerportal");
@@ -92,20 +92,20 @@ class vtigerMember extends ZymurgyMember
 			$_SESSION['last_login'] = $member['last_login_time'];
 			$_SESSION['support_start_date'] = $member['support_start_date'];
 			$_SESSION['support_end_date'] = $member['support_end_date'];
-			if (!vtigerMember::findmemberfromsession())
+			if (!$this->findmemberfromsession())
 			{
 				//Member isn't yet known to Z:CM, add it.
 				Zymurgy::$db->run("insert into zcm_member (email,password,regtime,lastauth,mpkey) values ('".
 					Zymurgy::$db->escape_string($member['user_name'])."','".
 					Zymurgy::$db->escape_string($member['user_password'])."',now(),now(),'".
 					Zymurgy::$db->escape_string($member['id'])."')");
-				vtigerMember::findmemberfromsession();
+				$this->findmemberfromsession();
 			}
 			return true;
 		}
 		else
 		{
-			Zymurgy::memberaudit("Failed login attempt for [$userid]: $member");
+			$this->memberaudit("Failed login attempt for [$userid]: $member");
 			return false;
 		}
 	}
@@ -115,10 +115,10 @@ class vtigerMember extends ZymurgyMember
 	 *
 	 * @param string $logoutpage
 	 */
-	static function memberlogout($logoutpage)
+	public function memberlogout($logoutpage)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
-		vtigerMember::memberauthenticate();
+		$this->memberauthenticate();
 		$client = new soapclient2(Zymurgy::$config['vtiger Server Path']."/vtigerservice.php?service=customerportal");
         $r = $client->call('update_login_details', array('id'=>$_SESSION['customer_id'],'sessionid'=>$_SESSION['customer_sessionid'],'flag'=>'logout'));
 		session_unregister('customer_id');
@@ -131,12 +131,16 @@ class vtigerMember extends ZymurgyMember
 		{
 			$sql = "update zcm_member set authkey=null where id=".Zymurgy::$member['id'];
 			Zymurgy::$db->query($sql) or die("Unable to logout ($sql): ".Zymurgy::$db->error());
-			setcookie('ZymurgyAuth');
+
+			if(!headers_sent())
+			{
+				setcookie('ZymurgyAuth');
+			}
 		}
 		Zymurgy::JSRedirect($logoutpage);
 	}
 
-	static function membersignup(
+	public function membersignup(
 		$formname,
 		$useridfield,
 		$passwordfield,
@@ -159,7 +163,7 @@ class vtigerMember extends ZymurgyMember
 			//Look for user id, password and password confirmation fields
 			$values = array(); //Build a new array of inputs except for password.
 
-			vtigerMember::membersignup_GetValuesFromVTigerForm(
+			$this->membersignup_GetValuesFromVTigerForm(
 				$pi,
 				$values,
 				$userid,
@@ -172,7 +176,7 @@ class vtigerMember extends ZymurgyMember
 				$confirmfield,
 				'firstname',
 				'lastname');
-			vtigerMember::membersignup_ValidateVTigerForm(
+			$this->membersignup_ValidateVTigerForm(
 				$pi,
 				$userid,
 				$password,
@@ -200,7 +204,7 @@ class vtigerMember extends ZymurgyMember
 			if (!$authed)
 			{
 				//New registration
-				$ri = vtigerMember::membersignup_CreateVTigerMember(
+				$ri = $this->membersignup_CreateVTigerMember(
 					$pi,
 					$userid,
 					$password,
@@ -209,7 +213,7 @@ class vtigerMember extends ZymurgyMember
 
 				if($ri)
 				{
-					vtigerMember::membersignup_AuthenticateNewMember($userid, $password);
+					$this->membersignup_AuthenticateNewMember($userid, $password);
 				}
 			}
 			else
@@ -217,12 +221,12 @@ class vtigerMember extends ZymurgyMember
 				//Has email changed?
 				if (Zymurgy::$member['email']!==$userid)
 				{
-					vtigerMember::membersignup_UpdateUserID($userid);
+					$this->membersignup_UpdateUserID($userid);
 				}
 				//Has password changed?
 				if (!empty($password))
 				{
-					vtigerMember::membersignup_UpdatePassword($password);
+					$thiss->membersignup_UpdatePassword($password);
 				}
 				//Update other user info (XML)
 				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
@@ -247,7 +251,7 @@ class vtigerMember extends ZymurgyMember
 		return '';
 	}
 
-	function membersignup_GetValuesFromVTigerForm(
+	private function membersignup_GetValuesFromVTigerForm(
 		$pi,
 		&$values,
 		&$userid,
@@ -299,7 +303,7 @@ class vtigerMember extends ZymurgyMember
 		}
 	}
 
-	function membersignup_ValidateVTigerForm(
+	private function membersignup_ValidateVTigerForm(
 		&$pi,
 		$userid,
 		$password,
@@ -321,7 +325,7 @@ class vtigerMember extends ZymurgyMember
 			$pi->ValidationErrors[] = 'Last name is a required field.';
 	}
 
-	function membersignup_CreateVTigerMember(
+	private function membersignup_CreateVTigerMember(
 		&$pi,
 		$userid,
 		$password,

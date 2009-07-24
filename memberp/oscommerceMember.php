@@ -7,16 +7,16 @@
 		 *
 		 * @return boolean
 		 */
-		private static function findmemberfromsession()
+		private function findmemberfromsession()
 		{
 			/* $sid = session_id();
 			if (empty($sid))
 			{
 				session_start();
 			} */
-			
+
 			echo("Customer ID Exists: ".(array_key_exists('customer_id',$_SESSION) ? "YES" : "NO")."<br>");
-			
+
 			if (array_key_exists('customer_id',$_SESSION))
 			{
 				$member = Zymurgy::$db->get("select * from zcm_member where mpkey='".
@@ -25,7 +25,7 @@
 				{
 					$member = Zymurgy::$db->get("select * from zcm_member where email='".
 						Zymurgy::$db->escape_string($_SESSION['customer_name'])."'");
-						
+
 					if (is_array($member))
 					{
 						//Found by email; update their mpkey
@@ -33,20 +33,20 @@
 							Zymurgy::$db->escape_string($_SESSION['customer_id'])."' where id={$member['id']}");
 					}
 				}
-				
+
 				if (is_array($member))
 				{
-					ZymurgyMember::populatememberfromrow($member);
-					ZymurgyMember::createauthkey($member['id']);
-					
+					$this->populatememberfromrow($member);
+					$this->createauthkey($member['id']);
+
 					return true;
 				}
 			}
-			
+
 			return false;
 		}
-		
-		private static function findmemberfromid($id, $email)
+
+		private function findmemberfromid($id, $email)
 		{
 			$member = Zymurgy::$db->get("select * from zcm_member where mpkey='".
 				Zymurgy::$db->escape_string($id)."'");
@@ -54,7 +54,7 @@
 			{
 				$member = Zymurgy::$db->get("select * from zcm_member where email='".
 					Zymurgy::$db->escape_string($email)."'");
-					
+
 				if (is_array($member))
 				{
 					//Found by email; update their mpkey
@@ -62,43 +62,43 @@
 						Zymurgy::$db->escape_string($id)."' where id={$member['id']}");
 				}
 			}
-			
+
 			if (is_array($member))
 			{
-				ZymurgyMember::populatememberfromrow($member);
-				ZymurgyMember::createauthkey($member['id']);
-				
+				$this->populatememberfromrow($member);
+				$this->createauthkey($member['id']);
+
 				return true;
 			}
-			else 
+			else
 			{
 				return false;
-			}			
+			}
 		}
-			
+
 		/**
 		 * Authenticate that the user is logged in.
 		 *
 		 * @return boolean
 		 */
-		static function memberauthenticate()
+		public function memberauthenticate()
 		{
 			// ZK: Disable for now
 			return false;
-			
+
 			$sname = session_name('osCsid');
 
    			$sid = session_id("hd4sjsek8k5hfrn7eel2mr0c17"); // session_id('osCsid');
-   			
+
    			die($sid.": ".$sname);
-   			
+
 			/* $sid = session_id();
 			if (empty($sid))
 			{
 				session_start();
 			} */
-			
-			if (!parent::memberauthenticate()) 
+
+			if (!parent::memberauthenticate())
 			{
 				echo("Member not authenticated by parent.<br>");
 			}
@@ -106,7 +106,7 @@
 			{
 				//Parent think's we're logged in, but are we still logged into the MP?
 				echo("Customer Name Exists: ".array_key_exists('customer_name',$_SESSION));
-				
+
 				if (array_key_exists('customer_name',$_SESSION))
 				{
 					if ($_SESSION['customer_name'] == Zymurgy::$member['email'])
@@ -115,11 +115,11 @@
 					}
 				}
 			}
-			
-			return oscommerceMember::findmemberfromsession();
+
+			return $this->findmemberfromsession();
 		}
-			
-		
+
+
 		/**
 		 * Try to log in with the provided user ID and password using the osCommerce database.
 		 *
@@ -127,19 +127,19 @@
 		 * @param string $password
 		 * @return boolean
 		 */
-		static function memberdologin($userid, $password)
+		public function memberdologin($userid, $password)
 		{
 			// die(var_dump(debug_backtrace()));
-			
+
 			require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
-			
+
 			$client = new soapclient2(Zymurgy::$config['oscommerce Server Path']."/soap.php");
 			$r = $client->call(
-				'authenticate_user', 
-				array('user_name' => "$userid",'user_password'=>"$password"), 
-				Zymurgy::$config['oscommerce Server Path'], 
+				'authenticate_user',
+				array('user_name' => "$userid",'user_password'=>"$password"),
+				Zymurgy::$config['oscommerce Server Path'],
 				Zymurgy::$config['oscommerce Server Path']);
-				
+
 			$member = $r[0];
 			if (is_array($member))
 			{
@@ -148,32 +148,32 @@
 				{
 					session_start();
 				}
-				
+
 				$_SESSION['customer_id'] = $member['id'];
 				$_SESSION['customer_name'] = $member['user_name'];
 
-				if (!oscommerceMember::findmemberfromsession())
+				if (!$this->findmemberfromsession())
 				{
 					//Member isn't yet known to Z:CM, add it.
 					Zymurgy::$db->run("insert into zcm_member (email,password,regtime,lastauth,mpkey) values ('".
 						Zymurgy::$db->escape_string($member['user_name'])."','".
 						Zymurgy::$db->escape_string($member['user_password'])."',now(),now(),'".
 						Zymurgy::$db->escape_string($member['id'])."')");
-						
-					oscommerceMember::findmemberfromid(
+
+					$this->findmemberfromid(
 						$member['id'],
 						$member['user_name']);
 				}
 				return true;
 			}
-			else 
+			else
 			{
-				Zymurgy::memberaudit("Failed login attempt for [$userid]: $member");
+				$this->memberaudit("Failed login attempt for [$userid]: $member");
 				return false;
 			}
 		}
-	
-		static function membersignup(
+
+		public function membersignup(
 			$formname,
 			$useridfield,
 			$passwordfield,
@@ -181,14 +181,14 @@
 			$redirect)
 		{
 			// die("Child membersignup called");
-			
+
 			$pi = Zymurgy::mkplugin('Form',$formname);
 			$pi->LoadInputData();
 			$userid = $password = $confirm = '';
-			$firstname = $lastname = $birthdate = $email = $street = $postalcode = $city = 
+			$firstname = $lastname = $birthdate = $email = $street = $postalcode = $city =
 				$province = $country = $phone = '';
-			$authed = Zymurgy::memberauthenticate();
-				
+			$authed = $this->memberauthenticate();
+
 			if ($_SERVER['REQUEST_METHOD']=='POST')
 			{
 				if ($_POST['formname']!=$pi->InstanceName)
@@ -199,11 +199,11 @@
 				}
 				//Look for user id, password and password confirmation fields
 				$values = array(); //Build a new array of inputs except for password.
-				
-				oscommerceMember::membersignup_GetValuesFromOSCommerceForm(
-					$pi, 
-					$values, 
-					$userid, 
+
+				$this->membersignup_GetValuesFromOSCommerceForm(
+					$pi,
+					$values,
+					$userid,
 					$password,
 					$confirm,
 					$firstname,
@@ -227,7 +227,7 @@
 					'province',
 					'country',
 					'phone');
-				oscommerceMember::membersignup_ValidateOSCommerceForm(
+				$this->membersignup_ValidateOSCommerceForm(
 					$userid,
 					$password,
 					$confirm,
@@ -240,30 +240,31 @@
 					$province,
 					$country,
 					$phone,
-					$authed);			
-				
+					$authed,
+					$pi);
+
 				if (!$pi->IsValid())
 				{
 					$pi->RenderForm();
 					return;
 				}
-				
+
 				if (array_key_exists('rurl',$_GET))
 					$rurl = $_GET['rurl'];
-				else 
+				else
 					$rurl = $redirect;
-					
+
 				if (strpos($rurl,'?')===false)
 					$joinchar = '?';
 				else
 					$joinchar = '&';
-					
+
 				if (!$authed)
 				{
 					// die("Creating member");
-					
+
 					//New registration
-					$ri = oscommerceMember::membersignup_CreateOSCommerceMember(
+					$ri = $this->membersignup_CreateOSCommerceMember(
 						$userid,
 						$password,
 						$firstname,
@@ -275,25 +276,25 @@
 						$province,
 						$country,
 						$phone);
-						
+
 					// die(print_r($ri));
-	
+
 					if($ri)
 					{
-						oscommerceMember::membersignup_AuthenticateNewMember($userid, $password);
+						$this->membersignup_AuthenticateNewMember($userid, $password);
 					}
 				}
-				else 
+				else
 				{ //Update existing registration
 					//Has email changed?
 					if (Zymurgy::$member['email']!==$userid)
 					{
-						oscommerceMember::membersignup_UpdateUserID($userid);
+						$this->membersignup_UpdateUserID($userid);
 					}
 					//Has password changed?
 					if (!empty($password))
 					{
-						oscommerceMember::membersignup_UpdatePassword($password);
+						$this->membersignup_UpdatePassword($password);
 					}
 					//Update other user info (XML)
 					$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($pi->MakeXML($values))."' where id=".Zymurgy::$member['formdata'];
@@ -301,8 +302,8 @@
 					Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 				}
 			}
-			else 
-			{			
+			else
+			{
 				if ($authed)
 				{
 					//We're logged in so update existing info.
@@ -312,16 +313,16 @@
 					$pi->XmlValues = $xml;
 					return $pi->Render();
 				}
-				else 
+				else
 					return $pi->Render();
 			}
 			return '';
 		}
-	
+
 		function membersignup_GetValuesFromOSCommerceForm(
-			$pi, 
-			&$values, 
-			&$userid, 
+			&$pi,
+			&$values,
+			&$userid,
 			&$password,
 			&$confirm,
 			&$firstname,
@@ -349,30 +350,30 @@
 			foreach($pi->InputRows as $row)
 			{
 				$fldname = 'Field'.$row['fid'];
-				
+
 				if (array_key_exists($fldname,$_POST))
 					$row['value'] = $_POST[$fldname];
-				else 
+				else
 					$row['value'] = '';
-					
+
 				$values[$row['header']] = $row['value'];
-				
-				$userid = membersignup_GetValuesFromForm($useridfield, $userid, $row);
-				$password = membersignup_GetValuesFromForm($passwordfield, $password, $row);
-				$confirm = membersignup_GetValuesFromForm($confirmfield, $confirm, $row);
-				$firstname = membersignup_GetValuesFromForm($firstnamefield, $firstname, $row);
-				$lastname = membersignup_GetValuesFromForm($lastnamefield, $lastname, $row);
-				$birthdate = membersignup_GetValuesFromForm($birthdatefield, $birthdate, $row);
-				$street = membersignup_GetValuesFromForm($streetfield, $street, $row);
-				$postalcode = membersignup_GetValuesFromForm($postalcodefield, $postalcode, $row);
-				$city = membersignup_GetValuesFromForm($cityfield, $city, $row);
-				$province = membersignup_GetValuesFromForm($provincefield, $province, $row);
-				$country = membersignup_GetValuesFromForm($countryfield, $country, $row);
-				$phone = membersignup_GetValuesFromForm($phonefield, $phone, $row);
-			}		
+
+				$userid = $this->membersignup_GetValuesFromForm($useridfield, $userid, $row);
+				$password = $this->membersignup_GetValuesFromForm($passwordfield, $password, $row);
+				$confirm = $this->membersignup_GetValuesFromForm($confirmfield, $confirm, $row);
+				$firstname = $this->membersignup_GetValuesFromForm($firstnamefield, $firstname, $row);
+				$lastname = $this->membersignup_GetValuesFromForm($lastnamefield, $lastname, $row);
+				$birthdate = $this->membersignup_GetValuesFromForm($birthdatefield, $birthdate, $row);
+				$street = $this->membersignup_GetValuesFromForm($streetfield, $street, $row);
+				$postalcode = $this->membersignup_GetValuesFromForm($postalcodefield, $postalcode, $row);
+				$city = $this->membersignup_GetValuesFromForm($cityfield, $city, $row);
+				$province = $this->membersignup_GetValuesFromForm($provincefield, $province, $row);
+				$country = $this->membersignup_GetValuesFromForm($countryfield, $country, $row);
+				$phone = $this->membersignup_GetValuesFromForm($phonefield, $phone, $row);
+			}
 		}
-		
-		function membersignup_GetValuesFromForm(
+
+		private function membersignup_GetValuesFromForm(
 			$field,
 			$originalValue,
 			$row)
@@ -381,13 +382,13 @@
 			{
 				return $row['value'];
 			}
-			else 
+			else
 			{
 				return $originalValue;
 			}
 		}
-	
-		function membersignup_ValidateOSCommerceForm(
+
+		private function membersignup_ValidateOSCommerceForm(
 			$userid,
 			$password,
 			$confirm,
@@ -400,43 +401,44 @@
 			$province,
 			$country,
 			$phone,
-			$authed)
+			$authed,
+			&$pi)
 		{
 			parent::ValidateForm(
 				$userid,
 				$password,
 				$confirm,
 				$authed);
-				
+
 			if ($firstname == '')
 				$pi->ValidationErrors[] = 'First name is a required field.';
-				
+
 			if ($lastname == '')
 				$pi->ValidationErrors[] = 'Last name is a required field.';
-				
+
 			if ($birthdate == '')
 				$pi->ValidationErrors[] = 'Birthdate is a required field.';
-								
+
 			if ($street == '')
 				$pi->ValidationErrors[] = 'Street Address is a required field.';
-				
+
 			if ($postalcode == '')
 				$pi->ValidationErrors[] = 'Postal code is a required field.';
-				
+
 			if ($city == '')
 				$pi->ValidationErrors[] = 'City is a required field.';
-				
+
 			if ($province == '')
 				$pi->ValidationErrors[] = 'Province is a required field.';
-				
+
 			if ($country == '')
 				$pi->ValidationErrors[] = 'Country is a required field.';
-				
+
 			if ($phone == '')
 				$pi->ValidationErrors[] = 'Phone number is a required field.';
 		}
 
-		function membersignup_CreateOSCommerceMember(
+		private function membersignup_CreateOSCommerceMember(
 			$userid,
 			$password,
 			$firstname,
@@ -450,15 +452,15 @@
 			$phone)
 		{
 			// die("membersignup_CreateOSCommerceMember() Start");
-			
+
 			parent::membersignup_CreateMember($userid, $password);
-			
+
 			if($ri)
 			{
 				require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
 				$client = new soapclient2(
 					Zymurgy::$config['oscommerce Server Path']."/soap.php");
-					
+
 				$input_array = array(
 		    		'firstname' => $firstname,
 		    		'lastname' => $lastname,
@@ -473,13 +475,13 @@
 		    		'phone' => $phone,
 		    		'fromemailname' => Zymurgy::$config['oscommerce E-mail Name'],
 		    		'fromemailaddress' => Zymurgy::$config['oscommerce E-mail Address']);
-					
+
 			    $result = $client->call(
-			    	'create_member', 
+			    	'create_member',
 			    	$input_array);
-			    	
+
 			    // die(print_r($result));
 			}
-		}	
+		}
 	}
 ?>
