@@ -776,8 +776,18 @@
 		}
 	}
 
+	/**
+	 * Contains methods used to render Member management screens in the
+	 * Zymurgy:CM back-end.
+	 *
+	 */
 	class MemberView
 	{
+		/**
+		 * Display a list of members, with links to the edit and delete screens.
+		 *
+		 * @param array $members
+		 */
 		public static function DisplayList($members)
 		{
 			$breadcrumbTrail = "Members";
@@ -839,6 +849,14 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the edit form for the specified member. The same form is used
+		 * for adding and editing members.
+		 *
+		 * @param Member $member
+		 * @param String $action The action to send to the controller when the form
+		 * is submitted. Valid values are "act_add_member" and "act_edit_member".
+		 */
 		public static function DisplayEditForm(
 			$member,
 			$action)
@@ -987,6 +1005,11 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the confirmation form for deleting the specified member.
+		 *
+		 * @param Member $member
+		 */
 		static function DisplayDeleteForm($member)
 		{
 			$breadcrumbTrail = "<a href=\"editmember.php?action=list_members\">".
@@ -1025,6 +1048,13 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the form used to assign groups to a specified member.
+		 *
+		 * @param array $groups
+		 * @param int $memberID
+		 * @param array $errors
+		 */
 		public static function DisplayGroups($groups, $memberID, $errors)
 		{
 			$breadcrumbTrail = "<a href=\"editmember.php?action=list_members\">".
@@ -1116,8 +1146,19 @@
 		}
 	}
 
+	/**
+	 * Contains methods used to render Membership Group management screens in the
+	 * Zymurgy:CM back-end.
+	 *
+	 */
 	class GroupView
 	{
+		/**
+		 * Display the list of membership groups, with links to the edit and
+		 * delete screens.
+		 *
+		 * @param array $groups
+		 */
 		public static function DisplayList($groups)
 		{
 			$breadcrumbTrail = "Membership Groups";
@@ -1173,6 +1214,14 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the edit form for the specified group. The same form is used
+		 * for adding and editing groups.
+		 *
+		 * @param Group $group
+		 * @param string $action The action to send to the controller when the
+		 * form is submitted. Valid values are "act_add_group" and "act_edit_group".
+		 */
 		public function DisplayEditForm($group, $action)
 		{
 			$breadcrumbTrail = "<a href=\"editmember.php?action=list_groups\">".
@@ -1232,6 +1281,11 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the Delete form for the specified membership group.
+		 *
+		 * @param Group $group
+		 */
 		static function DisplayDeleteForm($group)
 		{
 			$breadcrumbTrail = "<a href=\"editmember.php?action=list_groups\">".
@@ -1271,14 +1325,25 @@
 		}
 	}
 
+	/**
+	 * HTTP Controller class.
+	 *
+	 * This class is responsible for instantiating member methods based on
+	 * the expected HTTP GET and POST variables, and either passing these members into
+	 * the View classes for display, or forwarding the requests to the appropriate URL.
+	 */
 	class MembershipController
 	{
+		/**
+		 * Main entry method.
+		 *
+		 * @param string $action
+		 */
 		public function Execute($action)
 		{
 			if(method_exists($this, $action))
 			{
 				call_user_func(array($this,$action));
-				//call_user_method($action, $this); - Caused this: Notice: call_user_method() [function.call-user-method]: This function is deprecated, use the call_user_func variety with the array(&$obj, "method") syntax instead in /var/www/vhosts/marketingpowertool.com/httpdocs/zymurgy/include/membership.zcm.php on line 1008
 			}
 			else
 			{
@@ -1286,37 +1351,63 @@
 			}
 		}
 
-		public function list_members()
+		/**
+		 * Display a list of all of the members in the system.
+		 *
+		 */
+		private function list_members()
 		{
 			$members = MemberPopulator::PopulateAll();
 
 			MemberView::DisplayList($members);
 		}
 
-		public function add_member()
+		/**
+		 * Display the add member screen.
+		 *
+		 */
+		private function add_member()
 		{
 			$member = new Member();
 
 			MemberView::DisplayEditForm($member, "act_add_member");
 		}
 
-		public function edit_member()
+		/**
+		 * Display the edit member screen for the specified member.
+		 *
+		 */
+		private function edit_member()
 		{
 			$member = MemberPopulator::PopulateByID($_GET["id"]);
 
 			MemberView::DisplayEditForm($member, "act_edit_member");
 		}
 
-		public function act_add_member()
+		/**
+		 * Process the submitted add member screen.
+		 *
+		 */
+		private function act_add_member()
 		{
 			$this->update_member("act_add_member");
 		}
 
-		public function act_edit_member()
+		/**
+		 * Process the submitted edit member screen.
+		 *
+		 */
+		private function act_edit_member()
 		{
 			$this->update_member("act_edit_member");
 		}
 
+		/**
+		 * Insert/update the member. This is used by the act_add_member and
+		 * act_edit_member methods, and is not to be called directly.
+		 *
+		 * @param string $action
+		 */
 		private function update_member($action)
 		{
 			if($action == null)
@@ -1343,6 +1434,10 @@
 			}
 		}
 
+		/**
+		 * Display the Delete Member confirmation screen.
+		 *
+		 */
 		private function delete_member()
 		{
 			$member = MemberPopulator::PopulateByID($_GET["id"]);
@@ -1350,6 +1445,10 @@
 			MemberView::DisplayDeleteForm($member);
 		}
 
+		/**
+		 * Delete the member and forward to the updated list.
+		 *
+		 */
 		private function act_delete_member()
 		{
 			MemberPopulator::DeleteMember($_POST["id"]);
@@ -1357,6 +1456,10 @@
 			header("Location: editmember.php?action=list_members");
 		}
 
+		/**
+		 * Display the screen to assign members to membership groups.
+		 *
+		 */
 		private function add_member_group()
 		{
 			$groups = GroupPopulator::PopulateAllMemberNotIn($_GET["id"]);
@@ -1364,6 +1467,10 @@
 			MemberView::DisplayGroups($groups, $_GET["id"], array());
 		}
 
+		/**
+		 * Add the member to a group.
+		 *
+		 */
 		private function act_add_member_group()
 		{
 			if(!isset($_POST["groupid"]))
@@ -1386,6 +1493,10 @@
 			}
 		}
 
+		/**
+		 * Remove the member from a group.
+		 *
+		 */
 		private function delete_member_group()
 		{
 			MemberPopulator::DeleteMemberFromGroup(
@@ -1396,6 +1507,10 @@
 					$_GET["memberid"]);
 		}
 
+		/**
+		 * Display a list of all of the membership groups.
+		 *
+		 */
 		private function list_groups()
 		{
 			$groups = GroupPopulator::PopulateAll();
@@ -1403,6 +1518,10 @@
 			GroupView::DisplayList($groups);
 		}
 
+		/**
+		 * Display the screen to add a membership group.
+		 *
+		 */
 		private function add_group()
 		{
 			$group = new Group();
@@ -1410,6 +1529,10 @@
 			GroupView::DisplayEditForm($group, "act_add_group");
 		}
 
+		/**
+		 * Display a screen to edit a membership group.
+		 *
+		 */
 		private function edit_group()
 		{
 			$group = GroupPopulator::PopulateByID($_GET["id"]);
@@ -1417,16 +1540,30 @@
 			GroupView::DisplayEditForm($group, "act_edit_group");
 		}
 
+		/**
+		 * Add the membership group.
+		 *
+		 */
 		private function act_add_group()
 		{
-			return $this->update_group("act_add_group");
+			$this->update_group("act_add_group");
 		}
 
+		/**
+		 * Update the membership group.
+		 *
+		 */
 		private function act_edit_group()
 		{
-			return $this->update_group("act_edit_group");
+			$this->update_group("act_edit_group");
 		}
 
+		/**
+		 * Insert/update the membership group. This is used by the act_add_group and
+		 * act_edit_group methods, and is not to be called directly.
+		 *
+		 * @param string $action
+		 */
 		private function update_group($action)
 		{
 			if($action == null)
@@ -1453,6 +1590,10 @@
 			}
 		}
 
+		/**
+		 * Display the delete group confirmation screen.
+		 *
+		 */
 		private function delete_group()
 		{
 			$group = GroupPopulator::PopulateByID($_GET["id"]);
@@ -1460,6 +1601,10 @@
 			GroupView::DisplayDeleteForm($group);
 		}
 
+		/**
+		 * Delete the membership group.
+		 *
+		 */
 		private function act_delete_group()
 		{
 			GroupPopulator::DeleteGroup($_POST["id"]);
