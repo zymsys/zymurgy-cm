@@ -6,7 +6,7 @@ class ZymurgyMember
 	 *
 	 * @return boolean
 	 */
-	static function memberauthenticate()
+	public function memberauthenticate()
 	{
 		//Are we already authenticated?
 		if (isset(Zymurgy::$member) && is_array(Zymurgy::$member))
@@ -20,14 +20,14 @@ class ZymurgyMember
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authenticate ($sql): ".Zymurgy::$db->error());
 			if (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
-				ZymurgyMember::populatememberfromrow($row);
+				$this->populatememberfromrow($row);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	static function populatememberfromrow($row)
+	public function populatememberfromrow($row)
 	{
 		Zymurgy::$member = array(
 			'id'=>$row['id'],
@@ -46,11 +46,11 @@ class ZymurgyMember
 	 * @param string $groupname
 	 * @return boolean
 	 */
-	static function memberauthorize($groupname)
+	public function memberauthorize($groupname)
 	{
 		$authorized = false;
 		//echo "<div>Authorizing for [$groupname]: ";
-		if (Zymurgy::memberauthenticate())
+		if ($this->memberauthenticate())
 		{
 			//echo "authenticated ";
 			$sql = "select name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
@@ -74,7 +74,7 @@ class ZymurgyMember
 	 *
 	 * @param unknown_type $activity
 	 */
-	static function memberaudit($activity)
+	public function memberaudit($activity)
 	{
 		$ip = $_SERVER['REMOTE_ADDR'];
 		if (array_key_exists('X_FORWARDED_FOR',$_SERVER))
@@ -97,17 +97,17 @@ class ZymurgyMember
 	 *
 	 * @param string $groupname
 	 */
-	static function memberpage($groupname='Registered User')
+	public function memberpage($groupname='Registered User')
 	{
 		if (!array_key_exists('MemberLoginPage',Zymurgy::$config))
 		{
 			die("Please define \$ZymurgyConfig['MemberLoginPage'] before using membership functions.");
 		}
-		$matuh8 = Zymurgy::memberauthenticate();
-		$matuhz = Zymurgy::memberauthorize($groupname);
+		$matuh8 = $this->memberauthenticate();
+		$matuhz = $this->memberauthorize($groupname);
 		if ($matuh8 && $matuhz)
 		{
-			Zymurgy::memberaudit("Opened page {$_SERVER['REQUEST_URI']}");
+			$this->memberaudit("Opened page {$_SERVER['REQUEST_URI']}");
 		}
 		else
 		{
@@ -116,7 +116,7 @@ class ZymurgyMember
 		}
 	}
 
-	static function createauthkey($id)
+	public function createauthkey($id)
 	{
 		//Set up the authkey and last auth
 		$authkey = md5(uniqid(rand(),true));
@@ -125,7 +125,11 @@ class ZymurgyMember
 
 		//Set authkey session cookie
 		$_COOKIE['ZymurgyAuth'] = $authkey;
-		$cookieSet = setcookie("ZymurgyAuth", $authkey, null, "/");
+
+		if(!headers_sent())
+		{
+			$cookieSet = setcookie("ZymurgyAuth", $authkey, null, "/");
+		}
 
 		// die($cookieSet ? "Cookie set" : "Cookie not set");
 		// if(!$cookieSet) die("Could not set cookie.");
@@ -135,7 +139,8 @@ class ZymurgyMember
 			document.cookie = \"ZymurgyAuth=$authkey; path=/\";
 			//-->
 			</script>";
-		Zymurgy::memberaudit("Successful login for [$id]");
+
+		$this->memberaudit("Successful login for [$id]");
 	}
 
 	/**
@@ -146,7 +151,7 @@ class ZymurgyMember
 	 * @param string $password
 	 * @return boolean
 	 */
-	static function memberdologin($userid, $password)
+	public function memberdologin($userid, $password)
 	{
 		// die("memberdologin called");
 
@@ -162,12 +167,12 @@ class ZymurgyMember
 
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
-			ZymurgyMember::createauthkey($row['id']);
+			$this->createauthkey($row['id']);
 			return true;
 		}
 		else
 		{
-			Zymurgy::memberaudit("Failed login attempt for [$userid]");
+			$this->memberaudit("Failed login attempt for [$userid]");
 			return false;
 		}
 	}
@@ -177,14 +182,18 @@ class ZymurgyMember
 	 *
 	 * @param string $logoutpage
 	 */
-	static function memberlogout($logoutpage)
+	public function memberlogout($logoutpage)
 	{
-		Zymurgy::memberauthenticate();
+		$this->memberauthenticate();
 		if (is_array(Zymurgy::$member))
 		{
 			$sql = "update zcm_member set authkey=null where id=".Zymurgy::$member['id'];
 			Zymurgy::$db->query($sql) or die("Unable to logout ($sql): ".Zymurgy::$db->error());
-			setcookie('ZymurgyAuth');
+
+			if(!headers_sent())
+			{
+				setcookie('ZymurgyAuth');
+			}
 		}
 		/*else
 		{
@@ -209,7 +218,7 @@ class ZymurgyMember
 	 * @param string $redirect
 	 * @return string
 	 */
-	static function membersignup(
+	public function membersignup(
 		$formname,
 		$useridfield,
 		$passwordfield,
@@ -219,7 +228,7 @@ class ZymurgyMember
 		$pi = Zymurgy::mkplugin('Form',$formname);
 		$pi->LoadInputData();
 		$userid = $password = $confirm = '';
-		$authed = Zymurgy::memberauthenticate();
+		$authed = $this->memberauthenticate();
 
 		if ($_SERVER['REQUEST_METHOD']=='POST')
 		{
@@ -232,7 +241,7 @@ class ZymurgyMember
 			//Look for user id, password and password confirmation fields
 			$values = array(); //Build a new array of inputs except for password.
 
-			ZymurgyMember::membersignup_GetValuesFromForm(
+			$this->membersignup_GetValuesFromForm(
 				$pi,
 				$values,
 				$userid,
@@ -241,7 +250,7 @@ class ZymurgyMember
 				$useridfield,
 				$passwordfield,
 				$confirmfield);
-			ZymurgyMember::membersignup_ValidateForm(
+			$this->membersignup_ValidateForm(
 				$userid,
 				$password,
 				$confirm,
@@ -267,11 +276,11 @@ class ZymurgyMember
 			if (!$authed)
 			{
 				//New registration
-				$ri = ZymurgyMember::membersignup_CreateMember($userid, $password, $pi);
+				$ri = $this->membersignup_CreateMember($userid, $password, $pi);
 
 				if($ri)
 				{
-					ZymurgyMember::membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values);
+					$this->membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values);
 				}
 			}
 			else
@@ -279,12 +288,12 @@ class ZymurgyMember
 				//Has email changed?
 				if (Zymurgy::$member['email']!==$userid)
 				{
-					ZymurgyMember::membersignup_UpdateUserID($userid);
+					$this->membersignup_UpdateUserID($userid, $pi);
 				}
 				//Has password changed?
 				if (!empty($password))
 				{
-					ZymurgyMember::membersignup_UpdatePassword($password);
+					$this->membersignup_UpdatePassword($password);
 				}
 				//Update other user info (XML)
 				$capture = new FormCaptureToDatabase();
@@ -314,8 +323,8 @@ class ZymurgyMember
 		return '';
 	}
 
-	function membersignup_GetValuesFromForm(
-		$pi,
+	private function membersignup_GetValuesFromForm(
+		&$pi,
 		&$values,
 		&$userid,
 		&$password,
@@ -354,12 +363,12 @@ class ZymurgyMember
 		}
 	}
 
-	function membersignup_ValidateForm(
+	private function membersignup_ValidateForm(
 		$userid,
 		$password,
 		$confirm,
 		$authed,
-		$pi)
+		&$pi)
 	{
 		//Now we have our rows, is there anything obviously wrong?
 		if ($userid == '')
@@ -372,7 +381,7 @@ class ZymurgyMember
 			$pi->ValidationErrors[] = 'Password is a required field.';
 	}
 
-	function membersignup_CreateMember($userid,	$password, $pi)
+	private function membersignup_CreateMember($userid,	$password, $pi)
 	{
 		// die("membersignup_CreateMember() Start");
 
@@ -406,11 +415,11 @@ class ZymurgyMember
 		return $ri;
 	}
 
-	function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
+	private function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
 	{
-		if (Zymurgy::memberdologin($userid,$password))
+		if ($this->memberdologin($userid,$password))
 		{
-			Zymurgy::memberauthenticate();
+			$this->memberauthenticate();
 
 			// ZK: Call the extension methods for capturing form data and sending e-mail.
 			// These are no longer handled purely by the Form class.
@@ -436,7 +445,7 @@ class ZymurgyMember
 		}
 	}
 
-	function membersignup_UpdateUserID($userid)
+	private function membersignup_UpdateUserID($userid, &$pi)
 	{
 		//Is the new user id already in use?
 		$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
@@ -456,7 +465,7 @@ class ZymurgyMember
 		}
 	}
 
-	function membersignup_UpdatePassword($password)
+	private function membersignup_UpdatePassword($password)
 	{
 		$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
 		Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
@@ -470,7 +479,7 @@ class ZymurgyMember
 	 *
 	 * @return string HTML for login process
 	 */
-	static function memberlogin()
+	public function memberlogin()
 	{
 		$r = array();
 		$e = array();
@@ -514,7 +523,7 @@ class ZymurgyMember
 							else
 							{
 								//Created member successfully.  Login and redirect to extra info page if set up.
-								if (Zymurgy::memberdologin($email,$pass))
+								if ($this->memberdologin($email,$pass))
 								{
 									if (!array_key_exists('MembershipInfoForm',Zymurgy::$config))
 									{
@@ -607,7 +616,7 @@ class ZymurgyMember
 			}
 			if (count($e)==0)
 			{
-				if (Zymurgy::memberdologin($_POST['email'],$_POST['pass']))
+				if ($this->memberdologin($_POST['email'],$_POST['pass']))
 				{
 					//Redirect to source page or root page if none provided.
 					if (array_key_exists('rurl',$_GET))
@@ -699,7 +708,7 @@ class ZymurgyMember
 	 * @param string $navname
 	 * @param string $exitpage
 	 */
-	static function memberform($navname,$exitpage)
+	public function memberform($navname,$exitpage)
 	{
 		require_once('memberdata.php');
 		$f = ZymurgyMemberDataTable::FactoryByNavName($navname, $exitpage);
