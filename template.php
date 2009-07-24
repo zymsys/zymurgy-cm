@@ -16,14 +16,13 @@ class ZymurgyTemplate
 		$this->LoadParams();
 		if($id > 0)
 		{
-			$sql = "SELECT `id`, `template` FROM `zcm_sitepage` WHERE `id` = '".
+			$this->sitepage = $this->GetSitePage("`id` = '".
 				Zymurgy::$db->escape_string($id).
-				"' LIMIT 0, 1";
-			$this->sitepage = Zymurgy::$db->get($sql);
+				"'");
 		}
 		else if (empty($navpath))
 		{
-			$this->sitepage = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=0 order by disporder limit 1");
+			$this->sitepage = $this->GetSitePage("`parent` = 0");
 		}
 		else
 		{
@@ -35,7 +34,13 @@ class ZymurgyTemplate
 			foreach ($np as $navpart)
 			{
 				$navpart = Zymurgy::$db->escape_string(ZymurgySiteNav::linktext2linkpart($navpart));
-				$row = Zymurgy::$db->get("select id,template from zcm_sitepage where parent=$parent and linkurl='$navpart'");
+
+				$row = $this->GetSitePage("`parent` = '".
+					Zymurgy::$db->escape_string($parent).
+					"' AND `linkurl` = '".
+					Zymurgy::$db->escape_string($navpart).
+					"'");
+
 				if ($row === false)
 				{
 					// Is there a redirect available for this navpart?
@@ -71,11 +76,7 @@ class ZymurgyTemplate
 			}
 			if ($do404)
 			{
-				header("HTTP/1.0 404 Not Found");
-				echo "$navpart couldn't be found from $navpath. <!--\r\n";
-				print_r($newpath);
-				echo "-->";
-				exit;
+				$this->DisplayFileNotFound($navpart, $navpath, $newpath);
 			}
 			if ($doredirect)
 			{
@@ -88,9 +89,66 @@ class ZymurgyTemplate
 
 			$this->sitepage = $row;
 		}
+
+		// -----
+		// Check the page to make sure it within the published range
+
+		$retire = strtotime($this->sitepage["retire"]);
+		$golive = strtotime($this->sitepage["golive"]);
+		$softlaunch = strtotime($this->sitepage["softlaunch"]);
+
+		// If all three dates are the same, this page was created while the
+		// default JSCalendar date was set to the current timestamp. Ignore
+		// these fields when this has occurred.
+		if($retire == $golive && $retire == $softlaunch)
+		{
+			// do nothing
+		}
+		else
+		{
+			// echo("retire: $retire<br>golive: $golive<br>softlaunch: $softlaunch<bR>time: ".time());
+
+			if($retire > 0 && $retire < time())
+			{
+				$this->DisplayFileNotFound($navpart, $navpath, $newpath, "Page retired");
+			}
+			else if($golive > time())
+			{
+				// die(array_key_exists('zymurgy',$_COOKIE) ? "Logged in" : "Not logged in");
+
+				if(!array_key_exists('zymurgy',$_COOKIE) || $softlaunch <= 0)
+				{
+					$this->DisplayFileNotFound($navpart, $navpath, $newpath, "Page not yet live");
+				}
+				else if($softlaunch > time())
+				{
+					$this->DisplayFileNotFound($navpart, $navpath, $newpath, "Page not yet soft launched");
+				}
+			}
+		}
+		// -----
+
 		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage['template']}");
 		$this->navpath = $navpath;
 		$this->LoadPageText();
+	}
+
+	private function GetSitePage($criteria)
+	{
+		$sql = "SELECT `id`, `template`, `retire`, `golive`, `softlaunch` ".
+			"FROM `zcm_sitepage` WHERE $criteria ORDER BY `disporder` LIMIT 0, 1";
+
+		return Zymurgy::$db->get($sql);
+	}
+
+	private function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
+	{
+		header("HTTP/1.0 404 Not Found");
+		echo "$navpart couldn't be found from $navpath. <!--\r\n";
+		print_r($newpath);
+		echo("\n$msg");
+		echo "-->";
+		exit;
 	}
 
 	/**
@@ -128,7 +186,7 @@ class ZymurgyTemplate
 		}
 		Zymurgy::$db->free_result($ri);
 	}
-	
+
 	private function populatepagetextcache($tag,$type)
 	{
 		if (!array_key_exists($tag,$this->pagetextcache))
@@ -171,7 +229,7 @@ class ZymurgyTemplate
 		$w->editkey = $this->pagetextids[$tag];
 		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
 	}
-	
+
 	public function pagetextraw($tag,$type='html.600.400')
 	{
 		$this->populatepagetextcache($tag,$type);
