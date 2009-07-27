@@ -97,6 +97,35 @@ class ZIW_Input extends ZIW_Base
 		echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 			"$name\" value=\"$value\" />";
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Input(inputspecName) {\n";
+		$output .= " var description = \"n/a\"\n";
+
+		$output .= " switch(inputspecName) {\n";
+		$output .= "  case \"input\": description = \"Text - one line\"; break;\n";
+		$output .= "  case \"float\": description = \"Numeric (with decimals)\"; break;\n";
+		$output .= "  case \"numeric\": description = \"Numeric (no decimals)\"; break;\n";
+		$output .= "  default: description = inputspecName;\n";
+		$output .= " }\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = description;\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Size\", 3, 5, 20));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Maximum Length\", 3, 5, 50));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
 }
 
 class ZIW_TextArea extends ZIW_Base

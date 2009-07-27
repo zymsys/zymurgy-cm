@@ -557,31 +557,6 @@ function GetHipAsirraSpecifier()
 	return specifier;
 }
 
-function GetSupportedSpecifiers()
-{
-	var list = new Array();
-
-	list.push(GetInputSpecifier());
-	list.push(GetTextAreaSpecifier());
-	list.push(GetHtmlSpecifier());
-	list.push(GetCheckboxSpecifier());
-	list.push(GetRadioSpecifier());
-	list.push(GetDropSpecifier());
-	list.push(GetAttachmentSpecifier());
-	list.push(GetImageSpecifier());
-	list.push(GetMoneySpecifier());
-	list.push(GetNumericSpecifier());
-	list.push(GetFloatSpecifier());
-	list.push(GetUnixDateSpecifier());
-	list.push(GetLookupSpecifier());
-	list.push(GetColourSpecifier());
-	list.push(GetThemeSpecifier());
-	list.push(GetVerbiageSpecifier());
-	list.push(GetHipAsirraSpecifier());
-
-	return list;
-}
-
 function GetSpecifierFromText(specifierText)
 {
 	specifierText = specifierText + ".";
@@ -737,4 +712,17 @@ function changeSpecifierByText(specifierElement, specifierText)
 function makeInputSpecifier(name, value) {
 	document.write('<input type="text" id="'+name+'" name="'+name+'" value="'+value+'">'+
 		'<input type="button" id="'+name+'_edit" onClick="editSpecifier('+"'"+name+"'"+')" value="&raquo;">');
+}
+
+function DefineTextParameter(label, size, maxlength, value)
+{
+	var parameter = new InputParameter;
+
+	parameter.description = label;
+	parameter.type = "text";
+	parameter.size = size;
+	parameter.maxlength = maxlength;
+	parameter.value = value;
+
+	return parameter;
 }
