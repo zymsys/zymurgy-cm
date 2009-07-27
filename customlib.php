@@ -104,9 +104,9 @@ function inputspec2sqltype($inputspec)
 				return 'int unsigned';
 				break;
 //			case "numeric":
-			case "lookup":
-				return 'bigint unsigned';
-				break;
+//			case "lookup":
+//				return 'bigint unsigned';
+//				break;
 //			case "float":
 //				return 'float';
 //				break;

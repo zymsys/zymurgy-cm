@@ -27,7 +27,6 @@ function GetSupportedSpecifiers()
 	list.push(GetImageSpecifier());
 	list.push(GetMoneySpecifier());
 	list.push(GetUnixDateSpecifier());
-	list.push(GetLookupSpecifier());
 	list.push(GetColourSpecifier());
 	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());

@@ -714,6 +714,28 @@ function makeInputSpecifier(name, value) {
 		'<input type="button" id="'+name+'_edit" onClick="editSpecifier('+"'"+name+"'"+')" value="&raquo;">');
 }
 
+function DefineCheckboxParameter(label, value)
+{
+	var parameter = new InputParameter;
+
+	parameter.description = label;
+	parameter.type = "checkbox";
+	parameter.value = value;
+
+	return parameter;
+}
+
+function DefineHiddenParameter(label, value)
+{
+	var parameter = new InputParameter;
+
+	parameter.description = label;
+	parameter.type = "hidden";
+	parameter.value = value;
+
+	return parameter;
+}
+
 function DefineTextParameter(label, size, maxlength, value)
 {
 	var parameter = new InputParameter;
@@ -723,6 +745,21 @@ function DefineTextParameter(label, size, maxlength, value)
 	parameter.size = size;
 	parameter.maxlength = maxlength;
 	parameter.value = value;
+
+	return parameter;
+}
+
+function DefineSelectParameter(label, size, maxlength, optionLoader, optionChange, value)
+{
+	var parameter = new InputParameter;
+
+	parameter.description = label;
+	parameter.type = "select";
+	parameter.size = size;
+	parameter.maxlength = maxlength;
+	parameter.optionLoader = optionLoader;
+	parameter.onchange = optionChange;
+	parameter.value = "";
 
 	return parameter;
 }

@@ -261,11 +261,8 @@ class ZIW_CheckBox extends ZIW_Base
 		$output .= " specifier.description = \"Checkbox\";\n";
 		$output .= " specifier.type = inputspecName;\n";
 
-		$output .= " var checkedParameter = new InputParameter;\n";
-		$output .= " checkedParameter.description = \"Checked by default\";\n";
-		$output .= " checkedParameter.type = \"checkbox\";\n";
-		$output .= " checkedParameter.value = \"\";\n";
-		$output .= " specifier.inputparameters.push(checkedParameter);\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineCheckboxParameter(\"Checked by default\", \"\"));\n";
 
 		$output .= " return specifier;\n";
 		$output .= "}\n";
@@ -392,6 +389,37 @@ class ZIW_Lookup extends ZIW_Base
 		return array_key_exists($display, $values)
 			? $values[$display]
 			: "";
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Lookup(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Custom Table Lookup\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineSelectParameter(\"Table Name\", 30, 200, \"getTableNames();\", \"getColumnNames();\", \"\"));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineHiddenParameter(\"ID Column\", \"id\"));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineSelectParameter(\"Value Column\", 30, 200, \"\", \"\", \"\"));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineSelectParameter(\"Sort Column\", 30, 200, \"\", \"\", \"\"));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineCheckboxParameter(\"Allow Nulls\", \"\"));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "BIGINT UNSIGNED";
 	}
 }
 
