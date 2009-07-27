@@ -1042,7 +1042,9 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
-	}
+	} // End Zymurgy Class definition
+	
+	//The following runs only the first time cmo.php is included...
 
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 		Zymurgy::$root = $_SERVER["APPL_PHYSICAL_PATH"];

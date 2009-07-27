@@ -57,6 +57,13 @@ UpdateStatus("");
 
 // ----------
 
+UpdateStatus("-- Fixing bogus template visibility");
+mysql_query("update zcm_sitepage set retire=NULL, golive=NULL, softlaunch=NULL where (retire = golive) and (golive = softlaunch)");
+UpdateStatus("-- Bogus template visibility fixed");
+UpdateStatus("");
+
+// ----------
+
 UpdateStatus("Configuring Zymurgy:CM Membership Groups");
 
 $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - User', 1 FROM DUAL ".

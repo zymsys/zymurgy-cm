@@ -25,9 +25,35 @@ class ZymurgySiteNav
 	
 	function __construct($navinfo='')
 	{
-		$ri = Zymurgy::$db->run("select id,linktext,parent,golive,softlaunch,retire from zcm_sitepage order by disporder");
+		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
+			if (!is_null($row['golive']) || !is_null($row['softlaunch']) || !is_null($row['retire']))
+			{
+				//Is this page retired?
+				if (!is_null($row['retire']) && (time() > $row['retire']))
+				{
+					//This page is retired
+					continue;
+				}
+				//Is this before the go live date?
+				if (!is_null($row['golive']) && (time() < $row['golive']))
+				{
+					//This is before the go live date.
+					//Is this after the soft launch date?
+					if (!is_null($row['softlaunch']) && (time() < $row['softlaunch']))
+					{
+						//Yeah, we haven't even soft-launched yet.  Bail.
+						continue;
+					}
+					//We've soft-launched, but not gone live.  Is the user allowed to view soft launch pages?
+					if (!array_key_exists('zymurgy',$_COOKIE))
+					{
+						//User isn't a Z:CM user, so not allowed to see soft launch pages.
+						continue;
+					}
+				}
+			}
 			$this->items[$row['id']] = new ZymurgySiteNavItem($row['linktext'],$row['parent'],$row['golive'],$row['softlaunch'],$row['retire']);
 			if (array_key_exists($row['parent'],$this->structureparts))
 				$this->structureparts[$row['parent']][] = $row['id'];
