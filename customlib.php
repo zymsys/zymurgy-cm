@@ -126,9 +126,9 @@ function inputspec2sqltype($inputspec)
 				return "varchar($maxsz)";
 				break;
 //			case "input":
-			case "password":
-				return "varchar({$pp[1]})";
-				break;
+//			case "password":
+//				return "varchar({$pp[1]})";
+//				break;
 //			case "textarea":
 			case "html":
 				return 'longtext';

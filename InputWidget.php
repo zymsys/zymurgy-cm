@@ -229,6 +229,11 @@ class ZIW_Password extends ZIW_Base
 	{
 		return "*******";
 	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(".$parameters[1].")";
+	}
 }
 
 class ZIW_CheckBox extends ZIW_Base
