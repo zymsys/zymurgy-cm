@@ -98,7 +98,7 @@ function inputspec2sqltype($inputspec)
 			case "date":
 				return $type;
 				break;
-			case "money":
+//			case "money":
 			case "unixdatetime":
 			case "unixdate":
 				return 'int unsigned';

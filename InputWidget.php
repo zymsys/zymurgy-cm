@@ -319,6 +319,26 @@ class ZIW_Money extends ZIW_Base
 	{
 		return '$'.number_format($this->extra['UsePennies'] ? ($display / 100) : $display,2,'.',',');
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Money(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Money\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "INT UNSIGNED";
+	}
 }
 
 class ZIW_InputSpec extends ZIW_Base
