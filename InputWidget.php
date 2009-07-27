@@ -167,8 +167,6 @@ class ZIW_TextArea extends ZIW_Base
 		$output = "";
 
 		$output .= "function GetSpecifier_ZIW_TextArea(inputspecName) {\n";
-		$output .= " var description = \"n/a\"\n";
-
 		$output .= " var specifier = new InputSpecifier;\n";
 		$output .= " specifier.description = \"Text - multiple lines\";\n";
 		$output .= " specifier.type = inputspecName;\n";
@@ -247,6 +245,32 @@ class ZIW_CheckBox extends ZIW_Base
 		echo "<input type=\"checkbox\" id=\"$name\" name=\"$name\"";
 		if (isset($ep[1]) && ($ep[1]=='checked') || ($value!='')) echo " checked=\"checked\"";
 		echo " />";
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_CheckBox(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Checkbox\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " var checkedParameter = new InputParameter;\n";
+		$output .= " checkedParameter.description = \"Checked by default\";\n";
+		$output .= " checkedParameter.type = \"checkbox\";\n";
+		$output .= " checkedParameter.value = \"\";\n";
+		$output .= " specifier.inputparameters.push(checkedParameter);\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(5)";
 	}
 }
 

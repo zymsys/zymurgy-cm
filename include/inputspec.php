@@ -21,7 +21,6 @@ function GetSupportedSpecifiers()
 ?>
 
 	list.push(GetHtmlSpecifier());
-	list.push(GetCheckboxSpecifier());
 	list.push(GetRadioSpecifier());
 	list.push(GetDropSpecifier());
 	list.push(GetAttachmentSpecifier());
