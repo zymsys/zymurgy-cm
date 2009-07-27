@@ -128,6 +128,22 @@ div.ZymurgyBreadcrumbs
 	background-position: 2px 1px !important;
 	left: 5px !important;
 }
+
+.yui-toolbar-editcode span.yui-toolbar-icon,
+.yui-toolbar-editcode-selected span.yui-toolbar-icon
+{
+	background-image: url(http://developer.yahoo.com/yui/examples/editor/assets/html_editor.gif) !important;
+	background-position: 0 1px !important;
+	left: 5px !important;
+}
+
+.editor-hidden
+{
+	visibility: hidden;
+	top: -9999px;
+	left: -9999px;
+	position: absolute;
+}
 -->
 </style>
 <style type"text/css" media="print">
