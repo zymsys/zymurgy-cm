@@ -161,6 +161,33 @@ class ZIW_TextArea extends ZIW_Base
 		echo "<textarea id=\"$name\" name=\"".
 			"$name\" rows=\"{$ep[2]}\" cols=\"{$ep[1]}\">$value</textarea>";
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_TextArea(inputspecName) {\n";
+		$output .= " var description = \"n/a\"\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Text - multiple lines\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (characters)\", 3, 5, 40));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Height (characters)\", 3, 5, 5));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "LONGTEXT";
+	}
 }
 
 class ZIW_Hidden extends ZIW_Base

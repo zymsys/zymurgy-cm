@@ -129,7 +129,7 @@ function inputspec2sqltype($inputspec)
 			case "password":
 				return "varchar({$pp[1]})";
 				break;
-			case "textarea":
+//			case "textarea":
 			case "html":
 				return 'longtext';
 				break;

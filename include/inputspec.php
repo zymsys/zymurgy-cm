@@ -20,7 +20,6 @@ function GetSupportedSpecifiers()
 	}
 ?>
 
-	list.push(GetTextAreaSpecifier());
 	list.push(GetHtmlSpecifier());
 	list.push(GetCheckboxSpecifier());
 	list.push(GetRadioSpecifier());
