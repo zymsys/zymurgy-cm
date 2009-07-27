@@ -44,9 +44,9 @@ function tablecrumbs($tid)
 		$tid = array_pop($tids);
 		$crumb = array_pop($parents).' Detail Tables';
 		$crumbs["customtable.php?d=$tid"] = htmlspecialchars($crumb);
-	}	
+	}
 }
-	
+
 function okname($name)
 {
 	global $reserved;
@@ -69,7 +69,7 @@ function gettable($t)
 	$sql = "select * from zcm_customtable where id=$t";
 	$ri = mysql_query($sql) or die("Can't get table ($sql): ".mysql_error());
 	$tbl = mysql_fetch_array($ri);
-	if (!is_array($tbl)) 
+	if (!is_array($tbl))
 		die("No such table ($t)");
 	return $tbl;
 }
@@ -78,54 +78,69 @@ function inputspec2sqltype($inputspec)
 {
 	list($type,$params) = explode('.',$inputspec,2);
 	$pp = explode('.',$params);
-	switch($type)
+
+	include_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+	if(
+		array_key_exists($type,InputWidget::$widgets)
+		&& method_exists(InputWidget::$widgets[$type], "GetDatabaseType"))
 	{
-		case "datetime":
-		case "date":
-			return $type;
-			break;
-		case "money":
-		case "unixdatetime":
-		case "unixdate":
-			return 'int unsigned';
-			break;
-		case "numeric":
-		case "lookup":
-			return 'bigint unsigned';
-			break;
-		case "float":
-			return 'float';
-			break;	
-		case "attachment":
-		case "image":
-			return 'varchar(60)';
-			break;
-		case "drop":
-		case "radio":
-			$ritems = ZIW_RadioDrop::HackedUnserialize($params);
-			$maxsz = 0;
-			foreach ($ritems as $value)
-			{
-				if (strlen($value) > $maxsz)
-					$maxsz = strlen($value);
-			}
-			return "varchar($maxsz)";
-			break;
-		case "input":
-		case "password":
-			return "varchar({$pp[1]})";
-			break;
-		case "textarea":
-		case "html":
-			return 'longtext';
-			break;
-		case "colour":
-		case "color":
-			return 'varchar(6)';
-			break;
-		default:
-			return 'text';
-			break;
+		$dbType = call_user_func(array(InputWidget::$widgets[$type], "GetDatabaseType"), $type, $pp);
+		// die($dbType);
+		return $dbType;
+	}
+	else
+	{
+		// die("Falling back to hard coded list");
+
+		switch($type)
+		{
+			case "datetime":
+			case "date":
+				return $type;
+				break;
+			case "money":
+			case "unixdatetime":
+			case "unixdate":
+				return 'int unsigned';
+				break;
+//			case "numeric":
+			case "lookup":
+				return 'bigint unsigned';
+				break;
+//			case "float":
+//				return 'float';
+//				break;
+			case "attachment":
+			case "image":
+				return 'varchar(60)';
+				break;
+			case "drop":
+			case "radio":
+				$ritems = ZIW_RadioDrop::HackedUnserialize($params);
+				$maxsz = 0;
+				foreach ($ritems as $value)
+				{
+					if (strlen($value) > $maxsz)
+						$maxsz = strlen($value);
+				}
+				return "varchar($maxsz)";
+				break;
+//			case "input":
+			case "password":
+				return "varchar({$pp[1]})";
+				break;
+			case "textarea":
+			case "html":
+				return 'longtext';
+				break;
+			case "colour":
+			case "color":
+				return 'varchar(6)';
+				break;
+			default:
+				return 'text';
+				break;
+		}
 	}
 }
 

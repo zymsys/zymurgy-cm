@@ -126,6 +126,25 @@ class ZIW_Input extends ZIW_Base
 
 		return $output;
 	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		switch($inputspecName)
+		{
+			case "numeric":
+				return "BIGINT";
+				break;
+			case "float":
+				return "FLOAT";
+				break;
+			case "input":
+				return "VARCHAR(".$parameters[1].")";
+				break;
+			default:
+				return "TEXT";
+				break;
+		}
+	}
 }
 
 class ZIW_TextArea extends ZIW_Base
