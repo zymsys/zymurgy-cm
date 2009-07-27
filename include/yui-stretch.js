@@ -5,7 +5,7 @@ function ZymurgyStretchesYUI() {
 		(YAHOO.widget.AutoComplete))
 	{
 		//Stretch the build in YUI AutoComplete object:
-		
+
 		//Add toggleContainer, which expands the container if it is closed, or closes it if it is open.  Good for combo-box style functionality.
 		if (!YAHOO.widget.AutoComplete.toggleContainer) {
 			YAHOO.widget.AutoComplete.prototype.toggleContainer = function()
@@ -45,17 +45,17 @@ function ZymurgyStretchesYUI() {
 						label: "Insert Image from Zymurgy:CM",
 						value: "zcmimage"
 					};
-	
+
 					this.toolbar.addButtonToGroup(
 						mediaFileImageConfig,
 						"insertitem");
-					
-					//Create window contents for inserting from Z:CM media gallery	
+
+					//Create window contents for inserting from Z:CM media gallery
 	                var body = document.createElement('div');
 	                body.innerHTML = 'Loading Media Gallery...';
 	                editor._windows.zcmimage = {};
 	                editor._windows.zcmimage.body = body;
-	                
+
 					YAHOO.util.Connect.asyncRequest(
 						"GET",
 						"/zymurgy/media.php?action=insert_image_into_yuihtml" +
@@ -74,9 +74,9 @@ function ZymurgyStretchesYUI() {
 		                var win = new YAHOO.widget.EditorWindow('zcmimage', {
 		                    width: '400px'
 		                });
-		                
+
 		                editor.execCommand('insertimage',''); //Create blank, or load selected image into currentElement[0]
-		                
+
 		                var el = editor.currentElement[0];
 		                if (el) {
 		                	//Load defaults from selected element
@@ -153,9 +153,81 @@ function ZymurgyStretchesYUI() {
 				{
 		            this.on('afterExecCommand', function() {
 				};*/
-			};
-		}
-	}
-}
+			}; // YAHOO.widget.Editor.prototype.addZCMImageButton
+		} // if (!YAHOO.widget.Editor.handleZCMImageClick)
+
+		if(!YAHOO.widget.Editor.handleEditCode)
+		{
+			YAHOO.widget.Editor.prototype.addEditCodeButton = function() {
+				this.on("toolbarLoaded", function() {
+					var codeConfig = {
+						type: "push",
+						label: "Edit HTML Code",
+						value: "editcode"
+					};
+					this.toolbar.addButtonToGroup(codeConfig, "insertitem");
+
+					this.toolbar.on("editcodeClick", function() {
+						var ta = this.get("element");
+						var iframe = this.get("iframe").get("element");
+
+						if(this.toolbar.get("disabled"))
+						{
+							this.toolbar.set("disabled", false);
+							this.setEditorHTML(ta.value);
+
+							if(!this.browser.ie)
+							{
+								this._setDesignMode("on");
+							}
+
+							YAHOO.util.Dom.removeClass(iframe, "editor-hidden");
+							YAHOO.util.Dom.addClass(ta, "editor-hidden");
+
+							this.show();
+							this._focusWindow();
+						}
+						else
+						{
+							this.cleanHTML();
+
+							YAHOO.util.Dom.removeClass(ta, "editor-hidden");
+							YAHOO.util.Dom.addClass(iframe, "editor-hidden");
+
+							this.toolbar.set("disabled", true);
+							this.toolbar.getButtonByValue("editcode").set("disabled", false);
+							this.toolbar.selectButton("editcode");
+							this.dompath.innerHTML = "Editing HTML Code";
+
+							this.hide();
+						}
+
+						return false;
+					}, this, true);
+
+					this.on("cleanHTML", function(ev) {
+						this.get("element").value = ev.html;
+					}, this, true);
+
+					// Move the textarea control - this is required for
+					// source code editing support.
+					this.on("afterRender", function() {
+						var wrapper = this.get("editor_wrapper");
+						wrapper.appendChild(this.get("element"));
+
+						this.setStyle("width", "100%");
+						this.setStyle("height", "100%");
+						this.setStyle("visibility", "");
+						this.setStyle("top", "");
+						this.setStyle("left", "");
+						this.setStyle("position", "");
+
+						this.addClass("editor-hidden");
+					}, this, true);
+				}, this, true);
+			}; // YAHOO.widget.Editor.prototype.addEditCodeButton
+		} // if(!YAHOO.widget.Editor.handleEditCode)
+	} // YAHOO.widget.Editor
+} // function ZymurgyStretchesYUI()
 
 ZymurgyStretchesYUI();

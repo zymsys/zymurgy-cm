@@ -1189,6 +1189,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 						myConfig);
 
 					<?= str_replace(".", "_", $name) ?>Editor.addZCMImageButton();
+					<?= str_replace(".", "_", $name) ?>Editor.addEditCodeButton();
 
 					<?= str_replace(".", "_", $name) ?>Editor.render();
 					<?/* if($dialogName !== "") { ?>
