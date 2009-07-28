@@ -6,14 +6,24 @@ class ZymurgySiteNavItem
 	public $livedate;
 	public $softlaunchdate;
 	public $retiredate;
+	public $acl;
 
-	function __construct($linktext,$parent,$livedate,$softlaunchdate,$retiredate)
+	public $aclitems = array();
+
+	function __construct(
+		$linktext,
+		$parent,
+		$livedate,
+		$softlaunchdate,
+		$retiredate,
+		$acl)
 	{
 		$this->linktext = $linktext;
 		$this->parent = $parent;
 		$this->livedate = $livedate;
 		$this->softlaunchdate = $softlaunchdate;
 		$this->retiredate = $retiredate;
+		$this->acl =  $acl;
 	}
 }
 
@@ -25,13 +35,13 @@ class ZymurgySiteNav
 
 	function __construct($navinfo='')
 	{
-		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire from zcm_sitepage order by disporder");
+		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			if (!is_null($row['golive']) || !is_null($row['softlaunch']) || !is_null($row['retire']))
 			{
 				//Is this page retired?
-				if (!is_null($row['retire']) && (time() > $row['retire']))
+				if ($row['retire'] > 0 && (time() > $row['retire']))
 				{
 					//This page is retired
 					continue;
@@ -54,15 +64,42 @@ class ZymurgySiteNav
 					}
 				}
 			}
-			$this->items[$row['id']] = new ZymurgySiteNavItem($row['linktext'],$row['parent'],$row['golive'],$row['softlaunch'],$row['retire']);
+			$this->items[$row['id']] = new ZymurgySiteNavItem(
+				$row['linktext'],
+				$row['parent'],
+				$row['golive'],
+				$row['softlaunch'],
+				$row['retire'],
+				$row["acl"]);
 			if (array_key_exists($row['parent'],$this->structureparts))
 				$this->structureparts[$row['parent']][] = $row['id'];
 			else
 				$this->structureparts[$row['parent']] = array($row['id']);
 		}
+
 		Zymurgy::$db->free_result($ri);
 
 		$this->structure = $this->buildnav(0);
+
+		$sql = "SELECT `zcm_acl`, `group`, `permission` FROM `zcm_aclitem`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of ACLs: ".Zymrugy::$db->error().", $sql");
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			foreach($this->items as $key => $item)
+			{
+				if($item->acl == $row["zcm_acl"])
+				{
+					$item->aclitems[] = array(
+						"group" => $row["group"],
+						"permission" => $row["permission"]);
+					$this->items[$key] = $item;
+				}
+			}
+		}
+
+		Zymurgy::$db->free_result($ri);
 	}
 
 	private function buildnav($parent)
