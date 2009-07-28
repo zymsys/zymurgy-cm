@@ -1784,6 +1784,26 @@ class ZIW_Theme extends ZIW_Base
 		}
 		echo "</script>\r\n";
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Theme(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Color Theme\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(60)";
+	}
 }
 
 class ZIW_HIP extends ZIW_Base

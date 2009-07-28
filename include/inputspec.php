@@ -28,7 +28,6 @@ function GetSupportedSpecifiers()
 	}
 ?>
 
-	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());
 	list.push(GetHipAsirraSpecifier());
 
