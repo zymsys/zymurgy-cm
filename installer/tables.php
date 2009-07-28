@@ -12,6 +12,7 @@
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetNavigationTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVersionControlTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVisitTrackingTableDefinitions());
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetACLTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPageTableDefinitions());
 
 	function GetAuthenticationTableDefinitions()
@@ -448,6 +449,39 @@
 					array("columns" => "orphan", "unique" => FALSE, "type" => ""),
 					array("columns" => "trackingid", "unique" => FALSE, "type" => ""),
 					array("columns" => "viewtime", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetACLTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_acl",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(50)", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "name", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_aclitem",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("zcm_acl", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("disporder", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("group", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("permission", "VARCHAR(30)", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "zcm_acl", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
