@@ -36,7 +36,7 @@ class ZymurgyMember
 			'password'=>$row['password'],
 			'formdata'=>$row['formdata'],
 			'orgunit'=>$row['orgunit'],
-			'groups'=>array('Registered User')
+			'groups'=>array() // 'Registered User')
 		);
 	}
 

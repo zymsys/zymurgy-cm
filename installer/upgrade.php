@@ -78,6 +78,18 @@ $sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Zymurgy:CM - Webm
 	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Zymurgy:CM - Webmaster' )";
 mysql_query($sql) or die("Could not add Zymurgy:CM - Webmaster membership group: ".mysql_error().", $sql");
 
+$sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) SELECT 'Registered User', 1 FROM DUAL ".
+	"WHERE NOT EXISTS( SELECT 1 FROM `zcm_groups` WHERE `name` = 'Registered User' )";
+mysql_query($sql) or die("Could not add Registered User membership group: ".mysql_error().", $sql");
+
+if(mysql_affected_rows() > 0)
+{
+	$sql = "INSERT INTO `zcm_membergroup` ( `memberid`, `groupid` ) SELECT `id`, '".
+		mysql_escape_string(mysql_insert_id()).
+		"' FROM `zcm_member`";
+	mysql_query($sql) or die("Could not add members to Registered User membership group: ".mysql_error().", $sql");
+}
+
 UpdateStatus("-- Groups configured.");
 UpdateStatus("");
 
