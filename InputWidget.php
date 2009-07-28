@@ -1868,6 +1868,26 @@ passThroughFormSubmit = false;
 				break;
 		}
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Human Interactive Proof (Asirra)\";\n";
+		$output .= " specifier.type = \"hip.asirra\";\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Position (top, bottom, left or right)\", 10, 10, \"bottom\"));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (in cats)\", 3, 5, 6));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
 }
 
 class InputWidget

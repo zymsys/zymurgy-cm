@@ -29,7 +29,6 @@ function GetSupportedSpecifiers()
 ?>
 
 	list.push(GetVerbiageSpecifier());
-	list.push(GetHipAsirraSpecifier());
 
 	return list;
 }
