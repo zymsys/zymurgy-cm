@@ -24,7 +24,7 @@ $dg->AddColumn('Group','group');
 $dg->AddColumn('Permission','permission');
 $dg->AddUpDownColumn('disporder');
 $dg->AddLookup('group','Group:','zcm_groups','id','name','name');
-$dg->AddDropListEditor('permission','Permission:',array("Read"));
+$dg->AddDropListEditor('permission','Permission:',array("Read" => "Read"));
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add New Item';
