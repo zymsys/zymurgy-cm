@@ -503,7 +503,8 @@
 					DefineTableField("retire", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("golive", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("softlaunch", "DATETIME", "DEFAULT NULL"),
-					DefineTableField("template", "BIGINT", "DEFAULT 1")
+					DefineTableField("template", "BIGINT", "DEFAULT 1"),
+					DefineTableField("acl", "BIGINT", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),

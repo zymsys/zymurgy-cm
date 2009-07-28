@@ -62,7 +62,7 @@ function OnBeforeUpdate($values)
 }
 
 $ds = new DataSet('zcm_sitepage','id');
-$ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template');
+$ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template','acl');
 $ds->OnBeforeInsert = 'OnBeforeInsert';
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->AddDataFilter('parent',$p);
@@ -90,6 +90,7 @@ $dg->AddInput('linktext','Menu Text:',40,40);
 $dg->AddEditor('retire','Retire After:','datetime');
 $dg->AddEditor('golive','Go Live:','datetime');
 $dg->AddEditor('softlaunch','Soft Launch:','datetime');
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddColumn('View', 'id', '<a href="template.php?pageid={0}">View</a>');
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();

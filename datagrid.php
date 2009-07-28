@@ -891,9 +891,20 @@ class DataGrid
 		}
 	}
 
-	function AddLookup($datacolumn,$caption,$table,$idcolumn,$valcolumn,$ordercolumn='')
+	function AddLookup(
+		$datacolumn,
+		$caption,
+		$table,
+		$idcolumn,
+		$valcolumn,
+		$ordercolumn='',
+		$allowNulls = false)
 	{
-		$this->AddEditor($datacolumn,$caption,"lookup.$table.$idcolumn.$valcolumn.$ordercolumn");
+		$this->AddEditor(
+			$datacolumn,
+			$caption,
+			"lookup.$table.$idcolumn.$valcolumn.$ordercolumn".
+			($allowNulls ? ".checked" : ""));
 	}
 
 	function BuildSelfReference($getvars,$removevars=array())

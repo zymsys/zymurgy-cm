@@ -6,7 +6,7 @@ class ZymurgySiteNavItem
 	public $livedate;
 	public $softlaunchdate;
 	public $retiredate;
-	
+
 	function __construct($linktext,$parent,$livedate,$softlaunchdate,$retiredate)
 	{
 		$this->linktext = $linktext;
@@ -22,7 +22,7 @@ class ZymurgySiteNav
 	public $items = array();
 	public $structure = array();
 	private $structureparts = array();
-	
+
 	function __construct($navinfo='')
 	{
 		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire from zcm_sitepage order by disporder");
@@ -57,13 +57,14 @@ class ZymurgySiteNav
 			$this->items[$row['id']] = new ZymurgySiteNavItem($row['linktext'],$row['parent'],$row['golive'],$row['softlaunch'],$row['retire']);
 			if (array_key_exists($row['parent'],$this->structureparts))
 				$this->structureparts[$row['parent']][] = $row['id'];
-			else 
+			else
 				$this->structureparts[$row['parent']] = array($row['id']);
 		}
 		Zymurgy::$db->free_result($ri);
+
 		$this->structure = $this->buildnav(0);
 	}
-	
+
 	private function buildnav($parent)
 	{
 		if (!array_key_exists($parent,$this->structureparts)) return array();
@@ -74,14 +75,14 @@ class ZymurgySiteNav
 		}
 		return $r;
 	}
-	
+
 	public function linktext2linkpart($linktext)
 	{
 		$linktext=strtr($linktext,"()!$'?:,&+-/.ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ",
 			"-------------SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy");
 		return str_replace(' ','_',$linktext);
 	}
-	
+
 	/**
 	 * Recurse through the nav structure to find the chunk under us
 	 *
@@ -102,7 +103,7 @@ class ZymurgySiteNav
 		}
 		return false;
 	}
-	
+
 	public function render($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$hrefroot = 'pages')
 	{
 		$idpart = empty($startpath) ? uniqid() : ZymurgySiteNav::linktext2linkpart($startpath);
@@ -115,9 +116,9 @@ class ZymurgySiteNav
 ?>
 <script type="text/javascript">
 YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
-	var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $idpart ?>", { 
-		<?= $ishorizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>, 
-		hidedelay: 750, 
+	var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $idpart ?>", {
+		<?= $ishorizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>,
+		hidedelay: 750,
 		lazyload: true });
 	oMenu.render();
 });
@@ -132,7 +133,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 			}
 			$this->structure = $structurestart;
 		}
-		else 
+		else
 		{
 			$structurestart = $this->structure;
 		}
@@ -162,7 +163,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 				}
 			}
 		}
-		else 
+		else
 		{
 			$anscestors = array();
 		}
@@ -177,7 +178,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		echo "\t</div>\r\n"; //yuimenubar yuimenubarnav
 		echo "</div>\r\n"; //yui-skin-sam
 	}
-	
+
 	/**
 	 * Render part of the site's navigation
 	 *
@@ -191,7 +192,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 	{
 		$dtabs = str_repeat("\t",$depth+3);
 		$href = "/$hrefroot/";
-		if ($anscestors) 
+		if ($anscestors)
 		{
 			foreach($anscestors as $anscestor)
 			{
@@ -207,7 +208,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 			echo "\"";
 			$fot = true;
 		}
-		else 
+		else
 		{
 			if ($depth > 0) echo " class=\"first-of-type\"";
 			$fot = false;
@@ -223,7 +224,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 				echo " first-of-type";
 			}
 			echo "\"><a class=\"yuimenuitemlabel\" href=\"$href".$this->linktext2linkpart($this->items[$key]->linktext)."\">".$this->items[$key]->linktext."</a>";
-			if ($children) 
+			if ($children)
 			{
 				echo "\r\n";
 				$a = $anscestors;

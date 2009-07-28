@@ -103,7 +103,7 @@ if (!class_exists('Zymurgy'))
 		 * @var ZymurgyMember
 		 */
 		private static $MemberProvider = null;
-		
+
 		/**
 		 * Member made public to allow Zymurgy::sitetext() to be called without calling
 		 * Zymurgy::headtags() first. This allows pages based on AJAX calls (that contain
@@ -132,7 +132,7 @@ if (!class_exists('Zymurgy'))
 		 * @var Locale[]
 		 */
 		public static $Locales = array();
-		
+
 		private static $remotelookupcache = array();
 
 		/**
@@ -198,7 +198,7 @@ if (!class_exists('Zymurgy'))
 			$r[] = Zymurgy::RequireOnceCore(true,$src);
 			return implode($r);
 		}
-		
+
 		static function YUILogger()
 		{
 			if (Zymurgy::$yuitest)
@@ -232,7 +232,7 @@ if (!class_exists('Zymurgy'))
 		{
 			if (array_key_exists('yuibaseurl',Zymurgy::$config))
 				return Zymurgy::$config['yuibaseurl'];
-			else 
+			else
 				return "http://yui.yahooapis.com/2.7.0/build/";
 		}
 
@@ -821,13 +821,13 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberform($navname,$exitpage);
 		}
-		
+
 		static function memberremotelookup($table,$field,$value,$exact=false)
 		{
 			Zymurgy::initializemembership();
 			if (method_exists(Zymurgy::$MemberProvider,'remotelookup'))
 				return Zymurgy::$MemberProvider->remotelookup($table,$field,$value,$exact);
-			else 
+			else
 				return array();
 		}
 
@@ -842,19 +842,19 @@ if (!class_exists('Zymurgy'))
 						return Zymurgy::$remotelookupcache[$table][$field][$value];
 					}
 				}
-				else 
+				else
 				{
 					Zymurgy::$remotelookupcache[$table][$field] = array();
 				}
 			}
-			else 
+			else
 			{
 				Zymurgy::$remotelookupcache[$table] = array($field=>array());
 			}
 			Zymurgy::initializemembership();
 			if (method_exists(Zymurgy::$MemberProvider,'remotelookupbyid'))
 				$r = Zymurgy::$MemberProvider->remotelookupbyid($table,$field,$value);
-			else 
+			else
 				$r = false;
 			Zymurgy::$remotelookupcache[$table][$field][$value] = $r;
 			return $r;
@@ -955,11 +955,28 @@ if (!class_exists('Zymurgy'))
 			return substr($color, 1);
 		}
 
-		function sitenav($ishorizontal = true, $currentleveonly = false, $childlevelsonly = false, $startpath = '',$baseurl = 'pages')
+		public static $sitenav = null;
+
+		function sitenav(
+			$ishorizontal = true,
+			$currentleveonly = false,
+			$childlevelsonly = false,
+			$startpath = '',
+			$baseurl = 'pages')
 		{
 			require_once('sitenav.php');
-			$nav = new ZymurgySiteNav();
-			$nav->render($ishorizontal, $currentleveonly, $childlevelsonly, $startpath, $baseurl);
+
+			if(is_null(Zymurgy::$sitenav))
+			{
+				Zymurgy::$sitenav = new ZymurgySiteNav();
+			}
+
+			Zymurgy::$sitenav->render(
+				$ishorizontal,
+				$currentleveonly,
+				$childlevelsonly,
+				$startpath,
+				$baseurl);
 		}
 
 		static function pagetext($tag,$type='html.600.400')
@@ -1043,7 +1060,7 @@ if (!class_exists('Zymurgy'))
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
 	} // End Zymurgy Class definition
-	
+
 	//The following runs only the first time cmo.php is included...
 
 	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
