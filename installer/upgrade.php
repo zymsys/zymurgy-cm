@@ -311,24 +311,25 @@ SetNavigationFeature(3,   4, "- SEO", "headtext.php");
 SetNavigationFeature(22,  5, "--- Admin ---", "");
 SetNavigationFeature(4,   6, "- Members", "editmember.php");
 SetNavigationFeature(5,   7, "- Membership Groups", "editmember.php?action=list_groups");
-SetNavigationFeature(10,  8, "- Help Editor", "helpeditor.php");
-SetNavigationFeature(23,  9, "--- Webmaster ---", "");
-SetNavigationFeature(11, 10, "- Navigation", "navigation.php");
-SetNavigationFeature(12, 11, "- Master Config", "configconfig.php");
-SetNavigationFeature(13, 12, "- Plugin Management", "plugin.php");
-SetNavigationFeature(14, 13, "- Custom Tables", "customtable.php");
-SetNavigationFeature(15, 14, "- Custom Code Generator", "mkcustom.php");
-SetNavigationFeature(16, 15, "- Template Manager", "templatemgr.php");
-SetNavigationFeature(24, 16, "--- Media Files ---", "");
-SetNavigationFeature(6,  17, "- Media Files", "media.php");
-SetNavigationFeature(7,  18, "- Media Packages", "media.php?action=list_media_packages");
-SetNavigationFeature(8,  19, "- Media Package Types", "media.php?action=list_media_package_types");
-SetNavigationFeature(9,  20, "- Media Relations", "media.php?action=list_relations");
-SetNavigationFeature(25, 21, "--- General ---", "");
-SetNavigationFeature(17, 22, "- Appearance", "configuration.php");
-SetNavigationFeature(18, 23, "- Profile", "profile.php");
-SetNavigationFeature(19, 24, "- Help", "help.php");
-SetNavigationFeature(20, 25, "- Logout", "logout.php");
+SetNavigationFeature(26,  8, "- Access Control Lists", "acl.php");
+SetNavigationFeature(10,  9, "- Help Editor", "helpeditor.php");
+SetNavigationFeature(23, 10, "--- Webmaster ---", "");
+SetNavigationFeature(11, 11, "- Navigation", "navigation.php");
+SetNavigationFeature(12, 12, "- Master Config", "configconfig.php");
+SetNavigationFeature(13, 13, "- Plugin Management", "plugin.php");
+SetNavigationFeature(14, 14, "- Custom Tables", "customtable.php");
+SetNavigationFeature(15, 15, "- Custom Code Generator", "mkcustom.php");
+SetNavigationFeature(16, 16, "- Template Manager", "templatemgr.php");
+SetNavigationFeature(24, 17, "--- Media Files ---", "");
+SetNavigationFeature(6,  18, "- Media Files", "media.php");
+SetNavigationFeature(7,  19, "- Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8,  20, "- Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9,  21, "- Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(25, 22, "--- General ---", "");
+SetNavigationFeature(17, 23, "- Appearance", "configuration.php");
+SetNavigationFeature(18, 24, "- Profile", "profile.php");
+SetNavigationFeature(19, 25, "- Help", "help.php");
+SetNavigationFeature(20, 26, "- Logout", "logout.php");
 
 UpdateStatus("-- Zymurgy:CM Feature list configured");
 
@@ -339,27 +340,26 @@ $count = mysql_result($ri,0,0);
 if ($count==0)
 {
 	$sql = "INSERT INTO `zcm_nav` (id,disporder,parent,authlevel,navname,navtype,navto) VALUES
-		(1,   1, 0, 0, 'Content',           'Sub-Menu',           ''),
-		(3,   3, 0, 1, 'Admin',             'Sub-Menu',           ''),
-		(4,   4, 0, 2, 'Webmaster',         'Sub-Menu',           ''),
-		(5,   7, 0, 0, 'Profile',           'Zymurgy:CM Feature', '18'),
-		(6,  19, 0, 0, 'Help',              'Zymurgy:CM Feature', '19'),
-		(7,  20, 0, 0, 'Logout',            'Zymurgy:CM Feature', '20'),
-		(8,   8, 1, 0, 'Simple Content',    'Zymurgy:CM Feature', '1'),
-		(9,   9, 1, 0, 'SEO',               'Zymurgy:CM Feature', '3'),
-		(10, 10, 3, 1, 'User Management',   'URL',                'usermng.php'),
-		(11, 11, 3, 1, 'User Activity',     'URL',                'useractivity.php'),
-		(21, 12, 3, 1, 'Members',           'Zymurgy:CM Feature', '4'),
-		(22, 13, 3, 1, 'Membership Groups', 'Zymurgy:CM Feature', '5'),
-		(12, 14, 3, 1, 'Help Editor',       'Zymurgy:CM Feature', '10'),
-		(13, 13, 4, 2, 'Navigation',        'Zymurgy:CM Feature', '11'),
-		(14, 14, 4, 2, 'Master Config',     'Zymurgy:CM Feature', '12'),
-		(15, 15, 4, 2, 'Plugin Management', 'Zymurgy:CM Feature', '13'),
-		(16, 16, 4, 2, 'Custom Tables',     'Zymurgy:CM Feature', '14'),
-		(17, 17, 4, 2, 'Custom Code',       'Zymurgy:CM Feature', '15'),
-		(18, 18, 4, 2, 'Page Templates',    'Zymurgy:CM Feature', '16'),
-		(19,  5, 0, 0, 'Appearance',        'Zymurgy:CM Feature', '17'),
-		(20,  6, 1, 0, 'Pages',             'Zymurgy:CM Feature', '2')
+		(1,   1, 0, 0, 'Content',              'Sub-Menu',           ''),
+		(3,   3, 0, 1, 'Admin',                'Sub-Menu',           ''),
+		(4,   4, 0, 2, 'Webmaster',            'Sub-Menu',           ''),
+		(5,   7, 0, 0, 'Profile',              'Zymurgy:CM Feature', '18'),
+		(6,  19, 0, 0, 'Help',                 'Zymurgy:CM Feature', '19'),
+		(7,  20, 0, 0, 'Logout',               'Zymurgy:CM Feature', '20'),
+		(8,   8, 1, 0, 'Simple Content',       'Zymurgy:CM Feature', '1'),
+		(9,   9, 1, 0, 'SEO',                  'Zymurgy:CM Feature', '3'),
+		(21, 12, 3, 1, 'Members',              'Zymurgy:CM Feature', '4'),
+		(22, 13, 3, 1, 'Membership Groups',    'Zymurgy:CM Feature', '5'),
+		(26, 14, 3, 1, 'Access Control Lists', 'Zymurgy:CM Feature', '6'),
+		(12, 15, 3, 1, 'Help Editor',          'Zymurgy:CM Feature', '10'),
+		(13, 13, 4, 2, 'Navigation',           'Zymurgy:CM Feature', '11'),
+		(14, 14, 4, 2, 'Master Config',        'Zymurgy:CM Feature', '12'),
+		(15, 15, 4, 2, 'Plugin Management',    'Zymurgy:CM Feature', '13'),
+		(16, 16, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
+		(17, 17, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
+		(18, 18, 4, 2, 'Page Templates',       'Zymurgy:CM Feature', '16'),
+		(19,  5, 0, 0, 'Appearance',           'Zymurgy:CM Feature', '17'),
+		(20,  6, 1, 0, 'Pages',                'Zymurgy:CM Feature', '2')
 		;";
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 
