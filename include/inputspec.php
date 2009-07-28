@@ -28,7 +28,11 @@ function GetSupportedSpecifiers()
 	}
 ?>
 
-	list.push(GetVerbiageSpecifier());
+	// Special inputspec used in the form plugin
+	if(window.location.href.indexOf("pluginsuperadmin") > 0)
+	{
+		list.push(GetVerbiageSpecifier());
+	}
 
 	return list;
 }
