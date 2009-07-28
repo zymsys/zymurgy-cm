@@ -1234,6 +1234,31 @@ class ZIW_Image extends ZIW_Base
 		}
 		echo "<table><tr><td valign=\"center\"><input type=\"file\" id=\"$name\" name=\"$name\" /></td><td>".implode($thumbs,"</td><td>")."</td></tr></table>";
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Image(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Image Attachment\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (pixels)\", 3, 5, 100));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Height (pixels)\", 3, 5, 100));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(60)";
+	}
 }
 
 class ZIW_Attachment extends ZIW_Base

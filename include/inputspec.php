@@ -22,7 +22,6 @@ function GetSupportedSpecifiers()
 
 	list.push(GetHtmlSpecifier());
 	list.push(GetAttachmentSpecifier());
-	list.push(GetImageSpecifier());
 	list.push(GetColourSpecifier());
 	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());
