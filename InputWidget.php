@@ -372,7 +372,10 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
-		echo $this->extra['lookups'][$ep[1]]->RenderDropList($name,$value);
+		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
+			$name,
+			$value,
+			count($ep) >= 6 && $ep[5] == "checked");
 	}
 
 	/**
@@ -419,7 +422,7 @@ class ZIW_Lookup extends ZIW_Base
 
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		return "BIGINT UNSIGNED";
+		return "BIGINT UNSIGNED NULL";
 	}
 }
 
@@ -2047,10 +2050,21 @@ class DataGridLookup
 		mysql_free_result($ri);
 	}
 
-	function RenderDropList($name,$selected)
+	function RenderDropList(
+		$name,
+		$selected,
+		$allowNulls = false)
 	{
 		$r = array();
 		$r[] = "<select id='$name' name='$name'>";
+
+		if($allowNulls)
+		{
+			$r[] = "<option value=\"\"".
+				($selected == "" ? " selected=\"selected\"" : "").
+				">&nbsp;</option>";
+		}
+
 		foreach ($this->keys as $key)
 		{
 			$o = "<option value=\"$key\"";

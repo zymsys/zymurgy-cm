@@ -185,13 +185,16 @@ function InputSpecifier()
 			var control = document.getElementById("param_" + cntr);
 			var parameter = this.inputparameters[cntr];
 
+			// alert("Parsing parameter " + cntr + " as " + parameter);
+
 			if(parameter.type == "text")
 			{
 				parameter.value = control.value;
 			}
 
-			if(this.type == "checkbox")
+			if(parameter.type == "checkbox")
 			{
+				// alert(control.checked);
 				parameter.value = control.checked ? "checked" : "";
 			}
 
