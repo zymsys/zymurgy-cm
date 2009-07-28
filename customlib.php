@@ -110,10 +110,10 @@ function inputspec2sqltype($inputspec)
 //			case "float":
 //				return 'float';
 //				break;
-			case "attachment":
-			case "image":
-				return 'varchar(60)';
-				break;
+//			case "attachment":
+//			case "image":
+//				return 'varchar(60)';
+//				break;
 //			case "drop":
 //			case "radio":
 //				$ritems = ZIW_RadioDrop::HackedUnserialize($params);

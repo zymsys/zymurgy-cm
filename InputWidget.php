@@ -1309,6 +1309,26 @@ class ZIW_Attachment extends ZIW_Base
 		if ($file['type']!='')
 			return $file['type'];
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Attachment(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Attachment\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(60)";
+	}
 }
 
 class ZIW_RichTextBase extends ZIW_Base
