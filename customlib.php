@@ -130,13 +130,13 @@ function inputspec2sqltype($inputspec)
 //				return "varchar({$pp[1]})";
 //				break;
 //			case "textarea":
-			case "html":
-				return 'longtext';
-				break;
-			case "colour":
-			case "color":
-				return 'varchar(6)';
-				break;
+//			case "html":
+//				return 'longtext';
+//				break;
+//			case "colour":
+//			case "color":
+//				return 'varchar(6)';
+//				break;
 			default:
 				return 'text';
 				break;

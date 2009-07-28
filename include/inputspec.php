@@ -11,17 +11,23 @@ function GetSupportedSpecifiers()
 	var list = new Array();
 
 <?php
+	$pushedSpecs = array();
+
 	foreach(InputWidget::$widgets as $widgetName => $widget)
 	{
 		if(method_exists($widget, "GetInputSpecifier"))
 		{
-			echo "    list.push(GetSpecifier_".get_class($widget)."(\"$widgetName\"));\n";
+			$specifier = call_user_func(array($widget, "GetInputSpecifier"));
+			if(strlen($specifier) > 0)
+			{
+				$pushedSpecs[get_class($widget)] = $specifier;
+				echo("    specifier = GetSpecifier_".get_class($widget)."(\"$widgetName\");\n");
+				echo("    if(specifier) list.push(specifier);\n");
+			}
 		}
 	}
 ?>
 
-	list.push(GetHtmlSpecifier());
-	list.push(GetColourSpecifier());
 	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());
 	list.push(GetHipAsirraSpecifier());
@@ -29,16 +35,7 @@ function GetSupportedSpecifiers()
 	return list;
 }
 <?php
-	$pushedSpecs = array();
-
-	foreach(InputWidget::$widgets as $widget)
-	{
-		if(method_exists($widget, "GetInputSpecifier") && !in_array(get_class($widget), $pushedSpecs))
-		{
-			echo call_user_func(array($widget, "GetInputSpecifier"));
-			$pushedSpecs[] = get_class($widget);
-		}
-	}
+	echo(implode("\n\n", $pushedSpecs));
 
 	echo("</script>\n");
 ?>

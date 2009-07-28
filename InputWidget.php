@@ -1352,6 +1352,31 @@ class ZIW_RichTextBase extends ZIW_Base
 		else
 			return '';
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"WYSIWYG HTML Input\";\n";
+		$output .= " specifier.type = \"html\";\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (pixels)\", 3, 5, 600));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Height (pixels)\", 3, 5, 400));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "LONGTEXT";
+	}
 }
 
 class ZIW_YUIHtml extends ZIW_RichTextBase
@@ -1619,6 +1644,13 @@ class ZIW_Html extends ZIW_RichTextBase
 			$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
 		$fck->Create();
 	}
+
+	function GetInputSpecifier()
+	{
+		// The input specifier should only be available to the base class
+
+		return "";
+	}
 }
 
 class ZIW_Color extends ZIW_Base
@@ -1657,6 +1689,28 @@ class ZIW_Color extends ZIW_Base
 
 		echo "#<input type=\"text\" name=\"$name\" id=\"$name\" value=\"$value\" maxlength=\"6\" size=\"6\" onChange=\"updateSwatch('swatch$name', this.value); if(typeof UpdatePreview == 'function') { UpdatePreview(); }; if(document.getElementById('{$name}locked')) {document.getElementById('{$name}locked').checked = true;}; $matchJS\">&nbsp;";
 		echo "<span id=\"swatch$name\" onclick=\"showColourPicker('$name','swatch$name')\" style=\"width:15px; height:15px; background-color:#$value; border: #000000 solid 1px; cursor:pointer;\">&nbsp;&nbsp;&nbsp;</span>";
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_Color(inputspecName) {\n";
+		$output .= " if(inputspecName == 'color') {\n";
+		$output .= "  var specifier = new InputSpecifier;\n";
+		$output .= "  specifier.description = \"Color\";\n";
+		$output .= "  specifier.type = inputspecName;\n";
+
+		$output .= "  return specifier;\n";
+		$output .= " }\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "VARCHAR(6)";
 	}
 }
 
