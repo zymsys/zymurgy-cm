@@ -809,6 +809,44 @@ class ZIW_RadioDrop extends ZIW_Base
 		$ritems = $this->HackedUnserialize($ep[1]);
 		return array_key_exists($display,$ritems) ? $ritems[$display] : array_shift($ritems);
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
+		$output .= " var description = \"n/a\"\n";
+
+		$output .= " switch(inputspecName) {\n";
+		$output .= "  case \"radio\": description = \"Radio Buttons\"; break;\n";
+		$output .= "  case \"drop\": description = \"Drop-Down List\"; break;\n";
+		$output .= "  default: description = inputspecName;\n";
+		$output .= " }\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = description;\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Values (comma seperated)\", 30, 200, \"Value 1,Value 2,Value 3\"));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		$ritems = ZIW_RadioDrop::HackedUnserialize($parameters[0]);
+		$maxsz = 0;
+		foreach ($ritems as $value)
+		{
+			if (strlen($value) > $maxsz)
+				$maxsz = strlen($value);
+		}
+		return "VARCHAR($maxsz)";
+	}
 }
 
 class ZIW_Radio extends ZIW_RadioDrop

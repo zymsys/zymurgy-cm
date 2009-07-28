@@ -114,17 +114,17 @@ function inputspec2sqltype($inputspec)
 			case "image":
 				return 'varchar(60)';
 				break;
-			case "drop":
-			case "radio":
-				$ritems = ZIW_RadioDrop::HackedUnserialize($params);
-				$maxsz = 0;
-				foreach ($ritems as $value)
-				{
-					if (strlen($value) > $maxsz)
-						$maxsz = strlen($value);
-				}
-				return "varchar($maxsz)";
-				break;
+//			case "drop":
+//			case "radio":
+//				$ritems = ZIW_RadioDrop::HackedUnserialize($params);
+//				$maxsz = 0;
+//				foreach ($ritems as $value)
+//				{
+//					if (strlen($value) > $maxsz)
+//						$maxsz = strlen($value);
+//				}
+//				return "varchar($maxsz)";
+//				break;
 //			case "input":
 //			case "password":
 //				return "varchar({$pp[1]})";
