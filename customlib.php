@@ -90,57 +90,7 @@ function inputspec2sqltype($inputspec)
 	}
 	else
 	{
-		// die("Falling back to hard coded list");
-
-		switch($type)
-		{
-			case "datetime":
-			case "date":
-				return $type;
-				break;
-//			case "money":
-			case "unixdatetime":
-//			case "unixdate":
-				return 'int unsigned';
-				break;
-//			case "numeric":
-//			case "lookup":
-//				return 'bigint unsigned';
-//				break;
-//			case "float":
-//				return 'float';
-//				break;
-//			case "attachment":
-//			case "image":
-//				return 'varchar(60)';
-//				break;
-//			case "drop":
-//			case "radio":
-//				$ritems = ZIW_RadioDrop::HackedUnserialize($params);
-//				$maxsz = 0;
-//				foreach ($ritems as $value)
-//				{
-//					if (strlen($value) > $maxsz)
-//						$maxsz = strlen($value);
-//				}
-//				return "varchar($maxsz)";
-//				break;
-//			case "input":
-//			case "password":
-//				return "varchar({$pp[1]})";
-//				break;
-//			case "textarea":
-//			case "html":
-//				return 'longtext';
-//				break;
-//			case "colour":
-//			case "color":
-//				return 'varchar(6)';
-//				break;
-			default:
-				return 'text';
-				break;
-		}
+		return "text";
 	}
 }
 

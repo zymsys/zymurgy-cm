@@ -1073,6 +1073,11 @@ class ZIW_Date extends ZIW_DateBase
 	{
 		return strtotime($tm);
 	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "DATE";
+	}
 }
 
 abstract class ZIW_DateTimeBase extends ZIW_DateBase
@@ -1131,6 +1136,11 @@ class ZIW_UnixDateTime extends ZIW_DateTimeBase
 		$this->caloptions['showsTime'] = 1;
 		$this->calattributes['value'] = strftime($format, $date);
 	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "INT UNSIGNED";
+	}
 }
 
 class ZIW_DateTime extends ZIW_DateTimeBase
@@ -1164,6 +1174,11 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 
 		if($date > 0)
 			$this->calattributes['value'] = strftime($format, $date);
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "DATETIME";
 	}
 }
 
