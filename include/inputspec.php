@@ -21,12 +21,8 @@ function GetSupportedSpecifiers()
 ?>
 
 	list.push(GetHtmlSpecifier());
-	// list.push(GetRadioSpecifier());
-	// list.push(GetDropSpecifier());
 	list.push(GetAttachmentSpecifier());
 	list.push(GetImageSpecifier());
-	list.push(GetMoneySpecifier());
-	list.push(GetUnixDateSpecifier());
 	list.push(GetColourSpecifier());
 	list.push(GetThemeSpecifier());
 	list.push(GetVerbiageSpecifier());

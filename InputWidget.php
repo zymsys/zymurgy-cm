@@ -1038,6 +1038,26 @@ class ZIW_UnixDate extends ZIW_DateBase
 		$this->caloptions['ifFormat'] = $format;
 		$this->calattributes['value'] = strftime($format, $date);
 	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_UnixDate(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Date\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "INT UNSIGNED";
+	}
 }
 
 class ZIW_Date extends ZIW_DateBase
