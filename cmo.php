@@ -332,7 +332,7 @@ if (!class_exists('Zymurgy'))
 			{
 				die("Unable to create new site text.  Tag names must be 35 characters or less.");
 			}
-			$sql = "select body,id,inputspec from zcm_sitetext where tag='".Zymurgy::$db->escape_string($tag)."'";
+			$sql = "select body,id,inputspec,acl from zcm_sitetext where tag='".Zymurgy::$db->escape_string($tag)."'";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 				die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
@@ -348,84 +348,123 @@ if (!class_exists('Zymurgy'))
 			else
 			{
 				$row = Zymurgy::$db->fetch_array($ri);
-				//Has the inputspec changed?
-				$isp = explode('.',$row['inputspec'],2);
-				$isImage = ($isp[0] == 'image');
-				if ($isImage)
-				{
-					//Create width/height list and see if this one is in it.  If not then add it.
-					$whl = explode(',',$isp[1]);
-					$isp = explode('.',$type,2);
-					$requestedSize = $isp[1];
-					if (array_search($requestedSize,$whl)===false)
-					{
-						//Size isn't yet supported.  Add it to the list.
-						$whl[] = $requestedSize;
-						Zymurgy::$db->query("update zcm_sitetext set inputspec='image.".implode(',',$whl)."' where id={$row['id']}");
-					}
-					//Make sure we have the requested thumb.
-					$requestedSize = str_replace('.','x',$requestedSize);
-					$ext = Thumb::mime2ext($row['body']);
-					$thumbName = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}thumb$requestedSize.$ext";
-					if (!file_exists($thumbName))
-					{
-						require_once("Zymurgy::$root/zymurgy/include/Thumb.php");
-						$dimensions = explode('x',$requestedSize);
-						$rawimage = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}raw.$ext";
-						Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,$thumbName);
-					}
-				}
-				else if ($type!=$row['inputspec'])
-				{
-					Zymurgy::$db->query("update zcm_sitetext set inputspec='".Zymurgy::$db->escape_string($type)."' where id={$row['id']}");
-				}
-				$widget = new InputWidget();
+				$mayView = true;
 
-				$_GET['editkey'] = $row['id'];
-				$t = $widget->Display("$type","{0}",$row['body']);
-				if (((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
-					(array_key_exists('zymurgy',$_COOKIE) && $adminui))
+				// -----
+				// Check to see if the user has access to this block of site text
+				if($row["acl"] > 0)
 				{
-					//Render extra goop to allow in place editing.
-					global $Zymurgy_tooltipcount;
+					$mayView = false;
 
-					$Zymurgy_tooltipcount++;
-					if ($isImage)
-						$extra = $requestedSize;
-					else
-						$extra = '';
-					$jstag = str_replace('"','\"',$tag);
-					$urltag = urlencode($jstag);
-					$tag = htmlentities($tag);
-					$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
-					$t = "<span id=\"ST$tag\">$t</span><script type=\"text/javascript\">
-		YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
-												{ context:\"ST$jstag\",
-												  hidedelay: 10000,
-												  autodismissdelay: 10000,
-												  text:\"<a href='javascript:ShowEditWindow(\\\"$link\\\")'>Edit &quot;$tag&quot; with Zymurgy:CM</a>\" });
-						YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount.onClick = undefined;
-					</script>";
-					/*$jstag = str_replace("'","''",$tag);
-					if ($isImage)
-						$extra = ",'$requestedSize'";
-					else
-						$extra = ",''";
-					$t = "<span id=\"ST$tag\" onClick=\"cmsContentClick('$jstag'$extra)\" onMouseOver=\"cmsHighlightContent('$jstag')\" onMouseOut=\"cmsRestoreContent('$jstag')\">$t</span>";*/
+					Zymurgy::memberauthenticate();
+					Zymurgy::memberauthorize("");
+
+					$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
+						Zymurgy::$db->escape_string($row["acl"]).
+						"' AND `permission` = 'Read'";
+					$aclri = Zymurgy::$db->query($aclsql)
+						or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
+
+					while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
+					{
+						if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
+						{
+							$mayView = true;
+							break;
+						}
+					}
+
+					Zymurgy::$db->free_result($aclri);
 				}
-				//Ok, the site text exists, but is it linked to this document?
-				$sql = "select metaid from zcm_textpage where sitetextid={$row['id']} and metaid=".Zymurgy::$pageid;
-				$lri = Zymurgy::$db->query($sql);
-				if (!$lri)
-					die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
-				if (Zymurgy::$db->num_rows($lri)==0)
+
+				// -----
+				// Has the inputspec changed?
+				if(!$mayView)
 				{
-					//Nope, add the link.
-					Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",{$row['id']})");
+					$t = "";
 				}
-				Zymurgy::$db->free_result($lri);
+				else
+				{
+					$isp = explode('.',$row['inputspec'],2);
+					$isImage = ($isp[0] == 'image');
+					if ($isImage)
+					{
+						//Create width/height list and see if this one is in it.  If not then add it.
+						$whl = explode(',',$isp[1]);
+						$isp = explode('.',$type,2);
+						$requestedSize = $isp[1];
+						if (array_search($requestedSize,$whl)===false)
+						{
+							//Size isn't yet supported.  Add it to the list.
+							$whl[] = $requestedSize;
+							Zymurgy::$db->query("update zcm_sitetext set inputspec='image.".implode(',',$whl)."' where id={$row['id']}");
+						}
+						//Make sure we have the requested thumb.
+						$requestedSize = str_replace('.','x',$requestedSize);
+						$ext = Thumb::mime2ext($row['body']);
+						$thumbName = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}thumb$requestedSize.$ext";
+						if (!file_exists($thumbName))
+						{
+							require_once("Zymurgy::$root/zymurgy/include/Thumb.php");
+							$dimensions = explode('x',$requestedSize);
+							$rawimage = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}raw.$ext";
+							Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,$thumbName);
+						}
+					}
+					else if ($type!=$row['inputspec'])
+					{
+						Zymurgy::$db->query("update zcm_sitetext set inputspec='".Zymurgy::$db->escape_string($type)."' where id={$row['id']}");
+					}
+					$widget = new InputWidget();
+
+					$_GET['editkey'] = $row['id'];
+					$t = $widget->Display("$type","{0}",$row['body']);
+					if (((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
+						(array_key_exists('zymurgy',$_COOKIE) && $adminui))
+					{
+						//Render extra goop to allow in place editing.
+						global $Zymurgy_tooltipcount;
+
+						$Zymurgy_tooltipcount++;
+						if ($isImage)
+							$extra = $requestedSize;
+						else
+							$extra = '';
+						$jstag = str_replace('"','\"',$tag);
+						$urltag = urlencode($jstag);
+						$tag = htmlentities($tag);
+						$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
+						$t = "<span id=\"ST$tag\">$t</span><script type=\"text/javascript\">
+			YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
+													{ context:\"ST$jstag\",
+													  hidedelay: 10000,
+													  autodismissdelay: 10000,
+													  text:\"<a href='javascript:ShowEditWindow(\\\"$link\\\")'>Edit &quot;$tag&quot; with Zymurgy:CM</a>\" });
+							YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount.onClick = undefined;
+						</script>";
+						/*$jstag = str_replace("'","''",$tag);
+						if ($isImage)
+							$extra = ",'$requestedSize'";
+						else
+							$extra = ",''";
+						$t = "<span id=\"ST$tag\" onClick=\"cmsContentClick('$jstag'$extra)\" onMouseOver=\"cmsHighlightContent('$jstag')\" onMouseOut=\"cmsRestoreContent('$jstag')\">$t</span>";*/
+					}
+					//Ok, the site text exists, but is it linked to this document?
+					$sql = "select metaid from zcm_textpage where sitetextid={$row['id']} and metaid=".Zymurgy::$pageid;
+					$lri = Zymurgy::$db->query($sql);
+					if (!$lri)
+						die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
+					if (Zymurgy::$db->num_rows($lri)==0)
+					{
+						//Nope, add the link.
+						Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",{$row['id']})");
+					}
+					Zymurgy::$db->free_result($lri);
+				}
 			}
+
 			Zymurgy::$db->free_result($ri);
+
 			return $t;
 		}
 

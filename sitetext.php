@@ -32,7 +32,7 @@ function OnUpdate($dsr)
 function showcategories()
 {
 	global $c,$zauth;
-	
+
 	$sql = "select * from zcm_stcategory where id>0 order by name";
 	$ri = Zymurgy::$db->query($sql) or die("Unable to load site text categories ($sql): ".Zymurgy::$db->error());
 	$cats = array(0=>'Uncategorized Content',-1=>'All Content');
@@ -73,9 +73,9 @@ if (array_key_exists('editkey',$_GET))
 {
 	$breadcrumbTrail = "<a href=\"sitetext.php\">Simple Content</a> &gt; Edit";
 }
-else 
+else
 {
-	$breadcrumbTrail = "Simple Content";	
+	$breadcrumbTrail = "Simple Content";
 }
 
 include('header.php');
@@ -87,7 +87,7 @@ include('datagrid.php');
 //Get our sitetext category
 if (array_key_exists('c',$_GET))
 	$c = 0 + $_GET['c'];
-else 
+else
 	$c = 0;
 ?>
 <script language="javascript" type="text/javascript">
@@ -106,7 +106,7 @@ if (!array_key_exists('editkey',$_GET))
 	echo "</form><br />";
 }
 $ds = new DataSet('zcm_sitetext','id');
-$ds->AddColumns('id','tag','category','body','plainbody','inputspec');
+$ds->AddColumns('id','tag','category','body','plainbody','inputspec','acl');
 $ds->OnUpdate = "OnUpdate";
 $ds->OnBeforeUpdate = "OnBeforeUpdate";
 if ($c >= 0)
@@ -122,7 +122,7 @@ if (array_key_exists('findtext',$_GET))
 		$ft = substr($ft,1,-1);
 		$ds->AddDataFilter('plainbody',"%$ft%",'like');
 	}
-	else 
+	else
 	{
 		//Use full text search facility
 		$ds->ExtraSQL = " and match (plainbody) against ('".Zymurgy::$db->escape_string($ft)."')";
@@ -161,6 +161,7 @@ else
 	if (file_exists($ZymurgyRoot.$css))
 		$dg->fckeditorcss = $css;
 }
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 //echo "CSS: ".$dg->fckeditorcss;
 $dg->Render();
 if (!array_key_exists('dlg',$_GET))

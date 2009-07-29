@@ -88,7 +88,8 @@
 					DefineTableField("body", "LONGTEXT", "NOT NULL"),
 					DefineTableField("plainbody", "LONGTEXT", "NOT NULL"),
 					DefineTableField("inputspec", "VARCHAR(100)", "NOT NULL DEFAULT 'html.600.400'"),
-					DefineTableField("category", "BIGINT(20)", "DEFAULT '0'")
+					DefineTableField("category", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "tag", "unique" => FALSE, "type" => ""),
