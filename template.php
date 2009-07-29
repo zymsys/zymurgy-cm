@@ -91,6 +91,14 @@ class ZymurgyTemplate
 		}
 
 		// -----
+		// Check the page to make sure the user actually has permission to view it
+		Zymurgy::populatesitenav();
+		if(!Zymurgy::$sitenav->haspermission($this->sitepage["id"], null))
+		{
+			$this->DisplayForbidden($navpart, $navpath, $newpath, "Failed ACL Check");
+		}
+
+		// -----
 		// Check the page to make sure it within the published range
 
 		$retire = strtotime($this->sitepage["retire"]);
@@ -159,6 +167,50 @@ class ZymurgyTemplate
 			echo("<body>\n");
 			echo("<h1>Not Found</h1>\n");
 			echo("<p>$navpart couldn't be found from $navpath.</p>\n");
+			echo("<!--\n");
+			print_r($newpath);
+			echo("\n$msg");
+			echo "-->\n";
+			echo("<hr>\n");
+			echo("<i>Zymurgy:CM ".date("F d, Y H:i:s")."</i>\n");
+			echo("</body>\n");
+			echo("</html>\n");
+		}
+
+
+		exit;
+	}
+
+	private function DisplayForbidden($navpart, $navpath, $newpath, $msg = "")
+	{
+		header("HTTP/1.0 403 Forbidden");
+
+		// echo(Zymurgy::memberauthenticate() ? "AUTHED" : "NOT AUTHED")."<br>";
+		// echo(Zymurgy::$config["Pages.OnACLFailure"]);
+		// die();
+
+		if(!Zymurgy::memberauthenticate()
+			&& isset(Zymurgy::$config["Pages.OnACLFailure"])
+			&& !(Zymurgy::$config["Pages.OnACLFailure"] == "disable")
+			|| (Zymurgy::$config["Pages.OnACLFailure"] == "hide"))
+		{
+			header("Location: ".Zymurgy::$config["Pages.OnACLFailure"]);
+		}
+
+		if(array_key_exists("Pages.Error.403", Zymurgy::$config))
+		{
+			header("Location: ".Zymurgy::$config["Pages.Error.403"]);
+		}
+		else
+		{
+			echo("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+			echo("<html>\n");
+			echo("<head>\n");
+			echo(Zymurgy::headtags());
+			echo("</head>\n");
+			echo("<body>\n");
+			echo("<h1>Forbidden</h1>\n");
+			echo("<p>User does not have permission to view $navpath</p>\n");
 			echo("<!--\n");
 			print_r($newpath);
 			echo("\n$msg");

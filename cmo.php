@@ -957,7 +957,7 @@ if (!class_exists('Zymurgy'))
 
 		public static $sitenav = null;
 
-		function sitenav(
+		public static function sitenav(
 			$ishorizontal = true,
 			$currentleveonly = false,
 			$childlevelsonly = false,
@@ -966,10 +966,7 @@ if (!class_exists('Zymurgy'))
 		{
 			require_once('sitenav.php');
 
-			if(is_null(Zymurgy::$sitenav))
-			{
-				Zymurgy::$sitenav = new ZymurgySiteNav();
-			}
+			Zymurgy::populatesitenav();
 
 			Zymurgy::$sitenav->render(
 				$ishorizontal,
@@ -977,6 +974,14 @@ if (!class_exists('Zymurgy'))
 				$childlevelsonly,
 				$startpath,
 				$baseurl);
+		}
+
+		public static function populatesitenav()
+		{
+			if(is_null(Zymurgy::$sitenav))
+			{
+				Zymurgy::$sitenav = new ZymurgySiteNav();
+			}
 		}
 
 		static function pagetext($tag,$type='html.600.400')

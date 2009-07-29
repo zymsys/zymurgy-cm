@@ -305,7 +305,7 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		if ($depth>0) echo "$dtabs</div></div>";
 	}
 
-	private function haspermission($key, $anscestors)
+	public function haspermission($key, $anscestors)
 	{
 //		echo("<pre>\n");
 //		echo("Key: $key\nAnscestors: ");
@@ -338,7 +338,14 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 			}
 			else
 			{
-				$a = array_reverse($anscestors, true);
+				if(is_null($anscestors))
+				{
+					$a = $this->getanscestor($key);
+				}
+				else
+				{
+					$a = array_reverse($anscestors, true);
+				}
 
 				foreach($a as $anscestorID => $anscestorText)
 				{
@@ -366,6 +373,19 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		// If we get this far, then there are no ACLs throughout the
 		// entire tree - by default, all users get to view this item
 		return true;
+	}
+
+	private function getanscestor($key)
+	{
+		$anscestor = array();
+
+		if($this->items[$key]->parent > 0)
+		{
+			$anscestor[$this->items[$key]->parent] = $this->items[$this->items[$key]->parent]->linktext;
+			$anscestor = array_merge($anscestor, $this->getanscestor($this->items[$key]->parent));
+		}
+
+		return $anscestor;
 	}
 }
 
