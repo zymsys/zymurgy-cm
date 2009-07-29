@@ -539,7 +539,8 @@
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("sitepage", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("tag", "VARCHAR(35)", "NOT NULL DEFAULT ''"),
-					DefineTableField("body", "LONGTEXT", "")
+					DefineTableField("body", "LONGTEXT", ""),
+					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "sitepage", "unique" => FALSE, "type" => "")

@@ -7,9 +7,11 @@ class ZymurgyTemplate
 	public $sitepage;
 	public $navpath;
 	public $template;
+
 	private $pagetextcache = array();
 	private $inputspeccache = array();
 	private $pagetextids = array();
+	private $pagetextacls = array();
 
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
@@ -255,8 +257,46 @@ class ZymurgyTemplate
 		$ri = Zymurgy::$db->run("select * from zcm_pagetext where sitepage=".$this->sitepage['id']);
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			$this->pagetextcache[$row['tag']] = $row['body'];
 			$this->pagetextids[$row['tag']] = $row['id'];
+			$this->pagetextacls[$row["tag"]] = $row["acl"];
+
+			$mayView = true;
+
+			// -----
+			// Check to see if the user has access to this block of site text
+			if($row["acl"] > 0)
+			{
+				$mayView = false;
+
+				Zymurgy::memberauthenticate();
+				Zymurgy::memberauthorize("");
+
+				$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
+					Zymurgy::$db->escape_string($row["acl"]).
+					"' AND `permission` = 'Read'";
+				$aclri = Zymurgy::$db->query($aclsql)
+					or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
+
+				while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
+				{
+					if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
+					{
+						$mayView = true;
+						break;
+					}
+				}
+
+				Zymurgy::$db->free_result($aclri);
+			}
+
+			if($mayView)
+			{
+				$this->pagetextcache[$row['tag']] = $row['body'];
+			}
+			else
+			{
+				$this->pagetextcache[$row['tag']] = "";
+			}
 		}
 		Zymurgy::$db->free_result($ri);
 	}

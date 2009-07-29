@@ -89,7 +89,7 @@ function OnDelete($values)
 
 $ds = new DataSet('zcm_pagetext','id');
 $ds->AddColumn('id',false);
-$ds->AddColumns('sitepage','tag','body');
+$ds->AddColumns('sitepage','tag','body','acl');
 $ds->AddDataFilter('sitepage',$p);
 if ($currentcontent)
 {
@@ -105,6 +105,7 @@ if ($zauth->authinfo['admin']>=2)
 	$dg->AddInput('tag','Tag:',35,35);
 }
 $dg->AddEditor('body',$editcaption,$inputspec);
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddEditColumn();
 if ($zauth->authinfo['admin']>=2)
 {
