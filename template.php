@@ -371,7 +371,7 @@ class ZymurgyTemplate
 				"'";
 		}
 
-		$sql = "SELECT `plugin`, `align` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
+		$sql = "SELECT `plugin`, `align`, `acl` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
 			Zymurgy::$db->escape_string($this->sitepage["id"]).
 			"' AND ".
 			$alignFilterCriteria.
@@ -381,13 +381,47 @@ class ZymurgyTemplate
 
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			$pp = explode('&',$row['plugin']);
-			$instance = urldecode($pp[1]);
-			if ($instance == "Page Navigation Name")
-				$instance = $navpart;
-			echo "<div align=\"{$row['align']}\">";
-			echo Zymurgy::plugin(urldecode($pp[0]),$instance);
-			echo "</div>";
+			$mayView = true;
+
+			// -----
+			// Check to see if the user has access to this block of site text
+			if($row["acl"] > 0)
+			{
+				$mayView = false;
+
+				Zymurgy::memberauthenticate();
+				Zymurgy::memberauthorize("");
+
+				$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
+					Zymurgy::$db->escape_string($row["acl"]).
+					"' AND `permission` = 'Read'";
+				$aclri = Zymurgy::$db->query($aclsql)
+					or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
+
+				while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
+				{
+					if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
+					{
+						$mayView = true;
+						break;
+					}
+				}
+
+				Zymurgy::$db->free_result($aclri);
+			}
+
+			if($mayView)
+			{
+				$pp = explode('&',$row['plugin']);
+				$instance = urldecode($pp[1]);
+
+				if ($instance == "Page Navigation Name")
+					$instance = $navpart;
+
+				echo "<div align=\"{$row['align']}\">";
+				echo Zymurgy::plugin(urldecode($pp[0]),$instance);
+				echo "</div>";
+			}
 		}
 
 		Zymurgy::$db->free_result($ri);

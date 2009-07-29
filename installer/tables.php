@@ -524,7 +524,8 @@
 					DefineTableField("zcm_sitepage", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("plugin", "TEXT", ""),
-					DefineTableField("align", "VARCHAR(6)", "DEFAULT NULL")
+					DefineTableField("align", "VARCHAR(6)", "DEFAULT NULL"),
+					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "zcm_sitepage", "unique" => FALSE, "type" => ""),

@@ -24,7 +24,7 @@ include 'header.php';
 include 'datagrid.php';
 
 $ds = new DataSet('zcm_sitepageplugin','id');
-$ds->AddColumns('id','zcm_sitepage','disporder','plugin','align');
+$ds->AddColumns('id','zcm_sitepage','disporder','plugin','align','acl');
 $ds->AddDataFilter('zcm_sitepage',$p);
 
 $dg = new DataGrid($ds);
@@ -34,6 +34,7 @@ $dg->AddColumn('Alignment','align');
 $dg->AddUpDownColumn('disporder');
 $dg->AddEditor('plugin','Extra Page Content:','plugin');
 $dg->AddDropListEditor('align','Alignment:',array('left'=>'Left','center'=>'Center','right'=>'Right'));
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddButton('Edit Content','sitepageextra.php?epi={0}');
 $dg->editlabel = 'Content Type and Position';
 $dg->AddEditColumn();
