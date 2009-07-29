@@ -412,6 +412,31 @@ class ZymurgyMember
 			}
 		}
 
+		$memberID = Zymurgy::$db->insert_id();
+
+		$sql = "INSERT INTO `zcm_membergroup` ( `memberid`, `groupid` ) SELECT '".
+			Zymurgy::$db->escape_string($memberID).
+			"', `id` FROM `zcm_groups` where `name` = 'Registered User'";
+		Zymurgy::$db->query($sql)
+			or die("Could not assign Registered User group to member:".Zymurgy::$db->error().", $sql");
+
+		if(isset(Zymurgy::$config["CreateMemberGroup"]) && Zymurgy::$config["CreateMemberGroup"])
+		{
+			$sql = "INSERT INTO `zcm_groups` ( `name`, `builtin` ) VALUES ( '".
+				Zymurgy::$db->escape_string($userid).
+				"', 0 )";
+			Zymurgy::$db->query($sql)
+				or die("Could not create group for new member: ".Zymurgy::$db->error().", $sql");
+
+			$sql = "INSERT INTO `zcm_membergroup` ( `memberid`, `groupid` ) VALUES ( '".
+				Zymurgy::$db->escape_string($memberID).
+				"', '" .
+				Zymurgy::$db->escape_string(Zymurgy::$db->insert_id()).
+				"' )";
+			Zymurgy::$db->query($sql)
+				or die("Could not assign group to member: ".Zymurgy::$db->error().", $sql");
+		}
+
 		return $ri;
 	}
 
