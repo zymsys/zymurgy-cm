@@ -35,6 +35,9 @@ class ZymurgySiteNav
 
 	function __construct($navinfo='')
 	{
+		Zymurgy::memberauthenticate();
+		Zymurgy::memberauthorize("");
+
 		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
@@ -253,6 +256,23 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		echo ">\r\n";
 		foreach ($sp as $key=>$children)
 		{
+			$hasPermission = $this->haspermission($key, $anscestors);
+			$enableItem = true;
+
+			if(!$hasPermission
+				&& isset(Zymurgy::$config["Pages.OnACLFailure"])
+				&& Zymurgy::$config["Pages.OnACLFailure"] == "hide")
+			{
+				continue;
+			}
+
+			if(!$hasPermission
+				&& isset(Zymurgy::$config["Pages.OnACLFailure"])
+				&& Zymurgy::$config["Pages.OnACLFailure"] == "disable")
+			{
+				$enableItem = false;
+			}
+
 			echo "$dtabs\t<li class=\"";
 			echo "yuimenuitem";
 			if ($fot)
@@ -260,12 +280,22 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 				$fot = false;
 				echo " first-of-type";
 			}
-			echo "\"><a class=\"yuimenuitemlabel\" href=\"$href".$this->linktext2linkpart($this->items[$key]->linktext)."\">".$this->items[$key]->linktext."</a>";
+			echo "\">";
+
+			echo "<a class=\"yuimenuitemlabel".
+				($enableItem ? "" : "-disabled").
+				"\" href=\"".
+				($enableItem ? $href : "javascript:;").
+				$this->linktext2linkpart($this->items[$key]->linktext)."\">".
+				$this->items[$key]->linktext.
+//				" (".($this->haspermission($key, $anscestors) ? "YES" : "NO" ).")".
+				"</a>";
 			if ($children)
 			{
 				echo "\r\n";
 				$a = $anscestors;
-				array_push($a,$this->items[$key]->linktext);
+				// array_push($a,$this->items[$key]->linktext);
+				$a[$key] = $this->items[$key]->linktext;
 				$this->renderpart($hrefroot,$horizontal,$depth+1,$children,$a);
 				echo "\r\n$dtabs";
 			}
@@ -273,6 +303,69 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		}
 		echo "$dtabs</ul>\r\n";
 		if ($depth>0) echo "$dtabs</div></div>";
+	}
+
+	private function haspermission($key, $anscestors)
+	{
+//		echo("<pre>\n");
+//		echo("Key: $key\nAnscestors: ");
+//		print_r($anscestors);
+//		echo("</pre>\n");
+
+		if($key <= 0)
+		{
+			return true;
+		}
+		else
+		{
+			if(count($this->items[$key]->aclitems) > 0)
+			{
+				foreach($this->items[$key]->aclitems as $aclitem)
+				{
+					if($aclitem["permission"] == "Read")
+					{
+						if(array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
+						{
+							return true;
+							break;
+						}
+					}
+				}
+
+				// if we get this far, then the user does not have
+				// permission to view this resource
+				return false;
+			}
+			else
+			{
+				$a = array_reverse($anscestors, true);
+
+				foreach($a as $anscestorID => $anscestorText)
+				{
+					if(count($this->items[$anscestorID]->aclitems) > 0)
+					{
+						foreach($this->items[$anscestorID]->aclitems as $aclitem)
+						{
+							if($aclitem["permission"] == "Read")
+							{
+								if(array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
+								{
+									return true;
+								}
+							}
+						}
+
+						// if we get this far, then the user does not have
+						// permission to view this resource
+						return false;
+					}
+				}
+			}
+		}
+
+		// If we get this far, then there are no ACLs throughout the
+		// entire tree - by default, all users get to view this item
+		return true;
 	}
 }
 

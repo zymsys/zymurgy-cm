@@ -53,11 +53,11 @@ class ZymurgyMember
 		if ($this->memberauthenticate())
 		{
 			//echo "authenticated ";
-			$sql = "select name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
+			$sql = "select id, name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
-				Zymurgy::$member['groups'][] = $row['name'];
+				Zymurgy::$member['groups'][$row["id"]] = $row['name'];
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
 		}
