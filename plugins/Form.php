@@ -643,9 +643,11 @@ function Validate$name(me) {
 	  		}
 		}
 
+		$extensionValidation = $this->CallExtensionMethod("Validate");
+
 		$this->ValidationErrors = array_merge(
 			$this->ValidationErrors,
-			$this->CallExtensionMethod("Validate"));
+			is_array($extensionValidation) ? $extensionValidation : array());
 
 		return (count($this->ValidationErrors)==0);
 	}
