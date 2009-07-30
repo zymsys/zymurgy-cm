@@ -549,6 +549,13 @@ function Validate$name(me) {
 		{
 			$values = array_merge($this->extra,$values);
 		}
+
+		$extensionValues = $this->CallExtensionMethod("GetValues");
+
+		$values = (array_merge(
+			$values,
+			is_array($extensionValues) ? $extensionValues : array()));
+
 		return $values;
 	}
 
