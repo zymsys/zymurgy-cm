@@ -372,6 +372,13 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
+		if (!array_key_exists($ep[1],$this->extra['lookups']))
+		{
+			include_once("datagrid.php");
+
+			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
+		}
+
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
 			$name,
 			$value,
@@ -387,6 +394,13 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Display($ep,$display,$shell)
 	{
+		if (!array_key_exists($ep[1],$this->extra['lookups']))
+		{
+			include_once("datagrid.php");
+
+			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
+		}
+
 		$values = $this->extra['lookups'][$ep[1]]->values;
 
 		return array_key_exists($display, $values)
