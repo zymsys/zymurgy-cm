@@ -318,7 +318,8 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 		}
 		else
 		{
-			if(count($this->items[$key]->aclitems) > 0)
+			if(array_key_exists($key, $this->items)
+				&& count($this->items[$key]->aclitems) > 0)
 			{
 				foreach($this->items[$key]->aclitems as $aclitem)
 				{
@@ -349,7 +350,8 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 
 				foreach($a as $anscestorID => $anscestorText)
 				{
-					if(count($this->items[$anscestorID]->aclitems) > 0)
+					if(array_key_exists($anscestorID, $this->items)
+						&& count($this->items[$anscestorID]->aclitems) > 0)
 					{
 						foreach($this->items[$anscestorID]->aclitems as $aclitem)
 						{
