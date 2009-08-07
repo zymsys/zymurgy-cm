@@ -440,7 +440,7 @@ class ZymurgyMember
 		return $ri;
 	}
 
-	private function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
+	public function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
 	{
 		if ($this->memberdologin($userid,$password))
 		{
