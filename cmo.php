@@ -738,6 +738,8 @@ if (!class_exists('Zymurgy'))
 					Zymurgy::$MemberProvider = new Zymurgy::$config['MemberProvider'];
 				}
 			}
+
+			return Zymurgy::$MemberProvider;
 		}
 
 		/**
