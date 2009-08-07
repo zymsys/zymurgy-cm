@@ -349,7 +349,10 @@ class infusionsoftMember extends ZymurgyMember
 
 			$sql = "update zcm_member set authkey=null where id=".Zymurgy::$member['id'];
 			Zymurgy::$db->query($sql) or die("Unable to logout ($sql): ".Zymurgy::$db->error());
-			setcookie('ZymurgyAuth');
+			if(!headers_sent())
+			{
+				setcookie('ZymurgyAuth');
+			}
 		}
 
 		Zymurgy::JSRedirect($logoutpage);
