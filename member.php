@@ -363,7 +363,7 @@ class ZymurgyMember
 		}
 	}
 
-	private function membersignup_ValidateForm(
+	public function membersignup_ValidateForm(
 		$userid,
 		$password,
 		$confirm,
@@ -381,7 +381,7 @@ class ZymurgyMember
 			$pi->ValidationErrors[] = 'Password is a required field.';
 	}
 
-	private function membersignup_CreateMember($userid,	$password, $pi)
+	public function membersignup_CreateMember($userid,	$password, $pi)
 	{
 		// die("membersignup_CreateMember() Start");
 
