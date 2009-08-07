@@ -296,6 +296,7 @@ class FlashReliefThumbGallery extends PluginBase
 		if ($usegimage && (array_key_exists('gimage',$_GET)))
 		{
 			$sql = "update zcm_fr_galleryimage set gimage=0 where instance=".$this->iid;
+			$sql = "update zcm_fr_galleryimage set gimage=0 where instance=".$this->iid;
 			Zymurgy::$db->query($sql) or die("Can't reset gallery image ($sql): ".Zymurgy::$db->error());
 			$gimage = 0 + $_GET['gimage'];
 			$sql = "update zcm_fr_galleryimage set gimage=1 where id=$gimage";

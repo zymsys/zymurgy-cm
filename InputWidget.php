@@ -2043,7 +2043,7 @@ class InputWidget
 class DataGridLookup
 {
 	public $values;
-	public $keys; //In the correct display order
+	public $keys = array(); //In the correct display order
 
 	function DataGridLookup($table,$idcolumn,$valcolumn,$ordercolumn = '')
 	{

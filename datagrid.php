@@ -727,8 +727,10 @@ class DataGrid
 		if (!(strpos($datacolumn,'.') !== false))
 			$datacolumn = $this->DataSet->tables[0].".$datacolumn";
 		$this->DataSet->DisplayOrder = $datacolumn;
+		$this->AddButton("<img border=\"0\" alt=\"Up\" src=\"images/Top.gif\">",$this->BuildSelfReference(array(),array('editkey','deletekey','action','movefrom','movedirection'))."&movefrom={DO}&movedirection=-1000\"");
 		$this->AddButton("<img border=\"0\" alt=\"Up\" src=\"images/Up.gif\">",$this->BuildSelfReference(array(),array('editkey','deletekey','action','movefrom','movedirection'))."&movefrom={DO}&movedirection=-1\"");
 		$this->AddButton("<img border=\"0\" alt=\"Down\" src=\"images/Down.gif\">",$this->BuildSelfReference(array(),array('editkey','action','movefrom','movedirection','deletekey'))."&movefrom={DO}&movedirection=1\"");
+		$this->AddButton("<img border=\"0\" alt=\"Down\" src=\"images/Bottom.gif\">",$this->BuildSelfReference(array(),array('editkey','action','movefrom','movedirection','deletekey'))."&movefrom={DO}&movedirection=1000\"");
 		/*return $this->AddColumn("",$datacolumn,
 			"<a href=\"".$this->BuildSelfReference(array(),array('editkey','deletekey','action','movefrom','movedirection'))."&movefrom={0}&movedirection=-1\">Up</a> <a href=\"".$this->BuildSelfReference(array(),array('editkey','action','movefrom','movedirection','deletekey'))."&movefrom={0}&movedirection=1\">Down</a>");*/
 	}
@@ -1040,37 +1042,58 @@ class DataGrid
 		//Otherwise move breaks on filtered data.
 		$where = $this->DataSet->getwhere();
 		$direction = $_GET['movedirection'];
-		if (count($where)>0)
-		{
-			if ($direction>0)
+		if (abs($direction) == 1000)
+		{ //Move to top or bottom
+			if ($direction > 0)
 			{
-				$sign = ">";
-				$sort = "asc";
+				$addsign = '-';
+				$sign = '>';
+				$newdo = $count;
+			}
+			else 
+			{
+				$addsign = '+';
+				$sign = '<';
+				$newdo = 1;
+			}
+			Zymurgy::$db->run("update $tname set $column = 0 where $column = $olddo");
+			Zymurgy::$db->run("update $tname set $column = $column $addsign 1 where ($column <> 0) and ($column $sign $olddo)");
+			Zymurgy::$db->run("update $tname set $column = $newdo where $column = 0");
+		}
+		else 
+		{
+			if (count($where)>0)
+			{
+				if ($direction>0)
+				{
+					$sign = ">";
+					$sort = "asc";
+				}
+				else
+				{
+					$sign = "<";
+					$sort = "desc";
+				}
+				$sql = "select $column from $tname where ($column $sign $olddo) and ".implode(' and ',$where).
+					" order by $column $sort limit 1";
+				$ri = Zymurgy::$db->query($sql);
+				if (Zymurgy::$db->num_rows($ri) == 1)
+					$newdo = Zymurgy::$db->result($ri,0,0);
+				else
+					$newdo = 0;
 			}
 			else
+				$newdo = $olddo + $direction;
+			if (($newdo > 0) && ($newdo <= $count))
 			{
-				$sign = "<";
-				$sort = "desc";
+				Zymurgy::$db->query("update $tname set $column=0 where $column=$olddo");
+				Zymurgy::$db->query("update $tname set $column=$olddo where $column=$newdo");
+				Zymurgy::$db->query("update $tname set $column=$newdo where $column=0");
 			}
-			$sql = "select $column from $tname where ($column $sign $olddo) and ".implode(' and ',$where).
-				" order by $column $sort limit 1";
-			$ri = Zymurgy::$db->query($sql);
-			if (Zymurgy::$db->num_rows($ri) == 1)
-				$newdo = Zymurgy::$db->result($ri,0,0);
-			else
-				$newdo = 0;
 		}
-		else
-			$newdo = $olddo + $direction;
-		if (($newdo > 0) && ($newdo <= $count))
-		{
-			Zymurgy::$db->query("update $tname set $column=0 where $column=$olddo");
-			Zymurgy::$db->query("update $tname set $column=$olddo where $column=$newdo");
-			Zymurgy::$db->query("update $tname set $column=$newdo where $column=0");
-			$start = ($page-1) * $this->rowsperpage;
-			$this->DataSet->Clear();
-			$count = $this->DataSet->fill($start,$this->rowsperpage);
-		}
+		$start = ($page-1) * $this->rowsperpage;
+		$this->DataSet->Clear();
+		$count = $this->DataSet->fill($start,$this->rowsperpage);
 		unset($_GET['movefrom']);
 		unset($_GET['movedirection']);
 		$this->RenderGrid($page,$count);
