@@ -616,7 +616,15 @@ function Validate$name(me) {
 			}
 			else
 			{
-				$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
+				if(is_array($_POST[$fieldname]))
+				{
+					$input = $_POST[$fieldname] = implode(",", $_POST[$fieldname]);
+					$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
+				}
+				else
+				{
+					$input = $_POST[$fieldname] = trim($_POST[$fieldname]);
+				}
 			}
 
 			if (empty($row['validatormsg']))
