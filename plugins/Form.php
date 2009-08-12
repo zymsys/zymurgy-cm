@@ -458,6 +458,26 @@ function Validate$name(me) {
 </script>
 ";
 		}
+
+		// -----
+		// Render the pretext for each of the InputWidget controls used on the form
+
+		$pretextRendered = array();
+
+		foreach ($this->InputRows as $row)
+		{
+			@list($inputtype, $inputparameters) = explode('.',$row['specifier'],2);
+
+			if(!in_array($inputtype, $pretextRendered))
+			{
+				echo InputWidget::GetPretext($inputtype);
+				$pretextRendered[] = $inputtype;
+			}
+		}
+
+		// -----
+		// Render the controls
+
 		foreach ($this->InputRows as $row)
 		{
 			@list($inputtype, $inputparameters) = explode('.',$row['specifier'],2);
