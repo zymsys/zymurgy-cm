@@ -2047,21 +2047,25 @@ class DataGridLookup
 
 	function DataGridLookup($table,$idcolumn,$valcolumn,$ordercolumn = '')
 	{
-		$sql = "select $idcolumn,$valcolumn from $table";
+		$sql = "SELECT `$idcolumn`, `$valcolumn` FROM `$table`";
+
 		if ($ordercolumn != '')
-			$sql .= " order by $ordercolumn";
-		$ri = mysql_query($sql);
+			$sql .= " ORDER BY `$ordercolumn`";
+		$ri = Zymurgy::$db->query($sql);
+
 		if (!$ri)
 		{
-			echo "Error loading lookup: ".mysql_error()." [$sql]";
+			echo "Error loading lookup: ".Zymurgy::$db->error()." [$sql]";
 			exit;
 		}
-		while (($row = mysql_fetch_array($ri)) !== false)
+
+		while (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
 			$this->values[$row[$idcolumn]] = $row[$valcolumn];
 			$this->keys[] = $row[$idcolumn];
 		}
-		mysql_free_result($ri);
+
+		Zymurgy::$db->free_result($ri);
 	}
 
 	function RenderDropList(
