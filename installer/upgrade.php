@@ -353,7 +353,7 @@ if ($count==0)
 		(26, 14, 3, 1, 'Access Control Lists', 'Zymurgy:CM Feature', '6'),
 		(12, 15, 3, 1, 'Help Editor',          'Zymurgy:CM Feature', '10'),
 		(13, 13, 4, 2, 'Navigation',           'Zymurgy:CM Feature', '11'),
-		(14, 14, 4, 2, 'Master Config',        'Zymurgy:CM Feature', '12'),
+		(14, 14, 4, 2, 'Appearance Items',     'Zymurgy:CM Feature', '12'),
 		(15, 15, 4, 2, 'Plugin Management',    'Zymurgy:CM Feature', '13'),
 		(16, 16, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
 		(17, 17, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),

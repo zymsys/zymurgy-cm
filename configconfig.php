@@ -4,11 +4,11 @@ $adminlevel = 2;
 
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
-	$breadcrumbTrail = "<a href=\"configconfig.php\">Master Config</a> &gt; Edit";
+	$breadcrumbTrail = "<a href=\"configconfig.php\">Appearance Items</a> &gt; Edit";
 }
-else 
+else
 {
-	$breadcrumbTrail = "Master Config";	
+	$breadcrumbTrail = "Appearance Items";
 }
 
 include('header.php');
