@@ -25,7 +25,7 @@
 		<item>
 			<code>mysqldb</code>
 			<label>Schema:</label>
-			<inputspec>password.20.50</inputspec>
+			<inputspec>input.20.50</inputspec>
 		</item>
 	</group>
 	<group>
@@ -35,12 +35,12 @@
 		<item>
 			<code>sitehome</code>
 			<label>Base URL:</label>
-			<inputspec>input.100.200</inputspec>
+			<inputspec>input.50.200</inputspec>
 		</item>
 		<item>
 			<code>defaulttitle</code>
 			<label>Default Page Title:</label>
-			<inputspec>input.100.200</inputspec>
+			<inputspec>input.50.200</inputspec>
 		</item>
 		<item>
 			<code>defaultdescription</code>
@@ -90,12 +90,12 @@
 		<item>
 			<code>MembershipUsernameForm</code>
 			<label>Signup Form:</label>
-			<inputspec>textarea.100.10</inputspec>
+			<inputspec>textarea.60.10</inputspec>
 		</item>
 		<item>
 			<code>MembershipLoginForm</code>
 			<label>Login Form:</label>
-			<inputspec>textarea.100.10</inputspec>
+			<inputspec>textarea.60.10</inputspec>
 		</item>
 		<item>
 			<code>CreateMemberGroup</code>
@@ -118,7 +118,7 @@
 		<item>
 			<code>Infusionsoft URL</code>
 			<label>Infusionsoft API URL (include the /api/xmlrpc):</label>
-			<inputspec>input.100.200</inputspec>
+			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
 	<group>
@@ -131,7 +131,7 @@
 		<item>
 			<code>oscommerce Server Path</code>
 			<label>oscommerce Server URL:</label>
-			<inputspec>input.100.200</inputspec>
+			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
 	<group>
@@ -144,7 +144,7 @@
 		<item>
 			<code>vtiger Server Path</code>
 			<label>vtiger Server URL:</label>
-			<inputspec>input.100.200</inputspec>
+			<inputspec>input.50.200</inputspec>
 		</item>
 		<item>
 			<code>vtiger E-mail Name</code>
