@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configitems>
+	<group>
+		<name>MySQL Server</name>
+		<description>
+			<![CDATA[
+				<p>These setting provide the authentication information for the MySQL Server hosting the Zymurgy:CM database.</p>
+			]]>
+		</description>
+		<item>
+			<code>mysqlhost</code>
+			<label>Host:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>mysqluser</code>
+			<label>Username:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>mysqlpass</code>
+			<label>Password:</label>
+			<inputspec>password.20.50</inputspec>
+		</item>
+		<item>
+			<code>mysqldb</code>
+			<label>Schema:</label>
+			<inputspec>password.20.50</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>Basic Site Information</name>
+		<description>
+		</description>
+		<item>
+			<code>sitehome</code>
+			<label>Base URL:</label>
+			<inputspec>input.100.200</inputspec>
+		</item>
+		<item>
+			<code>defaulttitle</code>
+			<label>Default Page Title:</label>
+			<inputspec>input.100.200</inputspec>
+		</item>
+		<item>
+			<code>defaultdescription</code>
+			<label>Default META Description:</label>
+			<inputspec>textarea.60.5</inputspec>
+		</item>
+		<item>
+			<code>defaultkeywords</code>
+			<label>Default META Keywords:</label>
+			<inputspec>textarea.60.5</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>E-mail</name>
+		<description>
+		</description>
+		<item>
+			<code>Mailer Type</code>
+			<label>Mailer Type:</label>
+			<inputspec>drop.mail,sendmail,smtp</inputspec>
+		</item>
+		<item>
+			<code>Mailer SMTP Hosts</code>
+			<label>SMTP Host(s):</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>Membership</name>
+		<description>
+		</description>
+		<item>
+			<code>MemberProvider</code>
+			<label>Membership Provider:</label>
+			<inputspec>drop.(none),infusionsoftMember,oscommerceMember,vtigerMember</inputspec>
+		</item>
+		<item>
+			<code>MemberLoginPage</code>
+			<label>Login Page URL:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>MemberDefaultPage</code>
+			<label>Default membership landing page URL:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>MembershipUsernameForm</code>
+			<label>Signup Form:</label>
+			<inputspec>textarea.100.10</inputspec>
+		</item>
+		<item>
+			<code>MembershipLoginForm</code>
+			<label>Login Form:</label>
+			<inputspec>textarea.100.10</inputspec>
+		</item>
+		<item>
+			<code>CreateMemberGroup</code>
+			<label>Create group for member automatically on signup</label>
+			<inputspec>checkbox</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- Infusionsoft</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you have selected <b>infusionsoftMember</b> as the <b>Membership Provider</b>. If you are using another membership provider, or are not using membership functionality on your site, you can leave all of these settings blank.</p>
+			]]>
+		</description>
+		<item>
+			<code>Infusionsoft API Key</code>
+			<label>Infusionsoft API Key:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>Infusionsoft URL</code>
+			<label>Infusionsoft API URL (include the /api/xmlrpc):</label>
+			<inputspec>input.100.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- osCommerce</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you have selected <b>oscommerceMember</b> as the <b>Membership Provider</b>. If you are using another membership provider, or are not using membership functionality on your site, you can leave all of these settings blank.</p>
+			]]>
+		</description>
+		<item>
+			<code>oscommerce Server Path</code>
+			<label>oscommerce Server URL:</label>
+			<inputspec>input.100.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- vtiger</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you have selected <b>vtigerMember</b> as the <b>Membership Provider</b>. If you are using another membership provider, or are not using membership functionality on your site, you can leave all of these settings blank.</p>
+			]]>
+		</description>
+		<item>
+			<code>vtiger Server Path</code>
+			<label>vtiger Server URL:</label>
+			<inputspec>input.100.200</inputspec>
+		</item>
+		<item>
+			<code>vtiger E-mail Name</code>
+			<label>E-mail From Name:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>vtiger E-mail Address</code>
+			<label>E-mail From Address:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>Payment Processing</name>
+		<description>
+			<![CDATA[
+				<p>Set <b>Process POST Silently</b> to <b>No</b> during site development if you are having issues interacting with the payment provider. This will allow you to view the form sent to the payment provider for debugging purposes.</p>
+			]]>
+		</description>
+		<item>
+			<code>PaymentProcessor.SilentPost</code>
+			<label>Process POST Silently:</label>
+			<inputspec>drop.Yes,No</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- Paypal IPN</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you are using <b>Paypal</b> as one of your payment providers. If you are using another payment provider, or are not using payment functionality on your site, you can leave these settings blank.
+			]]>
+		</description>
+		<item>
+			<code>PaypalIPN.URL</code>
+			<label>Paypal URL:</label>
+			<inputspec>drop.https://www.sandbox.paypal.com/cgi-bin/webscr,https://www.paypal.com/cgi-bin/webscr</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.PageStyle</code>
+			<label>Page Style:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.Business</code>
+			<label>Business Paypal E-mail:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.CurrencyCode</code>
+			<label>Currency (CAD,USD,etc.):</label>
+			<inputspec>input.5.10</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.SubmitText</code>
+			<label>Submit Button Label:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.AddToCartText</code>
+			<label>Add to Card Buton Label:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.CallbackServer</code>
+			<label>IPN Callback Server</label>
+			<inputspec>drop.ssl://www.sandbox.paypal.com,ssl://www.paypal.com</inputspec>
+		</item>
+		<item>
+			<code>PaypalIPN.CallbackPort</code>
+			<label>IPN Callback Port</label>
+			<inputspec>numeric.5.5</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- Moneris eSelect Plus</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you are using <b>Moneris eSelect Plus</b> as one of your payment providers. If you are using another payment provider, or are not using payment functionality on your site, you can leave these settings blank.
+			]]>
+		</description>
+		<item>
+			<code>MonerisEselect.URL</code>
+			<label>eSelect Plus URL:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>MonerisEselect.StoreID</code>
+			<label>Store ID:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>MonerisEselect.HPPKey</code>
+			<label>HPPKey:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>MonerisEselect.SubmitText</code>
+			<label>Submit Button Label:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- Google Checkout</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you are using <b>Google Checkout</b> as one of your payment providers. If you are using another payment provider, or are not using payment functionality on your site, you can leave these settings blank.
+			]]>
+		</description>
+		<item>
+			<code>GoogleCheckout.URL</code>
+			<label>Google Checkout URL:</label>
+			<inputspec>drop.https://sandbox.google.com/checkout,https://checkout.google.com</inputspec>
+		</item>
+		<item>
+			<code>GoogleCheckout.MerchantID</code>
+			<label>Merchant ID:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>GoogleCheckout.MerchantKey</code>
+			<label>Merchant Key:</label>
+			<inputspec>input.50.100</inputspec>
+		</item>
+		<item>
+			<code>GoogleCheckout.MerchantKey</code>
+			<label>Merchant PageStyle:</label>
+			<inputspec>input.20.50</inputspec>
+		</item>
+		<item>
+			<code>GoogleCheckout.CurrencyCode</code>
+			<label>Currency (CAD,USD,etc.):</label>
+			<inputspec>input.5.10</inputspec>
+		</item>
+	</group>
+</configitems>
