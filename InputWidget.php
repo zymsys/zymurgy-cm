@@ -1020,7 +1020,7 @@ abstract class ZIW_DateBase extends ZIW_Base
 		$cal->SetIncludeID(true); // false);
 
 		$cal->load_files();
-		$this->SetCalendarParams($date);
+		$this->SetCalendarParams($date > 0 ? $date : "");
 		$this->calattributes['name'] = $name;
 		$cal->make_input_field($this->caloptions,$this->calattributes);
 	}
@@ -1083,7 +1083,11 @@ class ZIW_Date extends ZIW_DateBase
 	{
 		$format = $this->GetJSFormat();
 		$this->caloptions['ifFormat'] = $format;
-		$this->calattributes['value'] = strftime($format, $date);
+
+		if(strlen($date) > 0)
+		{
+			$this->calattributes['value'] = strftime($format, $date);
+		}
 	}
 
 	function ToUnixTime($tm)
@@ -1854,23 +1858,19 @@ class ZIW_HIP extends ZIW_Base
 		switch ($ep[1])
 		{
 			case "asirra":
-				echo "<script type=\"text/javascript\">
-<!--
-passThroughFormSubmit = false;
--->
-</script>";
-				return "if (passThroughFormSubmit) {
-  						return true;
-						}
-					Asirra_CheckIfHuman(function (isHuman) {
-						if (isHuman) {
-							passThroughFormSubmit = true;
-							me.submit();
-						} else {
-							alert('Please correctly identify the cats.');
-						}
-					});
-					ok = false;";
+				return "passThroughFormSubmit = false;\n".
+					"ok = false;\n";
+					"function Asirra_CheckIfHuman(isHuman) {\n".
+					" if (passThroughFormSubmit) {\n".
+  					"  return true;\n".
+					" }\n".
+					" if (isHuman) {\n".
+					"  passThroughFormSubmit = true;\n".
+					"  me.submit();\n".
+					" } else {\n".
+					"  alert('Please correctly identify the cats.');\n".
+					" }\n".
+					"}\n;";
 		}
 	}
 
