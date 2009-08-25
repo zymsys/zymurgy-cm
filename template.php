@@ -334,6 +334,11 @@ class ZymurgyTemplate
 		}
 	}
 
+	public function overridepagetextcache($tag, $content)
+	{
+			$this->pagetextcache[$tag] = $content;
+	}
+
 	public function pagetext($tag,$type='html.600.400')
 	{
 		require_once(Zymurgy::$root.'/zymurgy/InputWidget.php');
