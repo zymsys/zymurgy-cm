@@ -41,10 +41,19 @@
 			if(isset($_POST[$inputField]))
 			{
 				$dbvalue = Zymurgy::$db->escape_string($_POST[$inputField]);
-				$sql = "update zcm_pluginconfig set `value`='$dbvalue' where (`key`='".
+
+//				$sql = "update zcm_pluginconfig set `value`='$dbvalue' where (`key`='".
+//					Zymurgy::$db->escape_string($configItem["name"]).
+//					"') and (`plugin`={$plugin->pid}) and (`instance`={$plugin->iid})";
+				$sql = "UPDATE `zcm_pluginconfigitem` SET `value` = '".
+					$dbvalue.
+					"' WHERE `key` = '".
 					Zymurgy::$db->escape_string($configItem["name"]).
-					"') and (`plugin`={$plugin->pid}) and (`instance`={$plugin->iid})";
+					"' AND `config` = '".
+					Zymurgy::$db->escape_string($plugin->configid).
+					"'";
 				$ri = Zymurgy::$db->query($sql);
+
 				if (!$ri)
 				{
 					die("Error updating plugin config: ".Zymurgy::$db->error()."<br>$sql");
@@ -52,10 +61,20 @@
 				if (Zymurgy::$db->affected_rows()==0)
 				{
 					//Key doesn't exist yet.  Create it.
-					$sql = "insert into zcm_pluginconfig (`plugin`,`instance`,`key`,`value`) values ({$plugin->pid},{$plugin->iid},'".
+//					$sql = "insert into zcm_pluginconfig (`plugin`,`instance`,`key`,`value`) values ({$plugin->pid},{$plugin->iid},'".
+//						Zymurgy::$db->escape_string($configItem["name"]).
+//						"','$dbvalue')";
+
+					$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) VALUES ( '".
+						Zymurgy::$db->escape_string($plugin->configid).
+						"', '".
 						Zymurgy::$db->escape_string($configItem["name"]).
-						"','$dbvalue')";
+						"', '".
+						$dbvalue.
+						"' )";
+
 					$ri = Zymurgy::$db->query($sql);
+
 					if (!$ri)
 					{
 						if (Zymurgy::$db->errno() != 1062) //1062 means the user hit submit bit didn't change anything, so no rows affected and can't re-insert.  Just ignore it.
@@ -120,18 +139,21 @@
 		$pluginID,
 		$instanceID)
 	{
-		$sql = "SELECT `name` FROM `zcm_plugin` WHERE `id` = '".
+		$sql = "SELECT `zcm_plugin`.`name`, COALESCE(`config`, `defaultconfig`) AS `config` FROM `zcm_plugin` LEFT JOIN `zcm_plugininstance` ON `zcm_plugininstance`.`plugin` = `zcm_plugin`.`id` AND `zcm_plugininstance`.`id` = '".
+			Zymurgy::$db->escape_string($instanceID).
+			"' WHERE `zcm_plugin`.`id` = '".
 			Zymurgy::$db->escape_string($pluginID).
 			"'";
-		$pluginName = Zymurgy::$db->get($sql)
+		$plugin = Zymurgy::$db->get($sql)
 			or die("Could not get plugin information: ".mysql_error().", $sql");
 
-		require_once("plugins/{$pluginName}.php");
-		$factory = "{$pluginName}Factory";
+		require_once("plugins/{$plugin["name"]}.php");
+		$factory = "{$plugin["name"]}Factory";
 		$po = $factory();
 
 		$po->pid = $pluginID;
 		$po->iid = $instanceID;
+		$po->configid = $plugin["config"];
 		$po->InstanceName = GetInstanceName($instanceID);
 
 		return $po;
@@ -184,10 +206,8 @@
 
 		// print_r($plugin);
 
-		$sql = "SELECT `key`, `value` FROM `zcm_pluginconfig` WHERE `plugin` = '".
-			Zymurgy::$db->escape_string($plugin->pid).
-			"' AND `instance` = '".
-			Zymurgy::$db->escape_string($plugin->iid).
+		$sql = "SELECT `key`, `value` FROM `zcm_pluginconfigitem` WHERE `config` = '".
+			Zymurgy::$db->escape_string($plugin->configid).
 			"'";
 		// die($sql);
 		$ri = Zymurgy::$db->query($sql)

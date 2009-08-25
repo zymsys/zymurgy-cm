@@ -8,6 +8,8 @@ class PluginBase
 {
 	var $pid; //Plugin ID# from the database
 	var $iid; //Instance ID# from the database
+	var $configid; // Config ID from the zcm_pluginconfiggroup table
+
 	var $dbrelease; //Release known to the database
 	var $config = array();
 
@@ -156,6 +158,8 @@ class PluginBase
 
 	function SetConfigValue($key, $value)
 	{
+//		echo("Setting $key to $value");
+
 		if (array_key_exists($key,$this->config))
 			$this->config[$key]->value = $value;
 		else
@@ -164,6 +168,8 @@ class PluginBase
 
 	function GetConfigValue($key,$default='')
 	{
+//		print_r($this->config);
+
 		if (array_key_exists($key,$this->config))
 			return $this->config[$key]->value;
 		else

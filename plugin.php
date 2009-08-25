@@ -27,11 +27,7 @@
 	$dg->AddColumn('Plugin Name','title');
 	$dg->AddColumn('Invocation','name',"&lt;?php echo Zymurgy::plugin('{0}','Instance Name'); ?&gt;");
 	$dg->AddColumn('','id',"<a href='pluginconfig.php?plugin={0}&instance=0'>Default Settings</a>");
-	//$dg->AddColumn('','id',"<a href='plugininstance.php?plugin={0}'>Instances</a>");
 	$dg->AddColumn('','id',"<a href='pluginadmin.php?pid={0}'>Instances</a>");
-	//$dg->AddColumn('Enabled','enabled');
-	//$dg->AddEditColumn();
-	//$dg->AddRadioEditor('enabled','Enabled:',array(1=>'Yes',0=>'No'));
 	$dg->insertlabel='';
 	$dg->Render();
 

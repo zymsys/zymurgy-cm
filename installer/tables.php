@@ -138,7 +138,8 @@
 					DefineTableField("title", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
 					DefineTableField("name", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
 					DefineTableField("enabled", "SMALLINT(6)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("uninstallsql", "TEXT", "NOT NULL")
+					DefineTableField("uninstallsql", "TEXT", "NOT NULL"),
+					DefineTableField("defaultconfig", "INT(11)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "enabled", "unique" => FALSE, "type" => ""),
@@ -148,15 +149,25 @@
 				"engine" => "MyISAM"
 			),
 			array(
-				"name" => "zcm_pluginconfig",
+				"name" => "zcm_pluginconfiggroup",
 				"columns" => array(
-					DefineTableField("plugin", "INT(11)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("instance", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(50)", "NOT NULL DEFAULT ''")
+				),
+				"indexes" => array(),
+				"primarykey" => "`id`",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_pluginconfigitem",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("config", "INT(11)", "NOT NULL"),
 					DefineTableField("key", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
 					DefineTableField("value", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(),
-				"primarykey" => "`plugin`, `instance`, `key`",
+				"primarykey" => "`id`",
 				"engine" => "MyISAM"
 			),
 			array(
@@ -165,7 +176,8 @@
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("plugin", "INT(11)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("name", "VARCHAR(50)", "NOT NULL DEFAULT ''"),
-					DefineTableField("private", "TINYINT(4)", "DEFAULT NULL")
+					DefineTableField("private", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("config", "INT(11)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "plugin", "unique" => FALSE, "type" => ""),

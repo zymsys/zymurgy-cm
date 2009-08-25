@@ -561,7 +561,12 @@ if (!class_exists('Zymurgy'))
 		static function LoadPluginConfig(&$pi)
 		{
 			$iid = 0 + $pi->iid;
-			$sql = "select `key`,`value` from zcm_pluginconfig where (plugin={$pi->pid}) and (instance=$iid)";
+//			$sql = "select `key`,`value` from zcm_pluginconfig where (plugin={$pi->pid}) and (instance=$iid)";
+
+			$sql = "SELECT `key`, `value` FROM `zcm_pluginconfigitem` WHERE `config` = '".
+				Zymurgy::$db->escape_string($pi->configid).
+				"'";
+
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 			{
@@ -603,7 +608,7 @@ if (!class_exists('Zymurgy'))
 			$pi->config = $pi->GetDefaultConfig();
 			//Now load the config from the database.  First we have to figure out our instance.  If this is
 			//a new instance then create it and populate it with default values.
-			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii,`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) where (zcm_plugin.name='".
+			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii, COALESCE(`zcm_plugininstance`.`config`, `zcm_plugin`.`defaultconfig`) AS `configid`, `release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
 			//echo $sql;
@@ -620,6 +625,7 @@ if (!class_exists('Zymurgy'))
 			{
 				$pi->pid = $row['pid'];
 				$pi->iid = $row['pii'];
+				$pi->configid = $row["configid"];
 				$pi->dbrelease = $row['release'];
 				if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 				Zymurgy::LoadPluginConfig($pi);

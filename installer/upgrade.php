@@ -202,6 +202,15 @@ UpdateStatus("");
 
 // ----------
 
+UpdateStatus("Updating plugin configuration system");
+
+UpdatePluginConfig();
+
+UpdateStatus("-- Done");
+UpdateStatus("");
+
+// ----------
+
 UpdateStatus("Updating site text category information");-
 
 //Check if faulty uncategorized content category exists and fix it.
@@ -355,7 +364,7 @@ if ($count==0)
 		(12, 15, 3, 1, 'Help Editor',          'Zymurgy:CM Feature', '10'),
 		(13, 13, 4, 2, 'Navigation',           'Zymurgy:CM Feature', '11'),
 		(14, 14, 4, 2, 'Appearance Items',     'Zymurgy:CM Feature', '12'),
-		(21, 15, 4, 2, 'Zymurgy:CM Config',    'Zymurgy:CM Feature', '27'),
+		(27, 15, 4, 2, 'Zymurgy:CM Config',    'Zymurgy:CM Feature', '27'),
 		(15, 16, 4, 2, 'Plugin Management',    'Zymurgy:CM Feature', '13'),
 		(16, 17, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
 		(17, 18, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
@@ -577,6 +586,82 @@ if(!isset($_GET["debug"]))
 	{
 		echo $msg."<br>\n";
 		ob_flush();
+	}
+
+	function UpdatePluginConfig()
+	{
+		$sql = "SHOW TABLES LIKE 'zcm_pluginconfig'";
+		$systemRI = Zymurgy::$db->query($sql)
+			or die("Could not determine plugin configuration system: ".Zymurgy::$db->error().", $sql");
+
+		if(Zymurgy::$db->num_rows($systemRI) > 0)
+		{
+			$sql = "SELECT `plugin`, '0' as `instance` FROM `zcm_plugininstance` UNION SELECT `plugin`, `id` AS `instance` FROM `zcm_plugininstance`";
+			$ri = Zymurgy::$db->query($sql)
+				or die("Could not get old plugin config: ".Zymurgy::$db->error().", $sql");
+
+			$previousPlugin = -1;
+			$previousInstance = -1;
+			$configGroup = -1;
+
+			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+			{
+				if($row["plugin"] <> $previousPlugin || $row["instance"] <> $previousInstance)
+				{
+					$sql = "INSERT INTO `zcm_pluginconfiggroup` ( `name` ) SELECT CONCAT_WS(': ', `zcm_plugin`.`name`, COALESCE(`zcm_plugininstance`.`name`, 'Default')) FROM `zcm_plugin` LEFT JOIN `zcm_plugininstance` ON `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `zcm_plugininstance`.`id` = '".
+						Zymurgy::$db->escape_string($row["instance"]).
+						"' WHERE `zcm_plugin`.`id` = '".
+						Zymurgy::$db->escape_string($row["plugin"]).
+						"' LIMIT 0, 1";
+					Zymurgy::$db->query($sql)
+						or die("Could not create new config group: ".Zymurgy::$db->error().", $sql");
+
+					$configGroup = Zymurgy::$db->insert_id();
+					$previousPlugin = $row["plugin"];
+					$previousInstance = $row["instance"];
+
+					if($row["instance"] <= 0)
+					{
+						$sql = "UPDATE `zcm_plugin` SET `defaultconfig` = '".
+							Zymurgy::$db->escape_string($configGroup).
+							"' WHERE `id` = '".
+							Zymurgy::$db->escape_string($row["plugin"]).
+							"'";
+						Zymurgy::$db->query($sql)
+							or die("Could not set default config for plugin: ".Zymurgy::$db->error().", $sql");
+					}
+					else
+					{
+						$sql = "UPDATE `zcm_plugininstance` SET `config` = '".
+							Zymurgy::$db->escape_string($configGroup).
+							"' WHERE `id` = '".
+							Zymurgy::$db->escape_string($row["instance"]).
+							"'";
+						Zymurgy::$db->query($sql)
+							or die("Could not set default config for instance: ".Zymurgy::$db->error().", $sql");
+					}
+
+//					UpdateStatus($sql);
+//					UpdateStatus("-- ".$configGroup);
+				}
+
+				$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) SELECT '".
+					Zymurgy::$db->escape_string($configGroup).
+					"', `key`, `value` FROM `zcm_pluginconfig` WHERE `plugin` = '".
+					Zymurgy::$db->escape_string($row["plugin"]).
+					"' AND `instance` = '".
+					Zymurgy::$db->escape_string($row["instance"]).
+					"'";
+				Zymurgy::$db->query($sql)
+					or die("Could not create new config item: ".Zymurgy::$db->error().", $sql");
+			}
+		}
+
+		Zymurgy::$db->free_result($systemRI);
+
+		$sql = "RENAME TABLE `zcm_pluginconfig` TO `zcm_pluginconfig_old`";
+		Zymurgy::$db->query($sql)
+			or die("Could not drop old config table: ".Zymurgy::$db->error().", $sql");
 	}
 ?>
 </body>
