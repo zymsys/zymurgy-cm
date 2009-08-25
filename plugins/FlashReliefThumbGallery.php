@@ -350,6 +350,10 @@ class FlashReliefThumbGallery extends PluginBase
 
 	function RenderJS()
 	{
+//		print_r($this);
+//		echo($this->GetConfigValue("SWF Location"));
+//		die();
+
 		$uea = urlencode('&');
 		$html = "<embed allowScriptAccess=\"never\" allowNetworking=\"internal\"
 			enableJSURL=\"false\" enableHREF=\"false\" saveEmbedTags=\"true\" WMode=\"transparent\"
