@@ -242,7 +242,10 @@ foreach($ingrid as $col=>$header)
 	}
 }
 
-$sql = "select * from zcm_customtable where detailfor=$t";
+//$sql = "select * from zcm_customtable where detailfor=$t";\
+$sql = "SELECT `id`, `navname` FROM `zcm_customtable` WHERE `detailfor` = '".
+	Zymurgy::$db->escape_string($t).
+	"' ORDER BY `disporder`";
 $ri = Zymurgy::$db->query($sql) or die("Unable to get detail tables ($sql): ".Zymurgy::$db->error());
 
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
