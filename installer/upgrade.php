@@ -189,19 +189,6 @@ UpdateStatus("");
 
 // ----------
 
-UpdateStatus("Renaming plugin configuration items");
-
-RenamePluginKeys('Form',array(
-	'Results Email From'=>'Email Form Results To Address',
-	'Email From'=>'Email Form Results From Address',
-	'Email Subject'=>'Email Form Results Subject'
-));
-
-UpdateStatus("-- Done");
-UpdateStatus("");
-
-// ----------
-
 UpdateStatus("Updating plugin configuration system");
 
 UpdatePluginConfig();
@@ -596,6 +583,14 @@ if(!isset($_GET["debug"]))
 
 		if(Zymurgy::$db->num_rows($systemRI) > 0)
 		{
+			UpdateStatus("-- Renaming plugin configuration items");
+
+			RenamePluginKeys('Form',array(
+				'Results Email From'=>'Email Form Results To Address',
+				'Email From'=>'Email Form Results From Address',
+				'Email Subject'=>'Email Form Results Subject'
+			));
+
 			$sql = "SELECT `plugin`, '0' as `instance` FROM `zcm_plugininstance` UNION SELECT `plugin`, `id` AS `instance` FROM `zcm_plugininstance`";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not get old plugin config: ".Zymurgy::$db->error().", $sql");
@@ -655,13 +650,13 @@ if(!isset($_GET["debug"]))
 				Zymurgy::$db->query($sql)
 					or die("Could not create new config item: ".Zymurgy::$db->error().", $sql");
 			}
+
+			$sql = "RENAME TABLE `zcm_pluginconfig` TO `zcm_pluginconfig_old`";
+			Zymurgy::$db->query($sql)
+				or die("Could not drop old config table: ".Zymurgy::$db->error().", $sql");
 		}
 
 		Zymurgy::$db->free_result($systemRI);
-
-		$sql = "RENAME TABLE `zcm_pluginconfig` TO `zcm_pluginconfig_old`";
-		Zymurgy::$db->query($sql)
-			or die("Could not drop old config table: ".Zymurgy::$db->error().", $sql");
 	}
 ?>
 </body>
