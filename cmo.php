@@ -653,14 +653,29 @@ if (!class_exists('Zymurgy'))
 				$iid = Zymurgy::$db->insert_id();
 				Zymurgy::LoadPluginConfig($pi); //Load default config for new instance
 				$pi->pii = $pi->iid = $iid;
+
+				$sql = "INSERT INTO `zcm_pluginconfiggroup` ( `name` ) VALUES ( '".
+					Zymurgy::$db->escape_string($pi->GetTitle()).
+					": ".
+					Zymurgy::$db->escape_string($instance).
+					"')";
+				Zymurgy::$db->query($sql)
+					or die("Could not save new plugin config group: ".Zymurgy::$db->error().", $sql");
+				$pi->configid = Zymurgy::$db->insert_id();
+
 				foreach($pi->config as $cv)
 				{
 					$key = $cv->key;
 					$value = $cv->value;
-					$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ({$pi->pid},$pi->iid,'".
-						Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
-					//echo "$sql<br>";
-					Zymurgy::$db->query($sql) or die("Can't create plugin config ($sql): ".Zymurgy::$db->error());
+					$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) VALUES ( '".
+						Zymurgy::$db->escape_string($pi->configid).
+						"', '".
+						Zymurgy::$db->escape_string($key).
+						"', '".
+						Zymurgy::$db->escape_string($value).
+						"' )";
+					Zymurgy::$db->query($sql)
+						or die("Could not save new plugin config item: ".Zymurgy::$db->error().", $sql");
 				}
 			}
 			return $pi;
