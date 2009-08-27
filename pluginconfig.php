@@ -155,6 +155,7 @@
 		$po->iid = $instanceID;
 		$po->configid = $plugin["config"];
 		$po->InstanceName = GetInstanceName($instanceID);
+		Zymurgy::LoadPluginConfig($po);
 
 		return $po;
 	}
@@ -196,7 +197,7 @@
 			}
 		}
 
-		return $objectWithConfig->GetConfigItems();
+		return $objectWithConfig->GetConfigItems($plugin);
 	}
 
 	function PopulateConfiguration(

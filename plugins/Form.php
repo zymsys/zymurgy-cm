@@ -892,7 +892,7 @@ class FormEmailToWebmaster implements PluginExtension
 			"Contact Us forms, or other forms requiring immeiate action.</p>";
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		$configItems = array();
 
@@ -1056,7 +1056,7 @@ class FormEmailConfirmation implements PluginExtension
 			"the information on the form.</p>";
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		$configItems = array();
 
@@ -1162,7 +1162,7 @@ class FormCaptureToDatabase implements PluginExtension
 		return true;
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		return array();
 	}
@@ -1242,7 +1242,7 @@ class FormExportFromDatabase implements PluginExtension
 		return true;
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		return array();
 	}
@@ -1618,7 +1618,7 @@ class FormAddToCustomTable implements PluginExtension
 		return $plugin->GetConfigValue('Enable Add to Custom Table') == "on";
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		$configItems = array();
 
@@ -1782,7 +1782,7 @@ class FormPrefillFromMemberCustomTable implements PluginExtension
 		return $plugin->GetConfigValue('Prefill Fields using Member Custom Table') == "on";
 	}
 
-	public function GetConfigItems()
+	public function GetConfigItems($plugin)
 	{
 		$configItems = array();
 

@@ -242,7 +242,7 @@ class PluginBase
 
 		foreach($extensions as $extension)
 		{
-			$configItems = $extension->GetConfigItems();
+			$configItems = $extension->GetConfigItems($this);
 
 			foreach($configItems as $configItem)
 			{
@@ -317,7 +317,7 @@ interface PluginExtension
 	public function GetExtensionName();
 	public function GetDescription();
 	public function IsEnabled($plugin);
-	public function GetConfigItems();
+	public function GetConfigItems($plugin);
 	public function GetCommands();
 }
 ?>
