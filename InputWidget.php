@@ -2131,6 +2131,113 @@ class ZIW_GMap extends ZIW_Base
 	}
 }
 
+class ZIW_Page extends ZIW_Base
+{
+	public function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetListItems_".get_class($this)."() {\n";
+		$output .= " var items = new Array();\n";
+		$output .= " items[0] = \"id\";\n";
+		$output .= " items[1] = \"path\";\n";
+		$output .= " return items;\n";
+		$output .= "}\n";
+
+		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Page Reference\";\n";
+		$output .= " specifier.type = \"page\";\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineSelectParameter(\"Reference Type:\", 30, 200, \"GetListItems_".get_class($this)."();\", \"\", \"\"));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	public function Render($ep,$name,$value)
+	{
+		$sql = "SELECT `id`, `linktext`, `linkurl`, `parent` FROM `zcm_sitepage` ORDER BY `parent`, `disporder`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve page structure: ".Zymurgy::$db->error().", $sql");
+
+		$pages = array();
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$page = array(
+				"id" => $row["id"],
+				"path" => "/".$row["linkurl"],
+				"caption" => $row["linktext"],
+				"parent" => $row["parent"]);
+
+			$parent = $page["parent"];
+
+			if($parent > 0)
+			{
+				$page["path"] = $pages[$parent]["path"].
+					$page["path"];
+				$page["caption"] = $pages[$parent]["caption"].
+					" &raquo; ".
+					$page["caption"];
+			}
+
+			$pages[$row["id"]] = $page;
+		}
+
+		Zymurgy::$db->free_result($ri);
+
+		uasort($pages, "ZIW_Page::ComparePage");
+
+		$output = "";
+		$output .= "<select name=\"$name\" id=\"$name\">\n";
+
+		foreach($pages as $page)
+		{
+			$pageValue = $ep[1] == "id" ? $page["id"] : "/pages".$page["path"];
+
+			$output .= "<option value=\"".
+				$pageValue.
+				"\"".
+				($value == $pageValue ? " SELECTED" : "").
+				">".
+				$page["caption"].
+				"</option>\n";
+		}
+
+		$output .= "</select>\n";
+
+		echo $output;
+	}
+
+	public static function ComparePage($page1, $page2)
+	{
+		return strcmp(
+			strtoupper($page1["caption"]),
+			strtoupper($page2["caption"]));
+	}
+
+	public function Display($ep,$display,$shell)
+	{
+		if($ep[1] == "id")
+		{
+			$sql = "SELECT `linktext` FROM `zcm_sitepage` WHERE `id` = '".
+				Zymurgy::$db->escape_string($display).
+				"'";
+			$linktext = Zymurgy::$db->get($sql);
+
+			return "<a href=\"/zymurgy/template.php?id=$display\">$linktext</a>";
+		}
+		else
+		{
+			return $display;
+		}
+	}
+}
+
 InputWidget::Register('input',new ZIW_Input());
 InputWidget::Register('lookup',new ZIW_Lookup());
 InputWidget::Register('textarea',new ZIW_TextArea());
@@ -2163,6 +2270,7 @@ InputWidget::Register('color',new ZIW_Color());
 InputWidget::Register('colour',new ZIW_Color());
 InputWidget::Register('hidden',new ZIW_Hidden());
 InputWidget::Register('gmap',new ZIW_GMap());
+InputWidget::Register("page", new ZIW_Page());
 //InputWidget::Register('',new ZIW_);
 
 if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
