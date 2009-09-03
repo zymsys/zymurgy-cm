@@ -259,8 +259,15 @@
 			return "";
 		}
 
-		public function GetConfigItems($plugin)
+		public function GetConfigItems($plugin = NULL)
 		{
+			// Since this cannot be enforced through the interface without
+			// breaking older installs, enforce this via contract instead.
+			if($plugin == NULL)
+			{
+				die("Plugin must be passed to GetConfigItems().");
+			}
+
 			$configItems = array();
 
 			$sql = "SELECT `cname` FROM `zcm_customfield` WHERE `tableid` = '".
@@ -334,8 +341,15 @@
 			return "";
 		}
 
-		public function GetConfigItems($plugin)
+		public function GetConfigItems($plugin = NULL)
 		{
+			// Since this cannot be enforced through the interface without
+			// breaking older installs, enforce this via contract instead.
+			if($plugin == NULL)
+			{
+				die("Plugin must be passed to GetConfigItems().");
+			}
+
 			$configItems = $this->GetParentConfigItem(
 				$plugin->GetConfigValue("Custom Table"),
 				1);

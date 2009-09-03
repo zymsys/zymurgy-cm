@@ -749,7 +749,7 @@ if (!class_exists('Zymurgy'))
 			{
 				//Initialize membership provider
 				require_once 'member.php';
-				if (empty(Zymurgy::$config['MemberProvider']))
+				if (empty(Zymurgy::$config['MemberProvider']) || Zymurgy::$config["MemberProvider"] == "(none)")
 				{
 					Zymurgy::$MemberProvider = new ZymurgyMember();
 				}

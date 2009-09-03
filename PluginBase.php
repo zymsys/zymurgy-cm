@@ -317,7 +317,7 @@ interface PluginExtension
 	public function GetExtensionName();
 	public function GetDescription();
 	public function IsEnabled($plugin);
-	public function GetConfigItems($plugin);
+	public function GetConfigItems();
 	public function GetCommands();
 }
 ?>
