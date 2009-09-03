@@ -98,6 +98,11 @@
 			<inputspec>textarea.60.10</inputspec>
 		</item>
 		<item>
+			<code>MembershipForgotPassword</code>
+			<label>Forgot Password Form</label>
+			<inputspec>textarea.60.10</inputspec>
+		</item>
+		<item>
 			<code>CreateMemberGroup</code>
 			<label>Create group for member automatically on signup</label>
 			<inputspec>checkbox</inputspec>

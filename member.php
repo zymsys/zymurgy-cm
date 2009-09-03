@@ -573,6 +573,40 @@ class ZymurgyMember
 							}
 						}
 						break;
+
+					case "forgotpassword":
+						$sql = "SELECT `username`, `password` FROM `zcm_member` WHERE `email` = '".
+							Zymurgy::$db->escape_string($_POST["email"]).
+							"' LIMIT 0, 1";
+						$row = Zymurgy::$db->get($sql);
+
+						if(is_array($row))
+						{
+							$body = "Site: {0}\n".
+								"Username: {1}\n".
+								"Password: {2}\n";
+
+							$body = str_replace("{0}", Zymurgy::$config["sitehome"], $body);
+							$body = str_replace("{1}", $row["username"], $body);
+							$body = str_replace("{2}", $row["password"], $body);
+
+							mail(
+								$_POST["email"],
+								"Forgot password request for ".Zymurgy::$config["sitehome"],
+								$body,
+								"From: webmaster@".str_replace("www.", "", Zymurgy::$config["sitehome"]));
+
+							echo("<p>Your username and password attached have been sent to ".$_POST["email"]."</p>");
+						}
+						else
+						{
+							echo("<p>There are no members with that e-mail address on this site.</p>");
+						}
+
+						return "";
+
+						break;
+
 					case 'extra':
 						//May also confirm email from step one.
 						Zymurgy::memberpage();
@@ -676,6 +710,19 @@ class ZymurgyMember
         <tr><td align="center" colspan="2"><input type="Submit" value="Signup"></td></tr>
         </table></form>';
 					return implode("\r\n",$r);
+
+				case "forgotpassword":
+					$r[] = isset(Zymurgy::$config["MembershipForgotPassword"]) ?
+						Zymurgy::$config["MembershipForgotPassword"] :
+						'<form class="MemberForm" method="post">'.
+						'<table>'.
+        				'<tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>'.
+						'<tr><td align="center" colspan="2"><input type="Submit" value="Retrieve Password"></td></tr>'.
+						'</table>'.
+						'</form>';
+
+					return implode("\r\n", $r);
+
 				case 'extra':
 					//May also confirm email from step one.
 					memberpage();
