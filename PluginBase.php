@@ -44,8 +44,8 @@ class PluginBase
 	 */
 	function RemoveInstance()
 	{
-		$sql = "delete from zcm_pluginconfig where plugin={$this->pid} and instance={$this->iid}";
-		Zymurgy::$db->query($sql) or die ("Unable to remove plugin configuration ($sql): ".Zymurgy::$db->error());
+//		$sql = "delete from zcm_pluginconfig where plugin={$this->pid} and instance={$this->iid}";
+//		Zymurgy::$db->query($sql) or die ("Unable to remove plugin configuration ($sql): ".Zymurgy::$db->error());
 	}
 
 	function GetDefaultConfig()
