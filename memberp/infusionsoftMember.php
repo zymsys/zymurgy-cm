@@ -422,7 +422,7 @@ class infusionsoftMember extends ZymurgyMember
 			if (!$authed)
 			{
 				//New registration
-				$ri = $this->membersignup_CreateInfusionsoftMember(
+				$ri = $this->membersignup_CreateMember(
 					$pi,
 					$userid,
 					$password,
@@ -440,11 +440,13 @@ class infusionsoftMember extends ZymurgyMember
 				if (Zymurgy::$member['email']!==$userid)
 				{
 					$this->membersignup_UpdateUserID($userid, $pi);
+					$this->membersignup_UpdateInfusionsoftUserID($userid, $pi);
 				}
 				//Has password changed?
 				if (!empty($password))
 				{
 					$this->membersignup_UpdatePassword($password);
+					$this->membersignup_UpdateInfusionsoftPassword($password);
 				}
 				//Update other user info (XML)
 				$capture = new FormCaptureToDatabase();
@@ -546,7 +548,7 @@ class infusionsoftMember extends ZymurgyMember
 			$pi->ValidationErrors[] = 'Last name is a required field.';
 	}
 
-	private function membersignup_CreateInfusionsoftMember(
+	public function membersignup_CreateMember(
 		&$pi,
 		$userid,
 		$password,
@@ -569,6 +571,36 @@ class infusionsoftMember extends ZymurgyMember
 					'Email' => $userid,
 					'Password' => $password));
 		}
+	}
+
+	private function membersignup_UpdateInfusionsoftUserID($userid, &$pi)
+	{
+		$memberid = $_SESSION['customer_id'];
+
+		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+		$infusion = new ZymurgyInfusionsoftWrapper();
+
+		$infusion->execute_va(
+			'DataService.update',
+			"Contact",
+			$memberid,
+			array(
+				"Email" => $userid));
+	}
+
+	private function membersignup_UpdateInfusionsoftPassword($password)
+	{
+		$memberid = $_SESSION['customer_id'];
+
+		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+		$infusion = new ZymurgyInfusionsoftWrapper();
+
+		$infusion->execute_va(
+			'DataService.update',
+			"Contact",
+			$memberid,
+			array(
+				"Password" => $password));
 	}
 }
 ?>
