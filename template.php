@@ -433,6 +433,7 @@ class ZymurgyTemplate
 	}
 }
 
+ob_start();
 Zymurgy::$template = new ZymurgyTemplate(
 	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
 	'pages',

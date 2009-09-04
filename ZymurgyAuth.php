@@ -26,7 +26,7 @@ class ZymurgyAuth
 			'password'=>$password,
 			'extra'=>$extra);
 		ob_clean();
-		header("Location: $location");
+		@header("Location: $location");
 
 		Zymurgy::JSRedirect($location);
 
