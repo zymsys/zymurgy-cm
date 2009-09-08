@@ -325,7 +325,8 @@ YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
 				{
 					if($aclitem["permission"] == "Read")
 					{
-						if(array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
+						if(is_array(Zymurgy::$member["groups"]) &&
+							array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
 						{
 							return true;
 							break;
