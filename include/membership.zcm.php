@@ -999,6 +999,20 @@
 				"\"></td>");
 			echo("</tr>");
 
+			if($action == "act_edit_member")
+			{
+				echo("<tr><td colspan=\"2\">&nbsp;</td></tr>");
+
+				echo("<tr>");
+				echo("<td>&nbsp;</td>");
+				echo("<td>");
+
+				MemberView::DisplayCommands($member);
+
+				echo("</td>\n");
+				echo("</tr>\n");
+			}
+
 			echo("</table>\n");
 			echo("</form>\n");
 
@@ -1141,6 +1155,67 @@
 			echo("</p>");
 
 			echo("</form>\n");
+
+			include("footer.php");
+		}
+
+		public static function DisplayCommands($member)
+		{
+			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
+
+			echo("<tr class=\"DataGridHeader\"><td>Commands</td></tr>\n");
+			echo("<tr><td><a href=\"editmember.php?action=send_password&amp;id=".
+				$member->get_id().
+				"\">Send Password</a></td></tr>");
+
+			echo("</table>\n");
+		}
+
+		public static function SendPassword($member)
+		{
+			$sql = "SELECT `password` FROM `zcm_member` WHERE `email` = '".
+				Zymurgy::$db->escape_string($member->get_email()).
+				"'";
+			$password = Zymurgy::$db->get($sql);
+
+			if(strlen($password) > 0)
+			{
+				$body = "Site: {0}\n".
+					"Username: {1}\n".
+					"Password: {2}\n";
+
+				$body = str_replace("{0}", Zymurgy::$config["sitehome"], $body);
+				$body = str_replace("{1}", $member->get_username(), $body);
+				$body = str_replace("{2}", $password, $body);
+
+				mail(
+					$member->get_email(),
+					"Forgot password request for ".Zymurgy::$config["sitehome"],
+					$body,
+					"From: webmaster@".str_replace("www.", "", Zymurgy::$config["sitehome"]));
+			}
+			else
+			{
+				die("Password could not be retrieved for ".$member->get_email());
+			}
+		}
+
+		public static function DisplayPasswordSentMessage($member)
+		{
+			$breadcrumbTrail = "<a href=\"editmember.php?action=list_members\">".
+				"Members".
+				"</a> &gt; <a href=\"editmember.php?action=edit_member&amp;id=".
+				$member->get_id().
+				"\">".
+				"Edit Member".
+				"</a> &gt; ".
+				"Send Password";
+
+			include("header.php");
+
+			echo("<p>The password for this member has been sent to ".
+				$member->get_email().
+				"</p>");
 
 			include("footer.php");
 		}
@@ -1505,6 +1580,14 @@
 
 				header("Location: editmember.php?action=edit_member&id=".
 					$_GET["memberid"]);
+		}
+
+		private function send_password()
+		{
+			$member = MemberPopulator::PopulateByID($_GET["id"]);
+
+			MemberView::SendPassword($member);
+			MemberView::DisplayPasswordSentMessage($member);
 		}
 
 		/**
