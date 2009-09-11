@@ -94,11 +94,26 @@ class ZIW_Base
 
 	function GetFlavouredValue($value, $activeFlavours)
 	{
-		$sql = "SELECT COALESCE(`text`, `default`) FROM `zcm_flavourtext` LEFT JOIN `zcm_flavourtextitem` ON `zcm_flavourtextitem`.`zcm_flavourtext` = `zcm_flavourtext`.`id` INNER JOIN `zcm_flavour` ON `zcm_flavour`.`id` = `zcm_flavourtextitem`.`flavour` AND `zcm_flavour`.`code` IN ( '".
-			implode("', '", $activeFlavours).
-			"' ) WHERE `zcm_flavourtext`.`id` = '".
+		// echo("Hai!<br>");
+
+		$sql = "SELECT `default` FROM `zcm_flavourtext` WHERE `id` = '".
 			Zymurgy::$db->escape_string($value).
-			"' ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+			"'";
+
+		$activeFlavourString = implode("', '", $activeFlavours);
+
+
+		if(strlen($activeFlavourString) > 0)
+		{
+			$sql = "SELECT COALESCE(`text`, `default`) FROM `zcm_flavourtext` LEFT JOIN `zcm_flavourtextitem` ON `zcm_flavourtextitem`.`zcm_flavourtext` = `zcm_flavourtext`.`id` LEFT JOIN `zcm_flavour` ON `zcm_flavour`.`id` = `zcm_flavourtextitem`.`flavour` AND `zcm_flavour`.`code` IN ( '".
+				$activeFlavourString.
+				"' ) WHERE `zcm_flavourtext`.`id` = '".
+				Zymurgy::$db->escape_string($value).
+				"' AND `zcm_flavour`.`code` IN ( '".
+				$activeFlavourString.
+				"' ) ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+		}
+
 		$text = Zymurgy::$db->get($sql);
 
 		return $text;
@@ -192,7 +207,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 		<table>
 			<tr>
 				<td>Default:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->getFlavouredValue($value, array()) ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->GetFlavouredValue($value, array()) ?>"></td>
 			</tr>
 <?
 		$flavours = Zymurgy::GetAllFlavours();
@@ -201,7 +216,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 ?>
 			<tr>
 				<td><?= $flavour ?>:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_<?= $flavour ?>" value="<?= $this->getFlavouredValue($value, array($flavour)) ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_<?= $flavour ?>" value="<?= $this->GetFlavouredValue($value, array($flavour)) ?>"></td>
 			</tr>
 <?
 		}
