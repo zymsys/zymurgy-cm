@@ -11,8 +11,8 @@
 	$dg->AddColumn('Code','code');
 	$dg->AddColumn('Label','label');
 	$dg->AddUpDownColumn('disporder');
-	$dg->AddInput('code','Code:',50,50);
-	$dg->AddInput('label','Label:',200,200);
+	$dg->AddInput('code','Code:',50,20);
+	$dg->AddInput('label','Label:',200,50);
 	$dg->AddEditColumn();
 	$dg->AddDeleteColumn();
 	$dg->insertlabel = 'Add New Flavour';

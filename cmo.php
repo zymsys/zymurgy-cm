@@ -1126,6 +1126,32 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
+
+		private static $m_flavours = array();
+
+		static function GetAllFlavours()
+		{
+			if(count(Zymurgy::$m_flavours) <= 0)
+			{
+				$sql = "SELECT `code` FROM `zcm_flavour` ORDER BY `disporder`";
+				$ri = Zymurgy::$db->query($sql)
+					or die("Could not get list of flavours: ".Zymurgy::$db->error().", $sql");
+
+				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+				{
+					Zymurgy::$m_flavours[] = $row["code"];
+				}
+
+				Zymurgy::$db->free_result($ri);
+			}
+
+			return Zymurgy::$m_flavours;
+		}
+
+		static function GetActiveFlavours()
+		{
+			return array();
+		}
 	} // End Zymurgy Class definition
 
 	//The following runs only the first time cmo.php is included...

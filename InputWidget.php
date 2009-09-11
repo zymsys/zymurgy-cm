@@ -81,6 +81,28 @@ class ZIW_Base
 	{
 		return true;
 	}
+
+	/**
+	 * Determine if the InputWidget supports the Flavours system
+	 *
+	 * @return unknown
+	 */
+	function SupportsFlavours()
+	{
+		return false;
+	}
+
+	function GetFlavouredValue($value, $activeFlavours)
+	{
+		$sql = "SELECT COALESCE(`text`, `default`) FROM `zcm_flavourtext` LEFT JOIN `zcm_flavourtextitem` ON `zcm_flavourtextitem`.`zcm_flavourtext` = `zcm_flavourtext`.`id` INNER JOIN `zcm_flavour` ON `zcm_flavour`.`id` = `zcm_flavourtextitem`.`flavour` AND `zcm_flavour`.`code` IN ( '".
+			implode("', '", $activeFlavours).
+			"' ) WHERE `zcm_flavourtext`.`id` = '".
+			Zymurgy::$db->escape_string($value).
+			"' ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+		$text = Zymurgy::$db->get($sql);
+
+		return $text;
+	}
 }
 
 class ZIW_Input extends ZIW_Base
@@ -144,6 +166,108 @@ class ZIW_Input extends ZIW_Base
 				return "TEXT";
 				break;
 		}
+	}
+}
+
+class ZIW_InputFlavoured extends ZIW_Base
+{
+	function Display($ep,$display,$shell)
+	{
+		return $this->GetFlavouredValue(
+			$display,
+			Zymurgy::GetActiveFlavours());
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+?>
+		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
+		<table>
+			<tr>
+				<td>Default:</td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->getFlavouredValue($value, array()) ?>"></td>
+			</tr>
+<?
+		$flavours = Zymurgy::GetAllFlavours();
+		foreach($flavours as $flavour)
+		{
+?>
+			<tr>
+				<td><?= $flavour ?>:</td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_default" value="<?= $this->getFlavouredValue($value, array($flavour)) ?>"></td>
+			</tr>
+<?
+		}
+?>
+		</table>
+<?
+//		echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
+//			"$name\" value=\"$value\" />";
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_InputFlavoured(inputspecName) {\n";
+		$output .= " var description = \"n/a\"\n";
+
+		$output .= " switch(inputspecName) {\n";
+		$output .= "  case \"inputf\": description = \"Flavoured Text - one line\"; break;\n";
+		$output .= "  case \"float\": description = \"Numeric (with decimals)\"; break;\n";
+		$output .= "  case \"numeric\": description = \"Numeric (no decimals)\"; break;\n";
+		$output .= "  default: description = inputspecName;\n";
+		$output .= " }\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = description;\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Size\", 3, 5, 20));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Maximum Length\", 3, 5, 50));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		switch($inputspecName)
+		{
+			case "numeric":
+				return "BIGINT";
+				break;
+			case "float":
+				return "FLOAT";
+				break;
+			case "input":
+				return "VARCHAR(".$parameters[1].")";
+				break;
+			default:
+				return "TEXT";
+				break;
+		}
+	}
+
+	/**
+	 * Determine if the InputWidget supports the Flavours system
+	 *
+	 * @return unknown
+	 */
+	function SupportsFlavours()
+	{
+		return true;
 	}
 }
 
@@ -2239,6 +2363,7 @@ class ZIW_Page extends ZIW_Base
 }
 
 InputWidget::Register('input',new ZIW_Input());
+InputWidget::Register("inputf", new ZIW_InputFlavoured());
 InputWidget::Register('lookup',new ZIW_Lookup());
 InputWidget::Register('textarea',new ZIW_TextArea());
 InputWidget::Register('unixdatetime',new ZIW_UnixDateTime());
