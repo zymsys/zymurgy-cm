@@ -2,6 +2,7 @@
 	/* array("columns" => "export", "unique" => false, "type" => "") */
 
 	$baseTableDefinitions = array();
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetFlavourDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetAuthenticationTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetConfigurationTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetSimpleContentTableDefinitions());
@@ -14,6 +15,48 @@
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVisitTrackingTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetACLTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPageTableDefinitions());
+
+	function GetFlavourDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_flavour",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("disporder", "INT(11)", "NOT NULL"),
+					DefineTableField("code", "VARCHAR(50)", "NOT NULL"),
+					DefineTableField("label", "VARCHAR(200)", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
+					array("columns" => "code", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_flavourtext",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("default", "LONGTEXT", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_flavourtextitem",
+				"columns" => array(
+					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("flavour", "INT(11)", "NOT NULL"),
+					DefineTableField("text", "LONGTEXT", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
 
 	function GetAuthenticationTableDefinitions()
 	{

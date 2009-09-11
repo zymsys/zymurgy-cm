@@ -312,21 +312,22 @@ SetNavigationFeature(10,  9, "- Help Editor", "helpeditor.php");
 SetNavigationFeature(23, 10, "--- Webmaster ---", "");
 SetNavigationFeature(11, 11, "- Navigation", "navigation.php");
 SetNavigationFeature(12, 12, "- Appearance Items", "configconfig.php");
-SetNavigationFeature(13, 13, "- Plugin Management", "plugin.php");
-SetNavigationFeature(14, 14, "- Custom Tables", "customtable.php");
-SetNavigationFeature(15, 15, "- Custom Code Generator", "mkcustom.php");
-SetNavigationFeature(16, 16, "- Template Manager", "templatemgr.php");
-SetNavigationFeature(27, 17, "- Zymurgy:CM Config", "zcmconfig.php");
-SetNavigationFeature(24, 18, "--- Media Files ---", "");
-SetNavigationFeature(6,  19, "- Media Files", "media.php");
-SetNavigationFeature(7,  20, "- Media Packages", "media.php?action=list_media_packages");
-SetNavigationFeature(8,  21, "- Media Package Types", "media.php?action=list_media_package_types");
-SetNavigationFeature(9,  22, "- Media Relations", "media.php?action=list_relations");
-SetNavigationFeature(25, 23, "--- General ---", "");
-SetNavigationFeature(17, 24, "- Appearance", "configuration.php");
-SetNavigationFeature(18, 25, "- Profile", "profile.php");
-SetNavigationFeature(19, 26, "- Help", "help.php");
-SetNavigationFeature(20, 27, "- Logout", "logout.php");
+SetNavigationFeature(28, 13, "- Flavours", "flavours.php");
+SetNavigationFeature(13, 14, "- Plugin Management", "plugin.php");
+SetNavigationFeature(14, 15, "- Custom Tables", "customtable.php");
+SetNavigationFeature(15, 16, "- Custom Code Generator", "mkcustom.php");
+SetNavigationFeature(16, 17, "- Template Manager", "templatemgr.php");
+SetNavigationFeature(27, 18, "- Zymurgy:CM Config", "zcmconfig.php");
+SetNavigationFeature(24, 19, "--- Media Files ---", "");
+SetNavigationFeature(6,  20, "- Media Files", "media.php");
+SetNavigationFeature(7,  21, "- Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8,  22, "- Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9,  23, "- Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(25, 24, "--- General ---", "");
+SetNavigationFeature(17, 25, "- Appearance", "configuration.php");
+SetNavigationFeature(18, 26, "- Profile", "profile.php");
+SetNavigationFeature(19, 27, "- Help", "help.php");
+SetNavigationFeature(20, 28, "- Logout", "logout.php");
 
 UpdateStatus("-- Zymurgy:CM Feature list configured");
 
@@ -351,11 +352,12 @@ if ($count==0)
 		(12, 15, 3, 1, 'Help Editor',          'Zymurgy:CM Feature', '10'),
 		(13, 13, 4, 2, 'Navigation',           'Zymurgy:CM Feature', '11'),
 		(14, 14, 4, 2, 'Appearance Items',     'Zymurgy:CM Feature', '12'),
-		(27, 15, 4, 2, 'Zymurgy:CM Config',    'Zymurgy:CM Feature', '27'),
-		(15, 16, 4, 2, 'Plugin Management',    'Zymurgy:CM Feature', '13'),
-		(16, 17, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
-		(17, 18, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
-		(18, 19, 4, 2, 'Page Templates',       'Zymurgy:CM Feature', '16'),
+		(28, 15, 4, 2, 'Flavours',             'Zymurgy:CM Feature', '28'),
+		(27, 16, 4, 2, 'Zymurgy:CM Config',    'Zymurgy:CM Feature', '27'),
+		(15, 17, 4, 2, 'Plugin Management',    'Zymurgy:CM Feature', '13'),
+		(16, 18, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
+		(17, 19, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
+		(18, 20, 4, 2, 'Page Templates',       'Zymurgy:CM Feature', '16'),
 		(19,  5, 0, 0, 'Appearance',           'Zymurgy:CM Feature', '17'),
 		(20,  6, 1, 0, 'Pages',                'Zymurgy:CM Feature', '2')
 		;";
