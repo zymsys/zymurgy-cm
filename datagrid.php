@@ -279,15 +279,67 @@ class DataSetRow
 
 				if ($this->DataSet->columns["$tname.$cname"]->quoted)
 				{
-					$vlist[] = "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
+					$vlist[$cname] = "'".Zymurgy::$db->escape_string($val)."'";
+					$alist[$cname] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
 				}
 				else
 				{
-					$vlist[] = $val;
-					$alist[] = "`$cname`=$val";
+					$vlist[$cname] = $val;
+					$alist[$cname] = "`$cname`=$val";
 				}
 			}
+
+			print_r($_POST);
+
+			foreach($clist as $cname)
+			{
+				$cname = str_replace("`", "", $cname);
+				$fieldName = $tname."_".$cname."_default";
+
+				if(isset($_POST[$fieldName]))
+				{
+					echo("Flavoured Data Found: ".$fieldName."<br>");
+
+					$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
+						Zymurgy::$db->escape_string($_POST[$fieldName]).
+						"' )";
+					Zymurgy::$db->query($sql)
+						or die("Could not insert default flavoured text: ".Zymurgy::$db->error().", $sql");
+					$flavourTextID = Zymurgy::$db->insert_id();
+
+					$flavours = Zymurgy::GetAllFlavours();
+
+					foreach($flavours as $flavour)
+					{
+						$flavourField = $tname."_".$cname."_".$flavour;
+
+						$sql = "INSERT INTO `zcm_flavourtextitem` ( `flavour`, `text` ) SELECT `id`, '".
+							Zymurgy::$db->escape_string($_POST[$flavourField]).
+							"' FROM `zcm_flavour` WHERE `code` = '".
+							Zymurgy::$db->escape_string($flavour).
+							"'";
+						Zymurgy::$db->query($sql)
+							or die("Could not insert $flavour flavoured text: ".Zymurgy::$db->error().", $sql");
+					}
+
+					if ($this->DataSet->columns["$tname.$cname"]->quoted)
+					{
+						$vlist[$cname] = "'".Zymurgy::$db->escape_string($flavourTextID)."'";
+						$alist[$cname] = "`$cname`='".Zymurgy::$db->escape_string($flavourTextID)."'";
+					}
+					else
+					{
+						$vlist[$cname] = $flavourTextID;
+						$alist[$cname] = "`$cname`=$flavourTextID";
+					}
+				}
+//				else
+//				{
+//					echo("Flavoured data not found: ".$fieldName."<br>");
+//				}
+			}
+
+//			die(print_r($alist, true));
 
 			if ($this->edittype == 'UPDATE')
 			{
@@ -1050,7 +1102,7 @@ class DataGrid
 				$sign = '>';
 				$newdo = $count;
 			}
-			else 
+			else
 			{
 				$addsign = '+';
 				$sign = '<';
@@ -1060,7 +1112,7 @@ class DataGrid
 			Zymurgy::$db->run("update $tname set $column = $column $addsign 1 where ($column <> 0) and ($column $sign $olddo)");
 			Zymurgy::$db->run("update $tname set $column = $newdo where $column = 0");
 		}
-		else 
+		else
 		{
 			if (count($where)>0)
 			{

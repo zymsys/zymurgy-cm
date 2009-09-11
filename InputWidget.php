@@ -201,7 +201,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 ?>
 			<tr>
 				<td><?= $flavour ?>:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_default" value="<?= $this->getFlavouredValue($value, array($flavour)) ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_<?= $flavour ?>" value="<?= $this->getFlavouredValue($value, array($flavour)) ?>"></td>
 			</tr>
 <?
 		}
