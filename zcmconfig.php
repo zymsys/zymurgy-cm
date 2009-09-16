@@ -23,7 +23,7 @@
 			$newConfig .= "\$ZymurgyConfig[\"".
 				$key.
 				"\"] = \"".
-				addslashes($value).
+				$value.
 				"\";\n";
 		}
 

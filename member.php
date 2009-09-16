@@ -49,10 +49,9 @@ class ZymurgyMember
 	public function memberauthorize($groupname)
 	{
 		$authorized = false;
-		//echo "<div>Authorizing for [$groupname]: ";
-		if ($this->memberauthenticate())
+		if (Zymurgy::memberauthenticate())
 		{
-			//echo "authenticated ";
+			if ($groupname == 'Registered User') return true;
 			$sql = "select id, name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
@@ -61,11 +60,6 @@ class ZymurgyMember
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
 		}
-		else
-		{
-			//echo "not authenticated ";
-		}
-		//echo "</div>";
 		return $authorized;
 	}
 
@@ -295,11 +289,14 @@ class ZymurgyMember
 				{
 					$this->membersignup_UpdatePassword($password);
 				}
+				if(strlen(Zymurgy::$member["formdata"]) > 0)
+				{
+					$capture = new FormCaptureToDatabase();
+					$xml = $capture->MakeXML($values);
+					$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
+					Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+				}
 				//Update other user info (XML)
-				$capture = new FormCaptureToDatabase();
-				$xml = $capture->MakeXML($values);
-				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
-				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
 				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 			}
 		}
@@ -307,7 +304,6 @@ class ZymurgyMember
 		{
 			if ($authed)
 			{
-				//We're logged in so update existing info.
 				if(strlen(Zymurgy::$member['formdata']) > 0)
 				{
 					$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
@@ -470,7 +466,7 @@ class ZymurgyMember
 		}
 	}
 
-	private function membersignup_UpdateUserID($userid, &$pi)
+	protected function membersignup_UpdateUserID($userid, &$pi)
 	{
 		//Is the new user id already in use?
 		$sql = "update zcm_member set email='".Zymurgy::$db->escape_string($userid)."' where id=".Zymurgy::$member['id'];
@@ -490,7 +486,7 @@ class ZymurgyMember
 		}
 	}
 
-	private function membersignup_UpdatePassword($password)
+	protected function membersignup_UpdatePassword($password)
 	{
 		$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
 		Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
@@ -575,10 +571,7 @@ class ZymurgyMember
 						break;
 
 					case "forgotpassword":
-						$sql = "SELECT `username`, `password` FROM `zcm_member` WHERE `email` = '".
-							Zymurgy::$db->escape_string($_POST["email"]).
-							"' LIMIT 0, 1";
-						$row = Zymurgy::$db->get($sql);
+						$row = $this->RetrieveForgotPassword();
 
 						if(is_array($row))
 						{
@@ -596,7 +589,7 @@ class ZymurgyMember
 								$body,
 								"From: webmaster@".str_replace("www.", "", Zymurgy::$config["sitehome"]));
 
-							echo("<p>Your username and password attached have been sent to ".$_POST["email"]."</p>");
+							echo("<p>Your username and password have been sent to ".$_POST["email"]."</p>");
 						}
 						else
 						{
@@ -772,6 +765,16 @@ class ZymurgyMember
         <tr><td align="center" colspan="2"><input type="Submit" value="Login"></td></tr>
         </table></form>';
 		return implode("\r\n",$r);
+	}
+
+	protected function RetrieveForgotPassword()
+	{
+		$sql = "SELECT `username`, `password` FROM `zcm_member` WHERE `email` = '".
+			Zymurgy::$db->escape_string($_POST["email"]).
+			"' LIMIT 0, 1";
+		$row = Zymurgy::$db->get($sql);
+
+		return $row;
 	}
 
 	/**

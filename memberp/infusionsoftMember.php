@@ -104,19 +104,13 @@ class infusionsoftMember extends ZymurgyMember
 	 */
 	public function memberauthorize($groupname)
 	{
-		if ($this->memberauthenticate() && count(Zymurgy::$member["groups"]) <= 1)
+		if ($this->memberauthenticate())
 		{
-			require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
-			$infusion = new ZymurgyInfusionsoftWrapper();
+			if (count(Zymurgy::$member["groups"]) <= 1)
+			{
+				require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+				$infusion = new ZymurgyInfusionsoftWrapper();
 
-// 			$sql = "select name from zcm_groups";
-// 			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
-
-// 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
-// 			{
-// 				$inputArray = array(
-// 						'ContactId' => $_SESSION['customer_id'],
-// 						'ContactGroup' => $row["name"]);
 				$inputArray = array(
 						'ContactId' => $_SESSION['customer_id']);
 
@@ -131,11 +125,6 @@ class infusionsoftMember extends ZymurgyMember
 						'ContactGroup',
 						'DateCreated'));
 
-// 				echo("<pre>\n");
-// 				print_r($inputArray);
-// 				print_r($r);
-// 				echo("</pre>\n");
-
 				foreach($r->val as $group)
 				{
 					if(!in_array($group["ContactGroup"], Zymurgy::$member["groups"]))
@@ -143,12 +132,36 @@ class infusionsoftMember extends ZymurgyMember
 						Zymurgy::$member['groups'][] = $group["ContactGroup"];
 					}
 				}
-// 			}
-
-// 			Zymurgy::$db->free_result($ri);
+ 			}
 		}
+		
+		if ($groupname == 'Registered User') return true;
+		return is_array(Zymurgy::$member['groups'])
+			? in_array($groupname, Zymurgy::$member['groups'])
+			: false;
+	}
 
-		return in_array($groupname, Zymurgy::$member['groups']);
+	protected function RetrieveForgotPassword()
+	{
+		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+		$infusion = new ZymurgyInfusionsoftWrapper();
+
+		$r = $infusion->execute_fetch_array_va(
+			'DataService.query',
+			'Contact',
+			1,
+			0,
+			array(
+				'Email'=>$_POST["email"]),
+			array(
+				'Email',
+				'Password'));
+
+		return is_array($r)
+			? array(
+				"username" => $r["Email"],
+				"password" => $r["Password"])
+			: null;
 	}
 
 	/**
@@ -449,10 +462,13 @@ class infusionsoftMember extends ZymurgyMember
 					$this->membersignup_UpdateInfusionsoftPassword($password);
 				}
 				//Update other user info (XML)
-				$capture = new FormCaptureToDatabase();
-				$xml = $capture->MakeXML($values);
-				$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
-				Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+				if(strlen(Zymurgy::$member["formdata"]) > 0)
+				{
+					$capture = new FormCaptureToDatabase();
+					$xml = $capture->MakeXML($values);
+					$sql = "update zcm_form_capture set formvalues='".Zymurgy::$db->escape_string($xml)."' where id=".Zymurgy::$member['formdata'];
+					Zymurgy::$db->query($sql) or die("Unable to update zcm_member ($sql): ".Zymurgy::$db->error());
+				}
 				Zymurgy::JSRedirect($rurl.$joinchar.'memberaction=update');
 			}
 		}
@@ -461,10 +477,68 @@ class infusionsoftMember extends ZymurgyMember
 			if ($authed)
 			{
 				//We're logged in so update existing info.
-				$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
-				$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
-				$xml = Zymurgy::$db->result($ri,0,0);
-				$pi->XmlValues = $xml;
+//				echo("<pre>");
+//				echo("Member: ");
+//				print_r(Zymurgy::$member);
+//				echo("</pre>");
+
+				//We're logged in so update existing info.
+				if(strlen(Zymurgy::$member['formdata']) > 0)
+				{
+//					echo("Retrieving values from form");
+
+					$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
+					$ri = Zymurgy::$db->query($sql) or die("Can't get form data ($sql): ".Zymurgy::$db->error());
+					$xml = Zymurgy::$db->result($ri,0,0);
+					$pi->XmlValues = $xml;
+				}
+				else
+				{
+//					echo("Retrieving values from Infusionsoft");
+
+					require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
+					$infusion = new ZymurgyInfusionsoftWrapper();
+
+					$sid = session_id();
+					if (empty($sid))
+					{
+						session_start();
+					}
+
+					$r = $infusion->execute_fetch_array_va(
+						'DataService.query',
+						'Contact',
+						1,
+						0,
+						array(
+							'Id'=>$_SESSION['customer_id']),
+						array(
+							'Id',
+							'FirstName',
+							'LastName',
+							'Email',
+							'Password'));
+
+//					echo("<pre>");
+//					print_r($r);
+//					echo("</pre>");
+
+					if(is_array($r))
+					{
+						$xml = "<formvalues>".
+							"<value header=\"username\">".$r["Email"]."</value>".
+							"<value header=\"password\">".$r["Password"]."</value>".
+							"<value header=\"confirm\">".$r["Password"]."</value>".
+							"<value header=\"firstname\">".$r["FirstName"]."</value>".
+							"<value header=\"lastname\">".$r["LastName"]."</value>".
+							"</formvalues>";
+
+//						echo($xml);
+
+						$pi->XmlValues = $xml;
+					}
+				}
+
 				return $pi->Render();
 			}
 			else
