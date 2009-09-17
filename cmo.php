@@ -608,7 +608,10 @@ if (!class_exists('Zymurgy'))
 			$pi->config = $pi->GetDefaultConfig();
 			//Now load the config from the database.  First we have to figure out our instance.  If this is
 			//a new instance then create it and populate it with default values.
-			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii, COALESCE(`zcm_plugininstance`.`config`, `zcm_plugin`.`defaultconfig`) AS `configid`, `release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) where (zcm_plugin.name='".
+			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii, 
+				COALESCE(`zcm_plugininstance`.`config`, `zcm_plugin`.`defaultconfig`) AS `configid`, 
+				`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) 
+				where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
 			//echo $sql;
@@ -662,7 +665,7 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::$db->query($sql)
 					or die("Could not save new plugin config group: ".Zymurgy::$db->error().", $sql");
 				$pi->configid = Zymurgy::$db->insert_id();
-
+				Zymurgy::$db->run("update zcm_plugininstance set config={$pi->configid} where id={$pi->pii}");
 				foreach($pi->config as $cv)
 				{
 					$key = $cv->key;

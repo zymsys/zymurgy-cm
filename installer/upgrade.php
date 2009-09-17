@@ -526,12 +526,17 @@ if(!isset($_GET["debug"]))
 		$factory = "{$source}Factory";
 		$plugin = $factory();
 
+		//Create a configuration group for this plugin
+		Zymurgy::$db->run("insert into zcm_pluginconfiggroup (name) values ('".
+			Zymurgy::$db->escape_string($plugin->GetTitle()).": Default')");
+		$pcg = Zymurgy::$db->insert_id();
+		
 		//Add plugin to the plugin table
 		echo("---- Adding plugin definition to database<br>");
-		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled) values ('".
+		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled,defaultconfig) values ('".
 			Zymurgy::$db->escape_string($plugin->GetTitle())."','".
 			Zymurgy::$db->escape_string($source)."','".
-			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1)");
+			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1,$pcg)");
 		$id = Zymurgy::$db->insert_id();
 		//	$id = 7;
 
@@ -555,8 +560,9 @@ if(!isset($_GET["debug"]))
 			// echo($key.": ".$value."<br>");
 			echo("------ $key<br>");
 
-			$sql = "insert into zcm_pluginconfig (plugin,instance,`key`,value) values ($id,0,'".
-				Zymurgy::$db->escape_string($key)."','".Zymurgy::$db->escape_string($value)."')";
+			$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) values ($pcg, '".
+				Zymurgy::$db->escape_string($key)."', '".
+				Zymurgy::$db->escape_string($value)."')";
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
