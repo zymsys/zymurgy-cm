@@ -1506,7 +1506,20 @@ class DataGrid
 			//$contexttriggers[] = $this->RenderContextMenu($row);
 			foreach ($this->columns as $c)
 			{
-				if ($c->template != '')
+				if($c->template == "member")
+				{
+					$sql = "SELECT COALESCE(`fullname`, `email`) FROM `zcm_member` WHERE `id` = '".
+						Zymurgy::$db->escape_string($row->values[$c->datacolumn]).
+						"' LIMIT 0, 1";
+					$memberName = Zymurgy::$db->get($sql);
+
+					echo("<td><a href=\"editmember.php?action=edit_member&amp;id=".
+						$row->values[$c->datacolumn].
+						"\">".
+						$memberName.
+						"</a></td>");
+				}
+				else if ($c->template != '')
 				{
 					$widget->lookups = $this->lookups;
 					$widget->UsePennies = $this->UsePennies;

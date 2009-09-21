@@ -185,6 +185,10 @@ if ($tbl['hasdisporder']==1)
 {
 	$ds->AddColumn('disporder',false);
 }
+if($tbl["ismember"])
+{
+	$ds->AddColumn("member", false);
+}
 
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {
@@ -227,6 +231,11 @@ if ($parentrow>0)
 if (!empty($tbl['selfref']))
 {
 	$dg->AddConstant('selfref',$selfref);
+}
+
+if($tbl["ismember"])
+{
+	$dg->AddColumn("Member", "member", "member");
 }
 
 foreach($ingrid as $col=>$header)
