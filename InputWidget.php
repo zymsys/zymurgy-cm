@@ -1192,7 +1192,9 @@ class ZIW_UnixDate extends ZIW_DateBase
 	{
 		$format = $this->GetJSFormat();
 		$this->caloptions['ifFormat'] = $format;
-		$this->calattributes['value'] = strftime($format, $date);
+
+		if(!is_null($date) && strlen($date) > 0)
+			$this->calattributes['value'] = strftime($format, $date);
 	}
 
 	function GetInputSpecifier()
