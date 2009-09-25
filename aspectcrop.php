@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 <!--
 var srcimg = window.opener.document.getElementById('<?= "{$_POST['imgid']}.{$d}" ?>');
 if (srcimg) {
-	var newsrc='<?= "{$imgdir}{$id}thumb$d.jpg?" ?>' + Math.random();
+	var newsrc='<?= "{$imgdir}{$id}thumb$gd.jpg?" ?>' + Math.random();
 	srcimg.src=newsrc;
 }
 window.close();
