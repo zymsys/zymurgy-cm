@@ -157,7 +157,10 @@ function setNavNameIfBlank(newname,opts) {
 	if (el.value=='') {
 		for (var n = 0; n < opts.length; n++) {
 			if (opts[n].id==newname) {
-				el.value = opts[n].name;
+				var newname = opts[n].name;
+				while ((newname.charAt(0)==' ') || (newname.charAt(0)=='-'))
+					newname = newname.substr(1);
+				el.value = newname;
 				break;
 			}
 		}

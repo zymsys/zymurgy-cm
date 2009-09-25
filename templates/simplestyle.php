@@ -9,7 +9,7 @@ Zymurgy::Config('Header Graphic','image/jpg','image.200.150');
 @charset "utf-8";
 body {
 	color: #<?= Zymurgy::theme('Text Color') ?>;
-	background-color: #<?= Zymurgy::theme('Link Color') ?>;
+	background-color: #<?= Zymurgy::theme('Page Background') ?>;
 	font-family:Verdana, Arial, Helvetica, sans-serif;
 }
 #hd {
@@ -37,7 +37,7 @@ body {
 	font-size: 15px;
 }
 #bd {
-	background-color: #<?= Zymurgy::theme('Page Background') ?>;
+	background-color: #<?= Zymurgy::Config('Body Background','ffffff','colour') ?>;
 <? if ($navpos == 0) { ?>	
 	padding: 15px;
 <? } ?>	

@@ -12,7 +12,7 @@ $ds->AddColumns('id','name');
 
 $dg = new DataGrid($ds);
 $dg->AddColumn('Name','name');
-$dg->AddColumn("Items", "id", "<a href=\"aclitem.php?acl={0}\">Items</a>");
+$dg->AddColumn("Access Groups", "id", "<a href=\"aclitem.php?acl={0}\">Access Groups</a>");
 $dg->AddInput('name','Name:',50,50);
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();

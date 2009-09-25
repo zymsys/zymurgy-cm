@@ -256,13 +256,12 @@ class ZymurgySiteNav
 	public function getanscestors($key)
 	{
 		$anscestor = array();
-
-		if($this->items[$key]->parent > 0)
+		while ($key)
 		{
-			$anscestor[$this->items[$key]->parent] = $this->items[$this->items[$key]->parent]->linktext;
-			$anscestor = array_merge($anscestor, $this->getanscestors($this->items[$key]->parent));
+			$me = $this->items[$key];
+			$anscestor[$key] = $me->linktext;
+			$key = $me->parent;
 		}
-
 		return $anscestor;
 	}
 
@@ -275,9 +274,15 @@ abstract class ZymurgySiteNavRenderer{
 	public $startpath;
 	public $hrefroot;
 	public $hideACLfailure;
+	
+	/**
+	 * ZymurgySiteNav reference for this renderer
+	 *
+	 * @var ZymurgySiteNav
+	 */
 	protected $sitenav;
-
-	protected $trimmedtree;
+	protected $parent;
+	protected $anscestors = array();
 	protected $hrefprefix;
 
 	private $m_originalStartpath;
@@ -293,7 +298,28 @@ abstract class ZymurgySiteNavRenderer{
 		$this->m_originalStartpath = $startpath;
 		$this->hrefroot = $hrefroot;
 		$this->hideACLfailure = true;
-
+		$this->parent = 0;
+		if (!empty($startpath))
+		{
+			$sp = explode('/',$startpath);
+			$anscestors = $sp;
+			while ($sp)
+			{
+				$partname = array_shift($sp);
+				foreach ($this->sitenav->structureparts[$this->parent] as $key)
+				{
+					$correctedkey = $this->linktext2linkpart($this->items[$key]->linktext);
+					//echo "<div>Testing for [$correctedkey == $partname</div>";
+					if ($correctedkey == $partname)
+					{
+						$this->parent = $key;
+						$structurestart = $structurestart[$key];
+						break;
+					}
+				}
+			}
+		}
+		
 		$this->childlevelsonly($childlevelsonly);
 
 		$this->sitenav = Zymurgy::getsitenav();
@@ -332,51 +358,7 @@ abstract class ZymurgySiteNavRenderer{
 	public function startatdepth($depth){
 		$this->startpath = implode('/',array_slice(explode('/',Zymurgy::$template->navpath),0,$depth));
 	}
-
-	protected function trimtree(){
-		$navtree = $this->sitenav->structure;
-		$anscestors = array();
-		if (!empty($this->startpath)){
-			$sp = explode('/',$this->startpath);
-			$anscestors = $sp;
-			while ($sp){
-				$partname = array_shift($sp);
-				foreach ($navtree as $key => $subtree){
-					$correctedkey = ZymurgySiteNav::linktext2linkpart($this->items[$key]->linktext);
-					if ($correctedkey == $partname){
-						$navtree = $subtree;
-						break;
-					}
-				}
-			}
-		}
-
-		$hrefprefix = '/'.$this->hrefroot.'/';
-		foreach ($anscestors as $ancestor)
-			$hrefprefix .= ZymurgySiteNav::linktext2linkpart($ancestor).'/';
-		$this->hrefprefix = $hrefprefix;
-
-		if ($this->showrecursive){
-			$this->trimmedtree = $navtree;
-		}else{
-			$this->trimmedtree = array();
-			foreach ($navtree as $key => $subtree)
-				$this->trimmedtree[$key] = array();
-		}
-
-		if($this->hideACLfailure)
-			$this->ACLtrim($this->trimmedtree);
-	}
-
-	private function ACLtrim(&$tree){
-		foreach ($tree as $key => &$subtree){
-			if (!$this->sitenav->haspermission($key, null, false))
-				unset($tree[$key]);
-			else
-				$this->ACLtrim($subtree);
-		}
-	}
-
+	
 	protected function getname($key){
 		return $this->sitenav->items[$key]->linktext;
 	}
@@ -403,8 +385,6 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 	public function render($ishorizontal = true){
 		$idpart = uniqid().ZymurgySiteNav::linktext2linkpart($this->startpath);
 		$bar = $ishorizontal ? 'Bar' : '';
-
-		$this->trimtree();
 ?>
 <script type="text/javascript">
   // <![CDATA[
@@ -420,15 +400,33 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 <div class="yui-skin-sam ">
 	<div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<? if($ishorizontal) echo "bar yuimenubarnav"?>" >
 		<div class="bd" style="border-style: none">
-<? $this->renderpart($this->trimmedtree, $this->hrefprefix, 0, $ishorizontal); ?>
+<? $this->renderpart($this->hrefroot,$ishorizontal,0,($this->parent == 0) ? $this->sitenav->structure : $this->sitenav->structure[$this->parent],$this->anscestors); ?>
 		</div>
 	</div>
 </div>
 <?
 	}
-
-	private function renderpart($tree, $prefix, $depth, $horizontal){
+	
+	/**
+	 * Render part of the site's navigation
+	 *
+	 * @param string $hrefroot Root of the navigation sections as used by mod_rewrite
+	 * @param boolean $horizontal Is this a horizontal nav?  If false, this is a vertical nav.
+	 * @param int $depth What is our current depth?
+	 * @param array $sp Structure Part; the part of the nav to be rendered
+	 * @param array $anscestors Ancestor nav names
+	 */
+	private function renderpart($hrefroot,$horizontal,$depth,$sp,$anscestors)
+	{
 		$dtabs = str_repeat("\t",$depth+3);
+		$href = "/$hrefroot/";
+		if ($anscestors)
+		{
+			foreach($anscestors as $anscestor)
+			{
+				$href .= $this->sitenav->linktext2linkpart($anscestor).'/';
+			}
+		}
 
 		if ($depth > 0) echo "$dtabs<div class=\"yuimenu\"><div class=\"bd\">\r\n";
 		echo "$dtabs<ul";
@@ -437,37 +435,65 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 			echo " class=\"first-of-type";
 			if ($depth == 0) echo " zymurgy-horizontal-menu";
 			echo "\"";
-			$fot = " first-of-type";
+			$fot = true;
 		}
 		else
 		{
 			if ($depth > 0) echo " class=\"first-of-type\"";
-			$fot = '';
+			$fot = false;
 		}
-		echo ">\n";
-		foreach ($tree as $key=>$children)
+		echo ">\r\n";
+		foreach ($sp as $key=>$children)
 		{
-			$name = $this->getname($key);
-			$href = '#';
-			if ($this->sitenav->haspermission($key, null)){
-				$href = $prefix.$this->getlinkname($key);
-				$disabled = '';
-			}else{
-				$href = '#';
-				$disabled = '-disabled';
+			$hasPermission = $this->sitenav->haspermission($key, null);
+			//echo "<div>$key: $hasPermission</div>";
+			$enableItem = true;
+
+			if(!$hasPermission)
+			{
+				if (isset(Zymurgy::$config["PagesOnACLFailure"]))
+				{
+					if (Zymurgy::$config["PagesOnACLFailure"] == "hide")
+						continue;
+					if (Zymurgy::$config["PagesOnACLFailure"] == "disable")
+						$enableItem = false;
+					// Default to fail
+				}
+				else 
+				{
+					// Default to fail
+				}
 			}
 
-			echo "$dtabs\t<li class=\"yuimenuitem$fot\"><a class=\"yuimenuitemlabel$disabled\" href=\"$href\">$name</a>";
+			echo "$dtabs\t<li class=\"";
+			echo "yuimenuitem";
+			if ($fot)
+			{
+				$fot = false;
+				echo " first-of-type";
+			}
+			echo "\">";
+
+			echo "<a class=\"yuimenuitemlabel".
+				($enableItem ? "" : "-disabled").
+				"\" href=\"".
+				($enableItem ? $href : "javascript:;").
+				$this->sitenav->linktext2linkpart($this->sitenav->items[$key]->linktext)."\">".
+				$this->sitenav->items[$key]->linktext.
+//				" (".($this->haspermission($key, $anscestors) ? "YES" : "NO" ).")".
+				"</a>";
 			if ($children)
 			{
-				echo "\n";
-				$this->renderpart($children, $href.'/', $depth+1, $horizontal);
+				echo "\r\n";
+				$a = $anscestors;
+				// array_push($a,$this->items[$key]->linktext);
+				$a[$key] = $this->sitenav->items[$key]->linktext;
+				$this->renderpart($hrefroot,$horizontal,$depth+1,$children,$a);
 				echo "\r\n$dtabs";
 			}
-			echo "</li>\n";
-			$fot='';
+			echo "</li>\r\n";
 		}
-		echo "$dtabs</ul>\n";
+		echo "$dtabs</ul>\r\n";
 		if ($depth>0) echo "$dtabs</div></div>";
 	}
 }
@@ -480,8 +506,8 @@ class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
 	}
 
 	public function render(){
-		$this->trimtree();
-		$this->renderpart($this->trimmedtree, $this->hrefprefix, 0);
+		//$this->trimtree();
+		$this->renderpart($this->sitenav->structure, $this->hrefprefix, 0);
 	}
 
 	private function renderpart($tree, $prefix, $depth){

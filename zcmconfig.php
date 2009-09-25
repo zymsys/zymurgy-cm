@@ -23,19 +23,25 @@
 			$newConfig .= "\$ZymurgyConfig[\"".
 				$key.
 				"\"] = \"".
-				$value.
+				addslashes($value).
 				"\";\n";
 		}
 
 		$newConfig .= "?>";
 
-		rename(
-			Zymurgy::$root."/zymurgy/config/config.php",
-			Zymurgy::$root."/zymurgy/config/config.backup.".date("Y.m.d.H.i.s").".php");
-
-		file_put_contents(
-			Zymurgy::$root."/zymurgy/config/config.php",
-			$newConfig);
+		if (@rename(
+			"config/config.php",
+			"config/config.backup.".date("Y.m.d.H.i.s").".php"))
+		{
+			file_put_contents(
+				Zymurgy::$root."/zymurgy/config/config.php",
+				$newConfig);
+		}
+		else 
+		{
+			$pwd = getcwd();
+			echo "<div style=\"background-color: #ff0000; color: #ffffff;\">Unable to backup old config file, changes have <b>NOT</b> been saved ($pwd).  Make sure PHP has write permission for the /zymurgy/config folder.</div>";
+		}
 	}
 
 	$xmlstring = file_get_contents(Zymurgy::$root."/zymurgy/include/configitems.xml");
@@ -80,8 +86,10 @@
 	{
 		if($item->getName() == "item")
 		{
-			$value = array_key_exists(((string) $item->code), Zymurgy::$config)
-				? Zymurgy::$config[((string) $item->code)]
+			//$key = strtr((string) $item->code,'.','_');
+			$key = (string) $item->code;
+			$value = array_key_exists($key, Zymurgy::$config)
+				? Zymurgy::$config[$key]
 				: "";
 
 ?>

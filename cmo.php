@@ -1038,6 +1038,11 @@ if (!class_exists('Zymurgy'))
 				$baseurl);
 		}
 		
+		/**
+		 * Get site's navigation structure
+		 *
+		 * @return ZymurgySiteNav
+		 */
 		public static function getsitenav(){
 			require_once('sitenav.php');
 			

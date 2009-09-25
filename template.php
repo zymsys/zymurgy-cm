@@ -25,6 +25,7 @@ class ZymurgyTemplate
 		else if (empty($navpath))
 		{
 			$this->sitepage = $this->GetSitePage("`parent` = 0");
+			$np = array();
 		}
 		else
 		{
@@ -154,9 +155,9 @@ class ZymurgyTemplate
 	{
 		header("HTTP/1.0 404 Not Found");
 
-		if(array_key_exists("Pages.Error.404", Zymurgy::$config))
+		if(array_key_exists("PagesError404", Zymurgy::$config))
 		{
-			header("Location: ".Zymurgy::$config["Pages.Error.404"]);
+			header("Location: ".Zymurgy::$config["PagesError404"]);
 		}
 		else
 		{
@@ -187,20 +188,21 @@ class ZymurgyTemplate
 		header("HTTP/1.0 403 Forbidden");
 
 		// echo(Zymurgy::memberauthenticate() ? "AUTHED" : "NOT AUTHED")."<br>";
-		// echo(Zymurgy::$config["Pages.OnACLFailure"]);
+		// echo(Zymurgy::$config["PagesOnACLFailure"]);
 		// die();
 
 		if(!Zymurgy::memberauthenticate()
-			&& isset(Zymurgy::$config["Pages.OnACLFailure"])
-			&& !(Zymurgy::$config["Pages.OnACLFailure"] == "disable")
-			|| (Zymurgy::$config["Pages.OnACLFailure"] == "hide"))
+			&& array_key_exists("PagesOnACLFailure",Zymurgy::$config) &&
+			( isset(Zymurgy::$config["PagesOnACLFailure"])
+			&& !(Zymurgy::$config["PagesOnACLFailure"] == "disable")
+			|| (Zymurgy::$config["PagesOnACLFailure"] == "hide")))
 		{
-			header("Location: ".Zymurgy::$config["Pages.OnACLFailure"]);
+			header("Location: ".Zymurgy::$config["PagesOnACLFailure"]);
 		}
 
-		if(array_key_exists("Pages.Error.403", Zymurgy::$config))
+		if(array_key_exists("PagesError403", Zymurgy::$config))
 		{
-			header("Location: ".Zymurgy::$config["Pages.Error.403"]);
+			header("Location: ".Zymurgy::$config["PagesError403"]);
 		}
 		else
 		{

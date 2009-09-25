@@ -45,12 +45,12 @@
 		<item>
 			<code>defaultdescription</code>
 			<label>Default META Description:</label>
-			<inputspec>textarea.60.5</inputspec>
+			<inputspec>textarea.60.4096</inputspec>
 		</item>
 		<item>
 			<code>defaultkeywords</code>
 			<label>Default META Keywords:</label>
-			<inputspec>textarea.60.5</inputspec>
+			<inputspec>textarea.60.4096</inputspec>
 		</item>
 	</group>
 	<group>
@@ -65,6 +65,26 @@
 		<item>
 			<code>Mailer SMTP Hosts</code>
 			<label>SMTP Host(s):</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>Access Control</name>
+		<description>
+		</description>
+		<item>
+			<code>PagesOnACLFailure</code>
+			<label>ACL Failure Action:</label>
+			<inputspec>drop.disable,hide,fail</inputspec>
+		</item>
+		<item>
+			<code>PagesError403</code>
+			<label>Failed Landing Page:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>PagesError404</code>
+			<label>Page Not Found Landing Page:</label>
 			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
