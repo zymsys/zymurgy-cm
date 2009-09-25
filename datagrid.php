@@ -303,9 +303,11 @@ class DataSetRow
 					$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
 						Zymurgy::$db->escape_string($_POST[$fieldName]).
 						"' )";
+					// die($sql);
 					Zymurgy::$db->query($sql)
 						or die("Could not insert default flavoured text: ".Zymurgy::$db->error().", $sql");
 					$flavourTextID = Zymurgy::$db->insert_id();
+					// die("default flavoured text ID: ".$flavourTextID);
 
 					$flavours = Zymurgy::GetAllFlavours();
 
@@ -313,7 +315,9 @@ class DataSetRow
 					{
 						$flavourField = $tname."_".$cname."_".$flavour;
 
-						$sql = "INSERT INTO `zcm_flavourtextitem` ( `flavour`, `text` ) SELECT `id`, '".
+						$sql = "INSERT INTO `zcm_flavourtextitem` ( `zcm_flavourtext`, `flavour`, `text` ) SELECT '".
+							Zymurgy::$db->escape_string($flavourTextID).
+							"', `id`, '".
 							Zymurgy::$db->escape_string($_POST[$flavourField]).
 							"' FROM `zcm_flavour` WHERE `code` = '".
 							Zymurgy::$db->escape_string($flavour).

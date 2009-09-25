@@ -608,9 +608,9 @@ if (!class_exists('Zymurgy'))
 			$pi->config = $pi->GetDefaultConfig();
 			//Now load the config from the database.  First we have to figure out our instance.  If this is
 			//a new instance then create it and populate it with default values.
-			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii, 
-				COALESCE(`zcm_plugininstance`.`config`, `zcm_plugin`.`defaultconfig`) AS `configid`, 
-				`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin) 
+			$sql = "select zcm_plugin.id as pid, zcm_plugininstance.id as pii,
+				COALESCE(`zcm_plugininstance`.`config`, `zcm_plugin`.`defaultconfig`) AS `configid`,
+				`release` from zcm_plugin left join zcm_plugininstance on (zcm_plugin.id=zcm_plugininstance.plugin)
 				where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
@@ -1151,9 +1151,16 @@ if (!class_exists('Zymurgy'))
 			return Zymurgy::$m_flavours;
 		}
 
+		private static $m_activeFlavours = array();
+
 		static function GetActiveFlavours()
 		{
-			return array();
+			return Zymurgy::$m_activeFlavours;
+		}
+
+		static function AddActiveFlavour($flavour)
+		{
+			Zymurgy::$m_activeFlavours[] = $flavour;
 		}
 	} // End Zymurgy Class definition
 

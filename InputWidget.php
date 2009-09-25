@@ -95,6 +95,7 @@ class ZIW_Base
 	function GetFlavouredValue($value, $activeFlavours)
 	{
 		// echo("Hai!<br>");
+		// print_r($activeFlavours);
 
 		$sql = "SELECT `default` FROM `zcm_flavourtext` WHERE `id` = '".
 			Zymurgy::$db->escape_string($value).
@@ -102,16 +103,17 @@ class ZIW_Base
 
 		$activeFlavourString = implode("', '", $activeFlavours);
 
-
 		if(strlen($activeFlavourString) > 0)
 		{
 			$sql = "SELECT COALESCE(`text`, `default`) FROM `zcm_flavourtext` LEFT JOIN `zcm_flavourtextitem` ON `zcm_flavourtextitem`.`zcm_flavourtext` = `zcm_flavourtext`.`id` LEFT JOIN `zcm_flavour` ON `zcm_flavour`.`id` = `zcm_flavourtextitem`.`flavour` AND `zcm_flavour`.`code` IN ( '".
 				$activeFlavourString.
 				"' ) WHERE `zcm_flavourtext`.`id` = '".
 				Zymurgy::$db->escape_string($value).
-				"' AND `zcm_flavour`.`code` IN ( '".
-				$activeFlavourString.
-				"' ) ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+//				"' AND `zcm_flavour`.`code` IN ( '".
+//				$activeFlavourString.
+//				"' ) ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+				"' ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
+//			die($sql);
 		}
 
 		$text = Zymurgy::$db->get($sql);

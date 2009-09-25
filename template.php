@@ -434,6 +434,17 @@ class ZymurgyTemplate
 }
 
 ob_start();
+
+if(array_key_exists("f", $_GET))
+{
+	$flavours = explode(".", $_GET["f"]);
+
+	foreach($flavours as $flavour)
+	{
+		Zymurgy::AddActiveFlavour($flavour);;
+	}
+}
+
 Zymurgy::$template = new ZymurgyTemplate(
 	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
 	'pages',
