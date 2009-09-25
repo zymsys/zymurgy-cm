@@ -94,8 +94,7 @@ class ZymurgyTemplate
 
 		// -----
 		// Check the page to make sure the user actually has permission to view it
-		// Zymurgy::populatesitenav();
-		if(!Zymurgy::$sitenav->haspermission($this->sitepage["id"], null))
+		if(!Zymurgy::getsitenav()->haspermission($this->sitepage["id"], null))
 		{
 			$this->DisplayForbidden($navpart, $navpath, $newpath, "Failed ACL Check");
 		}

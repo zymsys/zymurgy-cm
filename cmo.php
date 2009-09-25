@@ -499,11 +499,11 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$pageid = $row['id'];
 			$r = array();
 			if ($row['title'] != '')
-				$r[] = "<title>".htmlentities($row['title'])."</title>";
+				$r[] = "\t<title>".htmlentities($row['title'])."</title>";
 			if ($row['description']!='')
-				$r[] = "<meta name=\"description\" content=\"".htmlentities($row['description'])."\" />";
+				$r[] = "\t<meta name=\"description\" content=\"".htmlentities($row['description'])."\" />";
 			if ($row['keywords']!='')
-				$r[] = "<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
+				$r[] = "\t<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
 			if (array_key_exists('zymurgy',$_COOKIE))
 				$r[] = Zymurgy::adminhead();
 			$r[] = trim(Zymurgy::RequireOnce('/zymurgy/include/cmo.js'));
@@ -1029,24 +1029,24 @@ if (!class_exists('Zymurgy'))
 			$startpath = '',
 			$baseurl = 'pages')
 		{
-			require_once('sitenav.php');
 
-			Zymurgy::populatesitenav();
-
-			Zymurgy::$sitenav->render(
+			Zymurgy::getsitenav()->render(
 				$ishorizontal,
 				$currentleveonly,
 				$childlevelsonly,
 				$startpath,
 				$baseurl);
 		}
-
-		public static function populatesitenav()
-		{
+		
+		public static function getsitenav(){
+			require_once('sitenav.php');
+			
 			if(is_null(Zymurgy::$sitenav))
 			{
 				Zymurgy::$sitenav = new ZymurgySiteNav();
 			}
+			
+			return Zymurgy::$sitenav;
 		}
 
 		static function pagetext($tag,$type='html.600.400')
