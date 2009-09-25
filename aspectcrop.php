@@ -185,10 +185,11 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			Thumb::MakeThumb($x,$y,$w,$h,$gw,$gh,"$ZymurgyRoot$imgdir{$id}raw.jpg","$ZymurgyRoot$imgdir{$id}thumb$gd.jpg");
 		}
 	}
+	//1play.image.100x160
 ?>
 <script type="text/JavaScript">
 <!--
-var srcimg = window.opener.document.getElementById('<?=$_POST['imgid']?>');
+var srcimg = window.opener.document.getElementById('<?= "{$_POST['imgid']}.{$d}" ?>');
 if (srcimg) {
 	var newsrc='<?= "{$imgdir}{$id}thumb$d.jpg?" ?>' + Math.random();
 	srcimg.src=newsrc;
