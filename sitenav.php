@@ -31,7 +31,7 @@ class ZymurgySiteNav
 {
 	public $items = array();
 	public $structure = array();
-	private $structureparts = array();
+	public $structureparts = array();
 
 	function __construct($navinfo='')
 	{
@@ -114,6 +114,38 @@ class ZymurgySiteNav
 			$r[$key] = $this->buildnav($key);
 		}
 		return $r;
+	}
+
+	/**
+	 * Inject a nav item into the navigation structure. This is used primarily
+	 * in custom/render.php to modify the menu based on business logic not
+	 * supported directly by the nav system.
+	 *
+	 * @param unknown_type $linktext
+	 * @param unknown_type $parent
+	 * @param unknown_type $livedate
+	 * @param unknown_type $softlaunchdate
+	 * @param unknown_type $retiredate
+	 * @param unknown_type $acl
+	 */
+	public function InjectNavItem(
+		$linktext,
+		$parent,
+		$livedate = null,
+		$softlaunchdate = null,
+		$retiredate = null,
+		$acl = 0)
+	{
+		$this->items[] = new ZymurgySiteNavItem(
+			$linktext,
+			$parent,
+			$livedate,
+			$softlaunchdate,
+			$retiredate,
+			0);
+		$navItemID = max(array_keys($this->items));
+		$this->structure[$navItemID] = array();
+		$this->structureparts[$parent][] = $navItemID;
 	}
 
 	/**
