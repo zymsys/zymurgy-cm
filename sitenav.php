@@ -118,7 +118,7 @@ class ZymurgySiteNav
 
 	/**
 	 * Replaces ISO-8859-1 special characthers with dashes and decapitates any accented letters.
-	 * 
+	 *
 	 * @param $linktext
 	 * @return string
 	 */
@@ -129,20 +129,21 @@ class ZymurgySiteNav
 		return str_replace(' ','_',$linktext);
 	}
 
-	public function render($ishorizontal = true, $currentlevelonly = false, $childlevelsonly = false, $startpath = '',$hrefroot = 'pages')
+	public function render(
+		$ishorizontal = true,
+		$currentlevelonly = false,
+		$childlevelsonly = false,
+		$startpath = '',
+		$hrefroot = 'pages')
 	{
-		$yuinavbar = new ZymurgySiteNavRender_YUI(true, $startpath, $hrefroot);
-		if ($childlevelsonly) $yuinavbar->startpath = Zymurgy::$template->navpath;
-		else if ($currentlevelonly){
-			$yuinavbar->showrecursive = false;
-			$currentpath = explode('/', Zymurgy::$template->navpath);
-			array_pop($currentpath);
-			if (!empty($currentpath))
-				$yuinavbar->startpath = implode('/', $currentpath);
-			else
-				$yuinavbar->startpath = '';
-		}
-		
+		$yuinavbar = new ZymurgySiteNavRender_YUI(
+			true,
+			$startpath,
+			$hrefroot);
+
+		$yuinavbar->childlevelsonly($childlevelsonly);
+		$yuinavbar->currentlevelonly($currentlevelonly);
+
 		$yuinavbar->headtags();
 		$yuinavbar->render($ishorizontal);
 	}
@@ -232,7 +233,7 @@ class ZymurgySiteNav
 
 		return $anscestor;
 	}
-	
+
 }
 
 ######################################################################
@@ -243,36 +244,64 @@ abstract class ZymurgySiteNavRenderer{
 	public $hrefroot;
 	public $hideACLfailure;
 	protected $sitenav;
-	
+
 	protected $trimmedtree;
 	protected $hrefprefix;
-	
+
+	private $m_originalStartpath;
+
 	public function __construct(
 		$showrecursive = true,
 		$startpath = '',
-		$hrefroot = 'pages'
-	){
+		$hrefroot = 'pages',
+		$childlevelsonly = false)
+	{
 		$this->showrecursive = $showrecursive;
 		$this->startpath = $startpath;
+		$this->m_originalStartpath = $startpath;
 		$this->hrefroot = $hrefroot;
 		$this->hideACLfailure = true;
-		
-		if ($startpath == "#thispage"){
-			$this->childlevelsonly();
-		}
-		
+
+		$this->childlevelsonly($childlevelsonly);
+
 		$this->sitenav = Zymurgy::getsitenav();
 	}
-	
-	public function childlevelsonly(){
-		$this->startpath = Zymurgy::$template->navpath;
+
+	public function childlevelsonly($newValue)
+	{
+		if($newValue)
+		{
+			$this->startpath = Zymurgy::$template->navpath;
+		}
+		else
+		{
+			$this->startpath = $this->m_originalStartpath;
+		}
 	}
-	
+
+	public function currentlevelonly($newValue)
+	{
+		if ($newValue){
+			$yuinavbar->showrecursive = false;
+			$currentpath = explode('/', Zymurgy::$template->navpath);
+			array_pop($currentpath);
+			if (!empty($currentpath))
+				$yuinavbar->startpath = implode('/', $currentpath);
+			else
+				$yuinavbar->startpath = '';
+		}
+		else
+		{
+			$yuinavbar->showrecursive = true;
+			$this->startpath = $this->m_originalStartpath;
+		}
+	}
+
 	public function startatdepth($depth){
 		$this->startpath = implode('/',array_slice(explode('/',Zymurgy::$template->navpath),0,$depth));
 	}
-	
-	protected function trimtree(){	
+
+	protected function trimtree(){
 		$navtree = $this->sitenav->structure;
 		$anscestors = array();
 		if (!empty($this->startpath)){
@@ -289,24 +318,24 @@ abstract class ZymurgySiteNavRenderer{
 				}
 			}
 		}
-		
+
 		$hrefprefix = '/'.$this->hrefroot.'/';
 		foreach ($anscestors as $ancestor)
 			$hrefprefix .= ZymurgySiteNav::linktext2linkpart($ancestor).'/';
 		$this->hrefprefix = $hrefprefix;
-			
+
 		if ($this->showrecursive){
 			$this->trimmedtree = $navtree;
-		}else{		
+		}else{
 			$this->trimmedtree = array();
 			foreach ($navtree as $key => $subtree)
 				$this->trimmedtree[$key] = array();
 		}
-		
+
 		if($this->hideACLfailure)
 			$this->ACLtrim($this->trimmedtree);
 	}
-	
+
 	private function ACLtrim(&$tree){
 		foreach ($tree as $key => &$subtree){
 			if (!$this->sitenav->haspermission($key, null, false))
@@ -315,14 +344,14 @@ abstract class ZymurgySiteNavRenderer{
 				$this->ACLtrim($subtree);
 		}
 	}
-	
+
 	protected function getname($key){
 		return $this->sitenav->items[$key]->linktext;
 	}
 	protected function getlinkname($key){
 		return ZymurgySiteNav::linktext2linkpart($this->sitenav->items[$key]->linktext);
 	}
-	
+
 	abstract public function headtags();
 	abstract public function render();
 }
@@ -330,7 +359,7 @@ abstract class ZymurgySiteNavRenderer{
 ######################################################################
 
 class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
-	
+
 	public function headtags(){
 		echo "\t".Zymurgy::YUI('fonts/fonts-min.css');
 		echo "\t".Zymurgy::YUI('menu/assets/skins/sam/menu.css');
@@ -338,11 +367,11 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 		echo "\t".Zymurgy::YUI('container/container_core-min.js');
 		echo "\t".Zymurgy::YUI('menu/menu-min.js');
 	}
-	
+
 	public function render($ishorizontal = true){
 		$idpart = uniqid().ZymurgySiteNav::linktext2linkpart($this->startpath);
 		$bar = $ishorizontal ? 'Bar' : '';
-		
+
 		$this->trimtree();
 ?>
 <script type="text/javascript">
@@ -365,10 +394,10 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 </div>
 <?
 	}
-	
+
 	private function renderpart($tree, $prefix, $depth, $horizontal){
 		$dtabs = str_repeat("\t",$depth+3);
-		
+
 		if ($depth > 0) echo "$dtabs<div class=\"yuimenu\"><div class=\"bd\">\r\n";
 		echo "$dtabs<ul";
 		if ($horizontal)
@@ -415,14 +444,14 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 
 class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
 	public function headtags(){
-		
+
 	}
-	
+
 	public function render(){
 		$this->trimtree();
 		$this->renderpart($this->trimmedtree, $this->hrefprefix, 0);
 	}
-	
+
 	private function renderpart($tree, $prefix, $depth){
 		$tabs = str_repeat("    ",$depth);
 		foreach ($tree as $key=>$children){
