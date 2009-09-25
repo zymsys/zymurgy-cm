@@ -233,7 +233,8 @@ class ZymurgySiteNav
 						{
 							if($aclitem["permission"] == "Read")
 							{
-								if(array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
+								if(is_array(Zymurgy::$member)
+									&& array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
 								{
 									return true;
 								}
@@ -274,7 +275,7 @@ abstract class ZymurgySiteNavRenderer{
 	public $startpath;
 	public $hrefroot;
 	public $hideACLfailure;
-	
+
 	/**
 	 * ZymurgySiteNav reference for this renderer
 	 *
@@ -319,7 +320,7 @@ abstract class ZymurgySiteNavRenderer{
 				}
 			}
 		}
-		
+
 		$this->childlevelsonly($childlevelsonly);
 
 		$this->sitenav = Zymurgy::getsitenav();
@@ -358,7 +359,7 @@ abstract class ZymurgySiteNavRenderer{
 	public function startatdepth($depth){
 		$this->startpath = implode('/',array_slice(explode('/',Zymurgy::$template->navpath),0,$depth));
 	}
-	
+
 	protected function getname($key){
 		return $this->sitenav->items[$key]->linktext;
 	}
@@ -406,7 +407,7 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 </div>
 <?
 	}
-	
+
 	/**
 	 * Render part of the site's navigation
 	 *
@@ -459,7 +460,7 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 						$enableItem = false;
 					// Default to fail
 				}
-				else 
+				else
 				{
 					// Default to fail
 				}
