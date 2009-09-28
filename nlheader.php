@@ -69,7 +69,7 @@ body {
 <body <?=$onload?>>
 <div class="ZymurgyHeader">
 	<div class="ZymurgyVendor">
-		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"{$ZymurgyConfig['vendorlink']}\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".htmlspecialchars($ZymurgyConfig['vendorname'])."\"></a>"; ?>
+		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".(isset($ZymurgyConfig['vendorlink']) ? $ZymurgyConfig['vendorlink'] : "javascript:;")."\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".(isset($ZymurgyConfig['vendorname']) ? htmlspecialchars($ZymurgyConfig['vendorname']) : "")."\"></a>"; ?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
 		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
