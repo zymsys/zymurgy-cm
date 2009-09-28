@@ -157,7 +157,7 @@ div.ZymurgyBreadcrumbs
 <body id="zcmbody" class="yui-skin-sam" onresize="resizenav()">
 <div class="ZymurgyHeader">
 	<div class="ZymurgyVendor">
-		<? if ((isset(Zymurgy::$config['vendorlogo'])) && (Zymurgy::$config['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".Zymurgy::$config['vendorlink']."\"><img border=\"0\" src=\"".Zymurgy::$config['vendorlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['vendorname'])."\"></a>"; ?>
+		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".(isset($ZymurgyConfig['vendorlink']) ? $ZymurgyConfig['vendorlink'] : "javascript:;")."\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".(isset($ZymurgyConfig['vendorname']) ? htmlspecialchars($ZymurgyConfig['vendorname']) : "")."\"></a>"; ?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
 		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
