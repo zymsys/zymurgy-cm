@@ -246,7 +246,11 @@ if (!class_exists('Zymurgy'))
 		{
 			header('Content-type: text/xml');
 			echo "<$rootName>\r\n";
-			Zymurgy::buildEasyXML($tableName);
+			if (!is_array($tableName)) $tableName = array($tableName);
+			foreach($tableName as $tname)
+			{
+				Zymurgy::buildEasyXML($tname);
+			}
 			echo "</$rootName>\r\n";
 		}
 
@@ -262,11 +266,12 @@ if (!class_exists('Zymurgy'))
 		static private function buildEasyXML($tableName,$detailTable='',$parentID=0,$level = 1)
 		{
 			//Get meta data about this table, especially detail tables.
-			$sql = "select id from zcm_customtable where tname='".
+			$sql = "select id,hasdisporder from zcm_customtable where tname='".
 				Zymurgy::$db->escape_string($tableName)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table info ($sql): ".Zymurgy::$db->error());
 			$row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC) or die("Table $tableName doesn't exist.");
 			$tid = $row['id'];
+			$hasdisporder = ($row['hasdisporder'] == 1);
 			Zymurgy::$db->free_result($ri);
 			$sql = "select * from zcm_customtable where detailfor=$tid";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table detail info ($sql): ".Zymurgy::$db->error());
@@ -282,6 +287,10 @@ if (!class_exists('Zymurgy'))
 			if (!empty($detailTable))
 			{
 				$sql .= " where $detailTable=$parentID";
+			}
+			if ($hasdisporder)
+			{
+				$sql .= " order by disporder";
 			}
 			$ri = Zymurgy::$db->query($sql) or die("Can't get XML data ($sql): ".Zymurgy::$db->error());
 			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)

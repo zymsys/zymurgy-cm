@@ -83,7 +83,7 @@ if (array_key_exists('fetchdraft',$_GET))
 	$sql = "select * from zcm_draft where id=".(0 + $_GET['fetchdraft']);
 	$ri = Zymurgy::$db->query($sql) or die("Unable to fetch draft ($sql): ".Zymurgy::$db->error());
 	$row = Zymurgy::$db->fetch_array($ri) or die("No such draft available.");
-	echo $row['json'];
+	echo str_replace(array("\r","\n"),array("\\r","\\n"),$row['json']);
 	exit;
 }
 ?>

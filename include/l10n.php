@@ -48,26 +48,29 @@
 			if(key_exists($key, $this->m_cache)
 				&& $this->m_cache[$key]->TimeAdded < time() + (60 * 60 * 24 * 1000))
 			{
-				// echo("From cache.<br>");
+				//echo("\r\n<!--From cache ($key). -->\r\n");
 
 				$value = $this->m_cache[$key]->Value;
 			}
 			else
 			{
+				echo("\r\n<!--Looking for {$this->m_customFilepath} -->\r\n");
 				if(file_exists($this->m_customFilepath))
 				{
+					//echo("\r\n<!--From custom ($key) -->\r\n");
 					$value = $this->GetStringFromFile($key, $this->m_customFilepath);
 				}
 
 				if($value == "n/a")
 				{
+					//echo("\r\n<!--From standard locale ($key) -->\r\n");
 					$value = $this->GetStringFromFile($key, $this->m_localeFilepath);
 				}
 			}
 
 			if($value == "n/a" && $this->m_defaultLocale !== null)
 			{
-				// echo("From default locale");
+				//echo("\r\n<!--From default locale ($key) -->\r\n");
 
 				$value = $this->m_defaultLocale->GetString($key);
 			}
