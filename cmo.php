@@ -623,7 +623,7 @@ if (!class_exists('Zymurgy'))
 				where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
-			//echo $sql;
+			die($sql);
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 			{
@@ -1046,7 +1046,7 @@ if (!class_exists('Zymurgy'))
 				$startpath,
 				$baseurl);
 		}
-		
+
 		/**
 		 * Get site's navigation structure
 		 *
@@ -1054,12 +1054,12 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function getsitenav(){
 			require_once('sitenav.php');
-			
+
 			if(is_null(Zymurgy::$sitenav))
 			{
 				Zymurgy::$sitenav = new ZymurgySiteNav();
 			}
-			
+
 			return Zymurgy::$sitenav;
 		}
 
@@ -1109,6 +1109,11 @@ if (!class_exists('Zymurgy'))
 			{
 				return "<div>This page is not linked to a template, so pagegadgets() can't be used here.</div>";
 			}
+		}
+
+		function pagegadget($pluginName, $configName)
+		{
+			return Zymurgy::$template->pagegadget($pluginName, $configName);
 		}
 
 		function Config($keyname, $defaultvalue, $inputspec='input.30.30')

@@ -432,6 +432,74 @@ class ZymurgyTemplate
 
 		Zymurgy::$db->free_result($ri);
 	}
+
+	public function pagegadget($pluginName, $configName)
+	{
+		// ----------
+		// Search for an existing instance of the plugin.
+
+		$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE EXISTS(SELECT 1 FROM `zcm_plugin` WHERE `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `zcm_plugin`.`name` = '".
+			Zymurgy::$db->escape_string($pluginName).
+			"') AND `name` = '".
+			Zymurgy::$db->escape_string($this->navpath).
+			"'";
+		$instanceID = Zymurgy::$db->get($sql);
+
+		// ----------
+		// If the plugin instance does not exist, create one associated with
+		// the given config.
+
+		if($instanceID <= 0)
+		{
+			$sql = "SELECT `id` FROM `zcm_pluginconfiggroup` WHERE `name` = '".
+				Zymurgy::$db->escape_string($pluginName).
+				": ".
+				Zymurgy::$db->escape_string($configName).
+				"'";
+			$configID = Zymurgy::$db->get($sql);
+
+			if($configID <= 0)
+			{
+				echo("Creating config<br>");
+
+				$sql = "INSERT INTO `zcm_pluginconfiggroup` ( `name` ) VALUES ( '".
+					Zymurgy::$db->escape_string($pluginName).
+					": ".
+					Zymurgy::$db->escape_string($configName).
+					"')";
+				Zymurgy::$db->query($sql)
+					or die("Could not save new plugin config group: ".Zymurgy::$db->error().", $sql");
+				$configID = Zymurgy::$db->insert_id();
+
+				$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) SELECT '".
+					Zymurgy::$db->escape_string($configID).
+					"', `key`, `value` FROM `zcm_pluginconfigitem` WHERE `config` IN ( SELECT `id` FROM `zcm_pluginconfiggroup` WHERE `name` = '".
+					Zymurgy::$db->escape_string($pluginName).
+					": Default' )";
+				Zymurgy::$db->query($sql)
+					or die("Could not save new plugin config items: ".Zymurgy::$db->error().", $sql");
+			}
+
+//			echo("Creating plugin instance<br>");
+
+			$sql = "INSERT INTO `zcm_plugininstance` ( `plugin`, `name`, `private`, `config` ) SELECT `id`, '".
+				Zymurgy::$db->escape_string($this->navpath).
+				"', 0, '".
+				Zymurgy::$db->escape_string($configID).
+				"' FROM `zcm_plugin` WHERE `name` = '".
+				Zymurgy::$db->escape_string($pluginName).
+				"'";
+			Zymurgy::$db->query($sql)
+				or die("Could not create new plugin instance: ".Zymurgy::$db->error().", $sql");
+		}
+
+//		echo("Rendering plugin");
+
+		// ----------
+		// Return the rendered plugin
+
+		return Zymurgy::plugin($pluginName, $this->navpath);
+	}
 }
 
 ob_start();
