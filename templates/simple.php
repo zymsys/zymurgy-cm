@@ -11,9 +11,9 @@ $navpos = Zymurgy::Config('Navigation Position','0','drop.a:7:{i:0;s:14:"Top Nav
 $body = (array_key_exists('p',$_GET)) ? $_GET['p'] : '';
 
 $yuinav = new ZymurgySiteNavRender_YUI();
-$txtnav = new ZymurgySiteNavRender_TXT();
-$txtnav->maxdepth = 1;
-$txtnav->startat_parent();
+//$txtnav = new ZymurgySiteNavRender_TXT();
+//$txtnav->maxdepth = 1;
+//$txtnav->startat_parent();
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -46,9 +46,6 @@ echo ">";
     	echo "<div id=\"yui-main\"><div id=\"zymurgy-main\" class=\"yui-b\">";
     }
     echo Zymurgy::pagetext('Body');
-	echo "<pre>\n";
-	$txtnav->render();
-	echo "</pre>\n";
     echo Zymurgy::pagegadgets();
     if ($navpos != 0)
     {
