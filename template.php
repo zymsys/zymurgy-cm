@@ -433,15 +433,34 @@ class ZymurgyTemplate
 		Zymurgy::$db->free_result($ri);
 	}
 
+	private $m_pluginCount = array();
+
 	public function pagegadget($pluginName, $configName)
 	{
+		// ----------
+		// Determine the next ID for the plugin/config combination being
+		// rendered on the page
+		$instanceName = $this->navpath." ".$configName;
+
+		if(array_key_exists($instanceName, $this->m_pluginCount))
+		{
+			$this->m_pluginCount[$instanceName] =
+				$this->m_pluginCount[$instanceName] + 1;
+		}
+		else
+		{
+			$this->m_pluginCount[$instanceName] = 1;
+		}
+
+		$instanceName = $instanceName." ".$this->m_pluginCount[$instanceName];
+
 		// ----------
 		// Search for an existing instance of the plugin.
 
 		$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE EXISTS(SELECT 1 FROM `zcm_plugin` WHERE `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `zcm_plugin`.`name` = '".
 			Zymurgy::$db->escape_string($pluginName).
 			"') AND `name` = '".
-			Zymurgy::$db->escape_string($this->navpath).
+			Zymurgy::$db->escape_string($instanceName).
 			"'";
 		$instanceID = Zymurgy::$db->get($sql);
 
@@ -483,7 +502,7 @@ class ZymurgyTemplate
 //			echo("Creating plugin instance<br>");
 
 			$sql = "INSERT INTO `zcm_plugininstance` ( `plugin`, `name`, `private`, `config` ) SELECT `id`, '".
-				Zymurgy::$db->escape_string($this->navpath).
+				Zymurgy::$db->escape_string($instanceName).
 				"', 0, '".
 				Zymurgy::$db->escape_string($configID).
 				"' FROM `zcm_plugin` WHERE `name` = '".
@@ -498,7 +517,7 @@ class ZymurgyTemplate
 		// ----------
 		// Return the rendered plugin
 
-		return Zymurgy::plugin($pluginName, $this->navpath);
+		return Zymurgy::plugin($pluginName, $instanceName);
 	}
 }
 

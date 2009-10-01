@@ -623,7 +623,7 @@ if (!class_exists('Zymurgy'))
 				where (zcm_plugin.name='".
 				Zymurgy::$db->escape_string($plugin)."') and (zcm_plugininstance.name='".
 				Zymurgy::$db->escape_string($instance)."')";
-			die($sql);
+//			die($sql);
 			$ri = Zymurgy::$db->query($sql);
 			if (!$ri)
 			{
