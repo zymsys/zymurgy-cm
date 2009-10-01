@@ -4,18 +4,25 @@
  * the /zymurgy folder to make customizations to it.
  */
 ob_start();
+
+if (!class_exists('Zymurgy'))
+	require_once('../cmo.php');
+$navpos = Zymurgy::Config('Navigation Position','0','drop.a:7:{i:0;s:14:"Top Navigation";i:1;s:21:"Small Left Navigation";i:2;s:22:"Medium Left Navigation";i:3;s:21:"Large Left Navigation";i:4;s:22:"Small Right Navigation";i:5;s:23:"Medium Right Navigation";i:6;s:22:"Large Right Navigation";}');
+$body = (array_key_exists('p',$_GET)) ? $_GET['p'] : '';
+
+$yuinav = new ZymurgySiteNavRender_YUI();
+$txtnav = new ZymurgySiteNavRender_TXT();
+$txtnav->maxdepth = 1;
+$txtnav->startat_parent();
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <?
-if (!class_exists('Zymurgy'))
-	require_once('../cmo.php');
 echo Zymurgy::headtags();
 echo Zymurgy::YUI('grids/grids-min.css');
-$navpos = Zymurgy::Config('Navigation Position','0','drop.a:7:{i:0;s:14:"Top Navigation";i:1;s:21:"Small Left Navigation";i:2;s:22:"Medium Left Navigation";i:3;s:21:"Large Left Navigation";i:4;s:22:"Small Right Navigation";i:5;s:23:"Medium Right Navigation";i:6;s:22:"Large Right Navigation";}');
-$body = (array_key_exists('p',$_GET)) ? $_GET['p'] : '';
+$yuinav->headtags();
 ?>
 <link href="/zymurgy/templates/simplestyle.php" rel="stylesheet" type="text/css" />
 </head>
@@ -30,7 +37,7 @@ echo ">";
 	<div id="hd">
     	<div id="sitetitle"><?= Zymurgy::Config('Site Title',"Your Site's Title",'input.45.45') ?></div>
     	<div id="slogan"><?= Zymurgy::Config('Slogan',"Your Site's Slogan",'input.60.60') ?></div>
-    	<? if ($navpos == 0) Zymurgy::sitenav(true); ?>
+    	<? if ($navpos == 0) $yuinav->render(true); ?>
     </div>
     <div id="bd">
     <? 
@@ -38,14 +45,16 @@ echo ">";
     {
     	echo "<div id=\"yui-main\"><div id=\"zymurgy-main\" class=\"yui-b\">";
     }
-    //echo Zymurgy::pagetext($body);
     echo Zymurgy::pagetext('Body');
+	echo "<pre>\n";
+	$txtnav->render();
+	echo "</pre>\n";
     echo Zymurgy::pagegadgets();
     if ($navpos != 0)
     {
     	echo "</div></div>";
     	echo "<div class=\"yui-b\">";
-    	Zymurgy::sitenav(false);
+    	$yuinav->render(false);
     	echo "</div>";
     }
     ?>

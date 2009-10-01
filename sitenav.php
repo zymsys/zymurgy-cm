@@ -1,17 +1,59 @@
 <?php
 class ZymurgySiteNavItem
 {
+	/** 
+	 * The page title to display in the nav nemu.
+	 * @var string
+	 */
 	public $linktext;
-	public $parent;
+	/**
+	 * The filename of the page in the url (page title with special characters and spaces replaced).
+	 * @var string
+	 */
+	public $linkurl;
+	
+	/**
+	 * The golive date
+	 * @var timestamp
+	 */
 	public $livedate;
+	/**
+	 * The softlaunch date
+	 * @var timestamp
+	 */
 	public $softlaunchdate;
+	/**
+	 * The retire  date
+	 * @var timestamp
+	 */
 	public $retiredate;
+	
+	/**
+	 * The ACL database ID
+	 * @var int
+	 */
 	public $acl;
-
+	/**
+	 * The ACL entriers for the page
+	 * @var array
+	 */
 	public $aclitems = array();
+	
+	/**
+	 * The database ID of the page's parent (root is 0)
+	 * @var int
+	 */
+	public $parent;
+	
+	/**
+	 * The database IDs of the page's children
+	 * @var array of integers
+	 */
+	public $children = array();
 
 	function __construct(
 		$linktext,
+		$linkurl,
 		$parent,
 		$livedate,
 		$softlaunchdate,
@@ -19,6 +61,7 @@ class ZymurgySiteNavItem
 		$acl)
 	{
 		$this->linktext = $linktext;
+		$this->linkurl = $linkurl;
 		$this->parent = $parent;
 		$this->livedate = $livedate;
 		$this->softlaunchdate = $softlaunchdate;
@@ -27,28 +70,50 @@ class ZymurgySiteNavItem
 	}
 }
 
+/**
+ * A class to hold the site navigation tree.  Will fill itself when constructed.
+ * 
+ * @author George
+ *
+ */
 class ZymurgySiteNav
 {
+	/**
+	 * The nav items by database ID.
+	 * 
+	 * @var array of ZymurgySiteNavItem objects
+	 */
 	public $items = array();
-	public $structure = array();
-	public $structureparts = array();
-
-	function __construct($navinfo='')
+	
+	/**
+	 * Create a new navigation tree and fill it from the database.
+	 * 
+	 */
+	function __construct()
 	{
 		Zymurgy::memberauthenticate();
 		Zymurgy::memberauthorize("");
+		
+		// temporary holding point for navigation tree structure
+		$structureparts = array();
+		
+		// check if user can see softlaunch pages
+		$cansoftlaunch = false;
+		$softlaunch_ACL = array('Zymurgy:CM - User', 'Zymurgy:CM - Administrator', 'Zymurgy:CM - Webmaster');
+		if (is_array(Zymurgy::$member["groups"]))
+			foreach(Zymurgy::$member["groups"] as $group)
+				if(array_key_exists($group, $softlaunch_ACL))
+					$cansoftlaunch = true;
 
-		$ri = Zymurgy::$db->run("select id,linktext,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl from zcm_sitepage order by disporder");
+		$ri = Zymurgy::$db->run("select id,linktext,linkurl,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			if (!is_null($row['golive']) || !is_null($row['softlaunch']) || !is_null($row['retire']))
 			{
 				//Is this page retired?
-				if ($row['retire'] > 0 && (time() > $row['retire']))
-				{
-					//This page is retired
+				if ($row['retire'] && (time() > $row['retire']))
 					continue;
-				}
+
 				//Is this before the go live date?
 				if (!is_null($row['golive']) && (time() < $row['golive']))
 				{
@@ -59,30 +124,39 @@ class ZymurgySiteNav
 						//Yeah, we haven't even soft-launched yet.  Bail.
 						continue;
 					}
+					
 					//We've soft-launched, but not gone live.  Is the user allowed to view soft launch pages?
-					if (!array_key_exists('zymurgy',$_COOKIE))
+					if (!$cansoftlaunch)
 					{
 						//User isn't a Z:CM user, so not allowed to see soft launch pages.
 						continue;
 					}
 				}
 			}
+
 			$this->items[$row['id']] = new ZymurgySiteNavItem(
 				$row['linktext'],
+				$row['linkurl'],
 				$row['parent'],
 				$row['golive'],
 				$row['softlaunch'],
 				$row['retire'],
-				$row["acl"]);
-			if (array_key_exists($row['parent'],$this->structureparts))
-				$this->structureparts[$row['parent']][] = $row['id'];
-			else
-				$this->structureparts[$row['parent']] = array($row['id']);
+				$row['acl']
+			);
+			
+			// add item as child of parent node
+			$structureparts[$row['parent']][] = $row['id'];
+			
 		}
 
 		Zymurgy::$db->free_result($ri);
-
-		$this->structure = $this->buildnav(0);
+		
+		// dummy node for root to assint in tree trversal
+			$this->items[0] = new ZymurgySiteNavItem('Root','',0,null,null,null,null);
+			
+		// copy the structure into the nav items children attributes.
+		foreach ($structureparts as $key => $children)
+			$this->items[$key]->children = $children;
 
 		$sql = "SELECT `zcm_acl`, `group`, `permission` FROM `zcm_aclitem`";
 		$ri = Zymurgy::$db->query($sql)
@@ -90,77 +164,40 @@ class ZymurgySiteNav
 
 		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 		{
-			foreach($this->items as $key => $item)
+			foreach($this->items as $key => &$item)
 			{
 				if($item->acl == $row["zcm_acl"])
-				{
 					$item->aclitems[] = array(
 						"group" => $row["group"],
-						"permission" => $row["permission"]);
-					$this->items[$key] = $item;
-				}
+						"permission" => $row["permission"]
+					);
 			}
 		}
 
 		Zymurgy::$db->free_result($ri);
 	}
-
-	private function buildnav($parent)
-	{
-		if (!array_key_exists($parent,$this->structureparts)) return array();
-		$r = array();
-		foreach ($this->structureparts[$parent] as $key)
-		{
-			$r[$key] = $this->buildnav($key);
-		}
-		return $r;
+	
+	/**
+	 * escape a page title for use in URLs
+	 * 
+	 * @param string $text utf-8
+	 * @return string urlencoded
+	 */
+	public static function linktext2linkpart($text){
+		return rawurlencode(strtr($text,' \/','_||'));
 	}
 
 	/**
-	 * Inject a nav item into the navigation structure. This is used primarily
-	 * in custom/render.php to modify the menu based on business logic not
-	 * supported directly by the nav system.
-	 *
-	 * @param unknown_type $linktext
-	 * @param unknown_type $parent
-	 * @param unknown_type $livedate
-	 * @param unknown_type $softlaunchdate
-	 * @param unknown_type $retiredate
-	 * @param unknown_type $acl
+	 * Deprecated, renders a YUI menu bar.  Use ZymurgySiteNavRenderer_YUI instead.
+	 * 
+	 * @deprecated
+	 * 
+	 * @param $ishorizontal bool
+	 * @param $currentlevelonly bool
+	 * @param $childlevelsonly bool
+	 * @param $startpath
+	 * @param $hrefroot
 	 */
-	public function InjectNavItem(
-		$linktext,
-		$parent,
-		$livedate = null,
-		$softlaunchdate = null,
-		$retiredate = null,
-		$acl = 0)
-	{
-		$this->items[] = new ZymurgySiteNavItem(
-			$linktext,
-			$parent,
-			$livedate,
-			$softlaunchdate,
-			$retiredate,
-			0);
-		$navItemID = max(array_keys($this->items));
-		$this->structure[$navItemID] = array();
-		$this->structureparts[$parent][] = $navItemID;
-	}
-
-	/**
-	 * Replaces ISO-8859-1 special characthers with dashes and decapitates any accented letters.
-	 *
-	 * @param $linktext
-	 * @return string
-	 */
-	public static function linktext2linkpart($linktext)
-	{
-		$linktext=strtr($linktext,"()!$'?:,&+-/.ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ",
-			"-------------SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy");
-		return str_replace(' ','_',$linktext);
-	}
-
 	public function render(
 		$ishorizontal = true,
 		$currentlevelonly = false,
@@ -168,92 +205,56 @@ class ZymurgySiteNav
 		$startpath = '',
 		$hrefroot = 'pages')
 	{
-		$yuinavbar = new ZymurgySiteNavRender_YUI(
-			true,
-			$startpath,
-			$hrefroot);
+		$yuinavbar = new ZymurgySiteNavRender_YUI($startpath);
 
-		$yuinavbar->childlevelsonly($childlevelsonly);
-		$yuinavbar->currentlevelonly($currentlevelonly);
+		if ($childlevelsonly) $yuinavbar->startat_thispage();
+		if ($currentlevelonly){
+			$yuinavbar->maxdepth = 1;
+			$yuinavbar->startat_parent();
+		}
 
 		$yuinavbar->headtags();
 		$yuinavbar->render($ishorizontal);
 	}
 
-	public function haspermission($key, $anscestors, $recursive = true)
-	{
-//		echo("<pre>\n");
-//		echo("Key: $key\nAnscestors: ");
-//		print_r($anscestors);
-//		echo("</pre>\n");
-
-		if($key <= 0)
-		{
-			return true;
-		}
-		else
-		{
-			if(array_key_exists($key, $this->items)
-				&& count($this->items[$key]->aclitems) > 0)
-			{
-				foreach($this->items[$key]->aclitems as $aclitem)
-				{
-					if($aclitem["permission"] == "Read")
-					{
+	/**
+	 * Check if the user has permission to viey the page with the ID $key.
+	 * 
+	 * @param int $key
+	 * @return bool
+	 */
+	public function haspermission($key){
+		// is this a page (not root)
+		while ($key > 0){
+			// does the current node have an ACL
+			if(array_key_exists($key, $this->items)	&& count($this->items[$key]->aclitems) > 0){
+				foreach($this->items[$key]->aclitems as $aclitem){
+					if($aclitem["permission"] == "Read"){
 						if(is_array(Zymurgy::$member["groups"]) &&
-							array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
-						{
+								array_key_exists($aclitem["group"], Zymurgy::$member["groups"])){
+							// user's group is in ACL, has permission
 							return true;
-							break;
 						}
 					}
 				}
-
-				// if we get this far, then the user does not have
-				// permission to view this resource
+				// user's groups are not in ACL, no permission
 				return false;
 			}
-			else if ($recursive)
-			{
-				if(is_null($anscestors))
-				{
-					$a = $this->getanscestors($key);
-				}
-				else
-				{
-					$a = array_reverse($anscestors, true);
-				}
-
-				foreach($a as $anscestorID => $anscestorText)
-				{
-					if(array_key_exists($anscestorID, $this->items)
-						&& count($this->items[$anscestorID]->aclitems) > 0)
-					{
-						foreach($this->items[$anscestorID]->aclitems as $aclitem)
-						{
-							if($aclitem["permission"] == "Read")
-							{
-								if(is_array(Zymurgy::$member)
-									&& array_key_exists($aclitem["group"], Zymurgy::$member["groups"]))
-								{
-									return true;
-								}
-							}
-						}
-
-						// if we get this far, then the user does not have
-						// permission to view this resource
-						return false;
-					}
-				}
-			}
+			
+			// no ACL here, check parent page
+			$key = $this->items[$key]->parent;
 		}
-
-		// If we get this far, then there are no ACLs throughout the
-		// entire tree - by default, all users get to view this item
+		
+		// root is always readable
 		return true;
 	}
 
+	/**
+	 * Get the list of anscestors of the page with id $key.
+	 * 
+	 * @param int $key
+	 * @return array in the form id=>title
+	 */
 	public function getanscestors($key)
 	{
 		$anscestor = array();
@@ -270,111 +271,168 @@ class ZymurgySiteNav
 
 ######################################################################
 
+/**
+ * Base class to create navigation renderers.
+ * 
+ * Extend this class to create navigation renderers.
+ * This provides common utility functions to select the start and depth of the navigation tree shown.
+ * Your renderer inpmlementation will orerride headtags() and render() which are called to display the navigation.
+ *  
+ * @author George
+ *
+ */
 abstract class ZymurgySiteNavRenderer{
-	public $showrecursive;
-	public $startpath;
-	public $hrefroot;
-	public $hideACLfailure;
-
+	
 	/**
-	 * ZymurgySiteNav reference for this renderer
-	 *
-	 * @var ZymurgySiteNav
+	 * The number of levels to show in the navigation tree. 0 for unlimited.
+	 * 
+	 * @var int
+	 */
+	public $maxdepth = 0;
+	
+	/**
+	 * The navigation URL part of the root page.  Blank for the site root.
+	 * @var string
+	 */
+	public $startpath = '';
+	
+	/**
+	 * The string to add to the start of the URL.  This is usually "pages" (default).
+	 * @var string
+	 */
+	public $hrefroot = 'pages';
+	
+	########################################
+	
+	/**
+	 * A reference to the navigation tree.  Set by constructor.
+	 * @var Zymurgy_SiteNav
 	 */
 	protected $sitenav;
-	protected $parent;
-	protected $anscestors = array();
+	
+	########################################
+	
+	/**
+	 * The foot key of the displayed navigation tree.  Filled dy initialize_data().
+	 * @var int
+	 */
+	protected $rootnode;
+	/**
+	 * A list of keys of the asceestors to the displayed navigation tree.  Filled dy initialize_data().
+	 * @var array of int
+	 */
+	protected $anscestors;
+	/**
+	 * The text to prepend to make the navigation URLs from the displayed tree.  Filled dy initialize_data().
+	 * @var string
+	 */
 	protected $hrefprefix;
 
-	private $m_originalStartpath;
-
+	########################################
+	
+	/**
+	 * Creates a new navigation renderer that shows navigation from $startpath.
+	 * 
+	 * @param string $startpath
+	 */
 	public function __construct(
-		$showrecursive = true,
-		$startpath = '',
-		$hrefroot = 'pages',
-		$childlevelsonly = false)
+		$startpath = '')
 	{
-		$this->showrecursive = $showrecursive;
 		$this->startpath = $startpath;
-		$this->m_originalStartpath = $startpath;
-		$this->hrefroot = $hrefroot;
-		$this->hideACLfailure = true;
-		$this->parent = 0;
-		if (!empty($startpath))
-		{
-			$sp = explode('/',$startpath);
-			$anscestors = $sp;
-			while ($sp)
-			{
-				$partname = array_shift($sp);
-				foreach ($this->sitenav->structureparts[$this->parent] as $key)
-				{
-					$correctedkey = $this->linktext2linkpart($this->items[$key]->linktext);
-					//echo "<div>Testing for [$correctedkey == $partname</div>";
-					if ($correctedkey == $partname)
-					{
-						$this->parent = $key;
-						$structurestart = $structurestart[$key];
-						break;
-					}
-				}
-			}
-		}
-
-		$this->childlevelsonly($childlevelsonly);
 
 		$this->sitenav = Zymurgy::getsitenav();
 	}
 
-	public function childlevelsonly($newValue)
-	{
-		if($newValue)
-		{
-			$this->startpath = Zymurgy::$template->navpath;
-		}
-		else
-		{
-			$this->startpath = $this->m_originalStartpath;
-		}
+	########################################
+	// start control
+	
+	/**
+	 * Start the navigation at the current page.  Displays children.
+	 */
+	public function startat_thispage(){
+		$this->startpath = Zymurgy::$template->navpath;
 	}
-
-	public function currentlevelonly($newValue)
-	{
-		if ($newValue){
-			$yuinavbar->showrecursive = false;
-			$currentpath = explode('/', Zymurgy::$template->navpath);
-			array_pop($currentpath);
-			if (!empty($currentpath))
-				$yuinavbar->startpath = implode('/', $currentpath);
-			else
-				$yuinavbar->startpath = '';
-		}
-		else
-		{
-			$yuinavbar->showrecursive = true;
-			$this->startpath = $this->m_originalStartpath;
-		}
+	/**
+	 * Start the navigation at the parent of the current page.  Displays siblings.
+	 */
+	public function startat_parent(){
+		$this->startpath = implode('/',explode('/', Zymurgy::$template->navpath, -1));
 	}
-
-	public function startatdepth($depth){
-		$this->startpath = implode('/',array_slice(explode('/',Zymurgy::$template->navpath),0,$depth));
+	/**
+	 * Start the navigation $depth levels towards the current page.
+	 */
+	public function startat_depth($depth){
+		$this->startpath = implode('/',explode('/', Zymurgy::$template->navpath, $depth));
 	}
-
+	
+	########################################
+	/**
+	 * Get the text for the page with id $key to show in the menu.
+	 * @param int$key
+	 * @return string
+	 */
 	protected function getname($key){
 		return $this->sitenav->items[$key]->linktext;
 	}
-	protected function getlinkname($key){
-		return ZymurgySiteNav::linktext2linkpart($this->sitenav->items[$key]->linktext);
+	
+	/**
+	 * get the URL to likg to the page with id $key.
+	 * @param $key
+	 * @return string
+	 */
+	protected function geturl($key){
+		if ($key == 0) return '/'.$this->hrefroot;
+		
+		return $this->geturl($this->sitenav->items[$key]->parent).'/'.$this->sitenav->items[$key]->linkurl;
+	}
+	
+	/**
+	 * Call this at the start your render function.
+	 * @return unknown_type
+	 */
+	protected function initialize_data(){
+		$this->anscestors = array();
+		$this->hrefprefix = '/'.$this->hrefroot;
+		$this->rootnode = 0;
+		
+		foreach (explode('/', $this->startpath) as $pathpart){
+			foreach ($this->sitenav->items[$this->rootnode]->children as $child){
+				if ($this->sitenav->items[$child]->linkurl == $pathpart){
+					$this->rootnode =  $child;
+					$this->anscestors[] = $child;
+					$this->hrefprefix .= '/'.$pathpart;
+				}
+			}
+		}
+		
+		$this->hrefprefix .= '/';
 	}
 
+	########################################
+	
+	/**
+	 * emit the head tags required by the renderer.
+	 */
 	abstract public function headtags();
+	/**
+	 * actually show the navigation
+	 */
 	abstract public function render();
 }
 
 ######################################################################
 
+/**
+ * Renderer to show YUI sitenav menus.
+ * 
+ * @author George
+ *
+ */
 class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 
+	/**
+	 * Include the required YUI css and javascript for the menus.
+	 */
 	public function headtags(){
 		echo "\t".Zymurgy::YUI('fonts/fonts-min.css');
 		echo "\t".Zymurgy::YUI('menu/assets/skins/sam/menu.css');
@@ -383,7 +441,13 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 		echo "\t".Zymurgy::YUI('menu/menu-min.js');
 	}
 
+	/**
+	 * Actually show the menu.
+	 * 
+	 * @param bool $ishorizontal if ture dray a horizontal bar, if false draw a vertical menu.
+	 */
 	public function render($ishorizontal = true){
+		$this->initialize_data();
 		$idpart = uniqid().ZymurgySiteNav::linktext2linkpart($this->startpath);
 		$bar = $ishorizontal ? 'Bar' : '';
 ?>
@@ -399,11 +463,11 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
   // ]]>
 </script>
 <div class="yui-skin-sam ">
-	<div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<? if($ishorizontal) echo "bar yuimenubarnav"?>" >
-		<div class="bd" style="border-style: none">
-<? $this->renderpart($this->hrefroot,$ishorizontal,0,($this->parent == 0) ? $this->sitenav->structure : $this->sitenav->structure[$this->parent],$this->anscestors); ?>
-		</div>
-	</div>
+    <div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<? if($ishorizontal) echo "bar yuimenubarnav"?>" >
+        <div class="bd" style="border-style: none">
+<? $this->renderpart($this->rootnode, 0, $ishorizontal); ?>
+        </div>
+    </div>
 </div>
 <?
 	}
@@ -417,36 +481,28 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 	 * @param array $sp Structure Part; the part of the nav to be rendered
 	 * @param array $anscestors Ancestor nav names
 	 */
-	private function renderpart($hrefroot,$horizontal,$depth,$sp,$anscestors)
+	private function renderpart($node, $depth, $horizontal)//$hrefroot,$horizontal,$depth,$sp,$anscestors)
 	{
-		$dtabs = str_repeat("\t",$depth+3);
-		$href = "/$hrefroot/";
-		if ($anscestors)
-		{
-			foreach($anscestors as $anscestor)
-			{
-				$href .= $this->sitenav->linktext2linkpart($anscestor).'/';
-			}
-		}
+		$tabs = str_repeat("    ",$depth+3);
 
-		if ($depth > 0) echo "$dtabs<div class=\"yuimenu\"><div class=\"bd\">\r\n";
-		echo "$dtabs<ul";
+		if ($depth > 0) echo "$tabs<div class=\"yuimenu\"><div class=\"bd\">\n";
+		echo "$tabs<ul";
 		if ($horizontal)
 		{
-			echo " class=\"first-of-type";
-			if ($depth == 0) echo " zymurgy-horizontal-menu";
-			echo "\"";
+			echo ' class="first-of-type';
+			if ($depth == 0) echo ' zymurgy-horizontal-menu';
+			echo '"';
 			$fot = true;
 		}
 		else
 		{
-			if ($depth > 0) echo " class=\"first-of-type\"";
+			if ($depth > 0) echo ' class="first-of-type"';
 			$fot = false;
 		}
-		echo ">\r\n";
-		foreach ($sp as $key=>$children)
+		echo ">\n";
+		foreach ($this->sitenav->items[$node]->children as $key)
 		{
-			$hasPermission = $this->sitenav->haspermission($key, null);
+			$hasPermission = $this->sitenav->haspermission($key);
 			//echo "<div>$key: $hasPermission</div>";
 			$enableItem = true;
 
@@ -466,58 +522,78 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 				}
 			}
 
-			echo "$dtabs\t<li class=\"";
-			echo "yuimenuitem";
+			echo "$tabs    <li class=\"yuimenuitem";
 			if ($fot)
 			{
 				$fot = false;
 				echo " first-of-type";
 			}
-			echo "\">";
+			echo '">';
 
-			echo "<a class=\"yuimenuitemlabel".
-				($enableItem ? "" : "-disabled").
-				"\" href=\"".
-				($enableItem ? $href : "javascript:;").
-				$this->sitenav->linktext2linkpart($this->sitenav->items[$key]->linktext)."\">".
-				$this->sitenav->items[$key]->linktext.
-//				" (".($this->haspermission($key, $anscestors) ? "YES" : "NO" ).")".
-				"</a>";
-			if ($children)
+			echo '<a class="yuimenuitemlabel'.
+				($enableItem ? '' : '-disabled').
+				'" href="'.
+				($enableItem ? $this->geturl($key) : '#').'">'.
+				htmlspecialchars($this->getname($key)).'</a>';
+			if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
 			{
-				echo "\r\n";
-				$a = $anscestors;
-				// array_push($a,$this->items[$key]->linktext);
-				$a[$key] = $this->sitenav->items[$key]->linktext;
-				$this->renderpart($hrefroot,$horizontal,$depth+1,$children,$a);
-				echo "\r\n$dtabs";
+				$this->renderpart($key,$depth+1,$horizontal);
+				echo "\n$tabs";
 			}
-			echo "</li>\r\n";
+			echo "</li>\n";
 		}
-		echo "$dtabs</ul>\r\n";
-		if ($depth>0) echo "$dtabs</div></div>";
+		echo "$tabs</ul>\n";
+		if ($depth>0) echo "$tabs</div></div>";
 	}
 }
 
 ######################################################################
 
+/**
+ * The simplest possible nav renderer.  Shows an ascii list.
+ * 
+ * Use this as an example of how to write your own renderers.
+ * 
+ * @author George
+ *
+ */
 class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
+	
+	// no headtags necessary
 	public function headtags(){
 
 	}
 
+	// show it
 	public function render(){
-		//$this->trimtree();
-		$this->renderpart($this->sitenav->structure, $this->hrefprefix, 0);
+		// this does some setup: call it at the start of your renderer.
+		$this->initialize_data();
+		
+		// actually start rendering.
+		$this->renderpart($this->rootnode, 0);
 	}
 
-	private function renderpart($tree, $prefix, $depth){
+	/**
+	 * Render a part of the navigation menu
+	 * 
+	 * @param int $node The id of the node to start from.
+	 * @param int $depth we are currently this many levels deep.
+	 */
+	private function renderpart($node, $depth){
+		// we need some tabs to show structure
 		$tabs = str_repeat("    ",$depth);
-		foreach ($tree as $key=>$children){
-			$href = $prefix.$this->getlinkname($key);
-			echo "$tabs* ".$this->getname($key).": $href\n";
-			if ($children)
-				$this->renderpart($children, $href.'/', $depth+1);
+		
+		// for each child of the current node
+		foreach ($this->sitenav->items[$node]->children as $key){
+			// if the user can see it
+			if ($this->sitenav->haspermission($key)){
+				// display list entry
+				echo "$tabs* ".$this->getname($key).': '.$this->geturl($key)."\n";
+				
+				// if we want to show children and the node has any, recurse
+				if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
+					$this->renderpart($key, $depth+1);
+			}
 		}
 	}
 }

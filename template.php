@@ -15,7 +15,7 @@ class ZymurgyTemplate
 
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
-		$this->LoadParams();
+		//$this->LoadParams();
 		if($id > 0)
 		{
 			$this->sitepage = $this->GetSitePage("`id` = '".
@@ -36,7 +36,7 @@ class ZymurgyTemplate
 			$doredirect = false;
 			foreach ($np as $navpart)
 			{
-				$navpart = Zymurgy::$db->escape_string(ZymurgySiteNav::linktext2linkpart($navpart));
+				$navpart = Zymurgy::$db->escape_string($navpart);
 
 				$row = $this->GetSitePage("`parent` = '".
 					Zymurgy::$db->escape_string($parent).
@@ -232,16 +232,24 @@ class ZymurgyTemplate
 	 * Parse get parameters out of REQUEST_URI into $_GET so that things which expect $_GET parameters see them normally.
 	 *
 	 */
-	private function LoadParams()
+	public static function LoadParams()
 	{
-		$ru = explode('?',$_SERVER['REQUEST_URI'],2);
-		if (array_key_exists(1,$ru))
-		{
-			$pp = explode('&',$ru[1]);
-			foreach ($pp as $part)
+		$regexparts = array();
+		// was mod_rewrite used?
+		if (preg_match('/^\/?pages\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
+			// redo the rewrite because of a bug in mod_rewrite
+			$_GET['p']=$regexparts[1];
+		}else{
+			// this page was called directly
+			$ru = explode('?',$_SERVER['REQUEST_URI'],2);
+			if (array_key_exists(1,$ru))
 			{
-				$get = explode('=',$part,2);
-				$_GET[$get[0]] = array_key_exists(1,$get) ? $get[1] : false;
+				$pp = explode('&',$ru[1]);
+				foreach ($pp as $part)
+				{
+					$get = explode('=',$part,2);
+					$_GET[$get[0]] = array_key_exists(1,$get) ? $get[1] : false;
+				}
 			}
 		}
 	}
@@ -522,6 +530,8 @@ class ZymurgyTemplate
 }
 
 ob_start();
+
+ZymurgyTemplate::LoadParams();
 
 if(array_key_exists("f", $_GET))
 {
