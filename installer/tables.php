@@ -25,7 +25,9 @@
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("disporder", "INT(11)", "NOT NULL"),
 					DefineTableField("code", "VARCHAR(50)", "NOT NULL"),
-					DefineTableField("label", "VARCHAR(200)", "NOT NULL")
+					DefineTableField("label", "VARCHAR(200)", "NOT NULL"),
+					DefineTableField("templateprovider","BIGINT","Default '0'"),
+					DefineTableField("contentprovider","BIGINT","Default '0'")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
