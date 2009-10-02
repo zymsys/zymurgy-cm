@@ -139,6 +139,7 @@ class ZymurgyTemplate
 		// -----
 
 		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage['template']}");
+		$this->template['path'] = ZIW_Base::GetFlavouredValue($this->template['path'],NULL,true);
 		$this->navpath = $navpath;
 		$this->LoadPageText();
 	}
@@ -151,11 +152,11 @@ class ZymurgyTemplate
 		return Zymurgy::$db->get($sql);
 	}
 
-	private function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
+	public function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
 	{
 		header("HTTP/1.0 404 Not Found");
 
-		if(array_key_exists("PagesError404", Zymurgy::$config))
+		if (array_key_exists("PagesError404", Zymurgy::$config) && (!empty(Zymurgy::$config["PagesError404"])))
 		{
 			header("Location: ".Zymurgy::$config["PagesError404"]);
 		}
@@ -530,16 +531,16 @@ class ZymurgyTemplate
 }
 
 ob_start();
+$do404 = false;
 
 ZymurgyTemplate::LoadParams();
 
 if(array_key_exists("f", $_GET))
 {
-	$flavours = explode(".", $_GET["f"]);
-
-	foreach($flavours as $flavour)
+	$flavour = $_GET["f"];
+	if (!Zymurgy::SetActiveFlavour($flavour))
 	{
-		Zymurgy::AddActiveFlavour($flavour);;
+		$do404 = true;
 	}
 }
 
@@ -547,6 +548,11 @@ Zymurgy::$template = new ZymurgyTemplate(
 	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
 	'pages',
 	(array_key_exists('pageid', $_GET)) ? $_GET["pageid"] : 0);
+	
+if ($do404)
+{
+	Zymurgy::$template->DisplayFileNotFound($flavour, 'flavours', '');
+}
 
 if (file_exists(Zymurgy::$root.Zymurgy::$template->template['path']))
 	require_once(Zymurgy::$root.Zymurgy::$template->template['path']);

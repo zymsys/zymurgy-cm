@@ -1148,38 +1148,172 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
+		
+		/**
+		 * Echo debug arguments.  Format arrays and objects with print_r.
+		 * Uses variable arguments to support listing as many items as needed
+		 *
+		 * @param varargs $args
+		 */
+		static function dbg()
+		{
+			$args = func_get_args();
+			echo "<hr />\r\n";
+			$n = 1;
+			foreach($args as $arg)
+			{
+				echo "<div class=\"ZymurgyDebug\">$n:";
+				$n++;
+				if (is_array($arg) || is_object($arg))
+				{
+					echo "<pre>"; print_r($arg); echo "</pre>";
+				}
+				else 
+				{
+					echo $arg;
+				}
+				echo "</div>\r\n";
+			}
+			echo "<hr />\r\n";
+		}
 
 		private static $m_flavours = array();
+		private static $m_flavoursbycode = array();
 
 		static function GetAllFlavours()
 		{
 			if(count(Zymurgy::$m_flavours) <= 0)
 			{
-				$sql = "SELECT `code` FROM `zcm_flavour` ORDER BY `disporder`";
+				$providescontent = array();
+				$providestemplate = array();
+				$sql = "SELECT * FROM `zcm_flavour` ORDER BY `disporder`";
 				$ri = Zymurgy::$db->query($sql)
 					or die("Could not get list of flavours: ".Zymurgy::$db->error().", $sql");
 
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
-					Zymurgy::$m_flavours[] = $row["code"];
+					$row['providescontent'] = false;
+					$row['providestemplate'] = false;
+					Zymurgy::$m_flavours[$row['id']] = $row;
+					Zymurgy::$m_flavoursbycode[$row['code']] = $row;
+					if ($row['contentprovider']) $providescontent[$row['contentprovider']] = '';
+					if ($row['templateprovider']) $providestemplate[$row['templateprovider']] = '';
 				}
 
 				Zymurgy::$db->free_result($ri);
+				
+				foreach($providescontent as $key=>$throwaway)
+				{
+					Zymurgy::$m_flavours[$key]['providescontent'] = true;
+					Zymurgy::$m_flavoursbycode[Zymurgy::$m_flavours[$key]['code']]['providescontent'] = true;
+				}
+				foreach($providestemplate as $key=>$throwaway)
+				{
+					Zymurgy::$m_flavours[$key]['providestemplate'] = true;
+					Zymurgy::$m_flavoursbycode[Zymurgy::$m_flavours[$key]['code']]['providestemplate'] = true;
+				}
 			}
 
 			return Zymurgy::$m_flavours;
 		}
-
-		private static $m_activeFlavours = array();
-
-		static function GetActiveFlavours()
+		
+		/**
+		 * Change flavours so that those which provide templates now provide content.  Done in memory only, so that we can use the
+		 * content mechanisms to maintain template paths in templatemgr.php.  This method is not likely to be useful outside of this
+		 * particular case.
+		 *
+		 */
+		static function MapTemplateToContentFlavours()
 		{
-			return Zymurgy::$m_activeFlavours;
+			Zymurgy::GetAllFlavours();
+			foreach (Zymurgy::$m_flavours as $key=>$flavour)
+			{
+				Zymurgy::$m_flavours[$key]['providescontent'] = Zymurgy::$m_flavours[$key]['providestemplate'];
+			}
+			foreach (Zymurgy::$m_flavoursbycode as $key=>$flavour)
+			{
+				Zymurgy::$m_flavoursbycode[$key]['providescontent'] = Zymurgy::$m_flavoursbycode[$key]['providestemplate'];
+			}
+		}
+		
+		/**
+		 * Convert regular column content to flavoured content
+		 *
+		 * @param string $table
+		 * @param string $column
+		 */
+		static function ConvertVanillaToFlavoured($table,$column)
+		{
+			//Write existing content values to the zcm_flavourtext table, and store the mappings
+			$ri = Zymurgy::$db->run("SELECT id,`$column` FROM `$table`");
+			$map = array();
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				Zymurgy::$db->run("INSERT into `zcm_flavourtext` (`default`) VALUES ('".
+					Zymurgy::$db->escape_string($row[$column])."')");
+				$map[$row['id']] = Zymurgy::$db->insert_id();
+			}
+			Zymurgy::$db->free_result($ri);
+			//Use the stored mappings to map the old values to the new flavoured content
+			foreach ($map as $id=>$fid)
+			{
+				Zymurgy::$db->run("UPDATE `$table` SET `$column`=$fid WHERE `id`=$id");
+			}
+			//Finally, convert the old column to BIGINT
+			Zymurgy::$db->run("ALTER TABLE `$table` CHANGE `$column` `$column` BIGINT");
 		}
 
-		static function AddActiveFlavour($flavour)
+		static function ConvertFlavouredToVanilla($table,$column,$inputspec)
 		{
-			Zymurgy::$m_activeFlavours[] = $flavour;
+			//Determine the type this column should be converted to, and make the change
+			$columntype = InputWidget::inputspec2sqltype($inputspec);
+			Zymurgy::$db->run("ALTER TABLE `$table` CHANGE `$column` `$column` $columntype");
+			//Get a list of zcm_flavourtext keys we need to convert
+			$ri = Zymurgy::$db->run("SELECT `id`, `$column` FROM `$table`");
+			$map = array();
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				$map[$row['id']] = $row[$column];
+			}
+			Zymurgy::$db->free_result($ri);
+			//Read values from zcm_flavourtext and put them into the target column
+			//Delete flavour data while we're at it.
+			foreach ($map as $id=>$fid)
+			{
+				$content = Zymurgy::$db->get("SELECT `default` from `zcm_flavourtext` where `id`=$fid");
+				Zymurgy::$db->run("UPDATE `$table` set `$column` = '".
+					Zymurgy::$db->escape_string($content)."' where `id`=$id");
+				Zymurgy::$db->run("DELETE FROM zcm_flavourtextitem WHERE `zcm_flavourtext`=$fid");
+				Zymurgy::$db->run("DELETE FROM zcm_flavourtext WHERE `id`=$fid");
+			}
+		}
+
+		private static $m_activeFlavour;
+
+		static function GetActiveFlavourCode()
+		{
+			return Zymurgy::$m_activeFlavour;
+		}
+		
+		static function GetFlavourById($id)
+		{
+			return array_key_exists($id,Zymurgy::$m_flavours) ? Zymurgy::$m_flavours[$id] : false;
+		}
+
+		static function GetFlavourByCode($code)
+		{
+			return array_key_exists($code,Zymurgy::$m_flavoursbycode) ? Zymurgy::$m_flavoursbycode[$code] : false;
+		}
+
+		static function SetActiveFlavour($flavour)
+		{
+			Zymurgy::GetAllFlavours();
+			if (array_key_exists($flavour,Zymurgy::$m_flavoursbycode))
+			{
+				Zymurgy::$m_activeFlavour = $flavour;
+				return true;
+			}
+			return false;
 		}
 	} // End Zymurgy Class definition
 
@@ -1200,8 +1334,6 @@ if (!class_exists('Zymurgy'))
 	   $_GET = array_map('Zymurgy::stripslashes_deep', $_GET);
 	   $_COOKIE = array_map('Zymurgy::stripslashes_deep', $_COOKIE);
 	}
-
-	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 
 	//Initialize database provider
 	if (empty(Zymurgy::$config['database']))
@@ -1242,6 +1374,7 @@ if (!class_exists('Zymurgy'))
 		error_reporting(Zymurgy::$config['Debug']);
 	}
 
+	require_once("InputWidget.php");
 	Zymurgy::$Locales = LocaleFactory::GetLocales();
 }
 ?>

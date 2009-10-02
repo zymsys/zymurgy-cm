@@ -289,41 +289,42 @@ class DataSetRow
 				}
 			}
 
-			print_r($_POST);
-
 			foreach($clist as $cname)
 			{
 				$cname = str_replace("`", "", $cname);
+				$realFieldName = $tname.".".$cname;
 				$fieldName = $tname."_".$cname."_default";
-
 				if(isset($_POST[$fieldName]))
 				{
 					echo("Flavoured Data Found: ".$fieldName."<br>");
-
-					$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
-						Zymurgy::$db->escape_string($_POST[$fieldName]).
-						"' )";
-					// die($sql);
-					Zymurgy::$db->query($sql)
-						or die("Could not insert default flavoured text: ".Zymurgy::$db->error().", $sql");
-					$flavourTextID = Zymurgy::$db->insert_id();
-					// die("default flavoured text ID: ".$flavourTextID);
+					if (!$this->values[$realFieldName])
+					{
+						$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
+							Zymurgy::$db->escape_string($_POST[$fieldName]).
+							"' )";
+						Zymurgy::$db->query($sql)
+							or die("Could not insert default flavoured text: ".Zymurgy::$db->error().", $sql");
+						$flavourTextID = Zymurgy::$db->insert_id();
+						$this->values[$realFieldName] = $flavourTextID;
+					}
+					else 
+					{
+						$flavourTextID = $this->values[$realFieldName];
+					}
 
 					$flavours = Zymurgy::GetAllFlavours();
 
 					foreach($flavours as $flavour)
 					{
-						$flavourField = $tname."_".$cname."_".$flavour;
+						if (!$flavour['providescontent']) continue;
+						$flavourField = $tname."_".$cname."_".$flavour['code'];
 
-						$sql = "INSERT INTO `zcm_flavourtextitem` ( `zcm_flavourtext`, `flavour`, `text` ) SELECT '".
-							Zymurgy::$db->escape_string($flavourTextID).
-							"', `id`, '".
+						$sql = "INSERT INTO `zcm_flavourtextitem` ( `zcm_flavourtext`, `flavour`, `text` ) VALUES ($flavourTextID, {$flavour['id']}, '".
 							Zymurgy::$db->escape_string($_POST[$flavourField]).
-							"' FROM `zcm_flavour` WHERE `code` = '".
-							Zymurgy::$db->escape_string($flavour).
-							"'";
+							"') ON DUPLICATE KEY UPDATE `text`='".
+							Zymurgy::$db->escape_string($_POST[$flavourField])."'";
 						Zymurgy::$db->query($sql)
-							or die("Could not insert $flavour flavoured text: ".Zymurgy::$db->error().", $sql");
+							or die("Could not set {$flavour['code']} flavoured text: ".Zymurgy::$db->error().", $sql");
 					}
 
 					if ($this->DataSet->columns["$tname.$cname"]->quoted)
@@ -337,13 +338,9 @@ class DataSetRow
 						$alist[$cname] = "`$cname`=$flavourTextID";
 					}
 				}
-//				else
-//				{
-//					echo("Flavoured data not found: ".$fieldName."<br>");
-//				}
 			}
 
-//			die(print_r($alist, true));
+			//die(print_r($alist, true));
 
 			if ($this->edittype == 'UPDATE')
 			{
@@ -814,6 +811,9 @@ class DataGrid
 		{
 			$this->AddColumn('',$datacolumn,'');
 		}
+		//$this->columns[$name] = new DataColumn($name,$quoted);
+		if (!array_key_exists($datacolumn,$this->DataSet->columns))
+			$this->DataSet->AddColumn($datacolumn,true);
 		$tp = explode('.',$type,2);
 		$pretext = InputWidget::GetPretext($type);
 		if (!empty($pretext)) $this->pretext[$tp[0]] = $pretext;

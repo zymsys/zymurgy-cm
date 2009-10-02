@@ -92,32 +92,28 @@ class ZIW_Base
 		return false;
 	}
 
-	function GetFlavouredValue($value, $activeFlavours)
+	static function GetFlavouredValue($value,$forflavour = NULL,$fortemplate = false)
 	{
-		// echo("Hai!<br>");
-		// print_r($activeFlavours);
+		$value = intval($value);
+		if (is_null($forflavour))
+			$forflavour = Zymurgy::GetActiveFlavourCode();
+		$flavour = Zymurgy::GetFlavourByCode($forflavour);
+		
+		//echo "<div>Getting flavoured value ($value) for ($forflavour)</div>";
 
-		$sql = "SELECT `default` FROM `zcm_flavourtext` WHERE `id` = '".
-			Zymurgy::$db->escape_string($value).
-			"'";
-
-		$activeFlavourString = implode("', '", $activeFlavours);
-
-		if(strlen($activeFlavourString) > 0)
+		$text = Zymurgy::$db->get("SELECT `default` FROM `zcm_flavourtext` WHERE `id` = $value");
+		if ($flavour)
 		{
-			$sql = "SELECT COALESCE(`text`, `default`) FROM `zcm_flavourtext` LEFT JOIN `zcm_flavourtextitem` ON `zcm_flavourtextitem`.`zcm_flavourtext` = `zcm_flavourtext`.`id` LEFT JOIN `zcm_flavour` ON `zcm_flavour`.`id` = `zcm_flavourtextitem`.`flavour` AND `zcm_flavour`.`code` IN ( '".
-				$activeFlavourString.
-				"' ) WHERE `zcm_flavourtext`.`id` = '".
-				Zymurgy::$db->escape_string($value).
-//				"' AND `zcm_flavour`.`code` IN ( '".
-//				$activeFlavourString.
-//				"' ) ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
-				"' ORDER BY `zcm_flavour`.`disporder` DESC LIMIT 0, 1";
-//			die($sql);
+			if ($fortemplate)
+				$contentflavour = Zymurgy::GetFlavourById($flavour['templateprovider']);
+			else
+				$contentflavour = Zymurgy::GetFlavourById($flavour['contentprovider']);
+			if ($contentflavour)
+			{
+				$flavouredtext = Zymurgy::$db->get("SELECT `text` FROM `zcm_flavourtextitem` WHERE (zcm_flavourtext=$value) and (flavour={$contentflavour['id']})");
+				if ($flavouredtext) $text = $flavouredtext;
+			}
 		}
-
-		$text = Zymurgy::$db->get($sql);
-
 		return $text;
 	}
 }
@@ -190,9 +186,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 {
 	function Display($ep,$display,$shell)
 	{
-		return $this->GetFlavouredValue(
-			$display,
-			Zymurgy::GetActiveFlavours());
+		return $this->GetFlavouredValue($display);
 	}
 
 	/**
@@ -209,24 +203,23 @@ class ZIW_InputFlavoured extends ZIW_Base
 		<table>
 			<tr>
 				<td>Default:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->GetFlavouredValue($value, array()) ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->GetFlavouredValue($value, '') ?>"></td>
 			</tr>
 <?
 		$flavours = Zymurgy::GetAllFlavours();
 		foreach($flavours as $flavour)
 		{
+			if (!$flavour['providescontent']) continue;
 ?>
 			<tr>
-				<td><?= $flavour ?>:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour ?>" name="<?= $name ?>_<?= $flavour ?>" value="<?= $this->GetFlavouredValue($value, array($flavour)) ?>"></td>
+				<td><?= $flavour['label'] ?>:</td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" value="<?= $this->GetFlavouredValue($value, $flavour['code']) ?>"></td>
 			</tr>
 <?
 		}
 ?>
 		</table>
 <?
-//		echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
-//			"$name\" value=\"$value\" />";
 	}
 
 	function GetInputSpecifier()
@@ -260,21 +253,8 @@ class ZIW_InputFlavoured extends ZIW_Base
 
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		switch($inputspecName)
-		{
-			case "numeric":
-				return "BIGINT";
-				break;
-			case "float":
-				return "FLOAT";
-				break;
-			case "input":
-				return "VARCHAR(".$parameters[1].")";
-				break;
-			default:
-				return "TEXT";
-				break;
-		}
+		//Always bigint to refer to zcm_flavourtext table
+		return "BIGINT";
 	}
 
 	/**
@@ -519,11 +499,18 @@ class ZIW_Lookup extends ZIW_Base
 
 			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
 		}
+		
+		$this->PreRender();
 
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
 			$name,
 			$value,
 			count($ep) >= 6 && $ep[5] == "checked");
+	}
+	
+	function PreRender()
+	{
+		//Stub in case an ancestor needs to tweak the lookup data
 	}
 
 	/**
@@ -2065,124 +2052,6 @@ class ZIW_HIP extends ZIW_Base
 	}
 }
 
-class InputWidget
-{
-	static $widgets = array();
-
-	// Stuff caried over from the old php3 world of InputWidget:
-	public $fck = array();
-	public $mypath;
-	public $fckeditorpath;
-	public $UsePennies = true;
-	public $lookups = array();
-	public $editkey = 0;
-	public $datacolumn = 'sitetext.body';
-	public $OnBeforeAutoInsert;
-	public $OnAutoInsert;
-	public $fckeditorcss = '';
-
-	/**
-	 * Register an InputWidget object for use by the InputWidget shell.
-	 *
-	 * @param string $type
-	 * @param ZIW_Base $widget
-	 */
-	function Register($type,$widget)
-	{
-		InputWidget::$widgets[$type] = $widget;
-	}
-
-	/**
-	 * Find the Input Widget object for this type and return it.
-	 *
-	 * @param string $type
-	 * @return ZIW_Base
-	 */
-	function Get($type)
-	{
-		if (!array_key_exists($type, InputWidget::$widgets))
-			$type = 'default';
-		return InputWidget::$widgets[$type];
-	}
-
-	function PostValue($type,$postname)
-	{
-		$postname = str_replace(' ','_',$postname);
-		$ep = explode('.',$type);
-		$widget = InputWidget::Get($ep[0]);
-		$this->SetExtras($widget);
-		return $widget->PostValue($ep,$postname);
-	}
-
-	function Display($type,$template,$value,$masterkey='')
-	{
-		if ($template == '') return '';
-		$ep = explode('.',$type);
-		$widget = InputWidget::Get($ep[0]);
-		$this->SetExtras($widget);
-		$value = $widget->Display($ep,$value,$this);
-		return str_replace(array("{0}","{ID}"),array($value,$masterkey),$template);
-	}
-
-	static function GetPretext($type)
-	{
-		$tp = explode('.',$type,2);
-		$widget = InputWidget::Get($tp[0]);
-		return $widget->GetPretext($tp);
-	}
-
-	function JSRender($type,$name,$value)
-	{
-		$ep = explode('.',$type);
-		$widget = InputWidget::Get($ep[0]);
-		if ($widget->xlatehtmlentities)
-			$value = htmlentities($value);
-		return $widget->JSRender($ep,$name,$value);
-	}
-
-	function SetExtras($widget)
-	{
-		$widget->extra['UsePennies'] = $this->UsePennies;
-		$widget->extra['fck'] = $this->fck;
-		$widget->extra['mypath'] = $this->mypath;
-		$widget->extra['fckeditorpath'] = $this->fckeditorpath;
-		$widget->extra['lookups'] = $this->lookups;
-		$widget->extra['editkey'] = $this->editkey;
-		$widget->extra['datacolumn'] = $this->datacolumn;
-		$widget->extra['OnBeforeAutoInsert'] = $this->OnBeforeAutoInsert;
-		$widget->extra['OnAutoInsert'] = $this->OnAutoInsert;
-		if (isset($this->fckeditorcss))
-			$widget->extra['fckeditorcss'] = $this->fckeditorcss;
-	}
-
-	function Render(
-		$type,
-		$name,
-		$value,
-		$dialogName = "",
-		$tabsetName = "",
-		$tabName = "")
-	{
-		$ep = explode('.',$type);
-		$widget = InputWidget::Get($ep[0]);
-		$widget->extra['dialogName'] = $dialogName;
-		$widget->extra['tabsetName'] = $tabsetName;
-		$widget->extra['tabName'] = $tabName;
-		$this->SetExtras($widget);
-		if ($widget->xlatehtmlentities)
-			$value = htmlentities($value);
-		$widget->Render($ep,$name,$value);
-	}
-
-	function IsValid($type, $value)
-	{
-		$ep = explode('.',$type);
-		$widget = InputWidget::Get($ep[0]);
-
-		return $widget->IsValid($value);
-	}
-}
-
 class DataGridLookup
 {
 	public $values;
@@ -2377,6 +2246,156 @@ class ZIW_Page extends ZIW_Base
 		else
 		{
 			return $display;
+		}
+	}
+}
+
+class InputWidget
+{
+	static $widgets = array();
+
+	// Stuff caried over from the old php3 world of InputWidget:
+	public $fck = array();
+	public $mypath;
+	public $fckeditorpath;
+	public $UsePennies = true;
+	public $lookups = array();
+	public $editkey = 0;
+	public $datacolumn = 'sitetext.body';
+	public $OnBeforeAutoInsert;
+	public $OnAutoInsert;
+	public $fckeditorcss = '';
+
+	/**
+	 * Register an InputWidget object for use by the InputWidget shell.
+	 *
+	 * @param string $type
+	 * @param ZIW_Base $widget
+	 */
+	function Register($type,$widget)
+	{
+		InputWidget::$widgets[$type] = $widget;
+	}
+
+	/**
+	 * Find the Input Widget object for this type and return it.
+	 *
+	 * @param string $type
+	 * @return ZIW_Base
+	 */
+	function &Get($type)
+	{
+		if (!array_key_exists($type, InputWidget::$widgets))
+			$type = 'default';
+		return InputWidget::$widgets[$type];
+	}
+	
+	/**
+	 * Find the Input Widget object for this input spec and return it
+	 *
+	 * @param string $inputspec
+	 * @return ZIW_Base
+	 */
+	function GetFromInputSpec($inputspec)
+	{
+		$ep = explode('.',$inputspec);
+		$widget = InputWidget::Get($ep[0]);
+		return $widget;
+	}
+
+	function PostValue($type,$postname)
+	{
+		$postname = str_replace(' ','_',$postname);
+		$ep = explode('.',$type);
+		$widget = InputWidget::Get($ep[0]);
+		$this->SetExtras($widget);
+		return $widget->PostValue($ep,$postname);
+	}
+
+	function Display($type,$template,$value,$masterkey='')
+	{
+		if ($template == '') return '';
+		$ep = explode('.',$type);
+		$widget = InputWidget::Get($ep[0]);
+		$this->SetExtras($widget);
+		$value = $widget->Display($ep,$value,$this);
+		return str_replace(array("{0}","{ID}"),array($value,$masterkey),$template);
+	}
+
+	static function GetPretext($type)
+	{
+		$tp = explode('.',$type,2);
+		$widget = InputWidget::Get($tp[0]);
+		return $widget->GetPretext($tp);
+	}
+
+	function JSRender($type,$name,$value)
+	{
+		$ep = explode('.',$type);
+		$widget = InputWidget::Get($ep[0]);
+		if ($widget->xlatehtmlentities)
+			$value = htmlentities($value);
+		return $widget->JSRender($ep,$name,$value);
+	}
+
+	function SetExtras($widget)
+	{
+		$widget->extra['UsePennies'] = $this->UsePennies;
+		$widget->extra['fck'] = $this->fck;
+		$widget->extra['mypath'] = $this->mypath;
+		$widget->extra['fckeditorpath'] = $this->fckeditorpath;
+		$widget->extra['lookups'] = $this->lookups;
+		$widget->extra['editkey'] = $this->editkey;
+		$widget->extra['datacolumn'] = $this->datacolumn;
+		$widget->extra['OnBeforeAutoInsert'] = $this->OnBeforeAutoInsert;
+		$widget->extra['OnAutoInsert'] = $this->OnAutoInsert;
+		if (isset($this->fckeditorcss))
+			$widget->extra['fckeditorcss'] = $this->fckeditorcss;
+	}
+
+	function Render(
+		$type,
+		$name,
+		$value,
+		$dialogName = "",
+		$tabsetName = "",
+		$tabName = "")
+	{
+		$ep = explode('.',$type);
+		$widget = &InputWidget::Get($ep[0]);
+		$widget->extra['dialogName'] = $dialogName;
+		$widget->extra['tabsetName'] = $tabsetName;
+		$widget->extra['tabName'] = $tabName;
+		$this->SetExtras($widget);
+		if ($widget->xlatehtmlentities)
+			$value = htmlentities($value);
+		$widget->Render($ep,$name,$value);
+	}
+
+	function IsValid($type, $value)
+	{
+		$ep = explode('.',$type);
+		$widget = InputWidget::Get($ep[0]);
+
+		return $widget->IsValid($value);
+	}
+	
+	function inputspec2sqltype($inputspec)
+	{
+		list($type,$params) = explode('.',$inputspec,2);
+		$pp = explode('.',$params);
+	
+		if(
+			array_key_exists($type,InputWidget::$widgets)
+			&& method_exists(InputWidget::$widgets[$type], "GetDatabaseType"))
+		{
+			$dbType = call_user_func(array(InputWidget::$widgets[$type], "GetDatabaseType"), $type, $pp);
+			// die($dbType);
+			return $dbType;
+		}
+		else
+		{
+			return "text";
 		}
 	}
 }

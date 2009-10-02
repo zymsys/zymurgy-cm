@@ -47,12 +47,12 @@
 			array(
 				"name" => "zcm_flavourtextitem",
 				"columns" => array(
-					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
-					DefineTableField("flavour", "INT(11)", "NOT NULL"),
+					DefineTableField("zcm_flavourtext", "BIGINT", "NOT NULL"),
+					DefineTableField("flavour", "BIGINT", "NOT NULL"),
 					DefineTableField("text", "LONGTEXT", "NOT NULL")
 				),
 				"indexes" => array(),
-				"primarykey" => "id",
+				"primarykey" => "zcm_flavourtext, flavour",
 				"engine" => "MyISAM"
 			)
 		);
@@ -609,7 +609,7 @@
 				"columns" => array(
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("name", "VARCHAR(30)", "DEFAULT NULL"),
-					DefineTableField("path", "VARCHAR(200)", "DEFAULT NULL")
+					DefineTableField("path", "FLAVOURED", "")
 				),
 				"indexes" => array(
 					array("columns" => "name", "unique" => FALSE, "type" => "")

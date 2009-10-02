@@ -76,22 +76,7 @@ function gettable($t)
 
 function inputspec2sqltype($inputspec)
 {
-	list($type,$params) = explode('.',$inputspec,2);
-	$pp = explode('.',$params);
-
 	include_once(Zymurgy::$root."/zymurgy/InputWidget.php");
-	if(
-		array_key_exists($type,InputWidget::$widgets)
-		&& method_exists(InputWidget::$widgets[$type], "GetDatabaseType"))
-	{
-		$dbType = call_user_func(array(InputWidget::$widgets[$type], "GetDatabaseType"), $type, $pp);
-		// die($dbType);
-		return $dbType;
-	}
-	else
-	{
-		return "text";
-	}
+	return InputWidget::inputspec2sqltype($inputspec);
 }
-
 ?>

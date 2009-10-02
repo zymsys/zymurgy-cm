@@ -50,7 +50,23 @@ function OnBeforeUpdate($values)
 	$old = mysql_fetch_array($ri) or die ("No such field ($sql)");
 	if (($old['cname']!=$values['zcm_customfield.cname']) || ($old['inputspec']!=$values['zcm_customfield.inputspec']))
 	{
+		$oldiw = InputWidget::GetFromInputSpec($old['inputspec']);
+		$newiw = InputWidget::GetFromInputSpec($values['zcm_customfield.inputspec']);
+		//echo "<div>[".$oldiw->SupportsFlavours().",".$newiw->SupportsFlavours()."]</div>"; exit;
+		if ($oldiw->SupportsFlavours() && !$newiw->SupportsFlavours())
+		{
+			//Moving from flavoured to vanilla
+			Zymurgy::ConvertFlavouredToVanilla($tbl['tname'],$old['cname']);
+		}
+		elseif (!$oldiw->SupportsFlavours() && $newiw->SupportsFlavours())
+		{
+			//Moving from vanilla to flavoured
+			//echo "<div>v2f: {$tbl['tname']} - {$old['cname']}</div>"; exit;
+			Zymurgy::ConvertVanillaToFlavoured($tbl['tname'],$old['cname']);
+		}
+		//Do this even if we converted to/from flavoured to support column rename
 		//Column name or type has changed, update the db.
+		$renamecolumn = false; //Done right here
 		$sql = "alter table `{$tbl['tname']}` change `{$old['cname']}` `{$values['zcm_customfield.cname']}` $sqltype";
 		mysql_query($sql) or die("Unable to change field ($sql): ".mysql_error());
 	}

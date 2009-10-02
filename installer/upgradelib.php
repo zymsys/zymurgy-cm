@@ -227,9 +227,16 @@ function VerifyColumnExists(
 
 		if(NormalizeFieldType($existingFieldType[0]) !== NormalizeFieldType($type))
 		{
-			$sql = "ALTER TABLE `$table` MODIFY COLUMN `$name` $type $params";
-			mysql_query($sql)
-				or die("Could not change $table.$name column type: ".mysql_error().", $sql");
+			if ($type == 'FLAVOURED')
+			{
+				Zymurgy::ConvertVanillaToFlavoured($table,$name);
+			}
+			else 
+			{
+				$sql = "ALTER TABLE `$table` MODIFY COLUMN `$name` $type $params";
+				mysql_query($sql)
+					or die("Could not change $table.$name column type: ".mysql_error().", $sql");
+			}
 		}
 	}
 }
@@ -239,6 +246,7 @@ function NormalizeFieldType($type)
 	$type = strtoupper($type);
 
 	$type = str_replace("INTEGER", "INT(10)", $type);
+	$type = str_replace("FLAVOURED", "BIGINT", $type);
 
 	return $type;
 }
@@ -466,7 +474,8 @@ function GetAllColumnSQL(
 
 	foreach($tableDefinition["columns"] as $column)
 	{
-		$columnSQL[] = "`{$column["name"]}` {$column["type"]} {$column["params"]}";
+		$type = ($column['type']=='FLAVOURED') ? 'BIGINT' : $column['type'];
+		$columnSQL[] = "`{$column["name"]}` $type {$column["params"]}";
 	}
 
 	return implode(", ", $columnSQL);
