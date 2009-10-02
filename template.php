@@ -554,8 +554,9 @@ if ($do404)
 	Zymurgy::$template->DisplayFileNotFound($flavour, 'flavours', '');
 }
 
-if (file_exists(Zymurgy::$root.Zymurgy::$template->template['path']))
-	require_once(Zymurgy::$root.Zymurgy::$template->template['path']);
+$path = ZIW_InputFlavoured::GetFlavouredValue(Zymurgy::$template->template['path']);
+if (file_exists(Zymurgy::$root.$path))
+	require_once(Zymurgy::$root.$path);
 else
-	echo "This page is trying to use a template from ".Zymurgy::$template->template['path'].", but no such file exists.";
+	echo "This page is trying to use a template from $path, but no such file exists.";
 ?>

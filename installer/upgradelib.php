@@ -246,7 +246,7 @@ function NormalizeFieldType($type)
 	$type = strtoupper($type);
 
 	$type = str_replace("INTEGER", "INT(10)", $type);
-	$type = str_replace("FLAVOURED", "BIGINT", $type);
+	$type = str_replace("FLAVOURED", "BIGINT(20)", $type);
 
 	return $type;
 }

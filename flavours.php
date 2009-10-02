@@ -9,7 +9,7 @@
 		function PreRender()
 		{
 			parent::PreRender();
-			$this->extra['lookups']['zcm_flavour']->values[-1] = 'Me';
+			$this->extra['lookups']['zcm_flavour']->values[-1] = 'Create New';
 			$this->extra['lookups']['zcm_flavour']->keys[-1] = -1;
 			ksort($this->extra['lookups']['zcm_flavour']->keys);
 		}
