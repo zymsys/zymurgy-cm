@@ -1,9 +1,21 @@
 <?
+/**
+ * Zymurgy class and initialization code
+ * 
+ * @package Zymurgy_Base
+ */
 require_once("include/payment.php");
 require_once("include/l10n.php");
 
+// include guard
 if (!class_exists('Zymurgy'))
 {
+	
+	/**
+	 * Basic Zmrugy functions
+	 * 
+	 * @package Zymurgy_Base
+	 */
 	class Zymurgy
 	{
 		/**
@@ -14,7 +26,9 @@ if (!class_exists('Zymurgy'))
 		static $root;
 
 		/**
-		 * A Zymurgy_DB instance for database access
+		 * A {@see Zymurgy_DB} instance for database access.
+		 * 
+		 * This is automatically initialized when wn this file is included.
 		 *
 		 * @var Zymurgy_DB
 		 */
@@ -22,6 +36,8 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Config values from the config/config.php file
+		 * 
+		 * The contents of this variable are stpred in {@link config/config.php} which is created by ther installer.
 		 *
 		 * @var array
 		 */
@@ -29,6 +45,8 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * User supplied site config values from within the Zymurgy:CM control panel front-end
+		 * 
+		 * This is stored in the database.
 		 *
 		 * @var array
 		 */
@@ -168,11 +186,11 @@ if (!class_exists('Zymurgy'))
 				case 'js':
 					if ($isYUI && Zymurgy::$yuitest)
 						$src = str_replace('-min.js','-debug.js',$src); //Scrub -min for testing YUI
-					return "<script type=\"text/javascript\" src=\"".$baseurl."$src\"></script>\r\n";
+					return "    <script type=\"text/javascript\" src=\"".$baseurl."$src\"></script>\r\n";
 				case 'css':
-					return "<link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
+					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
 				default:
-					return "<!-- Request for non supported resource: $src -->\r\n";
+					return "    <!-- Request for non supported resource: $src -->\r\n";
 			}
 		}
 
@@ -233,7 +251,7 @@ if (!class_exists('Zymurgy'))
 			if (array_key_exists('yuibaseurl',Zymurgy::$config))
 				return Zymurgy::$config['yuibaseurl'];
 			else
-				return "http://yui.yahooapis.com/2.7.0/build/";
+				return "http://yui.yahooapis.com/2.8.0r4/build/";
 		}
 
 		/**
@@ -868,7 +886,9 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Render login interface.  Uses reg GET variable, which can be:
+		 * Render login interface.  
+		 * 
+		 * Uses reg GET variable, which can be:
 		 * 	- username: create a new username/account
 		 * 	- extra: get extra info from the user using a client defined form
 		 * If the reg GET variable isn't supplied it just tries to log the user in.
@@ -1031,6 +1051,19 @@ if (!class_exists('Zymurgy'))
 
 		public static $sitenav = null;
 
+		/**
+		 * Old function to render site navigation.
+		 * 
+		 * Please create an instance of {@link ZymurgySitenavRenderer_YUI} instead.
+		 * 
+		 * @deprecated
+		 * @param $ishorizontal
+		 * @param $currentleveonly
+		 * @param $childlevelsonly
+		 * @param $startpath
+		 * @param $baseurl
+		 * @return unknown_type
+		 */
 		public static function sitenav(
 			$ishorizontal = true,
 			$currentleveonly = false,
@@ -1048,7 +1081,9 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Get site's navigation structure
+		 * Get site's navigation structure.
+		 * 
+		 * Initializes and returns {@link $sitenav}
 		 *
 		 * @return ZymurgySiteNav
 		 */
@@ -1116,6 +1151,14 @@ if (!class_exists('Zymurgy'))
 			return Zymurgy::$template->pagegadget($pluginName, $configName);
 		}
 
+		/**
+		 * Rrtuen user 
+		 * 
+		 * @param string $keyname The name of the config entry
+		 * @param string $defaultvalue The default value to set the entry to if it does not exist.
+		 * @param string $inputspec The type to set the entry to if it doesn't exist.
+		 * @return mixed
+		 */
 		function Config($keyname, $defaultvalue, $inputspec='input.30.30')
 		{
 			if (!array_key_exists($keyname,Zymurgy::$userconfig))
@@ -1376,5 +1419,7 @@ if (!class_exists('Zymurgy'))
 
 	require_once("InputWidget.php");
 	Zymurgy::$Locales = LocaleFactory::GetLocales();
+
+// end include guard
 }
 ?>

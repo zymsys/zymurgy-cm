@@ -1,4 +1,12 @@
 <?
+
+/**
+ * Ask for user to approve EULA.
+ * 
+ * @access private
+ * @package
+ */
+
 $onload = '';
 include('nlheader.php');
 require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");

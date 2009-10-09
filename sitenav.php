@@ -362,7 +362,7 @@ abstract class ZymurgySiteNavRenderer{
 	 * Start the navigation $depth levels towards the current page.
 	 */
 	public function startat_depth($depth){
-		$this->startpath = implode('/',explode('/', Zymurgy::$template->navpath, $depth));
+		$this->startpath = implode('/',array_slice(explode('/', Zymurgy::$template->navpath), 0, $depth));
 	}
 	
 	########################################

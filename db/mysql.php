@@ -1,46 +1,92 @@
 <?
+/**
+ * Containd Zymrgy_DB wrapper for MySQL.
+ * 
+ * @access private
+ * @package
+ */
+
 define('ZYMURGY_FETCH_ASSOC',MYSQL_ASSOC);
 define('ZYMURGY_FETCH_BOTH',MYSQL_BOTH);
 define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
 
+//require_once('../cmo.php');
+
+/**
+ * Wrapper for MySQL DB interface.
+ * 
+ * This class will auto-connect to the database specified in config.php using the username and password there.
+ * 
+ * <b>DO NOT create an instance of this class yourself, always use {@link Zumurgy::$db} instead.</b>
+ * 
+ * @package Zymurgy_Base
+ */
 class Zymurgy_DB
 {
 	var $link;
 	
-	function Zymurgy_DB()
+	/**
+	 * Create a new connection.
+	 * 
+	 * Do not call this, use {@link Zumurgy::$db} instead.
+	 * 
+	 * @ignore
+	 */
+	public function __construct()
 	{
 		$this->link = mysql_connect(Zymurgy::$config['mysqlhost'],Zymurgy::$config['mysqluser'],Zymurgy::$config['mysqlpass']);
 		mysql_select_db(Zymurgy::$config['mysqldb'],$this->link) or die ("Unable to select the database ".Zymurgy::$config['mysqldb'].".");
 	}
 	
-	function query($sql)
+	/**
+	 * Run an SQL query on the dtatbase and return the result.
+	 * 
+	 * Returns false on error.
+	 * 
+	 * @see PHP_MANUAL#mysql_query
+	 * 
+	 * @param string $sql The query to run
+	 * @return resource|false MySQL result set or false on error
+	 */
+	public function query($sql)
 	{
 		//echo "<div>[$sql]</div>";
 		return mysql_query($sql,$this->link);
 	}
 
 	/**
-	 * Run query and give an error message if there's a problem.  Returns a result identifier resource.
+	 * Run query and give an error message if there's a problem.
+	 * 
+	 * Returns a result identifier resource. Script ends on error.
+	 * 
+	 * @todo should this use an exception instead of killing the script?
+	 * 
+	 * @see query()
 	 *
-	 * @param string $sql
-	 * @param string $errormsg
-	 * @return resource
+	 * @param string $sql The query to run
+	 * @param string $errormsg The error message to show in case of error.
+	 * @return resource MySQL result set
 	 */
-	function run($sql, $errormsg = 'Unable to run query')
+	public function run($sql, $errormsg = 'Unable to run query')
 	{
+		// should this throw an exception instead?
 		$ri = $this->query($sql) or die ("$errormsg ($sql): ".$this->error());
 		return $ri;
 	}
 	
 	/**
+	 * Get a single row from a query.
+	 * 
 	 * Run a query and throw an error if there's a problem.  Return the first row as an array or
 	 * the value if only one column is returned.  Returns false if no data is returned.
+	 * 
+	 * @see query()
 	 *
 	 * @param string $sql
 	 * @param string $errormsg
 	 * @return mixed
 	 */
-	function get($sql, $errormsg = 'Unable to run query')
+	public function get($sql, $errormsg = 'Unable to run query')
 	{
 		$ri = $this->run($sql,$errormsg);
 		$row = $this->fetch_array($ri);
@@ -52,12 +98,40 @@ class Zymurgy_DB
 		return $row;
 	}
 	
-	function num_fields($ri)
+	/**
+	 * Return the number of fields in a result set.
+	 * 
+	 * @see PHP_MANUAL#mysql_num_fields()
+	 * 
+	 * @param resource $ri the result set
+	 * @return int
+	 */
+	public function num_fields($ri)
 	{
 		return mysql_num_fields($ri);
 	}
 	
-	function fetch_array($result, $result_type = ZYMURGY_FETCH_BOTH)
+	/**
+	 * Fetch the next row from a result set.
+	 * 
+	 * Returns false if there are no more rows left.
+	 * Call this repeatedly until it returns false to fetch the entire result set.
+	 * 
+	 * Example:<code>
+	 * $result = Zymurgy::$db->run('SELECT field1,field2 FROM table');
+	 * while ($row = Zymurgy::$db->fetch_array($result)){
+	 *     // do something with $row
+	 * }
+	 * Zymurgy::$db->free_result($result);
+	 * </code>
+	 * 
+	 * @see PHP_MANUAL#mysql_fetch_array
+	 * 
+	 * @param resource $result MySQL result set
+	 * @param int $result_type
+	 * @return array|false array(fieldname => value, column# => value )
+	 */
+	public function fetch_array($result, $result_type = ZYMURGY_FETCH_BOTH)
 	{
 		if (!is_resource($result))
 		{
@@ -68,47 +142,118 @@ class Zymurgy_DB
 		return mysql_fetch_array($result,$result_type);
 	}
 	
-	function fetch_row($result)
+	/**
+	 * Fetch the next row from a result set and return a numeric array.
+	 * 
+	 * Equivalant to {@link fetch_array}($result, ZYMURGY_FETCH_NUM)
+	 * 
+	 * @see PHP_MANUAL#mysql_fetch_row
+	 * 
+	 * @param resource $result MySQL result set
+	 * @return arrat
+	 */
+	public function fetch_row($result)
 	{
 		return mysql_fetch_row($result);
 	}
 	
-	function num_rows($result)
+	/**
+	 * Return the number of rows in the a result set
+	 * 
+	 * @see PHP_MANUAL#mysql_num_rows
+	 * 
+	 * @param resource $result MySQL result set
+	 * @return int
+	 */
+	public function num_rows($result)
 	{
 		return mysql_num_rows($result);
 	}
 	
-	function free_result($result)
+	/**
+	 * Delete a result set.  Call this function on a result set when you're done with it.
+	 * 
+	 * @see PHP_MANUAL#mysql_free_result
+	 * 
+	 * @param resource $result MySQL result set
+	 */
+	public function free_result($result)
 	{
 		return mysql_free_result($result);
 	}
 	
-	function result($result, $row, $field = null)
+	/**
+	 * Return a single cell of a result set.
+	 * 
+	 * @see PHP_MANUAL#mysql_result
+	 * 
+	 * @param resource $result MySQL result set
+	 * @param int $row The row munber, starting from 0.
+	 * @param mixed $field The field name or coulmn number.
+	 * @return mixed
+	 */
+	public function result($result, $row, $field = null)
 	{
 		return mysql_result($result,$row,$field);
 	}
 	
-	function insert_id()
+	/**
+	 * Return the AUTO_INCREMENT id generated by the last query
+	 * 
+	 * @see PHP_MANUAL#mysql_insert_id
+	 * 
+	 * @return int
+	 */
+	public function insert_id()
 	{
 		return mysql_insert_id($this->link);
 	}
 	
-	function escape_string($to_be_escaped)
+	/**
+	 * Escape a string for use as a literal in an SQL query.
+	 * 
+	 * @see PHP_MANUAL#mysql_escape_string
+	 * 
+	 * @param string $to_be_escaped
+	 * @return string SQL escaped
+	 */
+	public function escape_string($to_be_escaped)
 	{
 		return mysql_escape_string($to_be_escaped);
 	}
 	
-	function error()
+	/**
+	 * Return the error message of the lase function executed
+	 * 
+	 * @see PHP_MANUAL#mysql_error
+	 * 
+	 * @return int
+	 */
+	public function error()
 	{
 		return mysql_error($this->link);
 	}
 	
-	function errno()
+	/**
+	 * Return the error code of the last function executed.
+	 * 
+	 * @see PHP_MANUAL#mysql_errno
+	 * 
+	 * @return int
+	 */
+	public function errno()
 	{
 		return mysql_errno($this->link);
 	}
 
-	function affected_rows()
+	/**
+	 * Get the number of rows changed by the last query.
+	 * 
+	 * @see PHP_MANUAL#mysql_affected_roes
+	 * 
+	 * @return unknown_type
+	 */
+	public function affected_rows()
 	{
 		return mysql_affected_rows($this->link);
 	}

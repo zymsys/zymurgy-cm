@@ -237,9 +237,11 @@ class ZymurgyTemplate
 	{
 		$regexparts = array();
 		// was mod_rewrite used?
-		if (preg_match('/^\/?pages\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
+		if (preg_match('/^\/?(.+)\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
 			// redo the rewrite because of a bug in mod_rewrite
-			$_GET['p']=$regexparts[1];
+			$_GET['p']=$regexparts[2];
+			if ($regexparts[1] != 'pages')
+				$_get['f'] = $regexparts[1];
 		}else{
 			// this page was called directly
 			$ru = explode('?',$_SERVER['REQUEST_URI'],2);
