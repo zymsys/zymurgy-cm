@@ -1198,18 +1198,22 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @param varargs $args
 		 */
-		static function dbg()
+		static function Dbg()
 		{
 			$args = func_get_args();
 			echo "<hr />\r\n";
 			$n = 1;
 			foreach($args as $arg)
 			{
-				echo "<div class=\"ZymurgyDebug\">$n:";
+				echo "<div class=\"ZymurgyDebug\">$n: ";
 				$n++;
 				if (is_array($arg) || is_object($arg))
 				{
 					echo "<pre>"; print_r($arg); echo "</pre>";
+				}
+				elseif (is_bool($arg))
+				{
+					echo $arg ? 'TRUE' : 'FALSE';
 				}
 				else 
 				{
@@ -1219,10 +1223,39 @@ if (!class_exists('Zymurgy'))
 			}
 			echo "<hr />\r\n";
 		}
+		
+		/**
+		 * Echo debug arguments and then exit.  Format arrays and objects with print_r.
+		 * Uses variable arguments to support listing as many items as needed
+		 *
+		 * @param varargs $args
+		 */
+		static function DbgAndDie()
+		{
+			$args = func_get_args();
+			call_user_func_array(array('Zymurgy','Dbg'),$args);
+			exit;
+		}
 
 		private static $m_flavours = array();
 		private static $m_flavoursbycode = array();
 
+		/**
+		 * Get an array of associative arrays describing all configured flavours
+		 *
+		 * @return array
+		 */
+		static function GetAllFlavoursByCode()
+		{
+			Zymurgy::GetAllFlavours();
+			return Zymurgy::$m_flavoursbycode;
+		}
+		
+		/**
+		 * Get an array of associative arrays describing all configured flavours
+		 *
+		 * @return array
+		 */
 		static function GetAllFlavours()
 		{
 			if(count(Zymurgy::$m_flavours) <= 0)
@@ -1336,6 +1369,13 @@ if (!class_exists('Zymurgy'))
 		static function GetActiveFlavourCode()
 		{
 			return Zymurgy::$m_activeFlavour;
+		}
+		
+		static function GetActiveFlavour()
+		{
+			Zymurgy::GetAllFlavours();
+			return array_key_exists(Zymurgy::$m_activeFlavour,Zymurgy::$m_flavoursbycode) ?
+				Zymurgy::$m_flavoursbycode[Zymurgy::$m_activeFlavour] : false;
 		}
 		
 		static function GetFlavourById($id)

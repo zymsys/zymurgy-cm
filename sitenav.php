@@ -1,6 +1,13 @@
 <?php
 class ZymurgySiteNavItem
 {
+	/**
+	 * This item's ID in the database
+	 *
+	 * @var integer
+	 */
+	public $id;
+	
 	/** 
 	 * The page title to display in the nav nemu.
 	 * @var string
@@ -33,6 +40,13 @@ class ZymurgySiteNavItem
 	 * @var int
 	 */
 	public $acl;
+	
+	/**
+	 * The template database ID
+	 *
+	 * @var int
+	 */
+	public $template;
 	/**
 	 * The ACL entriers for the page
 	 * @var array
@@ -50,16 +64,25 @@ class ZymurgySiteNavItem
 	 * @var array of integers
 	 */
 	public $children = array();
+	
+	/**
+	 * The database IDs of the page's children indexed by the nav name of the child
+	 * @var array of integers
+	 */
+	public $childrenbynavname = array();
 
 	function __construct(
+		$id,
 		$linktext,
 		$linkurl,
 		$parent,
 		$livedate,
 		$softlaunchdate,
 		$retiredate,
-		$acl)
+		$acl,
+		$template)
 	{
+		$this->id = $id;
 		$this->linktext = $linktext;
 		$this->linkurl = $linkurl;
 		$this->parent = $parent;
@@ -67,6 +90,7 @@ class ZymurgySiteNavItem
 		$this->softlaunchdate = $softlaunchdate;
 		$this->retiredate = $retiredate;
 		$this->acl =  $acl;
+		$this->template = $template;
 	}
 }
 
@@ -105,7 +129,7 @@ class ZymurgySiteNav
 				if(array_key_exists($group, $softlaunch_ACL))
 					$cansoftlaunch = true;
 
-		$ri = Zymurgy::$db->run("select id,linktext,linkurl,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl from zcm_sitepage order by disporder");
+		$ri = Zymurgy::$db->run("select id,linktext,linkurl,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl, template from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			if (!is_null($row['golive']) || !is_null($row['softlaunch']) || !is_null($row['retire']))
@@ -135,13 +159,15 @@ class ZymurgySiteNav
 			}
 
 			$this->items[$row['id']] = new ZymurgySiteNavItem(
-				$row['linktext'],
-				$row['linkurl'],
+				$row['id'],
+				ZIW_Base::GetFlavouredValue($row['linktext']),
+				ZIW_Base::GetFlavouredValue($row['linkurl']),
 				$row['parent'],
 				$row['golive'],
 				$row['softlaunch'],
 				$row['retire'],
-				$row['acl']
+				$row['acl'],
+				$row['template']
 			);
 			
 			// add item as child of parent node
@@ -152,11 +178,18 @@ class ZymurgySiteNav
 		Zymurgy::$db->free_result($ri);
 		
 		// dummy node for root to assint in tree trversal
-			$this->items[0] = new ZymurgySiteNavItem('Root','',0,null,null,null,null);
+			$this->items[0] = new ZymurgySiteNavItem(0,'Root','',0,null,null,null,null,0);
 			
 		// copy the structure into the nav items children attributes.
 		foreach ($structureparts as $key => $children)
+		{
 			$this->items[$key]->children = $children;
+			//Zymurgy::DbgAndDie($this->items[$key]);
+			foreach ($children as $childkey)
+			{
+				$this->items[$key]->childrenbynavname[$this->items[$childkey]->linkurl] = $childkey;
+			}
+		}
 
 		$sql = "SELECT `zcm_acl`, `group`, `permission` FROM `zcm_aclitem`";
 		$ri = Zymurgy::$db->query($sql)

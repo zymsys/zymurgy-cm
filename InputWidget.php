@@ -91,6 +91,53 @@ class ZIW_Base
 	{
 		return false;
 	}
+	
+	static function StoreFlavouredValueFromPost($postname,$flavourID)
+	{
+		$values = array();
+		$flavours = Zymurgy::GetAllFlavours();
+		foreach ($flavours as $flavour)
+		{
+			if ($flavour['providescontent'])
+			{
+				$values[$flavour['code']] = $_POST[$postname.'_'.$flavour['code']];
+			}
+		}
+		return ZIW_Base::StoreFlavouredValue($flavourID,$_POST[$postname.'_default'],$values);
+	}
+	
+	/**
+	 * Store flavoured values.  Returns flavour ID of this stored flavour.
+	 *
+	 * @param integer $flavourID
+	 * @param string $default
+	 * @param array $values
+	 * 
+	 * @return integer
+	 */
+	static function StoreFlavouredValue($flavourID,$default,$values)
+	{
+		if ($flavourID)
+		{
+			Zymurgy::$db->run("update zcm_flavourtext set `default`='".
+				Zymurgy::$db->escape_string($default)."' where id=$flavourID");
+		}
+		else 
+		{
+			Zymurgy::$db->run("insert into zcm_flavourtext (`default`) values ('".
+				Zymurgy::$db->escape_string($default)."')");
+			$flavourID = Zymurgy::$db->insert_id();
+		}
+		$codes = Zymurgy::GetAllFlavoursByCode();
+		foreach ($values as $code=>$value)
+		{
+			$flavour = $codes[$code];
+			$value = Zymurgy::$db->escape_string($value);
+			Zymurgy::$db->run("insert into zcm_flavourtextitem (zcm_flavourtext,flavour,`text`) values (".
+				"$flavourID,{$flavour['id']},'$value') on duplicate key update `text`='$value'");
+		}
+		return $flavourID;
+	}
 
 	static function GetFlavouredValue($value,$forflavour = NULL,$fortemplate = false)
 	{
@@ -1252,7 +1299,12 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 	 */
 	function PostValue($ep,$postname)
 	{
-		$pp = explode(" ",$_POST[$postname]);
+		$date = trim($_POST[$postname]);
+		if (empty($date))
+		{
+			return '';
+		}
+		$pp = explode(" ",$date);
 
 		if(count($pp) <= 0)
 		{

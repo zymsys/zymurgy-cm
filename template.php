@@ -4,6 +4,11 @@ require_once('cmo.php');
 require_once('sitenav.php');
 class ZymurgyTemplate
 {
+	/**
+	 * ZymurgySiteNavItem for the current page
+	 *
+	 * @var ZymurgySiteNavItem
+	 */
 	public $sitepage;
 	public $navpath;
 	public $template;
@@ -13,6 +18,14 @@ class ZymurgyTemplate
 	private $pagetextids = array();
 	private $pagetextacls = array();
 
+	static function GetNavInfo($parent,$navpart)
+	{
+		$nav = Zymurgy::getsitenav();
+		$item = $nav->items[$parent];
+		return array_key_exists($navpart,$item->childrenbynavname) ?
+			$nav->items[$item->childrenbynavname[$navpart]] : false;
+	}
+	
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
 		//$this->LoadParams();
@@ -37,24 +50,20 @@ class ZymurgyTemplate
 			foreach ($np as $navpart)
 			{
 				$navpart = Zymurgy::$db->escape_string($navpart);
-
-				$row = $this->GetSitePage("`parent` = '".
-					Zymurgy::$db->escape_string($parent).
-					"' AND `linkurl` = '".
-					Zymurgy::$db->escape_string($navpart).
-					"'");
-
-				if ($row === false)
+				$navpage = ZymurgyTemplate::GetNavInfo($parent,$navpart);
+				if ($navpage === false)
 				{
 					// Is there a redirect available for this navpart?
-					$redirect = Zymurgy::$db->get("select * from zcm_sitepageredirect where parent=$parent and linkurl='$navpart'");
+					$flavour = Zymurgy::GetActiveFlavour();
+					$flavourid = $flavour ? $flavour['id'] : 0;
+					$redirect = Zymurgy::$db->get("select * from zcm_sitepageredirect where parent=$parent and flavour=$flavourid and linkurl='$navpart'");
 					if ($redirect)
 					{
 						//Yes, this page has a new home.  Find it.
 						$newpart = Zymurgy::$db->get("select linkurl from zcm_sitepage where id = {$redirect['sitepage']}");
 						if ($newpart)
 						{
-							$newpath[] = $newpart;
+							$newpath[] = ZIW_Base::GetFlavouredValue($newpart);
 							$parent = $redirect['sitepage'];
 							$doredirect = true;
 							continue;
@@ -75,7 +84,7 @@ class ZymurgyTemplate
 				{
 					$newpath[] = $navpart;
 				}
-				$parent = $row['id'];
+				$parent = $navpage->id;
 			}
 			if ($do404)
 			{
@@ -90,12 +99,12 @@ class ZymurgyTemplate
 				exit;
 			}
 
-			$this->sitepage = $row;
+			$this->sitepage = $navpage;
 		}
 
 		// -----
 		// Check the page to make sure the user actually has permission to view it
-		if(!Zymurgy::getsitenav()->haspermission($this->sitepage["id"], null))
+		if(!Zymurgy::getsitenav()->haspermission($this->sitepage->id, null))
 		{
 			$this->DisplayForbidden($navpart, $navpath, $newpath, "Failed ACL Check");
 		}
@@ -103,9 +112,9 @@ class ZymurgyTemplate
 		// -----
 		// Check the page to make sure it within the published range
 
-		$retire = strtotime($this->sitepage["retire"]);
-		$golive = strtotime($this->sitepage["golive"]);
-		$softlaunch = strtotime($this->sitepage["softlaunch"]);
+		$retire = strtotime($this->sitepage->retiredate);
+		$golive = strtotime($this->sitepage->livedate);
+		$softlaunch = strtotime($this->sitepage->softlaunchdate);
 
 		// If all three dates are the same, this page was created while the
 		// default JSCalendar date was set to the current timestamp. Ignore
@@ -138,7 +147,7 @@ class ZymurgyTemplate
 		}
 		// -----
 
-		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage['template']}");
+		$this->template = Zymurgy::$db->get("select * from zcm_template where id={$this->sitepage->template}");
 		$this->template['path'] = ZIW_Base::GetFlavouredValue($this->template['path'],NULL,true);
 		$this->navpath = $navpath;
 		$this->LoadPageText();
@@ -260,13 +269,13 @@ class ZymurgyTemplate
 	private function LoadPageText()
 	{
 		//Load content types
-		$ri = Zymurgy::$db->run("select * from zcm_templatetext where template=".$this->sitepage['template']);
+		$ri = Zymurgy::$db->run("select * from zcm_templatetext where template=".$this->sitepage->template);
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$this->inputspeccache[$row['tag']] = $row['inputspec'];
 		}
 		Zymurgy::$db->free_result($ri);
-		$ri = Zymurgy::$db->run("select * from zcm_pagetext where sitepage=".$this->sitepage['id']);
+		$ri = Zymurgy::$db->run("select * from zcm_pagetext where sitepage=".$this->sitepage->id);
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			$this->pagetextids[$row['tag']] = $row['id'];
@@ -318,13 +327,13 @@ class ZymurgyTemplate
 		if (!array_key_exists($tag,$this->pagetextcache))
 		{
 			$row = Zymurgy::$db->get("select * from zcm_templatetext where template=".
-				$this->sitepage['template']." and tag='".
+				$this->sitepage->template." and tag='".
 				Zymurgy::$db->escape_string($tag)."'");
 			if ($row === false)
 			{
 				//Add it
 				Zymurgy::$db->run("insert into zcm_templatetext (template,tag,inputspec) values (".
-					$this->sitepage['template'].",'".
+					$this->sitepage->template.",'".
 					Zymurgy::$db->escape_string($tag)."','".
 					Zymurgy::$db->escape_string($type)."')");
 				$this->pagetextids[$tag] = Zymurgy::$db->insert_id();
@@ -341,7 +350,7 @@ class ZymurgyTemplate
 			//Input spec has changed.  Update the DB and the cache.
 			$this->inputspeccache[$tag] = $type;
 			Zymurgy::$db->run("update zcm_templatetext set inputspec='".
-				Zymurgy::$db->escape_string($type)."' where (template=".$this->sitepage['template'].") and (tag='".
+				Zymurgy::$db->escape_string($type)."' where (template=".$this->sitepage->template.") and (tag='".
 				Zymurgy::$db->escape_string($tag)."')");
 		}
 	}
@@ -389,7 +398,7 @@ class ZymurgyTemplate
 		}
 
 		$sql = "SELECT `plugin`, `align`, `acl` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
-			Zymurgy::$db->escape_string($this->sitepage["id"]).
+			Zymurgy::$db->escape_string($this->sitepage->id).
 			"' AND ".
 			$alignFilterCriteria.
 			" ORDER BY `disporder`";
@@ -548,7 +557,7 @@ if(array_key_exists("f", $_GET))
 
 Zymurgy::$template = new ZymurgyTemplate(
 	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
-	'pages',
+	isset($flavour) ? $flavour : 'pages',
 	(array_key_exists('pageid', $_GET)) ? $_GET["pageid"] : 0);
 	
 if ($do404)
@@ -556,7 +565,7 @@ if ($do404)
 	Zymurgy::$template->DisplayFileNotFound($flavour, 'flavours', '');
 }
 
-$path = ZIW_InputFlavoured::GetFlavouredValue(Zymurgy::$template->template['path']);
+$path = Zymurgy::$template->template['path'];
 if (file_exists(Zymurgy::$root.$path))
 	require_once(Zymurgy::$root.$path);
 else

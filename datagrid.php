@@ -129,6 +129,12 @@ class DataSetRow
 	var $originalvalues;
 	var $values;
 	var $dirty; //Has been changed
+	
+	/**
+	 * DataSet which owns this DataSetRow
+	 *
+	 * @var DataSet
+	 */
 	var $DataSet;
 	var $state; //NORMAL or EDITING
 	var $edittype; //Blank, INSERT or UPDATE
@@ -289,11 +295,27 @@ class DataSetRow
 				}
 			}
 
-			foreach($clist as $cname)
+			//Store flavoured values
+			foreach($this->DataSet->DataGrid->columns as $column)
+			{
+				$iw = InputWidget::GetFromInputSpec($column->editor);
+				if ($iw->SupportsFlavours())
+				{
+					$cname = str_replace("`", "",array_pop(explode('.',$column->datacolumn)));
+					$realFieldName = $tname.".".$cname;
+					$flavourTextID = $iw->StoreFlavouredValueFromPost($tname.'_'.$cname,$this->values[$realFieldName]);
+					$vlist[$cname] = $flavourTextID;
+					$alist[$cname] = "`$cname`=$flavourTextID";
+					$this->values[$realFieldName] = $flavourTextID;
+				}
+			}
+			//Zymurgy::DbgAndDie($this->values, $realFieldName);
+			/*foreach($clist as $cname)
 			{
 				$cname = str_replace("`", "", $cname);
 				$realFieldName = $tname.".".$cname;
 				$fieldName = $tname."_".$cname."_default";
+				Zymurgy::DbgAndDie($this->DataSet->DataGrid->columns);
 				if(isset($_POST[$fieldName]))
 				{
 					echo("Flavoured Data Found: ".$fieldName."<br>");
@@ -338,7 +360,7 @@ class DataSetRow
 						$alist[$cname] = "`$cname`=$flavourTextID";
 					}
 				}
-			}
+			}*/
 
 			//die(print_r($alist, true));
 
@@ -453,6 +475,13 @@ class DataSet
 	var $DisplayOrder;
 	var $Filters;
 	var $ExtraSQL; //Used for full text queries
+	
+	/**
+	 * DataGrid (if any) which owns this DataSet
+	 *
+	 * @var DataGrid
+	 */
+	var $DataGrid;
 
 	//Define these events to hook into them
 	//var $OnInsert($dataset)
@@ -672,6 +701,7 @@ class DataGrid
 	function DataGrid(&$dataset,$name='')
 	{
 		$this->DataSet = &$dataset;
+		$this->DataSet->DataGrid = &$this;
 		$this->name = $name;
 		$this->rowsperpage = 20;
 		$this->columns = array();

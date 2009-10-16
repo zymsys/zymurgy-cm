@@ -555,8 +555,8 @@
 				"columns" => array(
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
-					DefineTableField("linktext", "VARCHAR(40)", "DEFAULT NULL"),
-					DefineTableField("linkurl", "VARCHAR(40)", "DEFAULT NULL"),
+					DefineTableField("linktext", "FLAVOURED", ""),
+					DefineTableField("linkurl", "FLAVOURED", ""),
 					DefineTableField("parent", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("retire", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("golive", "DATETIME", "DEFAULT NULL"),
@@ -640,6 +640,7 @@
 					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
 					DefineTableField("sitepage", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("parent", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("flavour", "BIGINT(20)", "DEFAULT '0'"),
 					DefineTableField("linkurl", "VARCHAR(40)", "DEFAULT NULL")
 				),
 				"indexes" => array(
