@@ -19,7 +19,8 @@ define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
  * 
  * <b>DO NOT create an instance of this class yourself, always use {@link Zumurgy::$db} instead.</b>
  * 
- * @package Zymurgy_Base
+ * @package Zymurgy
+ * @subpackage base
  */
 class Zymurgy_DB
 {
@@ -212,14 +213,14 @@ class Zymurgy_DB
 	/**
 	 * Escape a string for use as a literal in an SQL query.
 	 * 
-	 * @see PHP_MANUAL#mysql_escape_string
+	 * @see PHP_MANUAL#mysql_real_escape_string
 	 * 
 	 * @param string $to_be_escaped
 	 * @return string SQL escaped
 	 */
 	public function escape_string($to_be_escaped)
 	{
-		return mysql_escape_string($to_be_escaped);
+		return mysql_real_escape_string($to_be_escaped);
 	}
 	
 	/**

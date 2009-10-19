@@ -531,7 +531,7 @@
 										$headers[] = $keyValue[0];
 									}
 
-									$baseRow[$keyValue[0]] = htmlentities($keyValue[1]);
+									$baseRow[$keyValue[0]] = htmlspecialchars($keyValue[1]);
 								}
 							}
 						}

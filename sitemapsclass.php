@@ -25,7 +25,7 @@ class Zymurgy_SiteMapUrl
 		if ($priority=='') $priority = $SiteMap->DefaultPriority;
 		if (substr($loc,0,7)!='http://')
 			$loc = $SiteMap->DefaultHome.$loc;
-		$loc = htmlentities($loc, ENT_QUOTES, 'UTF-8'); 
+		$loc = htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); 
 		$this->loc = $loc;
 		$this->lastmod = $lastmod;
 		$this->changefreq = $changefreq;

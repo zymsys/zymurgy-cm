@@ -1,4 +1,16 @@
 <?
+/**
+ * Input widget classes
+ *
+ * @package Zymurgy
+ */
+
+/**
+ * Input widget base class
+ * 
+ * @package Zymurgy
+ */
+
 class ZIW_Base
 {
 	public $xlatehtmlentities = true;
@@ -165,6 +177,10 @@ class ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Input extends ZIW_Base
 {
 	/**
@@ -229,6 +245,10 @@ class ZIW_Input extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_InputFlavoured extends ZIW_Base
 {
 	function Display($ep,$display,$shell)
@@ -315,6 +335,10 @@ class ZIW_InputFlavoured extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_TextArea extends ZIW_Base
 {
 	/**
@@ -356,6 +380,10 @@ class ZIW_TextArea extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Hidden extends ZIW_Base
 {
 	/**
@@ -371,6 +399,10 @@ class ZIW_Hidden extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Password extends ZIW_Base
 {
 	/**
@@ -404,6 +436,10 @@ class ZIW_Password extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_CheckBox extends ZIW_Base
 {
 	/**
@@ -444,6 +480,10 @@ class ZIW_CheckBox extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Money extends ZIW_Base
 {
 	/**
@@ -511,6 +551,10 @@ class ZIW_Money extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_InputSpec extends ZIW_Base
 {
 	/**
@@ -529,6 +573,10 @@ class ZIW_InputSpec extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Lookup extends ZIW_Base
 {
 	/**
@@ -615,6 +663,10 @@ class ZIW_Lookup extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 abstract class ZIW_AutoCompleteBase extends ZIW_Base
 {
 	static public $ZymurgyAutocompleteZIndex = 9000;
@@ -677,7 +729,7 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 		{
 			echo "title=\"$hint\" ";
 		}
-		echo "value=\"".htmlentities($this->textvalue)."\" onchange=\"{$this->jsname}_update\" style=\"width:200px\" />";
+		echo "value=\"".htmlspecialchars($this->textvalue)."\" onchange=\"{$this->jsname}_update\" style=\"width:200px\" />";
 		echo "<input id=\"{$name}-btn\" type=\"button\" value=\"...\" onclick=\"{$this->jsname}_autocomp.toggleContainer();\"";
 		echo " />";
 		echo "<div id=\"{$name}-container\" style=\"width:200px; z-index:".ZIW_AutoComplete::$ZymurgyAutocompleteZIndex."\"></div></nobr></div>";
@@ -965,6 +1017,10 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_RadioDrop extends ZIW_Base
 {
 	/**
@@ -1089,6 +1145,10 @@ class ZIW_Drop extends ZIW_RadioDrop
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Time extends ZIW_Base
 {
 	/**
@@ -1132,6 +1192,10 @@ class ZIW_Time extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 abstract class ZIW_DateBase extends ZIW_Base
 {
 	protected $unixdate;
@@ -1385,6 +1449,10 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Image extends ZIW_Base
 {
 	/**
@@ -1479,6 +1547,10 @@ class ZIW_Image extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Attachment extends ZIW_Base
 {
 	/**
@@ -1549,6 +1621,10 @@ class ZIW_Attachment extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_RichTextBase extends ZIW_Base
 {
 	/**
@@ -1871,6 +1947,10 @@ class ZIW_Html extends ZIW_RichTextBase
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Color extends ZIW_Base
 {
 	/**
@@ -1932,6 +2012,10 @@ class ZIW_Color extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Theme extends ZIW_Base
 {
 	/**
@@ -2024,6 +2108,10 @@ class ZIW_Theme extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_HIP extends ZIW_Base
 {
 	/**
@@ -2104,6 +2192,9 @@ class ZIW_HIP extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ */
 class DataGridLookup
 {
 	public $values;
@@ -2158,6 +2249,10 @@ class DataGridLookup
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_GMap extends ZIW_Base
 {
 	/**
@@ -2195,6 +2290,10 @@ class ZIW_GMap extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Page extends ZIW_Base
 {
 	public function GetInputSpecifier()
@@ -2302,6 +2401,12 @@ class ZIW_Page extends ZIW_Base
 	}
 }
 
+
+/**
+ * Input widget handler
+ * 
+ * @package Zymurgy
+ */
 class InputWidget
 {
 	static $widgets = array();
@@ -2386,7 +2491,7 @@ class InputWidget
 		$ep = explode('.',$type);
 		$widget = InputWidget::Get($ep[0]);
 		if ($widget->xlatehtmlentities)
-			$value = htmlentities($value);
+			$value = htmlspecialchars($value);
 		return $widget->JSRender($ep,$name,$value);
 	}
 
@@ -2420,7 +2525,7 @@ class InputWidget
 		$widget->extra['tabName'] = $tabName;
 		$this->SetExtras($widget);
 		if ($widget->xlatehtmlentities)
-			$value = htmlentities($value);
+			$value = htmlspecialchars($value);
 		$widget->Render($ep,$name,$value);
 	}
 

@@ -98,7 +98,7 @@
 			if (!$ri)
 				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
 
-			echo(htmlentities($sql)."<br>");
+			echo(htmlspecialchars($sql)."<br>");
 		}
 
 		// die();

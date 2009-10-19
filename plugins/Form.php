@@ -436,7 +436,7 @@ class Form extends PluginBase
 			echo " onsubmit=\"return Validate$name(this)\"";
 		}
 		echo ">\r\n";
-		echo "<input type=\"hidden\" name=\"formname\" value=\"".htmlentities($this->InstanceName)."\">\r\n";
+		echo "<input type=\"hidden\" name=\"formname\" value=\"".htmlspecialchars($this->InstanceName)."\">\r\n";
 		echo "<table>\r\n";
 		if (count($this->ValidationErrors)>0)
 		{
@@ -1561,7 +1561,7 @@ td
 					$val = $xrow[$key];
 				else
 					$val = '';
-				echo "<td>".htmlentities($val)."</td>";
+				echo "<td>".htmlspecialchars($val)."</td>";
 			}
 			echo "</tr>";
 		}

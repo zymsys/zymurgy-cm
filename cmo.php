@@ -2,7 +2,8 @@
 /**
  * Zymurgy class and initialization code
  * 
- * @package Zymurgy_Base
+ * @package Zymurgy
+ * @subpackage base
  */
 require_once("include/payment.php");
 require_once("include/l10n.php");
@@ -14,7 +15,8 @@ if (!class_exists('Zymurgy'))
 	/**
 	 * Basic Zmrugy functions
 	 * 
-	 * @package Zymurgy_Base
+	 * @package Zymurgy
+	 * @subpackage base
 	 */
 	class Zymurgy
 	{
@@ -23,16 +25,16 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @var string
 		 */
-		static $root;
+		public static $root;
 
 		/**
-		 * A {@see Zymurgy_DB} instance for database access.
+		 * A connection instance for database access.
 		 * 
 		 * This is automatically initialized when wn this file is included.
 		 *
 		 * @var Zymurgy_DB
 		 */
-		static $db;
+		public static $db;
 
 		/**
 		 * Config values from the config/config.php file
@@ -41,7 +43,7 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @var array
 		 */
-		static $config;
+		public static $config;
 
 		/**
 		 * User supplied site config values from within the Zymurgy:CM control panel front-end
@@ -50,42 +52,42 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @var array
 		 */
-		static $userconfig;
+		public static $userconfig;
 
 		/**
 		 * User supplied site config values from within the Zymurgy:CM control panel front-end
 		 *
 		 * @var array
 		 */
-		static $userconfigid;
+		public static $userconfigid;
 
 		/**
 		 * If this is a template page, this contains info about this template, and template instance.
 		 *
 		 * @var ZymurgyTemplate
 		 */
-		static $template;
+		public static $template;
 
 		/**
 		 * Site Color Theme cache.
 		 *
 		 * @var unknown_type
 		 */
-		static $colorThemes = array();
+		public static $colorThemes = array();
 
 		/**
 		 * Zymurgy:CM release number
 		 *
 		 * @var int
 		 */
-		static $build = 1987;
+		public static $build = 1987;
 
 		/**
 		 * member info available if the user is logged in.
 		 *
 		 * @var array
 		 */
-		static $member;
+		public static $member;
 
 		/**
 		 * Image handler for resizing images
@@ -196,6 +198,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
+		 * 
 		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
 		 * number loaded by YUI will be updated in future releases.
 		 *
@@ -274,7 +277,7 @@ if (!class_exists('Zymurgy'))
 
 		static private function XMLvalue($value)
 		{
-			$sc = htmlentities($value);
+			$sc = htmlspecialchars($value);
 			if ($sc == $value)
 				return $value;
 			else
@@ -345,6 +348,7 @@ if (!class_exists('Zymurgy'))
 			return $value;
 		}
 
+		//@{
 		/**
 		 * Get general site content.  Create new tag if this one doesn't exist.
 		 *
@@ -459,7 +463,7 @@ if (!class_exists('Zymurgy'))
 							$extra = '';
 						$jstag = str_replace('"','\"',$tag);
 						$urltag = urlencode($jstag);
-						$tag = htmlentities($tag);
+						$tag = htmlspecialchars($tag);
 						$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
 						$t = "<span id=\"ST$tag\">$t</span><script type=\"text/javascript\">
 			YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
@@ -526,11 +530,11 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$pageid = $row['id'];
 			$r = array();
 			if ($row['title'] != '')
-				$r[] = "\t<title>".htmlentities($row['title'])."</title>";
+				$r[] = "\t<title>".htmlspecialchars($row['title'])."</title>";
 			if ($row['description']!='')
-				$r[] = "\t<meta name=\"description\" content=\"".htmlentities($row['description'])."\" />";
+				$r[] = "\t<meta name=\"description\" content=\"".htmlspecialchars($row['description'])."\" />";
 			if ($row['keywords']!='')
-				$r[] = "\t<meta name=\"keywords\" content=\"".htmlentities($row['keywords'])."\" />";
+				$r[] = "\t<meta name=\"keywords\" content=\"".htmlspecialchars($row['keywords'])."\" />";
 			if (array_key_exists('zymurgy',$_COOKIE))
 				$r[] = Zymurgy::adminhead();
 			$r[] = trim(Zymurgy::RequireOnce('/zymurgy/include/cmo.js'));
@@ -585,6 +589,7 @@ if (!class_exists('Zymurgy'))
 			$sm->Render();
 		}
 
+		//@}
 		static function LoadPluginConfig(&$pi)
 		{
 			$iid = 0 + $pi->iid;

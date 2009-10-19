@@ -1,6 +1,8 @@
 <?
 /**
- * Useful globals:
+ * Old globals, use cmo.php instead:
+ * 
+ * @deprecated
  * 
  * $ZymurgyRoot: Physical path to the site's root directory on the server
  * $ZymurgyDB: MySQL link identifier to the Zymurgy:CM database
@@ -36,7 +38,9 @@ function sitemap()
 
 /**
  * Create a plugin object for the named plugin (same as the file name without the extension) and
- * instance name.  Extra is used to pass extra plugin-specific stuff to a plugin, and private
+ * instance name.
+ * 
+ * Extra is used to pass extra plugin-specific stuff to a plugin, and private
  * is used to flag an instance that shouldn't be listed with regular instances because it is
  * created and maintained by something else (for example a collection of image galleries).
  *

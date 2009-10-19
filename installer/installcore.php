@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			switch (mysql_errno())
 			{
 				case 1045: $errors[] = "MySQL connected but the User ID or Password was rejected."; break;
-				case 2005: $errors[] = "A MySQL connection to ".htmlentities($_POST['mysqlServer'])." could not be established."; break;
+				case 2005: $errors[] = "A MySQL connection to ".htmlspecialchars($_POST['mysqlServer'])." could not be established."; break;
 				default: $errors[] = "An error (".mysql_errno().": ".mysql_error().") occured when trying to connect to the MySQL server.";
 			}
 		}
@@ -64,8 +64,8 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		{
 			$dbselected = @mysql_select_db($_POST['mysqlDatabase']);
 			if (!$dbselected)
-				$errors[] = "The MySQL login was successful, but the database ".htmlentities($_POST['mysqlDatabase']).
-					" (if it exists) is not available to the user ".htmlentities($_POST['mysqlUser']).".";
+				$errors[] = "The MySQL login was successful, but the database ".htmlspecialchars($_POST['mysqlDatabase']).
+					" (if it exists) is not available to the user ".htmlspecialchars($_POST['mysqlUser']).".";
 			else 
 			{
 				$ri = mysql_query("show tables");
