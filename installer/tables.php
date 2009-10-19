@@ -575,6 +575,21 @@
 				"engine" => "MyISAM"
 			),
 			array(
+				"name" => "zcm_sitepageseo",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("description", "TEXT", "NOT NULL"),
+					DefineTableField("keywords", "TEXT", "NOT NULL"),
+					DefineTableField("title", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+//					DefineTableField("mtime", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("changefreq", "VARCHAR(10)", "DEFAULT 'monthly'"),
+					DefineTableField("priority", "TINYINT(4)", "DEFAULT '5'")
+				),
+				"indexes" => array(),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
 				"name" => "zcm_sitepageplugin",
 				"columns" => array(
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
