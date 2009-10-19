@@ -1,7 +1,7 @@
 <?
 /**
  * Zymurgy class and initialization code
- * 
+ *
  * @package Zymurgy
  * @subpackage base
  */
@@ -11,10 +11,10 @@ require_once("include/l10n.php");
 // include guard
 if (!class_exists('Zymurgy'))
 {
-	
+
 	/**
 	 * Basic Zmrugy functions
-	 * 
+	 *
 	 * @package Zymurgy
 	 * @subpackage base
 	 */
@@ -29,7 +29,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * A connection instance for database access.
-		 * 
+		 *
 		 * This is automatically initialized when wn this file is included.
 		 *
 		 * @var Zymurgy_DB
@@ -38,7 +38,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Config values from the config/config.php file
-		 * 
+		 *
 		 * The contents of this variable are stpred in {@link config/config.php} which is created by ther installer.
 		 *
 		 * @var array
@@ -47,7 +47,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * User supplied site config values from within the Zymurgy:CM control panel front-end
-		 * 
+		 *
 		 * This is stored in the database.
 		 *
 		 * @var array
@@ -198,7 +198,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
-		 * 
+		 *
 		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
 		 * number loaded by YUI will be updated in future releases.
 		 *
@@ -514,18 +514,49 @@ if (!class_exists('Zymurgy'))
 			$s = Zymurgy::$db->escape_string($_SERVER['PHP_SELF']);
 			if (($s=='') || ($s=='/'))
 				$s = '/index.php';
-			$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
-			if (($row = Zymurgy::$db->fetch_array($ri))===false)
+
+			if(Zymurgy::$template instanceof ZymurgyTemplate)
 			{
-				$ri = Zymurgy::$db->query("insert into zcm_meta (document,title,description,keywords,mtime) values ('$s','".
-					Zymurgy::$db->escape_string(Zymurgy::$config['defaulttitle'])."','".
-					Zymurgy::$db->escape_string(Zymurgy::$config['defaultdescription'])."','".
-					Zymurgy::$db->escape_string(Zymurgy::$config['defaultkeywords'])."',".time().")");
-				if (!$ri)
-					return "<!-- SQL Error: ".Zymurgy::$db->error()." -->\r\n";
-				$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
-				$row = Zymurgy::$db->fetch_array($ri);
+				// print_r(Zymurgy::$template->sitepage->id);
+				// die();
+
+				$sql = "SELECT `zcm_sitepage` AS `id`, `title`, `keywords`, `description` FROM `zcm_sitepageseo` WHERE `zcm_sitepage` = '".
+					Zymurgy::$db->escape_string(Zymurgy::$template->sitepage->id).
+					"' LIMIT 0, 1";
+				$ri = Zymurgy::$db->query($sql)
+					or die("Could not retrieve page's SEO information: ".Zymurgy::$db->error().", $sql");
+
+				if(Zymurgy::$db->num_rows($ri) > 0)
+				{
+					$row = Zymurgy::$db->fetch_array($ri);
+				}
+				else
+				{
+					$row = array(
+						"id" => Zymurgy::$template->sitepage,
+						"title" => Zymurgy::$config['defaulttitle'],
+						"description" => Zymurgy::$config['defaultdescription'],
+						"keywords" => Zymurgy::$config['defaultkeywords']);
+				}
+
+				Zymurgy::$db->free_result($ri);
 			}
+			else
+			{
+				$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
+				if (($row = Zymurgy::$db->fetch_array($ri))===false)
+				{
+					$ri = Zymurgy::$db->query("insert into zcm_meta (document,title,description,keywords,mtime) values ('$s','".
+						Zymurgy::$db->escape_string(Zymurgy::$config['defaulttitle'])."','".
+						Zymurgy::$db->escape_string(Zymurgy::$config['defaultdescription'])."','".
+						Zymurgy::$db->escape_string(Zymurgy::$config['defaultkeywords'])."',".time().")");
+					if (!$ri)
+						return "<!-- SQL Error: ".Zymurgy::$db->error()." -->\r\n";
+					$ri = Zymurgy::$db->query("select id,title,keywords,description from zcm_meta where document='$s'");
+					$row = Zymurgy::$db->fetch_array($ri);
+				}
+			}
+
 			Zymurgy::$title = $row['title'];
 			Zymurgy::$pageid = $row['id'];
 			$r = array();
@@ -891,8 +922,8 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Render login interface.  
-		 * 
+		 * Render login interface.
+		 *
 		 * Uses reg GET variable, which can be:
 		 * 	- username: create a new username/account
 		 * 	- extra: get extra info from the user using a client defined form
@@ -1058,9 +1089,9 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Old function to render site navigation.
-		 * 
+		 *
 		 * Please create an instance of {@link ZymurgySitenavRenderer_YUI} instead.
-		 * 
+		 *
 		 * @deprecated
 		 * @param $ishorizontal
 		 * @param $currentleveonly
@@ -1087,7 +1118,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Get site's navigation structure.
-		 * 
+		 *
 		 * Initializes and returns {@link $sitenav}
 		 *
 		 * @return ZymurgySiteNav
@@ -1157,8 +1188,8 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Rrtuen user 
-		 * 
+		 * Rrtuen user
+		 *
 		 * @param string $keyname The name of the config entry
 		 * @param string $defaultvalue The default value to set the entry to if it does not exist.
 		 * @param string $inputspec The type to set the entry to if it doesn't exist.
@@ -1196,7 +1227,7 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
-		
+
 		/**
 		 * Echo debug arguments.  Format arrays and objects with print_r.
 		 * Uses variable arguments to support listing as many items as needed
@@ -1220,7 +1251,7 @@ if (!class_exists('Zymurgy'))
 				{
 					echo $arg ? 'TRUE' : 'FALSE';
 				}
-				else 
+				else
 				{
 					echo $arg;
 				}
@@ -1228,7 +1259,7 @@ if (!class_exists('Zymurgy'))
 			}
 			echo "<hr />\r\n";
 		}
-		
+
 		/**
 		 * Echo debug arguments and then exit.  Format arrays and objects with print_r.
 		 * Uses variable arguments to support listing as many items as needed
@@ -1255,7 +1286,7 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::GetAllFlavours();
 			return Zymurgy::$m_flavoursbycode;
 		}
-		
+
 		/**
 		 * Get an array of associative arrays describing all configured flavours
 		 *
@@ -1282,7 +1313,7 @@ if (!class_exists('Zymurgy'))
 				}
 
 				Zymurgy::$db->free_result($ri);
-				
+
 				foreach($providescontent as $key=>$throwaway)
 				{
 					Zymurgy::$m_flavours[$key]['providescontent'] = true;
@@ -1297,7 +1328,7 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$m_flavours;
 		}
-		
+
 		/**
 		 * Change flavours so that those which provide templates now provide content.  Done in memory only, so that we can use the
 		 * content mechanisms to maintain template paths in templatemgr.php.  This method is not likely to be useful outside of this
@@ -1316,7 +1347,7 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::$m_flavoursbycode[$key]['providescontent'] = Zymurgy::$m_flavoursbycode[$key]['providestemplate'];
 			}
 		}
-		
+
 		/**
 		 * Convert regular column content to flavoured content
 		 *
@@ -1375,14 +1406,14 @@ if (!class_exists('Zymurgy'))
 		{
 			return Zymurgy::$m_activeFlavour;
 		}
-		
+
 		static function GetActiveFlavour()
 		{
 			Zymurgy::GetAllFlavours();
 			return array_key_exists(Zymurgy::$m_activeFlavour,Zymurgy::$m_flavoursbycode) ?
 				Zymurgy::$m_flavoursbycode[Zymurgy::$m_activeFlavour] : false;
 		}
-		
+
 		static function GetFlavourById($id)
 		{
 			return array_key_exists($id,Zymurgy::$m_flavours) ? Zymurgy::$m_flavours[$id] : false;
