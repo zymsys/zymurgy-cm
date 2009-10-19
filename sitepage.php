@@ -50,7 +50,7 @@ function OnBeforeUpdate($values)
 	{
 		if ($flavour['providescontent'])
 		{
-			
+
 		}
 	}
 	//Zymurgy::DbgAndDie($_POST,$values);
@@ -118,8 +118,8 @@ function OnUpdate($values)
 	foreach ($flvalues as $code=>$value)
 	{
 		$flavour = $codes[$code]['id'];
-		$oldflvalue = Zymurgy::$db->get("select `text` from zcm_flavourtextitem 
-			where (zcm_flavourtext={$values['zcm_sitepage.linkurl']}) 
+		$oldflvalue = Zymurgy::$db->get("select `text` from zcm_flavourtextitem
+			where (zcm_flavourtext={$values['zcm_sitepage.linkurl']})
 			and (flavour=$flavour)");
 		if ($value != $oldflvalue)
 		{
@@ -158,6 +158,7 @@ $dg = new DataGrid($ds);
 $dg->AddConstant('parent',$p);
 $dg->AddColumn('Menu Text','linktext');
 $dg->AddColumn('Page Contents','id','<a href="sitepagetext.php?p={0}">Page Contents</a>');
+$dg->AddColumn("SEO", "id", "<a href=\"sitepageseo.php?p={0}\">SEO</a>");
 $dg->AddColumn('Gadgets','id','<a href="sitepageextra.php?p={0}">Gadgets</a>');
 $dg->AddColumn('Sub-Pages','id','<a href="sitepage.php?p={0}">Sub-Pages</a>');
 /*TODO: I'm not showing these in the grid, but I'd love to show a status column with 'Soft Launch', 'Live' or 'Retired'.  Need to extend the template feature to allow this, or some other stroke of genius.

@@ -578,6 +578,7 @@
 				"name" => "zcm_sitepageseo",
 				"columns" => array(
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("zcm_sitepage", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("description", "TEXT", "NOT NULL"),
 					DefineTableField("keywords", "TEXT", "NOT NULL"),
 					DefineTableField("title", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
