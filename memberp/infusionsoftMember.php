@@ -211,13 +211,32 @@ class infusionsoftMember extends ZymurgyMember
 			if (!$this->findmemberfromsession())
 			{
 				//Member isn't yet known to Z:CM, add it.
-				Zymurgy::$db->run("insert into zcm_member (email,password,regtime,lastauth,mpkey) values ('".
+				Zymurgy::$db->run("insert into zcm_member (email,username,password,fullname,regtime,lastauth,mpkey) values ('".
 					Zymurgy::$db->escape_string($r['Email'])."','".
-					Zymurgy::$db->escape_string($r['Password'])."',now(),now(),'".
+					Zymurgy::$db->escape_string($r['Email'])."','".
+					Zymurgy::$db->escape_string($r['Password'])."','".
+					Zymurgy::$db->escape_string($r['FirstName'])." ".
+					Zymurgy::$db->escape_string($r['LastName']).
+					"', now(),now(),'".
 					Zymurgy::$db->escape_string($r['Id'])."')");
 				$this->findmemberfromsession();
 			}
+			else
+			{
+				Zymurgy::$db->run("UPDATE `zcm_member` SET `fullname` = '".
+					Zymurgy::$db->escape_string($r['FirstName'])." ".
+					Zymurgy::$db->escape_string($r['LastName']).
+					"' WHERE `id` = '".
+					Zymurgy::$db->escape_string(Zymurgy::$member["id"]).
+					"'");
+			}
+
 			$this->syncgroups();
+
+			// Run this again after the group sync in case the list of
+			// groups from Infusionsoft has changed.
+			$this->findmemberfromsession();
+
 			return true;
 		}
 		else
