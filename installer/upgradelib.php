@@ -1,4 +1,9 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage installer
+ */
 // ini_set("display_errors", 1);
 
 $sql = "show tables";

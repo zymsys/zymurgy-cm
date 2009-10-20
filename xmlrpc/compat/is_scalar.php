@@ -26,6 +26,7 @@
  * @version     $Revision$
  * @since       PHP 4.0.5
  * @require     PHP 4 (is_bool)
+ * @ignore
  */
 if (!function_exists('is_scalar')) {
     function is_scalar($val)

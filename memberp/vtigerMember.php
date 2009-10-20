@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 class vtigerMember extends ZymurgyMember
 {
 	/**

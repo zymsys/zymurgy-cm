@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 $adminlevel = 1;
 
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))

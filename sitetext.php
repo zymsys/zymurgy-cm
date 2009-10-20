@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 function OnBeforeUpdate($dsr)
 {
 	$dsr['zcm_sitetext.plainbody'] = strip_tags($dsr['zcm_sitetext.body']);

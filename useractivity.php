@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 include 'header.php';
 include 'datagrid.php';
 

@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class MemberLogin extends PluginBase
 {
 	function GetTitle()

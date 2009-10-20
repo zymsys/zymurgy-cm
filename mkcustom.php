@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 // Code generation may only be performed by a webmaster
 $adminlevel = 2;
 

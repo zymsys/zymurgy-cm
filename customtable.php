@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 // Custom Table definitions may only be set by the webmaster
 $adminlevel = 2;
 

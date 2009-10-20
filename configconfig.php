@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 // Master Config is only editable by webmasters
 $adminlevel = 2;
 

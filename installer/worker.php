@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage installer
+ */
 include("upgradelib.php");
 include('tables.php');
 

@@ -10,6 +10,7 @@
  * @since       PHP 4.0.6
  * @require     PHP 4.0.0 (true, false, etc...)
  * @todo        add the 3rd parameter syntax...
+ * @ignore
  */
 if (!function_exists('is_callable')) {
     function is_callable($var, $syntax_only=false)

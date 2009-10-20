@@ -28,6 +28,7 @@
  * @version     $Revision$
  * @since       PHP 4.2.0
  * @require     PHP 4.0.0 (user_error)
+ * @ignore
  */
 if (!function_exists('var_export')) {
     function var_export($array, $return = false, $lvl=0)

@@ -1,4 +1,9 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 	require_once('InputWidget.php');
 	require_once('cmo.php');
 

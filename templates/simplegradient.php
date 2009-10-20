@@ -1,4 +1,11 @@
 <?
+/**
+ * Gradient png image for {@link simple.php}
+ * 
+ * @package Zymurgy
+ * @subpackage defaulttemplates
+ */
+
 require_once('../cmo.php');
 Zymurgy::Config('Color Theme','#275176,#275176,#4085C2,#336B9C,#757575,#FFFFFF,#C29240','theme');
 Zymurgy::headtags();

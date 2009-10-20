@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage installer
+ */
 	/* array("columns" => "export", "unique" => false, "type" => "") */
 
 	$baseTableDefinitions = array();

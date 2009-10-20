@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class IncludeCodeFile extends PluginBase
 {
 	function GetTitle()

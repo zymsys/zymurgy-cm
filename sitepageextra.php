@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 require_once('cmo.php');
 if (array_key_exists('epi',$_GET))
 {

@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 class infusionsoftMember extends ZymurgyMember
 {
 	public function insfusionsoftMember()

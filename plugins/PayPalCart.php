@@ -1,7 +1,11 @@
 <?
-/*
-https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables#id085LC0Z0E7U
-*/
+/**
+ * 
+ * @link https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables#id085LC0Z0E7U
+ * 
+ * @package Zymurgy_Plugins
+ */
+
 // ini_set("display_errors", 1);
 require_once(Zymurgy::$root.'/zymurgy/include/payment.php');
 

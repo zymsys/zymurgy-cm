@@ -1,8 +1,10 @@
 <?php
-	/**
-	 * Contains the information and validation routines for a Member.
-	 *
-	 */
+/**
+ * Contains the information and validation routines for a Member.
+ *  
+ * @package Zymurgy
+ * @subpackage auth
+ */
 	class Member
 	{
 		private $m_id;

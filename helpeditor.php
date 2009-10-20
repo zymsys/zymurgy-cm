@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 $adminlevel = 2;
 $p = array_key_exists('h',$_GET) ? 0 + $_GET['h'] : 0;
 

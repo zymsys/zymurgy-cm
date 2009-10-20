@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 if (!class_exists('PluginBase'))
 {
 	require_once('../cms.php');

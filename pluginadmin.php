@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 $pid = 0+$_GET['pid'];
 if (array_key_exists('iid',$_GET))
 	$iid = 0 +$_GET['iid'];

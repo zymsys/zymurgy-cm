@@ -1,4 +1,9 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
 class ZymurgyMember
 {
 	/**

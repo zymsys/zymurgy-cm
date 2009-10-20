@@ -13,6 +13,8 @@
  * @todo implement method wrapping with preservation of php objs in calls
  * @todo when wrapping methods without obj rebuilding, use return_type = 'phpvals' (faster)
  * @todo implement self-parsing of php code for PHP <= 4
+ * 
+ * @package Zymurgy_Thirdparty
  */
 
 	// requires: xmlrpc.inc

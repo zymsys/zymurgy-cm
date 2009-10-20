@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 // Custom field definitions may only be set by a webmaster
 $adminlevel = 2;
 

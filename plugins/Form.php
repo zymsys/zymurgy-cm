@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class Form extends PluginBase
 {
 	var $ValidationErrors;

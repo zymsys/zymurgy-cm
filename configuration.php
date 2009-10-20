@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 if ($_SERVER['REQUEST_METHOD']=='POST')
 {
 	$breadcrumbTrail = "<a href=\"configuration.php\">Site Config</a>";

@@ -1,5 +1,10 @@
 <?
 /**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+/**
  * Should disable changing type from subnav to anything else.
  */
 $adminlevel = 2;

@@ -1,4 +1,8 @@
 <?php
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 	require_once("Form.php");
 
 	class PaymentForm extends Form

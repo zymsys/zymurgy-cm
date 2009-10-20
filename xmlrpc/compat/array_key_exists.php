@@ -28,6 +28,7 @@
  * @version     $Revision$
  * @since       PHP 4.1.0
  * @require     PHP 4.0.0 (user_error)
+ * @ignore
  */
 if (!function_exists('array_key_exists')) {
     function array_key_exists($key, $search)

@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class BoboTea extends PluginBase
 {
 	function GetTitle()

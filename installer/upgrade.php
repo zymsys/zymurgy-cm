@@ -4,6 +4,11 @@
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage installer
+ */
 <style type="text/css">
 body {
 	font-family: Verdana, Arial, Helvetica, sans-serif;

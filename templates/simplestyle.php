@@ -1,4 +1,11 @@
 <?
+/**
+ * Stylesheet for {@link simple.php}
+ * 
+ * @package Zymurgy
+ * @subpackage defaulttemplates
+ */
+
 require_once('../cmo.php');
 Zymurgy::headtags();
 header("Content-type: text/css");

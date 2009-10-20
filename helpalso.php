@@ -1,4 +1,9 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 $adminlevel = 2;
 
 $breadcrumbTrail = "<a href=\"helpeditor.php\">Help Editor</a> &gt; References";

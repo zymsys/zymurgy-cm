@@ -30,6 +30,7 @@
  * @version     $Revision$
  * @since       PHP 4.1.0
  * @require     PHP 4.0.0 (user_error)
+ * @ignore
  */
 if (!function_exists('version_compare')) {
     function version_compare($version1, $version2, $operator = '<')

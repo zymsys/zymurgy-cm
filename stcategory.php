@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 // Categories may only be edited by the administrator
 $adminlevel = 2;
 

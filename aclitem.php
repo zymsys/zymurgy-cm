@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 include_once("cmo.php");
 
 $sql = "SELECT `name` FROM `zcm_acl` WHERE `id` = '".

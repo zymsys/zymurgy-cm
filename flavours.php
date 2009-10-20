@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 	$breadcrumbTrail = "Flavours";
 
 	include 'header.php';

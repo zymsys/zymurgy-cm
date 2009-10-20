@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class Faq extends PluginBase
 {
 	function GetTitle()

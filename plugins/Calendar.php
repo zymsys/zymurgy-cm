@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class Calendar extends PluginBase
 {
 	function Upgrade()

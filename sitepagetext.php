@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 require_once('cmo.php');
 include 'sitepageutil.php';
 $crumbs[] = "Page Contents";

@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class InputSpecGadget extends PluginBase
 {
 	function GetTitle()

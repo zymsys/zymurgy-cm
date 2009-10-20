@@ -1,4 +1,9 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 	class IndexEntry
 	{
 		public $helpid = array();

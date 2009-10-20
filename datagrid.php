@@ -1,13 +1,15 @@
 <?
-/* DataGrid classes
- * Copyright(c) 2006 by Zymurgy Systems Inc. http://www.zymsys.com/
- * All rights reserved.
+/**
+ * DataGrid classes
  *
  * Some of the GET variables used by the grid include:
- *	sortcolumn: Data column name for the sort column
- *	sortorder: ASC or DESC
- *	page: Current page of datagrid
- *  editkey: Key of the column being edited, -1 for insert (not set when not in edit mode)
+ *	- sortcolumn: Data column name for the sort column
+ *	- sortorder: ASC or DESC
+ *	- page: Current page of datagrid
+ *  - editkey: Key of the column being edited, -1 for insert (not set when not in edit mode)
+ * 
+ * @package Zymurgy
+ * @subpackage datagrid
 */
 
 $datagridexpertmode = false;

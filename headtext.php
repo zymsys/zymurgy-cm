@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
 $editing = array_key_exists('editkey',$_GET);
 $adding = (array_key_exists('action', $_GET) && $_GET['action'] == 'insert');
 

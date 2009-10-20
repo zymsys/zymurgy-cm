@@ -1,4 +1,8 @@
 <?
+/**
+ * 
+ * @package Zymurgy_Plugins
+ */
 class EmbeddedContent extends PluginBase
 {
 	function GetTitle()

@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage installer
+ */
 //If the config file already exists then exit
 if (file_exists('../config/config.php')) header('Location: upgrade.php');
 
