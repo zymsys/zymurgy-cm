@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage installer
  */
@@ -505,6 +505,34 @@ else
 	}
 }
 
+// ==========
+// ZK: 2009.10.20
+//
+// Check for the .htaccess file. If it does not exist, copy it from the
+// custom folder to the root folder.
+// ==========
+
+UpdateStatus(" ");
+UpdateStatus("Checking for .htaccess...");
+
+if(!file_exists(Zymurgy::$root."/.htaccess"))
+{
+	UpdateStatus("- Not found. Creating.");
+
+	$htaccess = file_get_contents(Zymurgy::$root."/zymurgy/custom/htaccess.tmp");
+	if($file = @fopen(Zymurgy::$root."/.htaccess", "w"))
+	{
+		fwrite($file, $htaccess);
+		fclose($file);
+
+		chmod(Zymurgy::$root."/.htaccess", 644);
+	}
+	else
+	{
+		UpdateStatus("- Could not create .htaccess file. To create the file yourself, copy and rename the sample file in /zymurgy/custom/htaccess.tmp");
+	}
+}
+
 UpdateStatus("Done.");
 UpdateStatus("");
 
@@ -535,7 +563,7 @@ if(!isset($_GET["debug"]))
 		Zymurgy::$db->run("insert into zcm_pluginconfiggroup (name) values ('".
 			Zymurgy::$db->escape_string($plugin->GetTitle()).": Default')");
 		$pcg = Zymurgy::$db->insert_id();
-		
+
 		//Add plugin to the plugin table
 		echo("---- Adding plugin definition to database<br>");
 		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled,defaultconfig) values ('".
