@@ -1,4 +1,15 @@
 <?
+// ==========
+// ZK: 2009.10.20
+//
+// PHP Version check.
+// ==========
+
+if (version_compare('5.0.0',PHP_VERSION) > 0)
+{
+	die("Zymurgy:CM requires PHP 5 or better.  Your server is running PHP ".PHP_VERSION." which is not compatible.  Please upgrade your PHP software, or upgrade your hosting.");
+}
+
 function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 {
 	$time=date("d M Y H:i:s");
