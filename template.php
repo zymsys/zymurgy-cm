@@ -56,7 +56,8 @@ class ZymurgyTemplate
 					// Is there a redirect available for this navpart?
 					$flavour = Zymurgy::GetActiveFlavour();
 					$flavourid = $flavour ? $flavour['id'] : 0;
-					$redirect = Zymurgy::$db->get("select * from zcm_sitepageredirect where parent=$parent and flavour=$flavourid and linkurl='$navpart'");
+					$sql = "select * from zcm_sitepageredirect where parent=$parent and flavour=$flavourid and linkurl='$navpart'";
+					$redirect = Zymurgy::$db->get($sql);
 					if ($redirect)
 					{
 						//Yes, this page has a new home.  Find it.
@@ -70,13 +71,13 @@ class ZymurgyTemplate
 						}
 						else
 						{
-							$do404 = true;
+							$do404 = "No navpage, redirect found but no newpart.";
 							break;
 						}
 					}
 					else
 					{
-						$do404 = true;
+						$do404 = "No navpage, no redirect: $sql";
 						break;
 					}
 				}
@@ -88,7 +89,7 @@ class ZymurgyTemplate
 			}
 			if ($do404)
 			{
-				$this->DisplayFileNotFound($navpart, $navpath, $newpath);
+				$this->DisplayFileNotFound($navpart, $navpath, $newpath, $do404);
 			}
 			if ($doredirect)
 			{

@@ -83,6 +83,11 @@ function OnBeforeUpdate($values)
 	return $values;
 }
 
+/**
+ * Get all flavour values for content flavours, indexed by the flavour's code.
+ *
+ * @return array
+ */
 function GetFLValues()
 {
 	$flvalues = array();
@@ -146,17 +151,28 @@ function OnInsertUpdate($values,$flvalues = null)
 	{
 		$flvalues = GetFLValues();
 	}
-	ZIW_Base::StoreFlavouredValue($values['zcm_sitepage.linkurl'],
+	$newfv = ZIW_Base::StoreFlavouredValue(
+		array_key_exists('zcm_sitepage.linkurl',$values) ? $values['zcm_sitepage.linkurl'] : false,
 		ZymurgySiteNav::linktext2linkpart($_POST['zcm_sitepage_linktext_default']),
 		$flvalues);
+	Zymurgy::$db->run("update zcm_sitepage set linkurl=$newfv where id=".$values['zcm_sitepage.id']);
+}
+
+function OnDelete($values)
+{
+	//Clear out flavoured text values
+	if ($values['zcm_sitepage.linkurl'])
+	{
+		Zymurgy::$db->run("delete from zcm_flavourtextitem where zcm_flavourtext=".$values['zcm_sitepage.linkurl']);
+		Zymurgy::$db->run("delete from zcm_flavourtext where id=".$values['zcm_sitepage.linkurl']);
+	}
 }
 
 $ds = new DataSet('zcm_sitepage','id');
 $ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template','acl');
-//$ds->OnBeforeInsert = 'OnBeforeInsert';
-//$ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnInsert = 'OnInsertUpdate';
 $ds->OnUpdate = 'OnUpdate';
+$ds->OnDelete = 'OnDelete';
 $ds->AddDataFilter('parent',$p);
 
 $dg = new DataGrid($ds);

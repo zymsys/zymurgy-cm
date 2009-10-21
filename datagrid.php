@@ -209,10 +209,22 @@ class DataSetRow
 			if (call_user_func($this->DataSet->OnDelete,$this->values) === false)
 				return false; //Callback can abort delete
 		}
+		$deletekey = intval($_GET['deletekey']);
+		//Delete relevant flavoured text
+		foreach($this->DataSet->DataGrid->columns as $column)
+		{
+			$iw = InputWidget::GetFromInputSpec($column->editor);
+			if ($iw->SupportsFlavours())
+			{
+				$cname = $column->datacolumn;
+				Zymurgy::$db->run("delete from zcm_flavourtextitem where zcm_flavourtext=".$this->values[$cname]);
+				Zymurgy::$db->run("delete from zcm_flavourtext where id=".$this->values[$cname]);
+			}
+		}
 		list($tables,$tablekeys) = $this->GetMyTables();
 		foreach ($tables as $tname=>$values)
 		{
-			$sql = "delete from $tname where {$tablekeys[$tname]}={$_GET['deletekey']}";
+			$sql = "delete from $tname where {$tablekeys[$tname]}=$deletekey";
 			$ri = Zymurgy::$db->query($sql);
 		}
 		return $ri;
