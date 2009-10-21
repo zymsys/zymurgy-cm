@@ -15,8 +15,8 @@ body {
 	font-size:small;
 }
 .ZymurgyHeader {
-	background-color: <?= $ZymurgyConfig['headerbackground'] ?>;
-	color: <?= $ZymurgyConfig['headercolor'] ?>;
+	background-color: <?= strpos("   ".Zymurgy::$config['headerbackground'], "#") > 0 ? Zymurgy::$config['headerbackground'] : "#".Zymurgy::$config['headerbackground'] ?>;
+	color: <?= strpos("   ".Zymurgy::$config['headercolor'], "#") > 0 ? Zymurgy::$config['headercolor'] : "#".Zymurgy::$config['headercolor'] ?>;
 	height:85px;
 	position: relative;
 	width: 100%;

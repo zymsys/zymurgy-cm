@@ -86,7 +86,7 @@ include('nlheader.php');
 ?>
 <form name="login" method="post" action="login.php">
 <div align="center">
-<table border="0" style="margin-top: 100px; padding:25px; background-color: <?= Zymurgy::$config['headerbackground'] ?>;">
+<table border="0" style="margin-top: 100px; padding:25px; background-color: <?= strpos("   ".Zymurgy::$config['headerbackground'], "#") > 0 ? Zymurgy::$config['headerbackground'] : "#".Zymurgy::$config['headerbackground'] ?>;">
 <?
 if (isset($error)) echo "<tr><td colspan=\"2\" align=\"center\" style=\"background-color:#ffffff; padding:5px;\"><font color='red'>$error</font></td></tr>\r\n";
 ?>
