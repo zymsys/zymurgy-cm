@@ -45,12 +45,17 @@
 		<item>
 			<code>defaultdescription</code>
 			<label>Default META Description:</label>
-			<inputspec>textarea.60.4096</inputspec>
+			<inputspec>textarea.60.10</inputspec>
 		</item>
 		<item>
 			<code>defaultkeywords</code>
 			<label>Default META Keywords:</label>
-			<inputspec>textarea.60.4096</inputspec>
+			<inputspec>textarea.60.10</inputspec>
+		</item>
+		<item>
+			<code>yuibaseurl</code>
+			<label>YUI Base URL:</label>
+			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
 	<group>

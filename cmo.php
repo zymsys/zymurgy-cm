@@ -262,7 +262,7 @@ if (!class_exists('Zymurgy'))
 
 		static function YUIBaseURL()
 		{
-			if (array_key_exists('yuibaseurl',Zymurgy::$config))
+			if (array_key_exists('yuibaseurl',Zymurgy::$config) && !empty(Zymurgy::$config['yuibaseurl']))
 				return Zymurgy::$config['yuibaseurl'];
 			else
 				return "http://yui.yahooapis.com/2.8.0r4/build/";
