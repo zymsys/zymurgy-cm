@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -13,11 +13,11 @@ else
 require_once 'cmo.php';
 
 $title = Zymurgy::$db->get("select title from zcm_plugin where id=$pid");
+$pluginname = Zymurgy::$db->get("select name from zcm_plugin where id=$pid");
 
 if (array_key_exists('delkey',$_GET))
 {
 	$delkey = 0 + $_GET['delkey'];
-	$pluginname = Zymurgy::$db->get("select name from zcm_plugin where id=$pid");
 	$instancename = Zymurgy::$db->get("select name from zcm_plugininstance where id=$delkey");
 	$pi = Zymurgy::mkplugin($pluginname,$instancename);
 	$pi->RemoveInstance();
@@ -71,6 +71,11 @@ if (($pid > 0) && ($iid > 0))
 }
 else
 {
+	if($_SERVER['REQUEST_METHOD'] == "POST")
+	{
+		Zymurgy::mkplugin($pluginname, $_POST["instancename"]);
+	}
+
 	$sql = "select id,name from zcm_plugininstance where (`private`=0) and (plugin=$pid)";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Error loading instance info: ".Zymurgy::$db->error()."<br>$sql");
@@ -92,6 +97,26 @@ else
 			echo "<a href=\"pluginadmin.php?pid=$pid&iid={$row['id']}&name=".urlencode($row['name'])."\">{$row['name']}</a><br>";
 		}
 	}
+
+	if($zauth->authinfo['admin'] >= 2)
+	{
+?>
+
+	<h2>Add Instance</h2>
+
+	<form name="add" method="POST">
+		<table>
+			<tr>
+				<td>Name:</td>
+				<td><input type="text" name="instancename" value=""></td>
+			</tr>
+		</table>
+
+		<p><input type="submit" value="Add Instance"></p>
+	</form>
+<?
+	}
 }
+
 require_once('footer.php');
 ?>
