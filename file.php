@@ -52,12 +52,12 @@ function safeparam($param)
 
 function returnblankgif()
 {
-        header("Content-type: image/gif");
-        echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x40\x02\x01\x44\x00\x3b";
-        exit;
+    header("Content-type: image/gif");
+    echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x40\x02\x01\x44\x00\x3b";
+    exit;
 }
 
-$mime = safeparam($_GET['mime']);
+$mime = $_GET['mime'];
 $dataset = safeparam($_GET['dataset']);
 $datacolumn = safeparam($_GET['datacolumn']);
 $id = 0 + $_GET['id'];
@@ -73,8 +73,10 @@ else
 		$w = 0 + $_GET['w'];
 		$h = 0 + $_GET['h'];
 		$requestedSize = "{$w}x$h";
-		$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}thumb$requestedSize.jpg";
-		$rawimage = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.jpg";
+		require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+		$ext = Thumb::mime2ext($mime);
+		$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}thumb$requestedSize.$ext";
+		$rawimage = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.$ext";
 		$makethumb = false;
 		if (file_exists($thumbName))
 		{
@@ -101,7 +103,6 @@ else
 			$zauth = new ZymurgyAuth();
 			if ($zauth->IsAuthenticated()) //Avoid expensive DoS attacks if we can.
 			{
-				require_once("$root/zymurgy/include/Thumb.php");
 				Thumb::MakeFixedThumb($w,$h,$rawimage,$thumbName);
 				$mime = "image/jpeg"; //Resized images are all image/jpeg
 			}

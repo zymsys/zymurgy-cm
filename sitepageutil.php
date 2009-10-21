@@ -18,7 +18,7 @@ function pageparents($pid)
 	do
 	{
 		$page = Zymurgy::$db->get("select id,linktext,parent from zcm_sitepage where id=$pid");
-		$r[$page['id']] = $page['linktext'];
+		$r[$page['id']] = ZIW_Base::GetFlavouredValue($page['linktext']);
 		$pid = $page['parent'];
 	}
 	while ($pid > 0);

@@ -443,13 +443,13 @@ if (!class_exists('Zymurgy'))
 						}
 						//Make sure we have the requested thumb.
 						$requestedSize = str_replace('.','x',$requestedSize);
+						require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
 						$ext = Thumb::mime2ext($row['body']);
-						$thumbName = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}thumb$requestedSize.$ext";
+						$thumbName = Zymurgy::$root."/UserFiles/DataGrid/zcm_sitetext.body/{$row['id']}thumb$requestedSize.$ext";
 						if (!file_exists($thumbName))
 						{
-							require_once("Zymurgy::$root/zymurgy/include/Thumb.php");
 							$dimensions = explode('x',$requestedSize);
-							$rawimage = "Zymurgy::$root/UserFiles/DataGrid/sitetext.body/{$row['id']}raw.$ext";
+							$rawimage = Zymurgy::$root."/UserFiles/DataGrid/zcm_sitetext.body/{$row['id']}raw.$ext";
 							Thumb::MakeFixedThumb($dimensions[0],$dimensions[1],$rawimage,$thumbName);
 						}
 					}
@@ -459,7 +459,8 @@ if (!class_exists('Zymurgy'))
 					}
 					$widget = new InputWidget();
 
-					$_GET['editkey'] = $row['id'];
+					$_GET['editkey'] = $widget->editkey = $row['id'];
+					$widget->datacolumn = 'zcm_sitetext.body';
 					$t = $widget->Display("$type","{0}",$row['body']);
 					if (((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
 						(array_key_exists('zymurgy',$_COOKIE) && $adminui))
@@ -544,7 +545,7 @@ if (!class_exists('Zymurgy'))
 				else
 				{
 					$row = array(
-						"id" => Zymurgy::$template->sitepage,
+						"id" => Zymurgy::$template->sitepage->id,
 						"title" => Zymurgy::$config['defaulttitle'],
 						"description" => Zymurgy::$config['defaultdescription'],
 						"keywords" => Zymurgy::$config['defaultkeywords']);
