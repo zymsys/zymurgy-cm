@@ -38,8 +38,8 @@ body {
 	font-size:small;
 }
 .ZymurgyHeader {
-	background-color: <?= Zymurgy::$config['headerbackground'] ?>;
-	color: <?= Zymurgy::$config['headercolor'] ?>;
+	background-color: <?= strpos("   ".Zymurgy::$config['headerbackground'], "#") > 0 ? Zymurgy::$config['headerbackground'] : "#".Zymurgy::$config['headerbackground'] ?>;
+	color: <?= strpos("   ".Zymurgy::$config['headercolor'], "#") > 0 ? Zymurgy::$config['headercolor'] : "#".Zymurgy::$config['headercolor'] ?>;
 	height:85px;
 	position: relative;
 	width: 100%;
@@ -66,7 +66,7 @@ body {
 	float: right;
 }
 .ZymurgyNavigation {
-	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navbackground'], "#") > 0 ? Zymurgy::$config['navbackground'] : "#".Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 	float: left;
 	padding: 10px;
 	margin-right: 3px;
@@ -81,7 +81,7 @@ body {
 	text-align: right;
 }
 .ZymurgyNavigation .ZymurgyMenu a, .ZymurgyNavigation .ZymurgyMenu a:link,.ZymurgyNavigation .ZymurgyMenu a:visited,.ZymurgyNavigation .ZymurgyMenu a:active {
-	color: <?= (array_key_exists('navcolor',Zymurgy::$config)) ? Zymurgy::$config['navcolor'] : '#000000' ?>;
+	color: <?= (array_key_exists('navcolor',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navcolor'], "#") > 0 ? Zymurgy::$config['navcolor'] : "#".Zymurgy::$config['navcolor'] : '#000000' ?>;
 	text-decoration: none;
 	line-height: 2;
 }
@@ -98,7 +98,7 @@ div.ZymurgyBreadcrumbs
 	//overflow: auto;
 }
 #zcmnavContent {
-	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navbackground'], "#") > 0 ? Zymurgy::$config['navbackground'] : "#".Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 	width: 138px;
 }
 #zcmnavContentNav {
@@ -108,13 +108,13 @@ div.ZymurgyBreadcrumbs
 	padding: 0px 0px;
 }
 .yui-skin-sam #zcmnavContent .yuimenu .bd {
-	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navbackground'], "#") > 0 ? Zymurgy::$config['navbackground'] : "#".Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 }
 .yui-skin-sam #zcmnavContent .yuimenuitem-selected {
-	background-color: <?= (array_key_exists('navselected',Zymurgy::$config)) ? Zymurgy::$config['navselected'] : '#B3D4FF' ?>;
+	background-color: <?= (array_key_exists('navselected',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navbackground'], "#") > 0 ? Zymurgy::$config['navselected'] : "#".Zymurgy::$config['navselected'] : '#B3D4FF' ?>;
 }
 .yuimenuitem {
-	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? Zymurgy::$config['navbackground'] : '#9999cb' ?>;
+	background-color: <?= (array_key_exists('navbackground',Zymurgy::$config)) ? strpos("   ".Zymurgy::$config['navbackground'], "#") > 0 ? Zymurgy::$config['navbackground'] : "#".Zymurgy::$config['navbackground'] : '#9999cb' ?>;
 }
 #DraftTool {
 	background-color: #CCCCCC;

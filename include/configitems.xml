@@ -74,6 +74,56 @@
 		</item>
 	</group>
 	<group>
+		<name>Zymurgy:CM Skin</name>
+		<description>
+		</description>
+		<item>
+			<code>vendorlogo</code>
+			<label>Vendor Logo:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>vendorlink</code>
+			<label>Vendor Link URL:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>clientlogo</code>
+			<label>Client Logo:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>headerbackground</code>
+			<label>Header Background:</label>
+			<inputspec>color</inputspec>
+		</item>
+		<item>
+			<code>headercolor</code>
+			<label>Header Text Color:</label>
+			<inputspec>color</inputspec>
+		</item>
+		<item>
+			<code>navbackground</code>
+			<label>Left Menu Background:</label>
+			<inputspec>color</inputspec>
+		</item>
+		<item>
+			<code>navselected</code>
+			<label>Left Menu Hover:</label>
+			<inputspec>color</inputspec>
+		</item>
+		<item>
+			<code>navcolor</code>
+			<label>Left Menu Text Color:</label>
+			<inputspec>color</inputspec>
+		</item>
+		<item>
+			<code>gridcss</code>
+			<label>Grid CSS:</label>
+			<inputspec>textarea.60.10</inputspec>
+		</item>
+	</group>
+	<group>
 		<name>Access Control</name>
 		<description>
 		</description>

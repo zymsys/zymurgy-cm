@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -42,7 +42,7 @@
 				Zymurgy::$root."/zymurgy/config/config.php",
 				$newConfig);
 		}
-		else 
+		else
 		{
 			$pwd = getcwd();
 			echo "<div style=\"background-color: #ff0000; color: #ffffff;\">Unable to backup old config file, changes have <b>NOT</b> been saved ($pwd).  Make sure PHP has write permission for the /zymurgy/config folder.</div>";
@@ -53,14 +53,26 @@
 	$xml = new SimpleXMLElement($xmlstring);
 
 	$widget = new InputWidget();
+
+	$groups = $xml->children();
+	$inputspecs = array();
+
+	foreach($groups[$groupIndex]->children() as $item)
+	{
+		if(!in_array($item->inputspec, $inputspecs))
+		{
+			//echo($item->inputspec." not in ".print_r($inputspecs, true)."<br>\n");
+
+			$inputspecs[] = (string) $item->inputspec;
+			echo $widget->GetPretext($item->inputspec);
+		}
+	}
 ?>
 <table>
 	<tr>
 		<td valign="top" style="border-right: 1px solid black;">
 			<div style="width: 170px; margin-right: 10px;">
 <?
-	$groups = $xml->children();
-
 	foreach($groups as $group)
 	{
 		if($cntr == $groupIndex)
@@ -96,6 +108,11 @@
 			$value = array_key_exists($key, Zymurgy::$config)
 				? Zymurgy::$config[$key]
 				: "";
+
+			if($item->inputspec == "color")
+			{
+				$value = str_replace("#", "", $value);
+			}
 
 ?>
 					<tr>
