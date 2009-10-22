@@ -711,50 +711,7 @@ if (!class_exists('Zymurgy'))
 			else
 			{
 				//New instance...  Load 'er up!
-				$sql = "select id,enabled from zcm_plugin where name='".
-					Zymurgy::$db->escape_string($plugin)."'";
-				$ri = Zymurgy::$db->query($sql);
-				if (!$ri)
-				{
-					die ("Error creating plugin instance for [$plugin]: ".Zymurgy::$db->error()."<br>$sql");
-				}
-				$row = Zymurgy::$db->fetch_array($ri);
-				if ($row === false)
-				{
-					die ("Plugin [$plugin] isn't installed.");
-				}
-				if ($row['enabled']==0)
-					die ("The plugin [$plugin] is not enabled.");
-				$pi->pid = $row['id'];
-				$ri = Zymurgy::$db->query("insert into zcm_plugininstance (plugin,name,`private`) values ({$pi->pid},'".
-					Zymurgy::$db->escape_string($instance)."',$private)");
-				$iid = Zymurgy::$db->insert_id();
-				Zymurgy::LoadPluginConfig($pi); //Load default config for new instance
-				$pi->pii = $pi->iid = $iid;
-
-				$sql = "INSERT INTO `zcm_pluginconfiggroup` ( `name` ) VALUES ( '".
-					Zymurgy::$db->escape_string($pi->GetTitle()).
-					": ".
-					Zymurgy::$db->escape_string($instance).
-					"')";
-				Zymurgy::$db->query($sql)
-					or die("Could not save new plugin config group: ".Zymurgy::$db->error().", $sql");
-				$pi->configid = Zymurgy::$db->insert_id();
-				Zymurgy::$db->run("update zcm_plugininstance set config={$pi->configid} where id={$pi->pii}");
-				foreach($pi->config as $cv)
-				{
-					$key = $cv->key;
-					$value = $cv->value;
-					$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) VALUES ( '".
-						Zymurgy::$db->escape_string($pi->configid).
-						"', '".
-						Zymurgy::$db->escape_string($key).
-						"', '".
-						Zymurgy::$db->escape_string($value).
-						"' )";
-					Zymurgy::$db->query($sql)
-						or die("Could not save new plugin config item: ".Zymurgy::$db->error().", $sql");
-				}
+				$pi = PluginBase::CreateInstance($pi, $plugin, $instance, $private);
 			}
 			return $pi;
 		}
