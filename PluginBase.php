@@ -38,7 +38,7 @@ class PluginBase
 	{
 	}
 
-	public static function CreateInstance(&$pi, $plugin, $instance, $private)
+	public function CreateInstance(&$pi, $plugin, $instance, $private)
 	{
 		$sql = "select id,enabled from zcm_plugin where name='".
 			Zymurgy::$db->escape_string($plugin)."'";

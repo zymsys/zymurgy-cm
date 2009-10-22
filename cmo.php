@@ -711,7 +711,7 @@ if (!class_exists('Zymurgy'))
 			else
 			{
 				//New instance...  Load 'er up!
-				$pi = PluginBase::CreateInstance($pi, $plugin, $instance, $private);
+				$pi->CreateInstance($pi, $plugin, $instance, $private);
 			}
 			return $pi;
 		}
