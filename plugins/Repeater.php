@@ -33,6 +33,11 @@
 				"inputspec" => 'lookup.zcm_customtable.id.tname.tname',
 				"authlevel" => 0);
 			$configItems[] = array(
+				"name" => 'Items per page',
+				"default" => '',
+				"inputspec" => 'numeric.5.5',
+				"authlevel" => 0);
+			$configItems[] = array(
 				"name" => 'Fields (comma seperated)',
 				"default" => '',
 				"inputspec" => 'textarea.60.2',
@@ -104,6 +109,15 @@
 
 //			die("Length: ".strlen($this->GetConfigValue("Order By")));
 
+			$sql = "SELECT COUNT(*) FROM `".
+				Zymurgy::$db->escape_string($table["tname"]).
+				"` ".
+				(strlen($this->GetConfigValue("Filter")) > 0 ? $this->GetConfigValue("Filter") : "").
+				" ".
+				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : ""));
+//			die($sql);
+			$rowCount = Zymurgy::$db->get($sql);
+
 			$sql = "SELECT ".
 				$this->GetConfigValue("Fields (comma seperated)").
 				" FROM `".
@@ -111,7 +125,11 @@
 				"` ".
 				(strlen($this->GetConfigValue("Filter")) > 0 ? $this->GetConfigValue("Filter") : "").
 				" ".
-				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : ""));
+				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : "")).
+				" LIMIT ".
+				(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0).
+				", ".
+				$this->GetConfigValue("Items per page");
 //			die($sql);
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve data: ".Zymurgy::$db->error().", $sql");
@@ -122,7 +140,10 @@
 			}
 			else
 			{
-				echo($this->GetConfigValue("Repeater Header Layout"));
+				echo($this->AddHeaderValues(
+					$this->GetConfigValue("Repeater Header Layout"),
+					(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0),
+					$rowCount));
 
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
@@ -136,10 +157,42 @@
 					echo($output);
 				}
 
-				echo($this->GetConfigValue("Repeater Footer Layout"));
+				echo($this->AddHeaderValues(
+					$this->GetConfigValue("Repeater Footer Layout"),
+					(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0),
+					$rowCount));
 			}
 
 			Zymurgy::$db->free_result($ri);
+		}
+
+		private function AddHeaderValues($text, $startIndex, $numrows)
+		{
+			$pageNumber = ceil($startIndex / $this->GetConfigValue("Items per page")) + 1;
+			$pageCount = ceil($numrows / $this->GetConfigValue("Items per page"));
+
+			$text = str_replace("{pagenumber}", $pageNumber, $text);
+			$text = str_replace("{pagecount}", $pageCount, $text);
+
+			if($startIndex > 0)
+			{
+				$text = str_replace("{previous}", "?start".$this->iid."=".($startIndex - $this->GetConfigValue("Items per page")), $text);
+			}
+			else
+			{
+				$text = str_replace("{previous}", "javascript:;\"  style=\"visibility: hidden;\"", $text);
+			}
+
+			if($startIndex < $numrows - $this->GetConfigValue("Items per page"))
+			{
+				$text = str_replace("{next}", "?start".$this->iid."=".($startIndex + $this->GetConfigValue("Items per page")), $text);
+			}
+			else
+			{
+				$text = str_replace("{next}", "javascript:;\"  style=\"visibility: hidden;\"", $text);
+			}
+
+			return $text;
 		}
 
 		private function GetFields()
