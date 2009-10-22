@@ -25,7 +25,7 @@ class ZymurgyTemplate
 		return array_key_exists($navpart,$item->childrenbynavname) ?
 			$nav->items[$item->childrenbynavname[$navpart]] : false;
 	}
-	
+
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
 		//$this->LoadParams();
@@ -247,8 +247,9 @@ class ZymurgyTemplate
 	{
 		$regexparts = array();
 		// was mod_rewrite used?
-		if (preg_match('/^\/?(.+)\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
+		if (preg_match('/^\/\?(.+)\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
 			// redo the rewrite because of a bug in mod_rewrite
+
 			$_GET['p']=$regexparts[2];
 			if ($regexparts[1] != 'pages')
 				$_get['f'] = $regexparts[1];
@@ -560,7 +561,7 @@ Zymurgy::$template = new ZymurgyTemplate(
 	(array_key_exists('p',$_GET)) ? $_GET['p'] : '',
 	isset($flavour) ? $flavour : 'pages',
 	(array_key_exists('pageid', $_GET)) ? $_GET["pageid"] : 0);
-	
+
 if ($do404)
 {
 	Zymurgy::$template->DisplayFileNotFound($flavour, 'flavours', '');
