@@ -1,4 +1,10 @@
 <?
+/**
+ * Index page for backend.  No actual editor, just navigation menus.
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 function normalizedomain($domain)
 {
 	$domain = strtolower($domain);

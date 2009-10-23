@@ -42,7 +42,7 @@ class ZymurgyAuth
 	document.location.href = '<?=$location?>';
 	//-->
 	</script>
-	<?*/
+	<?php */
 	}
 
 	function Logout($location)

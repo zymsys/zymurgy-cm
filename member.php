@@ -821,7 +821,7 @@ var zymurgyDialogButtons = [ { text:"Save", handler:function() {
 	this.cancel();
 }} ];
 </script>
-<?
+<?php 
 		}
 		echo "<div class=\"yui-skin-sam\">\r\n";
 		$f->renderDialogs();

@@ -1,4 +1,11 @@
-<?
+<?php
+/**
+ * Start HTML document and display navigation for backend modules.
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 // ==========
 // ZK: 2009.10.20
 //
@@ -30,7 +37,7 @@ function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 	$errlevel=$errortype[$errno];
 	if (empty($errlevel)) $errlevel = $errno;
 
-	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\r\n";
+	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\n";
 }
 
 if (array_key_exists('showerrors',$_GET))
@@ -169,7 +176,7 @@ function renderZCMNav($parent)
 	</div>
 	<div id="zcmnavContentNav" class="bd" style="border-style: none">
     	<ul class="first-of-type" style="padding: 0px">
-    		<? renderZCMNav(0); ?>
+    		<?php  renderZCMNav(0); ?>
         </ul>
     </div>
 </div>

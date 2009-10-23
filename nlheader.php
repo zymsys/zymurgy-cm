@@ -1,12 +1,12 @@
-<?
+<?php
 ob_start();
-include("cms.php");
+include("cmo.php");
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <title>Zymurgy:CM Content Management Login</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
 <style type="text/css">
 <!--
@@ -69,12 +69,25 @@ body {
 <body <?=$onload?>>
 <div class="ZymurgyHeader">
 	<div class="ZymurgyVendor">
-		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".(isset($ZymurgyConfig['vendorlink']) ? $ZymurgyConfig['vendorlink'] : "javascript:;")."\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".(isset($ZymurgyConfig['vendorname']) ? htmlspecialchars($ZymurgyConfig['vendorname']) : "")."\"></a>"; ?>
+		<?php
+		if ((isset(Zymurgy::$config['vendorlogo'])) && (Zymurgy::$config['vendorlogo'] != '')){
+			echo "<a target=\"_blank\" href=\""
+			.(isset(Zymurgy::$config['vendorlink']) ? Zymurgy::$config['vendorlink'] : "javascript:;")
+			.'"><img border="0" src="'.Zymurgy::$config['vendorlogo'].'" alt="'
+			.(isset(Zymurgy::$config['vendorname']) ? htmlspecialchars(Zymurgy::$config['vendorname']) : "")."\"></a>";
+		} 
+		?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
 		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
 	</div>
 	<div class="ZymurgyClient">
-		<? if ((isset($ZymurgyConfig['clientlogo'])) && ($ZymurgyConfig['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://{$ZymurgyConfig['sitehome']}/\"><img border=\"0\" src=\"{$ZymurgyConfig['clientlogo']}\" alt=\"".htmlspecialchars($ZymurgyConfig['defaulttitle'])."\"></a>"; ?>
+		<?php
+		if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')){
+			echo '<a target="_blank" href="http://'.Zymurgy::$config['sitehome'].'/">'
+				.'<img border="0" src="'.Zymurgy::$config['clientlogo'].'" alt="'
+				.htmlspecialchars(Zymurgy::$config['defaulttitle']).'"></a>'; 
+		}
+		?>
 	</div>
 </div>

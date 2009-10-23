@@ -525,7 +525,7 @@
 				<div id="ZymurgyDialog<?= $this->tablename ?>">
 					<div class="hd"><?= $this->navname ?></div>
 					<div class="bd">
-						<?
+						<?php 
 						if(count($this->children) > 0)
 						{
 							echo "<div id=\"ZymurgyTabset{$this->tablename}\" class=\"yui-navset\">\r\n";
@@ -562,7 +562,7 @@
 						 	 value="" />
 
 							<table>
-							<?
+							<?php 
 							foreach($this->fields as $fieldid=>$field)
 							{
 								$field->renderTableRow(
@@ -574,7 +574,7 @@
 							?>
 							</table>
 
-							<?
+							<?php 
 							if(count($this->children) > 0)
 							{
 								echo "</div>";
@@ -594,21 +594,21 @@
 					    			var tabView<?= $this->tablename ?> = new YAHOO.widget.TabView(
 					    				'ZymurgyTabset<?= $this->tablename ?>');
 								</script>
-								<?
+								<?php 
 							}
 							?>
 							<script type="text/javascript">
-				    			<? foreach($this->fields as $fieldid=>$field) { ?>
+				    			<?php  foreach($this->fields as $fieldid=>$field) { ?>
 									if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
 									{
 										Displayfield<?= $fieldid ?>();
 									}
-								<? } ?>
+								<?php  } ?>
 							</script>
 						</form>
 					</div>
 				</div>
-			<?
+			<?php 
 		}
 
 		private function RenderDeleteDialogHTML()
@@ -628,7 +628,7 @@
 						Are you sure you want to delete this record?
 					</div>
 				</div>
-			<?
+			<?php 
 		}
 
 		/**
@@ -650,12 +650,12 @@
 						text:"Save",
 						isDefault: true,
 						handler:function() {
-							<? foreach($this->fields as $fieldid=>$field) { ?>
+							<?php  foreach($this->fields as $fieldid=>$field) { ?>
 								if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
 								{
 									field<?= $fieldid ?>Editor.saveHTML();
 								}
-							<? } ?>
+							<?php  } ?>
 							this.submit();
 							// alert("<?= $this->tablename ?>: " + ZymurgyDialog<?= $this->tablename ?>ID);
 							ZymurgyDataTable<?= $this->tablename ?>.getDataSource().sendRequest(
@@ -671,7 +671,7 @@
 						}
 				    }
 				];
-			<?
+			<?php 
 		}
 
 		/**
@@ -705,7 +705,7 @@
 						}
 					}
 				];
-			<?
+			<?php 
 		}
 
 		private function RenderFormDialogScript()
@@ -729,40 +729,40 @@
 						}
 					};
 
-					<? foreach($this->fields as $fieldid=>$field) { ?>
+					<?php  foreach($this->fields as $fieldid=>$field) { ?>
 						if(typeof Displayfield<?= $fieldid ?>Exists !== "undefined")
 						{
 							Linkfield<?= $fieldid ?>ToDialog();
 						}
-					<? } ?>
+					<?php  } ?>
 
 					ZymurgyDialog<?= $this->tablename ?>.render();
 				});
 
 				function New<?= $this->tablename ?>()
 				{
-					<?
+					<?php 
 						foreach($this->fields as $fieldid=>$field)
 						{
 					?>
 							document.getElementById('field<?= $fieldid ?>').value = "";
-					<?
+					<?php 
 						}
 					?>
 
 					document.getElementById('rowid<?= $this->tableid ?>').value = -1;
 
-					<? if(count($this->children) > 0) {
+					<?php  if(count($this->children) > 0) {
 						foreach($this->children as $child)
 						{ ?>
 							document.getElementById('ZymurgyDataTable<?= $child->tablename ?>').style.display = "none";
 							document.getElementById('btnAdd<?= $child->tablename ?>').style.display = "none";
-						<? }
+						<?php  }
 					} ?>
 
 					ZymurgyDialog<?= $this->tablename ?>.show();
 				}
-			<?
+			<?php 
 		}
 
 		private function RenderDeleteDialogScript()
@@ -785,7 +785,7 @@
 
 					ZymurgyDeleteDialog<?= $this->tablename ?>.render();
 				});
-			<?
+			<?php 
 		}
 
 		public function renderGrid($rowid=0)
@@ -847,7 +847,7 @@
 
 								// alert(el.value);
 
-								<?
+								<?php 
 								echo implode("\r\n",$dlgassigns);
 								// echo("alert(\"assigns complete\");\n");
 
@@ -866,7 +866,7 @@
 									document.getElementById('ZymurgyDataTable<?= $child->tablename ?>').style.display = "block";
 									document.getElementById('btnAdd<?= $child->tablename ?>').style.display = "block";
 									// alert("Configuration for <?= $child->tablename ?> complete");
-									<?
+									<?php 
 								}
 								?>
 								ZymurgyDialog<?= $this->tablename ?>.show();
@@ -881,13 +881,13 @@
 								var el = document.getElementById('rowid<?= $this->tableid ?>_delete');
 								el.value = rowdata['id'];
 
-								<?
+								<?php 
 								foreach($this->children as $child)
 								{
 								?>
 									ZymurgyDialog<?= $child->tablename ?>ID = rowdata['id'];
 									// alert("<?= $child->tablename ?>: " + ZymurgyDialog<?= $child->tablename ?>ID);
-								<?
+								<?php 
 								}
 								?>
 
@@ -919,7 +919,7 @@
 				    };
 				});
 			</script>
-			<?
+			<?php 
 		}
 
 		public function renderJSON($rowid)
@@ -964,7 +964,7 @@
 	        		]
 				}
 			}
-			<?
+			<?php 
 		}
 	}
 

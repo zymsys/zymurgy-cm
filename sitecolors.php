@@ -504,7 +504,7 @@
 							<tr>
 								<td align="right">Header Background:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color1","B5B5FF");
 										echo(" ");
 										$iw->Render("checkbox.", "color1locked", ""); ?><label for=\"color1locked\">Locked</label>
@@ -513,7 +513,7 @@
 							<tr>
 								<td align="right">Menu Background:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color2","7F7FB3");
 										echo(" ");
 										$iw->Render("checkbox.", "color2locked", ""); ?><label for=\"color2locked\">Locked</label>
@@ -522,7 +522,7 @@
 							<tr>
 								<td align="right">Menu Highlight:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color3","9A9AD9");
 										echo(" ");
 										$iw->Render("checkbox.", "color3locked", ""); ?><label for=\"color3locked\">Locked</label>
@@ -534,7 +534,7 @@
 							<tr>
 								<td align="right">Page Background:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color4","FFFFFF");
 										echo(" ");
 										$iw->Render("checkbox.", "color4locked", ""); ?><label for=\"color4locked\">Locked</label>
@@ -543,7 +543,7 @@
 							<tr>
 								<td align="right">Text Color:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color5","000000");
 										echo(" ");
 										$iw->Render("checkbox.", "color5locked", ""); ?><label for=\"color5locked\">Locked</label>
@@ -552,7 +552,7 @@
 							<tr>
 								<td align="right">Link Color:</td>
 								<td>
-									<?
+									<?php 
 										$iw->Render("color","color6","6037B3");
 										echo(" ");
 										$iw->Render("checkbox.", "color6locked", ""); ?><label for=\"color6locked\">Locked</label>

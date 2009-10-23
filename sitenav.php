@@ -496,9 +496,9 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
   // ]]>
 </script>
 <div class="yui-skin-sam ">
-    <div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<? if($ishorizontal) echo "bar yuimenubarnav"?>" >
+    <div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<?php  if($ishorizontal) echo "bar yuimenubarnav"?>" >
         <div class="bd" style="border-style: none">
-<? $this->renderpart($this->rootnode, 0, $ishorizontal); ?>
+<?php  $this->renderpart($this->rootnode, 0, $ishorizontal); ?>
         </div>
     </div>
 </div>

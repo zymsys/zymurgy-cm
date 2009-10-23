@@ -1766,7 +1766,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 					<?= str_replace(".", "_", $name) ?>Editor.addEditCodeButton();
 
 					<?= str_replace(".", "_", $name) ?>Editor.render();
-					<?/* if($dialogName !== "") { ?>
+					<?php /* if($dialogName !== "") { ?>
 					<?= str_replace(".", "_", $name) ?>Editor.on('windowRender', function() {
 						document.getElementById('<?= $name ?>_div').appendChild(this.get('panel').element);
 					});
@@ -1775,7 +1775,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 					{
 						Link<?= str_replace(".", "_", $name) ?>ToDialog();
 					}
-					<? } ?>
+					<?php  } ?>
 
 					<?= str_replace(".", "_", $name) ?>Editor.on("toolbarLoaded", function()
 					{
@@ -1889,7 +1889,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 
 				function Link<?= str_replace(".", "_", $name) ?>ToDialog()
 				{
-					<? if($dialogName !== '') { ?>
+					<?php  if($dialogName !== '') { ?>
 					<?= $dialogName ?>.showEvent.subscribe(
 						<?= str_replace(".", "_", $name) ?>Editor.show,
 						<?= str_replace(".", "_", $name) ?>Editor,
@@ -1898,12 +1898,12 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 						<?= str_replace(".", "_", $name) ?>Editor.hide,
 						<?= str_replace(".", "_", $name) ?>Editor,
 						true);
-					<? } ?>
+					<?php  } ?>
 				}
 
-				<? if($dialogName == '') { ?>
+				<?php  if($dialogName == '') { ?>
 					YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
-				<? } */?>
+				<?php  } */?>
 				}
 				YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
 			</script>

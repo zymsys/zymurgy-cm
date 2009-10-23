@@ -117,7 +117,7 @@
 ?>
 					<tr>
 						<td><?= (string) $item->label ?></td>
-						<td><? $widget->Render(
+						<td><?php  $widget->Render(
 								$item->inputspec,
 								$item->code,
 								$value) ?></td>

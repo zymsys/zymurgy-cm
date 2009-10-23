@@ -1,10 +1,18 @@
+<?php 
+/**
+ * Used by {@link header.php} to open the html.
+ * @package Zymurgy
+ * @subpackage backend-modules
+ * @todo merge this into hearer.php?
+ */
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <title>Zymurgy:CM - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
-<?
+<?php
 if (isset($includeNav) && $includeNav)
 {
 echo Zymurgy::YUI("fonts/fonts-min.css");
@@ -12,7 +20,8 @@ echo Zymurgy::YUI("menu/assets/skins/sam/menu.css");
 echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 echo Zymurgy::YUI("container/container_core-min.js");
 echo Zymurgy::YUI("menu/menu-min.js");
-echo '<script type="text/javascript">
+?>
+<script type="text/javascript">
 YAHOO.util.Event.onContentReady("zcmnavContent", function () {
 	var oMenu = new YAHOO.widget.Menu("zcmnavContent", {
 											position: "static",
@@ -28,9 +37,8 @@ YAHOO.util.Event.onContentReady("zcmnavContentNav", function () {
 	YAHOO.util.Dom.setStyle("zcmnavContentNav","display","block");
 	resizenav();
 });
-</script>';
-}
-?>
+</script>
+<?php } //endif ?>
 <style type="text/css">
 <!--
 body {
@@ -157,12 +165,14 @@ div.ZymurgyBreadcrumbs
 <body id="zcmbody" class="yui-skin-sam" onresize="resizenav()">
 <div class="ZymurgyHeader">
 	<div class="ZymurgyVendor">
-		<? if ((isset($ZymurgyConfig['vendorlogo'])) && ($ZymurgyConfig['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".(isset($ZymurgyConfig['vendorlink']) ? $ZymurgyConfig['vendorlink'] : "javascript:;")."\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".(isset($ZymurgyConfig['vendorname']) ? htmlspecialchars($ZymurgyConfig['vendorname']) : "")."\"></a>"; ?>
+		<?php  if ((isset(Zymurgy::$config['vendorlogo'])) && (Zymurgy::$config['vendorlogo'] != ''))
+			echo "<a target=\"_blank\" href=\"".(isset($ZymurgyConfig['vendorlink']) ? $ZymurgyConfig['vendorlink'] : "javascript:;")."\"><img border=\"0\" src=\"{$ZymurgyConfig['vendorlogo']}\" alt=\"".(isset($ZymurgyConfig['vendorname']) ? htmlspecialchars($ZymurgyConfig['vendorname']) : "")."\"></a>";
+		?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
 		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
 	</div>
 	<div class="ZymurgyClient">
-		<? if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://".Zymurgy::$config['sitehome']."/\"><img border=\"0\" src=\"".Zymurgy::$config['clientlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['defaulttitle'])."\"></a>"; ?>
+		<?php  if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://".Zymurgy::$config['sitehome']."/\"><img border=\"0\" src=\"".Zymurgy::$config['clientlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['defaulttitle'])."\"></a>"; ?>
 	</div>
 </div>

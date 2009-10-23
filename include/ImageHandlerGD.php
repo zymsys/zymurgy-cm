@@ -1,8 +1,8 @@
 <?
 require_once(Zymurgy::$root."/zymurgy/include/ImageHandler.php");
 /**
- * $cmd = "{$ZymurgyConfig['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
- * $cmd = "{$ZymurgyConfig['ConvertPath']}convert -geometry $w x $h $srcfile $destfile";
+ * $cmd = "{Zymurgy::$config['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
+ * $cmd = "{Zymurgy::$config['ConvertPath']}convert -geometry $w x $h $srcfile $destfile";
  * system(Zymurgy::$config['ConvertPath']."convert -modulate 75 $thumbdest/{$id}aspectcropNormal.$ext $thumbdest/{$id}aspectcropDark.$ext");
  *
  */

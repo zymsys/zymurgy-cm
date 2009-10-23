@@ -1,4 +1,8 @@
 <?
+/**
+ * @package zymurgy
+ * @subpackage orphanned
+ */
 if (empty($member))
 {
 	echo "This installation of Zymurgy:CM is not linked to a zymurgy.ca account.  Use your zymurgy.ca user ID and password to link it to your account, or <a href=\"http://www.zymurgy.ca/members/login.php?reg=username\">create an account</a> now.";
