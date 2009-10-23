@@ -99,7 +99,7 @@
 
 			$fields = $this->GetFields();
 
-			$sql = "SELECT `".
+			$sql = "SELECT `id`, `".
 				implode("`, `", array_keys($fields)).
 				"` FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
@@ -115,15 +115,24 @@
 			$output = str_replace("{1}", Zymurgy::$db->num_rows($ri), $output);
 			$output = str_replace("{2}", "1", $output);
 
+			include_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+
 			$records = array();
+			$widget = new InputWidget();
 
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{
 				$recordFields = array();
 
-				foreach($fields as $fieldName => $caption)
+				foreach($fields as $fieldName => $field)
 				{
-					$fieldValue = addslashes($row[$fieldName]);
+					$widget->extra["dataset"] = $table["tname"];
+					$widget->extra["datacolumn"] = $fieldName;
+					$widget->datacolumn = $table["tname"].".".$fieldName;
+					$widget->editkey = $row["id"];
+
+					$fieldValue = $widget->Display($field["inputspec"], "{0}", $row[$fieldName]);
+					$fieldValue = addslashes($fieldValue);
 					$fieldValue = str_replace("\'", "'", $fieldValue);
 
 					$recordFields[] = "\"".
@@ -143,11 +152,19 @@
 			return $output;
 		}
 
-		private function GetFields()
+		private function GetFields(
+			$gridHeaderOnly = true)
 		{
-			$sql = "SELECT `cname`, `gridheader` AS `caption` FROM `zcm_customfield` WHERE `tableid` = '".
+			$gridHeaderCriteria = "1 = 1";
+
+			if($gridHeaderOnly)
+			{
+				$gridHeaderCriteria = "LENGTH(`gridheader`) > 0";
+			}
+
+			$sql = "SELECT `cname`, `inputspec`, `gridheader`, `caption` FROM `zcm_customfield` WHERE `tableid` = '".
 				Zymurgy::$db->escape_string($this->GetConfigValue("Custom Table")).
-				"' AND LENGTH(`gridheader`) > 0 ORDER BY `disporder`";
+				"' AND $gridHeaderCriteria ORDER BY `disporder`";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve field list: ".Zymurgy::$db->error().", $sql");
 
@@ -155,7 +172,7 @@
 
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{
-				$fields[$row["cname"]] = $row["caption"];
+				$fields[$row["cname"]] = $row;
 			}
 
 			Zymurgy::$db->free_result($ri);
@@ -168,12 +185,12 @@
 			$fields = $this->GetFields();
 			$yuiFieldList = array();
 
-			foreach($fields as $fieldName => $caption)
+			foreach($fields as $fieldName => $field)
 			{
 				$yuiFieldList[] = "{ key: \"".
 					$fieldName.
 					"\", label: \"".
-					$caption.
+					$field["gridheader"].
 					"\", sortable: true }";
 			}
 
@@ -187,6 +204,7 @@
 			echo Zymurgy::YUI("paginator/paginator-min.js");
 			echo Zymurgy::YUI("datasource/datasource-min.js");
 			echo Zymurgy::YUI("datatable/datatable-min.js");
+
 ?>
 	<div class="yui-skin-sam">
 		<div id="CustomTable<?= $this->iid ?>"></div>
