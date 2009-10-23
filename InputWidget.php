@@ -7,7 +7,7 @@
 
 /**
  * Input widget base class
- * 
+ *
  * @package Zymurgy
  */
 
@@ -103,7 +103,7 @@ class ZIW_Base
 	{
 		return false;
 	}
-	
+
 	static function StoreFlavouredValueFromPost($postname,$flavourID)
 	{
 		$values = array();
@@ -117,14 +117,14 @@ class ZIW_Base
 		}
 		return ZIW_Base::StoreFlavouredValue($flavourID,$_POST[$postname.'_default'],$values);
 	}
-	
+
 	/**
 	 * Store flavoured values.  Returns flavour ID of this stored flavour.
 	 *
 	 * @param integer $flavourID
 	 * @param string $default
 	 * @param array $values
-	 * 
+	 *
 	 * @return integer
 	 */
 	static function StoreFlavouredValue($flavourID,$default,$values)
@@ -134,7 +134,7 @@ class ZIW_Base
 			Zymurgy::$db->run("update zcm_flavourtext set `default`='".
 				Zymurgy::$db->escape_string($default)."' where id=$flavourID");
 		}
-		else 
+		else
 		{
 			Zymurgy::$db->run("insert into zcm_flavourtext (`default`) values ('".
 				Zymurgy::$db->escape_string($default)."')");
@@ -157,7 +157,7 @@ class ZIW_Base
 		if (is_null($forflavour))
 			$forflavour = Zymurgy::GetActiveFlavourCode();
 		$flavour = Zymurgy::GetFlavourByCode($forflavour);
-		
+
 		//echo "<div>Getting flavoured value ($value) for ($forflavour)</div>";
 
 		$text = Zymurgy::$db->get("SELECT `default` FROM `zcm_flavourtext` WHERE `id` = $value");
@@ -594,7 +594,7 @@ class ZIW_Lookup extends ZIW_Base
 
 			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
 		}
-		
+
 		$this->PreRender();
 
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
@@ -602,7 +602,7 @@ class ZIW_Lookup extends ZIW_Base
 			$value,
 			count($ep) >= 6 && $ep[5] == "checked");
 	}
-	
+
 	function PreRender()
 	{
 		//Stub in case an ancestor needs to tweak the lookup data
@@ -1218,7 +1218,7 @@ abstract class ZIW_DateBase extends ZIW_Base
 
 	function ToUnixTime($tm)
 	{
-		return $tm;
+		return 0 + $tm;
 	}
 
 	/**
@@ -2404,7 +2404,7 @@ class ZIW_Page extends ZIW_Base
 
 /**
  * Input widget handler
- * 
+ *
  * @package Zymurgy
  */
 class InputWidget
@@ -2446,7 +2446,7 @@ class InputWidget
 			$type = 'default';
 		return InputWidget::$widgets[$type];
 	}
-	
+
 	/**
 	 * Find the Input Widget object for this input spec and return it
 	 *
@@ -2536,12 +2536,12 @@ class InputWidget
 
 		return $widget->IsValid($value);
 	}
-	
+
 	function inputspec2sqltype($inputspec)
 	{
 		list($type,$params) = explode('.',$inputspec,2);
 		$pp = explode('.',$params);
-	
+
 		if(
 			array_key_exists($type,InputWidget::$widgets)
 			&& method_exists(InputWidget::$widgets[$type], "GetDatabaseType"))
