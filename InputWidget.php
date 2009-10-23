@@ -1728,186 +1728,202 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 		$dialogName = $this->extra['dialogName'];
 		$tabsetName = $this->extra['tabsetName'];
 		$tabName = $this->extra['tabName'];
+		
+		$id = str_replace(".", "_", $name);
 		if($dialogName !== "")
 		{
-			echo("<div id=\"".
-				str_replace(".", "_", $name).
-				"_div\"></div>");
+			echo( "<div id=\"{$id}_div\"></div>");
 		}
-		echo("<div id=\"".
-			str_replace(".", "_", $name).
-			"_dlg\"><div class=\"hd\">Insert Image from Library</div><div id=\"".
-			str_replace(".", "_", $name).
-			"_dlgBody\" class=\"bd\"></div></div>");
+				
+echo <<<HTML
+<div id="{$id}_dlg"><div class="hd">Insert Image from Library</div><div id="{$id}_dlgBody" class="bd"></div></div>
+<textarea id="{$id}" name="$name" cols="60" rows="10">$value</textarea>
 
+<script type="text/javascript">
+<![CDATA[
+HTML;
 
-		echo("<textarea id=\"".
-			str_replace(".", "_", $name).
-			"\" name=\"$name\" cols=\"60\" rows=\"10\">$value</textarea>\r\n");
-		?>
-			<script type="text/javascript">
-				var Display<?= str_replace(".", "_", $name) ?>Exists = true;
-				var <?= str_replace(".", "_", $name) ?>Editor;
-				var <?= str_replace(".", "_", $name) ?>Dialog;
+ECHO <<<JAVASCRIPT
+	var Display{$id}Exists = true;
+	var {$id}Editor;
+	var {$id}Dialog;
 
-				function Display<?= str_replace(".", "_", $name) ?>() {
-					var myConfig = {
-						height: '<?= $ep[2] ?>px',
-						width: '<?= $ep[1] ?>px',
-						dompath: true,
-						focusAtStart: false
-					};
+	function Display{$id}() {
+		var myConfig = {
+			height: '{$ep[2]}px',
+			width: '{$ep[1]}px',
+			dompath: true,
+			focusAtStart: false
+		};
 
-					<?= str_replace(".", "_", $name) ?>Editor = new YAHOO.widget.Editor(
-						'<?= str_replace(".", "_", $name) ?>',
-						myConfig);
+		{$id}Editor = new YAHOO.widget.Editor(
+			'$id',
+			myConfig);
 
-					<?= str_replace(".", "_", $name) ?>Editor.addZCMImageButton();
-					<?= str_replace(".", "_", $name) ?>Editor.addEditCodeButton();
+		{$id}Editor.addZCMImageButton();
+		{$id}Editor.addEditCodeButton();
 
-					<?= str_replace(".", "_", $name) ?>Editor.render();
-					<?php /* if($dialogName !== "") { ?>
-					<?= str_replace(".", "_", $name) ?>Editor.on('windowRender', function() {
-						document.getElementById('<?= $name ?>_div').appendChild(this.get('panel').element);
-					});
+		{$id}Editor.render();
+JAVASCRIPT;
 
-					if(typeof <?= $dialogName ?> == "Dialog")
+		if(false){
+			if($dialogName !== "") {
+				
+echo <<<JAVASCRIPT
+		{$id}Editor.on('windowRender', function() {
+			document.getElementById('{$id}_div').appendChild(this.get('panel').element);
+		});
+
+		if(typeof $dialogName == "Dialog")
+		{
+			Link{$id}ToDialog();
+		}
+JAVASCRIPT;
+
+			} 
+
+echo <<<JAVASCRIPT
+		{$id}Editor.on("toolbarLoaded", function()
+		{
+			// alert("toolbarLoaded Start");
+
+			{$id}Dialog = new YAHOO.widget.Dialog(
+				"{$id}_dlg",
+				{
+					width: "400px",
+					fixedcenter: true,
+					visible: false,
+					constraintoviewport: true,
+					buttons: [
+						{ text: "OK", handler: function() {
+							//alert("OK pressed");
+							InsertMediaFileInPage({$id}Editor);
+							//alert("media inserted");
+							this.cancel();
+						}, isDefault: true },
+						{ text: "Cancel", handler: function() { this.cancel(); } }
+					]
+				});
+
+			// alert("-- mediaFileDialog defined");
+
+			var mediaFileImageConfig = {
+				type: "push",
+				label: "Insert Image from Library",
+				value: "mediafile"
+			};
+
+			{$id}Editor.toolbar.addButtonToGroup(
+				mediaFileImageConfig,
+				"insertitem");
+
+			{$id}Editor.toolbar.on(
+				"mediafileClick",
+				function(ev)
+				{
+					// alert("mediafileClick Start");
+					this._focusWindow();
+
+					if(ev && ev.img)
 					{
-						Link<?= str_replace(".", "_", $name) ?>ToDialog();
+						// alert("img declared");
+
+						var html = "<img src=\\"" + ev.img + "\\" alt=\\"" + ev.alt + "\\">";
+						this.execCommand("inserthtml", html);
+
+						{$id}Dialog.hide();
 					}
-					<?php  } ?>
-
-					<?= str_replace(".", "_", $name) ?>Editor.on("toolbarLoaded", function()
+					else
 					{
-						// alert("toolbarLoaded Start");
-
-						<?= str_replace(".", "_", $name) ?>Dialog = new YAHOO.widget.Dialog(
-							"<?= str_replace(".", "_", $name) ?>_dlg",
+						var load{$id}Object = {
+							targetElement: "{$id}_dlgBody",
+							url: "/zymurgy/media.php?action=insert_image_into_yuihtml" +
+								"&editor_id={$id}Editor",
+							handleSuccess:function(o)
 							{
-								width: "400px",
-								fixedcenter: true,
-								visible: false,
-								constraintoviewport: true,
-								buttons: [
-									{ text: "OK", handler: function() {
-										//alert("OK pressed");
-										InsertMediaFileInPage(<?= str_replace(".", "_", $name) ?>Editor);
-										//alert("media inserted");
-										this.cancel();
-									}, isDefault: true },
-									{ text: "Cancel", handler: function() { this.cancel(); } }
-								]
-							});
+								// alert("Success");
+								document.getElementById(this.targetElement).innerHTML = o.responseText;
+							},
+							handleFailure:function(o)
+							{
+								// alert("Failure");
+								document.getElementById(this.targetElement).innerHTML =
+									o.status + ": " + o.responseText;
+							},
+							startRequest:function()
+							{
+								document.getElementById(this.targetElement).innerHTML = "Updating...";
 
-						// alert("-- mediaFileDialog defined");
-
-						var mediaFileImageConfig = {
-							type: "push",
-							label: "Insert Image from Library",
-							value: "mediafile"
+								YAHOO.util.Connect.asyncRequest(
+									"GET",
+									this.url,
+									load{$id}Callback,
+									null);
+							}
 						};
 
-						<?= str_replace(".", "_", $name) ?>Editor.toolbar.addButtonToGroup(
-							mediaFileImageConfig,
-							"insertitem");
+						// alert("-- AJAX connection declared");
 
-						<?= str_replace(".", "_", $name) ?>Editor.toolbar.on(
-							"mediafileClick",
-							function(ev)
-							{
-								// alert("mediafileClick Start");
-								this._focusWindow();
+						var load{$id}Callback =
+						{
+							success: load{$id}Object.handleSuccess,
+							failure: load{$id}Object.handleFailure,
+							scope: load{$id}Object
+						};
 
-								if(ev && ev.img)
-								{
-									// alert("img declared");
+						// alert("-- Callback declared");
 
-									var html = "<img src=\"" + ev.img + "\" alt=\"" + ev.alt + "\">";
-									this.execCommand("inserthtml", html);
+						load{$id}Object.startRequest();
 
-									<?= str_replace(".", "_", $name) ?>Dialog.hide();
-								}
-								else
-								{
-									var load<?= str_replace(".", "_", $name) ?>Object = {
-										targetElement: "<?= str_replace(".", "_", $name) ?>_dlgBody",
-										url: "/zymurgy/media.php?action=insert_image_into_yuihtml" +
-											"&editor_id=<?= str_replace(".", "_", $name) ?>Editor",
-										handleSuccess:function(o)
-										{
-											// alert("Success");
-											document.getElementById(this.targetElement).innerHTML = o.responseText;
-										},
-										handleFailure:function(o)
-										{
-											// alert("Failure");
-											document.getElementById(this.targetElement).innerHTML =
-												o.status + ": " + o.responseText;
-										},
-										startRequest:function()
-										{
-											document.getElementById(this.targetElement).innerHTML = "Updating...";
+						// alert("-- AJAX connection request started");
 
-											YAHOO.util.Connect.asyncRequest(
-												"GET",
-												this.url,
-												load<?= str_replace(".", "_", $name) ?>Callback,
-												null);
-										}
-									};
+						{$id}Dialog.show();
+					}
 
-									// alert("-- AJAX connection declared");
+					// alert("mediafileClick End");
+				},
+				{$id}Editor,
+				true);
 
-									var load<?= str_replace(".", "_", $name) ?>Callback =
-									{
-										success: load<?= str_replace(".", "_", $name) ?>Object.handleSuccess,
-										failure: load<?= str_replace(".", "_", $name) ?>Object.handleFailure,
-										scope: load<?= str_replace(".", "_", $name) ?>Object
-									};
+			{$id}Dialog.render();
 
-									// alert("-- Callback declared");
+			// alert("toolbarLoaded Fin");
+		});
 
-									load<?= str_replace(".", "_", $name) ?>Object.startRequest();
+		{$id}Editor.render();
+	}
+	
+	function Link{$id}ToDialog()
+	{
+JAVASCRIPT;
 
-									// alert("-- AJAX connection request started");
+			if($dialogName !== '') { 
+			
+echo <<<JAVASCRIPT
+		$dialogName.showEvent.subscribe(
+			{$id}Editor.show,
+			{$id}Editor,
+			true);
+		$dialogName.hideEvent.subscribe(
+			{$id}Editor.hide,
+			{$id}Editor,
+			true);
+JAVASCRIPT;
 
-									<?= str_replace(".", "_", $name) ?>Dialog.show();
-								}
+			}
+			if($dialogName == '') {
+				echo "\t\tYAHOO.util.Event.onDOMReady(Display{$id});\n";
+			}
 
-								// alert("mediafileClick End");
-							},
-							<?= str_replace(".", "_", $name) ?>Editor,
-							true);
+		} // if(false)
+		
+echo <<<JAVASCRIPT
+	}
+	YAHOO.util.Event.onDOMReady(Display{$id});
+]]>
+</script>
+JAVASCRIPT;
 
-						<?= str_replace(".", "_", $name) ?>Dialog.render();
-
-						// alert("toolbarLoaded Fin");
-					});
-
-					<?= str_replace(".", "_", $name) ?>Editor.render();
-				}
-
-				function Link<?= str_replace(".", "_", $name) ?>ToDialog()
-				{
-					<?php  if($dialogName !== '') { ?>
-					<?= $dialogName ?>.showEvent.subscribe(
-						<?= str_replace(".", "_", $name) ?>Editor.show,
-						<?= str_replace(".", "_", $name) ?>Editor,
-						true);
-					<?= $dialogName ?>.hideEvent.subscribe(
-						<?= str_replace(".", "_", $name) ?>Editor.hide,
-						<?= str_replace(".", "_", $name) ?>Editor,
-						true);
-					<?php  } ?>
-				}
-
-				<?php  if($dialogName == '') { ?>
-					YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
-				<?php  } */?>
-				}
-				YAHOO.util.Event.onDOMReady(Display<?= str_replace(".", "_", $name) ?>);
-			</script>
-		<?
 	}
 }
 

@@ -1,4 +1,11 @@
 <?php
+/**
+ * referenced from include/media.php (orphanned) through cmo.php
+ * 
+ * @package Zymurgy
+ * @subpackage orphanned
+ */
+
 	// ini_set("display_errors", 1);
 
 	/**

@@ -1,4 +1,10 @@
 <?php
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage frontend
+ */
+
 class ZymurgySiteNavItem
 {
 	/**

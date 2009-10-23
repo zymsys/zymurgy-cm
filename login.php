@@ -1,5 +1,11 @@
 <?
 
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage auth
+ */
+
 // ini_set("display_errors", 1);
 //echo "<pre>"; print_r($_POST); echo "</pre>"; exit;
 $onload = 'onload="document.login.userid.focus();"';

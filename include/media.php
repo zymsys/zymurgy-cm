@@ -1,57 +1,62 @@
 <?php
-	/*
-		Zymurgy:CM Media File Component
-		Z:CM View and Controller classes
-
-		This component has been built using a self-contained MVC structure. To insert
-		media file code from within Zymurgy:CM, the controller should be instantiated
-		and called as follows:
-
-		-----
-		$mediaController = new MediaFileController();
-		$mediaController->Execute($action);
-		-----
-
-		The valid values for $action are as follows:
-		    - Installation Actions
-		 		- install (when explicitly enabled - see comment in Controller class)
-		 		- uninstall (when explicitly enabled - see comment in Controller class)
-		 	- Media File Actions
-				- list_media_files
-				- add_media_file
-				- act_add_media_file
-				- edit_media_file
-				- act_edit_media_file
-				- delete_media_file
-				- act_delete_media_file
-				- add_media_file_relatedmedia
-				- act_add_media_file_relatedmedia
-				- delete_media_file_relation
-				- download_media_file
-				- stream_media_file
-			- Media Package Actions
-				- list_media_packages
-				- add_media_package
-				- act_add_media_package
-				- edit_media_package
-				- act_edit_media_package
-				- delete_media_package
-				- act_delete_media_package
-				- list_media_package_files
-				- add_media_package_file
-				- act_add_media_package_file
-				- move_media_package_file_up
-				- move_media_package_file_down
-				- delete_media_package_file
-			- Media Relations
-				- list_media_relations
-				- add_media_relation
-				- act_add_media_relation
-				- edit_media_relation
-				- act_edit_media_relation
-				- delete_media_relation
-				- act_delete_media_relation
-	*/
+/**
+ * 1 reference left from inputWidget.php
+ * 
+ * Zymurgy:CM Media File Component
+ * Z:CM View and Controller classes
+ * 
+ * This component has been built using a self-contained MVC structure. To insert
+ * media file code from within Zymurgy:CM, the controller should be instantiated
+ * and called as follows:
+ * 
+ * -----
+ * $mediaController = new MediaFileController();
+ * $mediaController->Execute($action);
+ * -----
+ * 
+ * The valid values for $action are as follows:
+ *     - Installation Actions
+ *  		- install (when explicitly enabled - see comment in Controller class)
+ *  		- uninstall (when explicitly enabled - see comment in Controller class)
+ *  	- Media File Actions
+ * 		- list_media_files
+ * 		- add_media_file
+ * 		- act_add_media_file
+ * 		- edit_media_file
+ * 		- act_edit_media_file
+ * 		- delete_media_file
+ * 		- act_delete_media_file
+ * 		- add_media_file_relatedmedia
+ * 		- act_add_media_file_relatedmedia
+ * 		- delete_media_file_relation
+ * 		- download_media_file
+ * 		- stream_media_file
+ * 	- Media Package Actions
+ * 		- list_media_packages
+ * 		- add_media_package
+ * 		- act_add_media_package
+ * 		- edit_media_package
+ * 		- act_edit_media_package
+ * 		- delete_media_package
+ * 		- act_delete_media_package
+ * 		- list_media_package_files
+ * 		- add_media_package_file
+ * 		- act_add_media_package_file
+ * 		- move_media_package_file_up
+ * 		- move_media_package_file_down
+ * 		- delete_media_package_file
+ * 	- Media Relations
+ * 		- list_media_relations
+ * 		- add_media_relation
+ * 		- act_add_media_relation
+ * 		- edit_media_relation
+ * 		- act_edit_media_relation
+ * 		- delete_media_relation
+ * 		- act_delete_media_relation
+ * 
+ * @package Zymurgy
+ * @subpackage oprhanned
+ */
 
 	// Include the model
 	require_once(Zymurgy::$root."/zymurgy/include/media.model.php");

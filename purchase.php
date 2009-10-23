@@ -1,6 +1,6 @@
 <?
 /**
- * @package zymurgy
+ * @package Zymurgy
  * @subpackage orphanned
  */
 if (empty($member))

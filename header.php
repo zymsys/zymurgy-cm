@@ -3,7 +3,7 @@
  * Start HTML document and display navigation for backend modules.
  * 
  * @package Zymurgy
- * @subpackage backend-modules
+ * @subpackage backend-base
  */
 
 // ==========

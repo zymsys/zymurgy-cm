@@ -1,5 +1,12 @@
 <?php
-	header("Content-Type: text/xml;charset=ISO-8859-1");
+/**
+ * Get a list of table names.
+ * 
+ * @package Zymurgy
+ * @subpackage customtables
+ * @access private
+ */
+	header("Content-Type: text/xml;charset=utf-8");
 
 	include 'cmo.php';
 

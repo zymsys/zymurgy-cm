@@ -1,6 +1,4 @@
 <?php
-	require_once("cms.php");
-
 	function uuid() 
   	{
     	$chars = md5(uniqid(rand()));
@@ -19,19 +17,19 @@
   	{
 		$guid = uuid();
 		
-		$xml = "";
-		
-		$xml .= "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-		$xml .= "<buttons format=\"1\" version=\"3\">";
-		$xml .= "<button id=\"zymurgy/{".$guid."}\" type=\"dynamic\">";
-		$xml .= "<icon name=\"{".$guid."}/Icon\" src=\"pbz\"/>";
-		$xml .= "<label>Zymurgy:CM</label>";
-		$xml .= "<tooltip>Upload the selected images to a Zymurgy:CM $friendlyName.</tooltip>";
-		$xml .= "<action verb=\"hybrid\">";
-	  	$xml .= "<param name=\"url\" value=\"http://".$_SERVER['HTTP_HOST']."/zymurgy/plugins/$pluginName.php?DocType=picasa\"/>";
-		$xml .= "</action>";
-		$xml .= "</button>";
-		$xml .= "</buttons>";
+$xml = <<<ENDXML
+<?xml version="1.0" encoding="utf-8"?>
+<buttons format='1' version='3'>
+	<button id="zymurgy/{{$guid}}" type="dynamic">
+		<icon name="{{$guid}}/Icon" src="pbz"/>
+		<label>Zymurgy:CM</label>
+		<tooltip>Upload the selected images to a Zymurgy:CM $friendlyName.</tooltip>
+		<action verb="hybrid">
+			<param name="url" value="http://{$_SERVER['HTTP_HOST']}/zymurgy/plugins/$pluginName.php?DocType=picasa"/>
+		</action>
+	</button>
+</buttons>
+ENDXML;
 		
 		$zip = new ZipArchive();
 		$filename = "../temp/{".$guid."}.pbz";

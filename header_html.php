@@ -2,7 +2,7 @@
 /**
  * Used by {@link header.php} to open the html.
  * @package Zymurgy
- * @subpackage backend-modules
+ * @subpackage backend-base
  * @todo merge this into hearer.php?
  */
 ?>

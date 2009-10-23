@@ -1,4 +1,10 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage frontend
+ */
+
 if (isset($ZymurgyRoot))
 	require_once("$ZymurgyRoot/zymurgy/InputWidget.php");
 else

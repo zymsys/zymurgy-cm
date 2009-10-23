@@ -1,4 +1,10 @@
 <?php
+/**
+ * regerenced from include/media.php (orphanned)
+ * 
+ * @package Zymurgy
+ * @subpackage orphanned
+ */
 	ini_set("display_errors", 1);
 	require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 

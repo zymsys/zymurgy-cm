@@ -1,4 +1,10 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 $adminlevel = 2;
 $breadcrumbTrail = "<a href=\"plugin.php\">Plugins</a> &gt; Instances";
 

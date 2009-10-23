@@ -1,4 +1,9 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage frontend
+ */
 ob_start();
 require_once('cmo.php');
 require_once('sitenav.php');
@@ -28,6 +33,7 @@ class ZymurgyTemplate
 
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
+		//echo $navpath;
 		//$this->LoadParams();
 		if($id > 0)
 		{
@@ -180,8 +186,10 @@ class ZymurgyTemplate
 			echo("<body>\n");
 			echo("<h1>Not Found</h1>\n");
 			echo("<p>$navpart couldn't be found from $navpath.</p>\n");
+			echo('<p>'.$_SERVER['REQUEST_URI']."</p>\n");
 			echo("<!--\n");
 			print_r($newpath);
+			print_r($_GET);
 			echo("\n$msg");
 			echo "-->\n";
 			echo("<hr>\n");
@@ -247,12 +255,12 @@ class ZymurgyTemplate
 	{
 		$regexparts = array();
 		// was mod_rewrite used?
-		if (preg_match('/^\/\?(.+)\/(.+)/', $_SERVER['REQUEST_URI'], $regexparts)){
+		if (preg_match('@^/(.+)/(.+)@', $_SERVER['REQUEST_URI'], $regexparts)){
 			// redo the rewrite because of a bug in mod_rewrite
 
 			$_GET['p']=$regexparts[2];
 			if ($regexparts[1] != 'pages')
-				$_get['f'] = $regexparts[1];
+				$_GET['f'] = $regexparts[1];
 		}else{
 			// this page was called directly
 			$ru = explode('?',$_SERVER['REQUEST_URI'],2);

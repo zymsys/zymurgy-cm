@@ -9,7 +9,7 @@
  *  - editkey: Key of the column being edited, -1 for insert (not set when not in edit mode)
  * 
  * @package Zymurgy
- * @subpackage datagrid
+ * @subpackage backend-base
 */
 
 $datagridexpertmode = false;

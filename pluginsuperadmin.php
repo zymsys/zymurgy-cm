@@ -1,4 +1,10 @@
 <?
+/**
+ * 
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 $pid = 0+$_GET['plugin'];
 $iid = 0+$_GET['instance'];
 
