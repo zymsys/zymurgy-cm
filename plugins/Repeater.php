@@ -123,7 +123,7 @@
 //			die($sql);
 			$rowCount = Zymurgy::$db->get($sql);
 
-			$sql = "SELECT ".
+			$sql = "SELECT `id`, ".
 				$this->GetConfigValue("Fields (comma separated)").
 				" FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
@@ -135,7 +135,7 @@
 				(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0).
 				", ".
 				$this->GetConfigValue("Items per page");
-//			die($sql);
+			//die($sql);
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve data: ".Zymurgy::$db->error().", $sql");
 
@@ -150,7 +150,19 @@
 					(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0),
 					$rowCount));
 
+				include_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+
+				$fieldNames = $this->GetConfigValue("Fields (comma separated)");
+				$fieldNames = str_replace("`", "", $fieldNames);
+				$fieldNames = str_replace(" ", "", $fieldNames);
+				$fieldNames = explode(",", $fieldNames);
+
+				$fieldTypes = $this->GetFields(false);
 				$firstRow = true;
+				$widget = new InputWidget();
+
+//				print_r($fieldNames);
+//				die();
 
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
@@ -163,11 +175,28 @@
 						$firstRow = false;
 					}
 
+//					print_r($row);
+
 					$output = $this->GetConfigValue("Repeater Item Layout");
 
-					foreach($row as $fieldName => $fieldValue)
+					foreach($fieldNames as $fieldName)
 					{
-						$output = str_replace("{".$fieldName."}", $fieldValue, $output);
+//						$output = str_replace(
+//							"{".$fieldName."}",
+//							$fieldTypes[$fieldName]["inputspec"],
+//							$output);
+
+						$widget->extra["dataset"] = $table["tname"];
+						$widget->extra["datacolumn"] = $fieldName;
+						$widget->datacolumn = $table["tname"].".".$fieldName;
+						$widget->editkey = $row["id"];
+
+//						print_r($widget);
+
+						$output = str_replace(
+							"{".$fieldName."}",
+							$widget->Display($fieldTypes[$fieldName]["inputspec"], "{0}", $row[$fieldName]),
+							$output);
 					}
 
 					echo($output);
@@ -211,11 +240,19 @@
 			return $text;
 		}
 
-		private function GetFields()
+		private function GetFields(
+			$gridHeaderOnly = true)
 		{
-			$sql = "SELECT `cname`, `gridheader` AS `caption` FROM `zcm_customfield` WHERE `tableid` = '".
+			$gridHeaderCriteria = "1 = 1";
+
+			if($gridHeaderOnly)
+			{
+				$gridHeaderCriteria = "LENGTH(`gridheader`) > 0";
+			}
+
+			$sql = "SELECT `cname`, `inputspec`, `gridheader`, `caption` FROM `zcm_customfield` WHERE `tableid` = '".
 				Zymurgy::$db->escape_string($this->GetConfigValue("Custom Table")).
-				"' AND LENGTH(`gridheader`) > 0 ORDER BY `disporder`";
+				"' AND $gridHeaderCriteria ORDER BY `disporder`";
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve field list: ".Zymurgy::$db->error().", $sql");
 
@@ -223,7 +260,7 @@
 
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 			{
-				$fields[$row["cname"]] = $row["caption"];
+				$fields[$row["cname"]] = $row;
 			}
 
 			Zymurgy::$db->free_result($ri);
