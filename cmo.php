@@ -624,12 +624,43 @@ if (!class_exists('Zymurgy'))
 			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
 
 			$sm = new Zymurgy_SiteMap(Zymurgy::$config['sitehome']);
+
 			$ri = Zymurgy::$db->query("select * from zcm_meta");
 			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 			{
 				$sm->AddUrl($row['document'],$row['mtime'],$row['changefreq'],($row['priority']/10));
 			}
+
+			$sitenav = Zymurgy::getsitenav();
+
+//			print_r($sitenav);
+//			die();
+
+			Zymurgy::AppendToSiteMap($sm, $sitenav, $sitenav->items[0], "");
+
 			$sm->Render();
+		}
+
+		static function AppendToSiteMap(&$sm, &$sitenav, $item, $path)
+		{
+			$myPath = $path;
+
+			if($item->id > 0)
+			{
+				$myPath = $path."/".$sitenav->linktext2linkpart($item->linktext);
+
+				$sql = "SELECT `changefreq`, `priority` FROM `zcm_sitepageseo` WHERE `zcm_sitepage` = '".
+					Zymurgy::$db->escape_string($item->id).
+					"'";
+				$seo = Zymurgy::$db->get($sql);
+
+				$sm->AddUrl($myPath, null, $seo["changefreq"],  $seo["priority"]/10);
+			}
+
+			foreach($item->children as $child)
+			{
+				Zymurgy::AppendToSiteMap($sm, $sitenav, $sitenav->items[$child], $myPath);
+			}
 		}
 
 		//@}
