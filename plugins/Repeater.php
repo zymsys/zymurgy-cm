@@ -38,7 +38,7 @@
 				"inputspec" => 'numeric.5.5',
 				"authlevel" => 0);
 			$configItems[] = array(
-				"name" => 'Fields (comma seperated)',
+				"name" => 'Fields (comma separated)',
 				"default" => '',
 				"inputspec" => 'textarea.60.2',
 				"authlevel" => 0);
@@ -55,7 +55,7 @@
 			$configItems[] = array(
 				"name" => 'Repeater Header Layout',
 				"default" => '',
-				"inputspec" => 'html.600.400',
+				"inputspec" => 'html.600.200',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Repeater Item Layout',
@@ -63,9 +63,14 @@
 				"inputspec" => 'html.600.400',
 				"authlevel" => 0);
 			$configItems[] = array(
+				"name" => 'Repeater Separator Layout',
+				"default" => '',
+				"inputspec" => 'html.600.200',
+				"authlevel" => 0);
+			$configItems[] = array(
 				"name" => 'Repeater Footer Layout',
 				"default" => '',
-				"inputspec" => 'html.600.400',
+				"inputspec" => 'html.600.200',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Message for no records',
@@ -119,7 +124,7 @@
 			$rowCount = Zymurgy::$db->get($sql);
 
 			$sql = "SELECT ".
-				$this->GetConfigValue("Fields (comma seperated)").
+				$this->GetConfigValue("Fields (comma separated)").
 				" FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
 				"` ".
@@ -145,8 +150,19 @@
 					(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0),
 					$rowCount));
 
+				$firstRow = true;
+
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
+					if(!$firstRow)
+					{
+						echo($this->GetConfigValue("Repeater Separator Layout"));
+					}
+					else
+					{
+						$firstRow = false;
+					}
+
 					$output = $this->GetConfigValue("Repeater Item Layout");
 
 					foreach($row as $fieldName => $fieldValue)
