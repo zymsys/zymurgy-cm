@@ -1505,6 +1505,34 @@
 				"$ownerCriteria AND $typeCriteria");
 		}
 
+		/**
+		 * Return all of the media packages owned by the given member.
+		 *
+		 * @param int $member_id Optional. The ID of the owner of the
+		 * packages to return.
+		 * @param string $packageType Optional. The name of the package
+		 * type of packages to return.
+		 * @return MediaPackage[]
+		 */
+		public static function PopulateByDisplayName(
+			$displayName,
+			$packageType = "")
+		{
+			$typeCriteria = "1 = 1";
+
+			$nameCriteria = "`zcm_media_package`.`display_name` = '".
+				Zymurgy::$db->escape_string($displayName).
+				"'";
+
+			if($packageType !== "")
+			{
+				$typeCriteria = "EXISTS(SELECT 1 FROM `zcm_media_package_type` WHERE `zcm_media_package_type`.`media_package_type_id` = `zcm_media_package`.`media_package_type_id` AND `zcm_media_package_type`.`package_type` = '".$packageType."')";
+			}
+
+			return MediaPackagePopulator::PopulateMultiple(
+				"$nameCriteria AND $typeCriteria");
+		}
+
 		private static function PopulateMultiple($criteria)
 		{
 			$sql = "SELECT `media_package_id`, `media_restriction_id`, `member_id`,".
