@@ -189,7 +189,6 @@ class ZymurgyTemplate
 			echo('<p>'.$_SERVER['REQUEST_URI']."</p>\n");
 			echo("<!--\n");
 			print_r($newpath);
-			print_r($_GET);
 			echo("\n$msg");
 			echo "-->\n";
 			echo("<hr>\n");
@@ -255,8 +254,8 @@ class ZymurgyTemplate
 	{
 		$regexparts = array();
 		// was mod_rewrite used?
-		if (preg_match('@^/(.+)/(.+)@', $_SERVER['REQUEST_URI'], $regexparts)){
-			// redo the rewrite because of a bug in mod_rewrite
+		if (preg_match('@^/([^/]+)/(.+)@', $_SERVER['REQUEST_URI'], $regexparts)){
+			unset($_GET['f']);
 
 			$_GET['p']=$regexparts[2];
 			if ($regexparts[1] != 'pages')

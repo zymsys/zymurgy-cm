@@ -57,6 +57,21 @@
 			<label>YUI Base URL:</label>
 			<inputspec>input.50.200</inputspec>
 		</item>
+		<item>
+			<code>ConvertToolset</code>
+			<label>Image Toolset:</label>
+			<inputspec>radio.a:2:{s:2:"IM";s:11:"ImageMagick";s:2:"GD";s:2:"GD";}</inputspec>
+		</item>
+		<item>
+			<code>ConvertPath</code>
+			<label>ImageMagick Path:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>sitecss</code>
+			<label>HTML Editor CSS:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
 	</group>
 	<group>
 		<name>E-mail</name>

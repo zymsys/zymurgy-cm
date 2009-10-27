@@ -336,10 +336,18 @@ abstract class ZymurgySiteNavRenderer{
 	public $startpath = '';
 	
 	/**
-	 * The string to add to the start of the URL.  This is usually "pages" (default).
+	 * The string to add to the start of the URL path.  This is usually "pages" (default).
 	 * @var string
 	 */
 	public $hrefroot = 'pages';
+	
+	/**
+	 * For absolute links in menues, for example http://example.com would make all links absolute to example.com.
+	 * Do not include the trailing slash.
+	 *
+	 * @var string
+	 */
+	public $baseurl = '';
 	
 	########################################
 	
@@ -571,7 +579,7 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 
 			echo '<a class="yuimenuitemlabel'.
 				($enableItem ? '' : '-disabled').
-				'" href="'.
+				'" href="'.$this->baseurl.
 				($enableItem ? $this->geturl($key) : '#').'">'.
 				htmlspecialchars($this->getname($key)).'</a>';
 			if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)

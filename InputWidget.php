@@ -1952,6 +1952,8 @@ class ZIW_Html extends ZIW_RichTextBase
 		$fck->Value = $value;
 		if (array_key_exists('fckeditorcss',$this->extra))
 			$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
+		else if (array_key_exists('sitecss',Zymurgy::$config))
+			$fck->Config['EditorAreaCSS'] = Zymurgy::$config['sitecss'];
 		$fck->Create();
 	}
 
