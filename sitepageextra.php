@@ -19,11 +19,15 @@ if (array_key_exists('epi',$_GET))
 }
 
 include 'sitepageutil.php';
-$crumbs[] = "Gadgets";
 
 if (array_key_exists('action',$_GET) || array_key_exists('editkey',$_GET))
 {
+	$crumbs['/zymurgy/sitepageextra.php?p='.$p] = "Gadgets";
 	$crumbs[] = 'Edit';
+}
+else 
+{
+	$crumbs[] = "Gadgets";
 }
 include 'header.php';
 include 'datagrid.php';
@@ -34,17 +38,17 @@ $ds->AddDataFilter('zcm_sitepage',$p);
 
 $dg = new DataGrid($ds);
 $dg->AddConstant('zcm_sitepage',$p);
-$dg->AddColumn('Extra Page Content','plugin');
+$dg->AddColumn('Gadget','plugin');
 $dg->AddColumn('Alignment','align');
 $dg->AddUpDownColumn('disporder');
-$dg->AddEditor('plugin','Extra Page Content:','plugin');
+$dg->AddEditor('plugin','Gadget:','plugin');
 $dg->AddDropListEditor('align','Alignment:',array('left'=>'Left','center'=>'Center','right'=>'Right'));
 $dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddButton('Edit Content','sitepageextra.php?epi={0}');
 $dg->editlabel = 'Content Type and Position';
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
-$dg->insertlabel = 'Add Extra Page Content';
+$dg->insertlabel = 'Add a Gadget';
 $dg->Render();
 
 include('footer.php');

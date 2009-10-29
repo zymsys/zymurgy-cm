@@ -757,7 +757,7 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 		$pluginvalue = urldecode($ep[0]);
 		$this->textvalue = isset($ep[1]) ? urldecode($ep[1]) : "";
 		//echo "<div style=\"float:left\">";
-		echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Choose a Plugin</option>\r\n";
+		echo "<select id=\"{$name}-plugin\" name=\"{$name}-plugin\">\r\n\t<option value=\"\">Gadget Type</option>\r\n";
 		$ri = Zymurgy::$db->run("select id,name from zcm_plugin order by name");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
