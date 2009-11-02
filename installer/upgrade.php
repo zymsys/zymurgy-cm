@@ -475,6 +475,10 @@ foreach ($plugins as $source=>$state)
 
 			ExecuteAdd($source);
 			break;
+		case 'E':
+			echo("-- Updating $source<br>");
+			ExecuteUpdate($source);
+			break;
 	}
 }
 
@@ -552,6 +556,17 @@ if(!isset($_GET["debug"]))
 	// header('Location: ../index.php');
 }
 
+	function  ExecuteUpdate($source)
+	{
+		global $plugins;
+
+		//Get an instance of the plugin class
+		echo("---- Getting instance of $source plugin<br>");
+		$factory = "{$source}Factory";
+		$plugin = $factory();
+		$plugin->Upgrade();
+	}
+	
 	function  ExecuteAdd($source)
 	{
 		global $plugins;
