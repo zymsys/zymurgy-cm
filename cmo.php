@@ -7,7 +7,10 @@
 
 if (version_compare('5.0.0',PHP_VERSION) > 0)
 {
-	die("Zymurgy:CM requires PHP 5 or better.  Your server is running PHP ".PHP_VERSION." which is not compatible.  Please upgrade your PHP software, or upgrade your hosting.");
+	die("Zymurgy:CM requires PHP 5 or better.  Your server is running PHP ".
+		PHP_VERSION.
+		" which is not compatible.  Please upgrade your PHP software, or ".
+		"upgrade your hosting.");
 }
 
 /**
@@ -24,7 +27,13 @@ if (!class_exists('Zymurgy'))
 {
 
 	/**
-	 * Basic Zmrugy functions
+	 * This class provides the basic entry point for integrating Zymurgy:CM
+ 	 * functionality into your application.
+ 	 *
+ 	 * Example: To display Simple Content on your otherwise static PHP page,
+ 	 * use the following line:
+ 	 *
+ 	 * Zymurgy::sitetext("Content Name", "input.50.200");
 	 *
 	 * @package Zymurgy
 	 * @subpackage base
@@ -32,7 +41,9 @@ if (!class_exists('Zymurgy'))
 	class Zymurgy
 	{
 		/**
-		 * Physical path to the site's root directory on the server
+		 * Physical path to the site's root directory on the server.
+		 *
+		 * This is automatically initialized when this file is included.
 		 *
 		 * @var string
 		 */
@@ -41,41 +52,58 @@ if (!class_exists('Zymurgy'))
 		/**
 		 * A connection instance for database access.
 		 *
-		 * This is automatically initialized when wn this file is included.
+		 * This is automatically initialized when this file is included. The
+		 * individual database provider classes are in the /zymurgy/db folder.
+		 * The class loaded is set in the "database" parameter in
+		 * {@link config/config.php}.
 		 *
 		 * @var Zymurgy_DB
+		 * @link config/config.php
 		 */
 		public static $db;
 
 		/**
-		 * Config values from the config/config.php file
+		 * Array of config values from the config/config.php file.
 		 *
-		 * The contents of this variable are stpred in {@link config/config.php} which is created by ther installer.
+		 * This is automatically initialized when this file is included. The
+		 * values in this array are determined by the contents of
+		 * {@link config/config.php}.
 		 *
 		 * @var array
+		 * @link config/config.php
 		 */
 		public static $config;
 
 		/**
-		 * User supplied site config values from within the Zymurgy:CM control panel front-end
+		 * User supplied site config values.
 		 *
-		 * This is stored in the database.
+		 * This is automatically initialized when this file is included. The
+		 * values in this array are determined by the contents of the
+		 * zcm_config database table, and can be modified using the
+		 * Appearance and Webmaster > Appearance Items sections in Zymurgy:CM.
 		 *
 		 * @var array
 		 */
 		public static $userconfig;
 
 		/**
-		 * User supplied site config values from within the Zymurgy:CM control panel front-end
+		 * List of keys set in the user supplied site config values.
+		 *
+		 * This is automatically initialized when this file is included. The
+		 * values in this array are determined by the contents of the
+		 * zcm_config database table, and can be modified using the
+		 * Appearance and Webmaster > Appearance Items sections in Zymurgy:CM.
 		 *
 		 * @var array
 		 */
 		public static $userconfigid;
 
 		/**
-		 * If this is a template page, this contains info about this template, and template instance.
+		 * Instance of the ZymurgyTemplate class being used to render the page.
+		 * Only used if the page is contained within the Pages system.
 		 *
 		 * @var ZymurgyTemplate
+		 * @link template.php
 		 */
 		public static $template;
 
@@ -94,9 +122,11 @@ if (!class_exists('Zymurgy'))
 		public static $build = 1987;
 
 		/**
-		 * member info available if the user is logged in.
+		 * Instance of the ZymurgyMember class describing the member that is
+		 * currently logged in.
 		 *
 		 * @var array
+		 * @link member.php
 		 */
 		public static $member;
 
@@ -105,42 +135,66 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @var ZymurgyImageHandler
 		 */
-		static $imagehandler;
+		public static $imagehandler;
 
 		/**
-		 * If set to true, included YUI assets will be stripped of '-min' to facilitate debugging.
+		 * Flag used to include the debug versions of the Yahoo! User Interface
+		 * javascript files, instead of the smaller "minimized" versions.
+		 *
+		 * If set to true, included YUI assets will be stripped of '-min' to
+		 * facilitate debugging.
 		 *
 		 * @var boolean
 		 */
 		public static $yuitest = false;
 
 		/**
-		 * Array of loaded YUI javascript & css files
+		 * Array of loaded YUI Javascript & CSS files.
+		 *
+		 * Used by the Zymurgy::YUI method to ensure that multiple copies of
+		 * the YUI components are not loaded more than once on a page.
 		 *
 		 * @var array
+		 * @link Zymurgy::YUI
 		 */
 		private static $yuiloaded = array();
 
 		/**
-		 * Array of loaded non-YUI javascript & css files
+		 * Array of loaded non-YUI Javascript & CSS files.
+		 *
+		 * Used by the Zymurgy::RequireOnceCore method to ensure that multiple
+		 * copies of the requested component(s) are not loaded more than once
+		 * on a page.
 		 *
 		 * @var array
+		 * @link Zymurgy::RequireOnceCore
 		 */
 		private static $otherloaded = array();
 
 		/**
-		 * Instance of a ZymurgyMember class, or a decendent which provides membership features
+		 * Instance of the ZymurgyMember class that functions as the member
+		 * provider for the site.
+		 *
+		 * This variable is set in the Zymurgy::initializemembership() method,
+		 * and the specific class loaded depends on the value of the
+		 * "MemberProvider" key in the {@link config/config.php} file.
 		 *
 		 * @var ZymurgyMember
+		 * @link config/config.php
+		 * @link Zymurgy::initializemembership
 		 */
 		private static $MemberProvider = null;
 
 		/**
-		 * Member made public to allow Zymurgy::sitetext() to be called without calling
-		 * Zymurgy::headtags() first. This allows pages based on AJAX calls (that contain
-		 * incomplete HTML) to work properly.
+		 * ID of the page in the zcm_meta table.
+		 *
+		 * Member made public to allow Zymurgy::sitetext() to be called without
+		 * calling Zymurgy::headtags() first. This allows pages based on
+		 * AJAX calls (that contain incomplete HTML) to work properly.
 		 *
 		 * @var int
+		 * @link Zymurgy::sitetext
+		 * @link Zymurgy::headtags
 		 */
 		public static $pageid;
 
