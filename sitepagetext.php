@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -83,6 +83,15 @@ else
 	exit;
 }
 
+function OnUpdate($dsr)
+{
+	$sql = "UPDATE `zcm_sitepageseo` SET `mtime` = UNIX_TIMESTAMP() WHERE `zcm_sitepage` = '".
+		Zymurgy::$db->escape_string($_GET["p"]).
+		"'";
+	Zymurgy::$db->query($sql)
+		or die("Could not update SEO information for page: ".Zymurgy::$db->error().", $sql");
+}
+
 //The values array contains tablename.columnname keys with values from the row to be deleted.
 function OnDelete($values)
 {
@@ -101,6 +110,7 @@ if ($currentcontent)
 	$ds->AddDataFilter('id','('.implode(',',$currentcontent).')','in');
 }
 $ds->OnDelete = 'OnDelete';
+$ds->OnUpdate = "OnUpdate";
 
 $dg = new DataGrid($ds);
 $dg->AddConstant('sitepage',$p);

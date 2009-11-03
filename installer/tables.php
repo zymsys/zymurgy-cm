@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage installer
  */
@@ -587,7 +587,7 @@
 					DefineTableField("description", "TEXT", "NOT NULL"),
 					DefineTableField("keywords", "TEXT", "NOT NULL"),
 					DefineTableField("title", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
-//					DefineTableField("mtime", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("mtime", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("changefreq", "VARCHAR(10)", "DEFAULT 'monthly'"),
 					DefineTableField("priority", "TINYINT(4)", "DEFAULT '5'")
 				),

@@ -649,12 +649,12 @@ if (!class_exists('Zymurgy'))
 			{
 				$myPath = $path."/".$sitenav->linktext2linkpart($item->linktext);
 
-				$sql = "SELECT `changefreq`, `priority` FROM `zcm_sitepageseo` WHERE `zcm_sitepage` = '".
+				$sql = "SELECT `mtime`, `changefreq`, `priority` FROM `zcm_sitepageseo` WHERE `zcm_sitepage` = '".
 					Zymurgy::$db->escape_string($item->id).
 					"'";
 				$seo = Zymurgy::$db->get($sql);
 
-				$sm->AddUrl($myPath, null, $seo["changefreq"],  $seo["priority"]/10);
+				$sm->AddUrl($myPath, $seo["mtime"], $seo["changefreq"],  $seo["priority"]/10);
 			}
 
 			foreach($item->children as $child)
