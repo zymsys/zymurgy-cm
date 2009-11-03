@@ -198,8 +198,19 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static $pageid;
 
+		/**
+		 * Title of the page in the zcm_meta table.
+		 *
+		 * @var string
+		 */
 		private static $title;
 
+		/**
+		 * List of user friendly names for the various color indices in the
+		 * theme input widget.
+		 *
+		 * @var array
+		 */
 		public static $ThemeColor = array(
 			"Header Background" => 1,
 			"Menu Background" => 2,
@@ -209,6 +220,11 @@ if (!class_exists('Zymurgy'))
 			"Link Color" => 6
 		);
 
+		/**
+		 * The default version of the theme input widget being used by the site.
+		 *
+		 * @var unknown_type
+		 */
 		public static $defaulttheme = null;
 
 		/**
@@ -218,14 +234,23 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static $Locales = array();
 
+		/**
+		 * Cache of remote lookup items. Used to avoid having to make multiple
+		 * requests for the same information to the same remote source.
+		 *
+		 * @var unknown_type
+		 */
 		private static $remotelookupcache = array();
 
 		/**
-		 * Provides the base functionality for both RequireOnce() and YUI() methods.
+		 * Common functionality used by the RequireOnce() and YUI() methods
+		 * to include a file no more than once into the HTML source.
 		 *
-		 * @param boolean $isYUI
-		 * @param string $src
-		 * @return string
+		 * @param boolean $isYUI True, if called by Zymurgy::YUI. Otherwise,
+		 * false.
+		 * @param string $src The location of the file to include.
+		 * @return string The complete <script> or <link> tag required to
+		 * include the file into the HTML source.
 		 */
 		private static function RequireOnceCore($isYUI,$src)
 		{
@@ -262,15 +287,19 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Return javascript or CSS tags to load the supplied YUI source file if it has not already been loaded by this method.
+		 * Return javascript or CSS tags to load the supplied YUI source file
+		 * if it has not already been loaded by this method.
 		 *
-		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src to keep the YUI version consistant.  The version
-		 * number loaded by YUI will be updated in future releases.
+		 * Adds "http://yui.yahooapis.com/{version}/build/" to the start of src
+		 * to keep the YUI version consistant.  The version number loaded by
+		 * YUI will be updated in future releases.
 		 *
-		 * @param string $src
-		 * @return string
+		 * @param string $src The path of the YUI component to include,
+		 * relative to the YUI base path (with version number).
+		 * @return string The complete <script> or <link> tag required to
+		 * include the file into the HTML source.
 		 */
-		static function YUI($src)
+		public static function YUI($src)
 		{
 			$r = array();
 			if (Zymurgy::$yuitest)
@@ -285,7 +314,11 @@ if (!class_exists('Zymurgy'))
 			return implode($r);
 		}
 
-		static function YUILogger()
+		/**
+		 * Create an instance of the YUI LogReader widget. Used when running
+		 * YUI in debug mode.
+		 */
+		public static function YUILogger()
 		{
 			if (Zymurgy::$yuitest)
 			{
@@ -298,12 +331,13 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Return javascript or CSS tags to load the supplied source file if it has not already been loaded by this method.
+		 * Return javascript or CSS tags to load the supplied source file if it
+		 * has not already been loaded by this method.
 		 *
 		 * @param string $src
 		 * @return string
 		 */
-		static function RequireOnce($src)
+		public static function RequireOnce($src)
 		{
 			return Zymurgy::RequireOnceCore(false,$src);
 		}
@@ -313,8 +347,7 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @return The base URL for the YUI framework.
 		 */
-
-		static function YUIBaseURL()
+		public static function YUIBaseURL()
 		{
 			if (array_key_exists('yuibaseurl',Zymurgy::$config) && !empty(Zymurgy::$config['yuibaseurl']))
 				return Zymurgy::$config['yuibaseurl'];
@@ -323,12 +356,16 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Given a table name from Custom Tables, output XML for the table's contents and all detail tables.
+		 * Given a table name from Custom Tables, output XML for the table's
+		 * contents and all detail tables.
+		 *
+		 * Used primarily to provide the table contents, with properly
+		 * associated child contents, to an Adobe Flash file for processing.
 		 *
 		 * @param string $rootName Name of root XML node
 		 * @param string $tableName Name of the custom table to render to XML
 		 */
-		static function easyXML($rootName,$tableName)
+		public static function easyXML($rootName,$tableName)
 		{
 			header('Content-type: text/xml');
 			echo "<$rootName>\r\n";
@@ -340,7 +377,15 @@ if (!class_exists('Zymurgy'))
 			echo "</$rootName>\r\n";
 		}
 
-		static private function XMLvalue($value)
+		/**
+		 * Converts the specified value into properly formatted XML text. If
+		 * the content cannot be converted to XML text (HTML, etc.), this
+		 * method also properly wraps the content in a CDATA block.
+		 *
+		 * @param string $value
+		 * @return string
+		 */
+		private static function XMLvalue($value)
 		{
 			$sc = htmlspecialchars($value);
 			if ($sc == $value)
@@ -349,7 +394,25 @@ if (!class_exists('Zymurgy'))
 				return "<![CDATA[$value]]>";
 		}
 
-		static private function buildEasyXML($tableName,$detailTable='',$parentID=0,$level = 1)
+		/**
+		 * Creates a properly formatted XML block for the specified table,
+		 * returning all records associated with the given parent ID.
+		 *
+		 * @param string $tableName Name of the parent table.
+		 * @param string $detailTable Name of the detail table. If not
+		 * provided, all of the records in the table specified in $tableName
+		 * will be returned instead.
+		 * @param int $parentID The ID of the parent record associated with the
+		 * detail records to return. If not provided, or if provided as 0, all
+		 * records will be returned instead.
+		 * @param int $level The number of times to indent the returned XML
+		 * content.
+		 */
+		private static function buildEasyXML(
+			$tableName,
+			$detailTable = '',
+			$parentID = 0,
+			$level = 1)
 		{
 			//Get meta data about this table, especially detail tables.
 			$sql = "select id,hasdisporder from zcm_customtable where tname='".
@@ -404,7 +467,15 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		static function stripslashes_deep($value)
+		/**
+		 * Properly strip the slashes from the provided text. Some PHP
+		 * implementations implement stripslashes() differently, and this
+		 * function behaves consistently across all of these implementations.
+		 *
+		 * @param string $value
+		 * @return string
+		 */
+		public static function stripslashes_deep($value)
 		{
 			$value = is_array($value) ?
 				array_map('Zymurgy::stripslashes_deep', $value) :
@@ -417,12 +488,19 @@ if (!class_exists('Zymurgy'))
 		/**
 		 * Get general site content.  Create new tag if this one doesn't exist.
 		 *
-		 * @param string $tag
-		 * @param string $type
-		 * @param boolean $adminui
-		 * @return string
+		 * @param string $tag The name of the tag to display, as set in the
+		 * zcm_sitetext table.
+		 * @param string $type The inputspec of the tag to display. If not set,
+		 * "html.600.400" is used.
+		 * @param boolean $adminui Display the "Edit this site text" tooltip
+		 * when the user is viewing the text and is logged into Zymurgy:CM.
+		 *
+		 * @return string The site text, as stored in the zcm_sitetext table.
 		 */
-		static function sitetext($tag,$type='html.600.400',$adminui = true)
+		static function sitetext(
+			$tag,
+			$type='html.600.400',
+			$adminui = true)
 		{
 			if (strlen($tag)>35)
 			{
