@@ -742,7 +742,18 @@ if (!class_exists('Zymurgy'))
 			return $r;
 		}
 
-		static function siteimage($tag,$width,$height,$alt='')
+		/**
+		 * Render an image at the specified resolution, as set in a Simple
+		 * Content item.
+		 *
+		 * @deprecated
+		 * @param string $tag
+		 * @param int $width
+		 * @param int $height
+		 * @param string $alt
+		 * @return string
+		 */
+		public static function siteimage($tag,$width,$height,$alt='')
 		{
 			$img = Zymurgy::sitetext($tag,"image.$width.$height");
 			$ipos = strpos($img,"src=\"");
@@ -751,7 +762,12 @@ if (!class_exists('Zymurgy'))
 			return $img;
 		}
 
-		static function sitemap()
+		/**
+		 * Generate an XML document that is compliant with the Sitemaps
+		 * protocol.
+		 *
+		 */
+		public static function sitemap()
 		{
 			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
 
@@ -773,7 +789,16 @@ if (!class_exists('Zymurgy'))
 			$sm->Render();
 		}
 
-		static function AppendToSiteMap(&$sm, &$sitenav, $item, $path)
+		/**
+		 * Append the specified section of the sitenav to the sitemap. Used
+		 * primarily by the sitemap() method to generate the sitemap.
+		 *
+		 * @param Zymurgy_SiteMap $sm Zymurgy Sitemap object to append to
+		 * @param ZymurgySiteNav $sitenav Zymurgy SiteNav object to pull data from
+		 * @param ZymurgySiteNavItem $item The item to append to the site map
+		 * @param string $path The base path for the item
+		 */
+		public static function AppendToSiteMap(&$sm, &$sitenav, $item, $path)
 		{
 			$myPath = $path;
 
@@ -796,7 +821,13 @@ if (!class_exists('Zymurgy'))
 		}
 
 		//@}
-		static function LoadPluginConfig(&$pi)
+
+		/**
+		 * Load the configuration for the specified plugin from the database.
+		 *
+		 * @param PluginBase $pi
+		 */
+		public static function LoadPluginConfig(&$pi)
 		{
 			$iid = 0 + $pi->iid;
 //			$sql = "select `key`,`value` from zcm_pluginconfig where (plugin={$pi->pid}) and (instance=$iid)";
@@ -820,18 +851,23 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Create a plugin object for the named plugin (same as the file name without the extension) and
-		 * instance name.  Extra is used to pass extra plugin-specific stuff to a plugin, and private
-		 * is used to flag an instance that shouldn't be listed with regular instances because it is
-		 * created and maintained by something else (for example a collection of image galleries).
+		 * Create a plugin object for the named plugin (same as the file name
+		 * without the extension) and instance name.  Extra is used to pass
+		 * extra plugin-specific stuff to a plugin, and private is used to flag
+		 * an instance that shouldn't be listed with regular instances because
+		 * it is created and maintained by something else (for example a
+		 * collection of image galleries).
 		 *
-		 * @param string $plugin
-		 * @param string $instance
-		 * @param mixed $extra
-		 * @param boolean $private
-		 * @return Plugin
+		 * @param string $plugin The class name of the plugin to initialize.
+		 * @param string $instance The name of the instance of the plugin
+		 * to initialize.
+		 * @param mixed $extra List of plugin-specific data for the instance of
+		 * the plugin to initialize
+		 * @param boolean $private This instance of the  plugin is not to be
+		 * listed in the Webwaster > Plugin Management section of Zymurgy:CM.
+		 * @return PluginBase
 		 */
-		static function mkplugin($plugin,$instance,$extra='',$private=0)
+		public static function mkplugin($plugin,$instance,$extra='',$private=0)
 		{
 			require_once(Zymurgy::$root."/zymurgy/PluginBase.php");
 			$pluginsrc=Zymurgy::$root."/zymurgy/plugins/$plugin.php";
@@ -879,6 +915,16 @@ if (!class_exists('Zymurgy'))
 			return $pi;
 		}
 
+		/**
+		 * Render the specified instance of the plugin.
+		 *
+		 * @param string $plugin The class name of the plugin to render.
+		 * @param string $instance The name of the instance of the plugin to
+		 * render.
+		 * @param mixed $extra List of plugin-specific data for the instance of
+		 * the plugin to render
+		 * @return PluginBase
+		 */
 		static function plugin($plugin,$instance,$extra='')
 		{
 			$pi = Zymurgy::mkplugin($plugin,$instance,$extra,0);
@@ -889,6 +935,12 @@ if (!class_exists('Zymurgy'))
 			return $pi->Render();
 		}
 
+		/**
+		 * Render the components required by the tool-tip displayed by
+		 * Zymurgy::sitetext when logged into Zymurgy:CM.
+		 *
+		 * @return string
+		 */
 		static function adminhead()
 		{
 			return Zymurgy::YUI("container/assets/container.css").
@@ -907,7 +959,8 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Emit javascript to redirect the user to the supplied URL.  Aborts the running script/page.
+		 * Emit javascript to redirect the user to the supplied URL.
+		 * Aborts the running script/page.
 		 *
 		 * @param string $url
 		 */
@@ -923,10 +976,11 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Emit javascript to set the innerHTML of the privided element (by ID) to the supplied HTML content.
+		 * Emit javascript to set the innerHTML of the privided element (by ID)
+		 * to the supplied HTML content.
 		 *
-		 * @param string $id
-		 * @param string $html
+		 * @param string $id The ID of the element to modify.
+		 * @param string $html The new content for the element.
 		 */
 		static function JSInnerHtml($id,$html)
 		{
@@ -1073,7 +1127,8 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Render data entry form for user data using the navigation name for the Custom Table used for user data.
+		 * Render data entry form for user data using the navigation name for
+		 * the Custom Table used for user data.
 		 *
 		 * @param string $navname
 		 * @param string $exitpage
@@ -1084,6 +1139,21 @@ if (!class_exists('Zymurgy'))
 			return Zymurgy::$MemberProvider->memberform($navname,$exitpage);
 		}
 
+		/**
+		 * Perform a remote lookup through the Member Provider to find the ID
+		 * of a record in the specified table, based on the value stored in the
+		 * specified field
+		 *
+		 * @param string $table The name of the table on the remote source
+		 * @param string $field The name of the field to search on the remote
+		 * source
+		 * @param string $value The value of the field to search on the remote
+		 * source
+		 * @param boolean $exact When true, only return on an exact match of the
+		 * value parameter.  Otherwise, return any records that contain values
+		 * starting with the value parameter.
+		 * @return array
+		 */
 		static function memberremotelookup($table,$field,$value,$exact=false)
 		{
 			Zymurgy::initializemembership();
@@ -1093,6 +1163,17 @@ if (!class_exists('Zymurgy'))
 				return array();
 		}
 
+		/**
+		 * Perform a remote lookup through the Member Provider to find the ID
+		 * of a record in the specified table, based on the ID.
+		 *
+		 * @param string $table The name of the table on the remote source
+		 * @param string $field The name of the field to search on the remote
+		 * source
+		 * @param string $value The value of the field to search on the remote
+		 * source
+		 * @return array
+		 */
 		static function memberremotelookupbyid($table,$field,$value)
 		{
 			if (array_key_exists($table,Zymurgy::$remotelookupcache))
@@ -1266,7 +1347,14 @@ if (!class_exists('Zymurgy'))
 			return Zymurgy::$sitenav;
 		}
 
-		static function pagetext($tag,$type='html.600.400')
+		/**
+		 * Render the page content, based on its tag within the Pages system.
+		 *
+		 * @param string $tag The tag/ID of the page content to display
+		 * @param string $type The inputspec to apply to the tag
+		 * @return string The rendered content
+		 */
+		public static function pagetext($tag,$type='html.600.400')
 		{
 			if (isset(Zymurgy::$template))
 			{
@@ -1277,7 +1365,15 @@ if (!class_exists('Zymurgy'))
 				return "<div>This page is not linked to a template, so pagetext() can't be used here.</div>";
 			}
 		}
-		static function pagetextraw($tag,$type='html.600.400')
+
+		/**
+		 * Render the raw page content, based on its tag within the Pages system.
+		 *
+		 * @param string $tag The tag/ID of the page content to display
+		 * @param string $type The inputspec to apply to the tag
+		 * @return string The raw page content
+		 */
+		public static function pagetextraw($tag,$type='html.600.400')
 		{
 			if (isset(Zymurgy::$template))
 			{
@@ -1289,7 +1385,17 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		static function pageimage($tag,$width,$height,$alt='')
+		/**
+		 * Render a page image.
+		 *
+		 * @deprecated
+		 * @param string $tag
+		 * @param int $width
+		 * @param int $height
+		 * @param string $alt
+		 * @return string
+		 */
+		public static function pageimage($tag,$width,$height,$alt='')
 		{
 			if (isset(Zymurgy::$template))
 			{
@@ -1301,7 +1407,15 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		function pagegadgets(
+		/**
+		 * Render the plugins assigned to the page. If the alignFilter parameter
+		 * is provided, only render the plugins assigned to that alignment.
+		 *
+		 * @param string $alignFilter Optional. If provided, must be one of
+		 * "left", "center", or "right".
+		 * @return The rendered plugin output.
+		 */
+		public static function pagegadgets(
 			$alignFilter = "")
 		{
 			if (isset(Zymurgy::$template))
@@ -1314,17 +1428,29 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
+		/**
+		 * Render a plugin on the page using the specified configuration. A
+		 * separate instance of the plugin will be created for each page using
+		 * a template that calls this method, but all of those instances will
+		 * use the same configuration.
+		 *
+		 * @param string $pluginName The name of the plugin
+		 * @param string $configName The name of the plugin's configuration
+		 * @return string The rendered plugin output.
+		 */
 		function pagegadget($pluginName, $configName)
 		{
 			return Zymurgy::$template->pagegadget($pluginName, $configName);
 		}
 
 		/**
-		 * Rrtuen user
+		 * Retrieve the value of the specified Appearance Item.
 		 *
-		 * @param string $keyname The name of the config entry
-		 * @param string $defaultvalue The default value to set the entry to if it does not exist.
-		 * @param string $inputspec The type to set the entry to if it doesn't exist.
+		 * @param string $keyname The name of the Appearance Item
+		 * @param string $defaultvalue The default value to set the entry to if
+		 * it does not exist.
+		 * @param string $inputspec The type to set the entry to if it deos not
+		 * exist.
 		 * @return mixed
 		 */
 		function Config($keyname, $defaultvalue, $inputspec='input.30.30')
@@ -1507,7 +1633,16 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$db->run("ALTER TABLE `$table` CHANGE `$column` `$column` BIGINT");
 		}
 
-		static function ConvertFlavouredToVanilla($table,$column,$inputspec)
+		/**
+		 * Convert the specified "flavoured" column to a standard non-flavoured
+		 * column.
+		 *
+		 * @param string $table The name of the table containing the column to
+		 * convert
+		 * @param string $column The name of the column to convert
+		 * @param string $inputspec The inputspec to apply to the converted column
+		 */
+		public static function ConvertFlavouredToVanilla($table,$column,$inputspec)
 		{
 			//Determine the type this column should be converted to, and make the change
 			$columntype = InputWidget::inputspec2sqltype($inputspec);
