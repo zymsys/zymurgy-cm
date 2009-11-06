@@ -151,7 +151,7 @@ class Zymurgy_DB
 	 * @see PHP_MANUAL#mysql_fetch_row
 	 * 
 	 * @param resource $result MySQL result set
-	 * @return arrat
+	 * @return array
 	 */
 	public function fetch_row($result)
 	{
@@ -257,6 +257,18 @@ class Zymurgy_DB
 	public function affected_rows()
 	{
 		return mysql_affected_rows($this->link);
+	}
+	
+	public function enumeratetables()
+	{
+		$tables = array();
+		$ri = Zymurgy_DB::run("show tables");
+		while (($row = Zymurgy_DB::fetch_row($ri)))
+		{
+			$tables[] = $row[0];
+		}
+		Zymurgy_DB::free_result($ri);
+		return $tables;
 	}
 }
 ?>
