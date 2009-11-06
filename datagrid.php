@@ -7,7 +7,7 @@
  *	- sortorder: ASC or DESC
  *	- page: Current page of datagrid
  *  - editkey: Key of the column being edited, -1 for insert (not set when not in edit mode)
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-base
 */
@@ -131,7 +131,7 @@ class DataSetRow
 	var $originalvalues;
 	var $values;
 	var $dirty; //Has been changed
-	
+
 	/**
 	 * DataSet which owns this DataSetRow
 	 *
@@ -343,7 +343,7 @@ class DataSetRow
 						$flavourTextID = Zymurgy::$db->insert_id();
 						$this->values[$realFieldName] = $flavourTextID;
 					}
-					else 
+					else
 					{
 						$flavourTextID = $this->values[$realFieldName];
 					}
@@ -376,7 +376,18 @@ class DataSetRow
 				}
 			}*/
 
-			//die(print_r($alist, true));
+			// die("<pre>".print_r($alist, true)."</pre>");
+
+			// -----
+			// If the member is empty (due to inserting into a member table
+			// directly through Zymurgy:CM), assign the record to the user
+			// currently logged in.
+			if(array_key_exists("member", $alist) && $alist["member"] = "`member` = ")
+			{
+//				die("empty member");
+				Zymurgy::memberauthenticate();
+				$alist["member"] = "`member` = ".Zymurgy::$member["id"];
+			}
 
 			if ($this->edittype == 'UPDATE')
 			{
@@ -489,7 +500,7 @@ class DataSet
 	var $DisplayOrder;
 	var $Filters;
 	var $ExtraSQL; //Used for full text queries
-	
+
 	/**
 	 * DataGrid (if any) which owns this DataSet
 	 *
