@@ -35,6 +35,8 @@
 		}
 
 		// $fieldLog = "";
+//Zymurgy::Dbg($configItems);
+//Zymurgy::DbgAndDie($_POST);
 
 		foreach ($configItems as $configItem)
 		{
@@ -91,12 +93,10 @@
 			}
 			else
 			{
-				$sql = "UPDATE `zcm_pluginconfig` SET `value` = NULL WHERE (`key` = '".
+				$sql = "UPDATE `zcm_pluginconfigitem` SET `value` = NULL WHERE (`key` = '".
 					Zymurgy::$db->escape_string($configItem["name"]).
-					"') AND (`plugin` = '".
-					Zymurgy::$db->escape_string($plugin->pid).
-					"') AND (`instance` = '".
-					Zymurgy::$db->escape_string($plugin->iid).
+					"') AND (`config` = '".
+					Zymurgy::$db->escape_string($plugin->configid).
 					"')";
 
 				Zymurgy::$db->query($sql)
