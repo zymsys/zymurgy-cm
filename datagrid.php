@@ -323,58 +323,6 @@ class DataSetRow
 					$this->values[$realFieldName] = $flavourTextID;
 				}
 			}
-			//Zymurgy::DbgAndDie($this->values, $realFieldName);
-			/*foreach($clist as $cname)
-			{
-				$cname = str_replace("`", "", $cname);
-				$realFieldName = $tname.".".$cname;
-				$fieldName = $tname."_".$cname."_default";
-				Zymurgy::DbgAndDie($this->DataSet->DataGrid->columns);
-				if(isset($_POST[$fieldName]))
-				{
-					echo("Flavoured Data Found: ".$fieldName."<br>");
-					if (!$this->values[$realFieldName])
-					{
-						$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
-							Zymurgy::$db->escape_string($_POST[$fieldName]).
-							"' )";
-						Zymurgy::$db->query($sql)
-							or die("Could not insert default flavoured text: ".Zymurgy::$db->error().", $sql");
-						$flavourTextID = Zymurgy::$db->insert_id();
-						$this->values[$realFieldName] = $flavourTextID;
-					}
-					else
-					{
-						$flavourTextID = $this->values[$realFieldName];
-					}
-
-					$flavours = Zymurgy::GetAllFlavours();
-
-					foreach($flavours as $flavour)
-					{
-						if (!$flavour['providescontent']) continue;
-						$flavourField = $tname."_".$cname."_".$flavour['code'];
-
-						$sql = "INSERT INTO `zcm_flavourtextitem` ( `zcm_flavourtext`, `flavour`, `text` ) VALUES ($flavourTextID, {$flavour['id']}, '".
-							Zymurgy::$db->escape_string($_POST[$flavourField]).
-							"') ON DUPLICATE KEY UPDATE `text`='".
-							Zymurgy::$db->escape_string($_POST[$flavourField])."'";
-						Zymurgy::$db->query($sql)
-							or die("Could not set {$flavour['code']} flavoured text: ".Zymurgy::$db->error().", $sql");
-					}
-
-					if ($this->DataSet->columns["$tname.$cname"]->quoted)
-					{
-						$vlist[$cname] = "'".Zymurgy::$db->escape_string($flavourTextID)."'";
-						$alist[$cname] = "`$cname`='".Zymurgy::$db->escape_string($flavourTextID)."'";
-					}
-					else
-					{
-						$vlist[$cname] = $flavourTextID;
-						$alist[$cname] = "`$cname`=$flavourTextID";
-					}
-				}
-			}*/
 
 			// die("<pre>".print_r($alist, true)."</pre>");
 
