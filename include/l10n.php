@@ -1,7 +1,7 @@
 <?php
 /**
  * referenced from include/media.php (orphanned) through cmo.php
- * 
+ *
  * @package Zymurgy
  * @subpackage orphanned
  */
@@ -61,7 +61,7 @@
 			}
 			else
 			{
-				echo("\r\n<!--Looking for {$this->m_customFilepath} -->\r\n");
+//				echo("\r\n<!--Looking for {$this->m_customFilepath} -->\r\n");
 				if(file_exists($this->m_customFilepath))
 				{
 					//echo("\r\n<!--From custom ($key) -->\r\n");
