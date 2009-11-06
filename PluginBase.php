@@ -230,11 +230,6 @@ class PluginBase
 			return $default;
 	}
 
-	function GetCommandMenuItems()
-	{
-		die("GetCommandMenuItems must be implemented by plugins.");
-	}
-
 	function BuildMenuItem(&$array, $text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$array[] = new PluginMenuItem(
@@ -261,6 +256,16 @@ class PluginBase
 			"pluginadmin.php?pid={pid}&delkey={iid}",
 			0,
 			"Are you sure you want to delete this instance?  This action is not reversible.");
+	}
+	
+	function GetCommandMenuItems()
+	{
+		$r = array();
+
+		$this->BuildSettingsMenuItem($r);
+		$this->BuildDeleteMenuItem($r);
+
+		return $r;
 	}
 
 	function GetExtensions()
