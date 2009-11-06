@@ -1122,12 +1122,12 @@ class ZIW_Radio extends ZIW_RadioDrop
 
 /**
  * Provides an input widget for selecting an available database table.
- * 
+ *
  * @package Zymurgy
  * @subpackage inputwidgets
  *
  */
-class ZIW_DatabaseTable extends ZIW_Base 
+class ZIW_DatabaseTable extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -1152,12 +1152,12 @@ class ZIW_DatabaseTable extends ZIW_Base
 		}
 		echo "</select>\r\n";
 	}
-	
+
 	function GetDatabaseType($inputspecName, $parameters)
 	{
 		return 'varchar(64)';
 	}
-	
+
 	function GetInputSpecifier()
 	{
 		$output = "";
@@ -1787,19 +1787,18 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 		$dialogName = $this->extra['dialogName'];
 		$tabsetName = $this->extra['tabsetName'];
 		$tabName = $this->extra['tabName'];
-		
+
 		$id = str_replace(".", "_", $name);
 		if($dialogName !== "")
 		{
 			echo( "<div id=\"{$id}_div\"></div>");
 		}
-				
+
 echo <<<HTML
-<div id="{$id}_dlg"><div class="hd">Insert Image from Library</div><div id="{$id}_dlgBody" class="bd"></div></div>
+<!-- <div id="{$id}_dlg"><div class="hd">Insert Image from Library</div><div id="{$id}_dlgBody" class="bd"></div></div> -->
 <textarea id="{$id}" name="$name" cols="60" rows="10">$value</textarea>
 
 <script type="text/javascript">
-<![CDATA[
 HTML;
 
 ECHO <<<JAVASCRIPT
@@ -1827,7 +1826,7 @@ JAVASCRIPT;
 
 		if(false){
 			if($dialogName !== "") {
-				
+
 echo <<<JAVASCRIPT
 		{$id}Editor.on('windowRender', function() {
 			document.getElementById('{$id}_div').appendChild(this.get('panel').element);
@@ -1839,7 +1838,7 @@ echo <<<JAVASCRIPT
 		}
 JAVASCRIPT;
 
-			} 
+			}
 
 echo <<<JAVASCRIPT
 		{$id}Editor.on("toolbarLoaded", function()
@@ -1951,13 +1950,13 @@ echo <<<JAVASCRIPT
 
 		{$id}Editor.render();
 	}
-	
+
 	function Link{$id}ToDialog()
 	{
 JAVASCRIPT;
 
-			if($dialogName !== '') { 
-			
+			if($dialogName !== '') {
+
 echo <<<JAVASCRIPT
 		$dialogName.showEvent.subscribe(
 			{$id}Editor.show,
@@ -1975,11 +1974,10 @@ JAVASCRIPT;
 			}
 
 		} // if(false)
-		
+
 echo <<<JAVASCRIPT
 	}
 	YAHOO.util.Event.onDOMReady(Display{$id});
-]]>
 </script>
 JAVASCRIPT;
 
@@ -2669,6 +2667,11 @@ InputWidget::Register('hidden',new ZIW_Hidden());
 InputWidget::Register('gmap',new ZIW_GMap());
 InputWidget::Register("page", new ZIW_Page());
 InputWidget::Register("databasetable", new ZIW_DatabaseTable());
+
+// include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
+// include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
+// InputWidget::Register("taglist", new PIW_CloudTags());
+
 //InputWidget::Register('',new ZIW_);
 
 if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
