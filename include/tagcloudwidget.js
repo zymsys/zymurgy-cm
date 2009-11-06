@@ -4,7 +4,7 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 	var elAdd;
 	var elSelected;
 	var selected = new Array();
-	
+
 	this.buildUI = function() {
 		elTarget.setAttribute("class","yui-skin-sam");
 		//Header for selected tags
@@ -35,19 +35,40 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		YAHOO.util.Dom.setStyle(elAC, 'width', '25em');
 		elTarget.appendChild(elAC);
 	};
-	
+
 	this.removeTag = function(e) {
 		var elClose = e.currentTarget;
 		var elTxtName = elClose.previousElementSibling;
 		var tag = elTxtName.innerHTML;
-		alert(tag);
+//		alert(tag);
+		elClose.parentNode.parentNode.removeChild(elClose.parentNode);
+
+		newSelected = new Array();
+
+		for(var cntr = 0; cntr < selected.length; cntr++)
+		{
+			if(selected[cntr] !== tag)
+			{
+				newSelected.push(selected[cntr]);
+			}
+		}
+
+		selected = newSelected;
+
+		if(selected.length <= 0)
+		{
+			elSelected.innerHTML = "<i>None</i>";
+		}
 	};
-	
+
 	this.appendTag = function(tag) {
-		if (selected.length == 0) {
+		if (selected.length <= 0) {
 			elSelected.innerHTML = ''; //Clear "none" placeholder
 		}
 		var elTag = document.createElement("span");
+
+		elTag.style.paddingRight = "5px";
+
 		var elTxtName = document.createElement("span");
 		var ndTxt = document.createTextNode(tag);
 		elTxtName.appendChild(ndTxt);
@@ -58,14 +79,16 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		YAHOO.util.Event.addListener(elClose, "click", this.removeTag, null, this);
 		elTag.appendChild(elClose);
 		elSelected.appendChild(elTag);
+
+		selected.push(tag);
 	};
-	
+
 	this.tweakUI = function() {
 		var xpos = YAHOO.util.Dom.getX(elInput);
 		var wtf = xpos+elInput.offsetWidth;
-		YAHOO.util.Dom.setX(elAdd, xpos+elInput.offsetWidth); 
+		YAHOO.util.Dom.setX(elAdd, xpos+elInput.offsetWidth);
 	};
-	
+
 	var dsTags = new YAHOO.util.XHRDataSource(tagsUrl);
 	dsTags.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
 	dsTags.responseSchema = {
@@ -86,5 +109,6 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		var dsAddTag = new YAHOO.util.XHRDataSource(tagsUrl+'?what=add&tag='+elInput.value);
 		dsAddTag.sendRequest(); //Make a success handler to consume the ID returned by data source.
 		this.appendTag(elInput.value);
+		elInput.value = "";
 	}, null, this);
 }
