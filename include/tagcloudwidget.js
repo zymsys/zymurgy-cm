@@ -1,9 +1,9 @@
-function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
+function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl, startValue) {
 	elTarget = YAHOO.util.Dom.get(elTarget);
 	var elInput;
 	var elAdd;
 	var elSelected;
-	var selected = new Array();
+	var selected = startValue.split(","); // new Array();
 
 	this.buildUI = function() {
 		elTarget.setAttribute("class","yui-skin-sam");
@@ -13,7 +13,19 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		elTarget.appendChild(elHd);
 		//Selected tags span
 		elSelected = document.createElement("span");
-		elSelected.innerHTML = "<i>None</i>";
+
+		if(selected.length <= 0)
+		{
+			elSelected.innerHTML = "<i>None</i>";
+		}
+		else
+		{
+			for(cntr = 0; cntr < selected.length; cntr++)
+			{
+				this.renderTag(selected[cntr]);
+			}
+		}
+
 		elHd.appendChild(elSelected);
 		//Auto-complete input
 		elInput = document.createElement("input");
@@ -59,12 +71,23 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		{
 			elSelected.innerHTML = "<i>None</i>";
 		}
+
+		this.updateHiddenField();
 	};
 
 	this.appendTag = function(tag) {
 		if (selected.length <= 0) {
 			elSelected.innerHTML = ''; //Clear "none" placeholder
 		}
+
+		this.renderTag(tag);
+
+		selected.push(tag);
+		this.updateHiddenField();
+	};
+
+	this.renderTag = function(tag)
+	{
 		var elTag = document.createElement("span");
 
 		elTag.style.paddingRight = "5px";
@@ -79,9 +102,12 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl) {
 		YAHOO.util.Event.addListener(elClose, "click", this.removeTag, null, this);
 		elTag.appendChild(elClose);
 		elSelected.appendChild(elTag);
+	}
 
-		selected.push(tag);
-	};
+	this.updateHiddenField = function()
+	{
+		document.getElementById(widgetId).value = selected.join(",");
+	}
 
 	this.tweakUI = function() {
 		var xpos = YAHOO.util.Dom.getX(elInput);

@@ -2668,9 +2668,9 @@ InputWidget::Register('gmap',new ZIW_GMap());
 InputWidget::Register("page", new ZIW_Page());
 InputWidget::Register("databasetable", new ZIW_DatabaseTable());
 
-// include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
-// include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
-// InputWidget::Register("taglist", new PIW_CloudTags());
+include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
+include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
+InputWidget::Register("taglist", new PIW_CloudTags());
 
 //InputWidget::Register('',new ZIW_);
 

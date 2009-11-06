@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class TagCloud extends PluginBase
@@ -12,7 +12,7 @@ class TagCloud extends PluginBase
 
 	function GetUninstallSQL()
 	{
-		return 
+		return
 			'drop table zcm_tagcloud;'.
 			'drop table zcm_tagcloudtag;'.
 			'drop table zcm_tagcloudrelatedtag;'.
@@ -39,7 +39,7 @@ class TagCloud extends PluginBase
 			"authlevel" => 0);
 		return $configItems;
 	}
-	
+
 	function VerifyTableDefinitions()
 	{
 		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
@@ -103,7 +103,7 @@ class TagCloud extends PluginBase
 	function Render()
 	{
 		$myname = "ZymurgyTagCloud_".$this->iid;
-		$r = 
+		$r =
 			Zymurgy::YUI('fonts/fonts-min.css').
 			Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js').
 			Zymurgy::YUI('dragdrop/dragdrop.js').
@@ -121,7 +121,7 @@ YAHOO.util.Event.onDOMReady(function () {
         var zymurgyTagCloud{$this->iid} = new ZymurgyTagCloud("$myname","/zymurgy/include/tagcloud.php?iid={$this->iid}");
 });
 /* ]]> */
-</script> 
+</script>
 ENDBLOCK;
 		return $r;
 	}
@@ -144,12 +144,12 @@ function TagCloudFactory()
 
 /**
  * Provides an input widget for selecting an available database table.
- * 
+ *
  * @package Zymurgy
  * @subpackage inputwidgets
  *
  */
-class PIW_CloudTags extends ZIW_Base 
+class PIW_CloudTags extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -160,13 +160,47 @@ class PIW_CloudTags extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
+		$jsName = Zymurgy::getsitenav()->linktext2linkpart($name);
+
+		echo Zymurgy::YUI('fonts/fonts-min.css');
+		echo Zymurgy::YUI('autocomplete/assets/skins/sam/autocomplete.css');
+		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+		echo Zymurgy::YUI('connection/connection-min.js');
+		echo Zymurgy::YUI('animation/animation-min.js');
+		echo Zymurgy::YUI('datasource/datasource-min.js');
+		echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
+
+		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloudwidget.js");
+
+		$output = <<<BLOCK
+<input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
+<div id="tcw{$jsName}"></div>
+<script type="text/javascript">
+	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/tags.php', {0});
+</script>
+BLOCK;
+
+		if(is_array($value) && count($value) > 0)
+		{
+			$output = str_replace("{0}", "\"".implode("\",\"", $value)."\"", $output);
+		}
+		else if(strlen($value) > 0)
+		{
+			$output = str_replace("{0}", "\"$value\"", $output);
+		}
+		else
+		{
+			$output = str_replace("{0}", "", $output);
+		}
+
+		echo $output;
 	}
-	
+
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		return 'BIGINT';
+		return 'VARCHAR(200)';
 	}
-	
+
 	function GetInputSpecifier()
 	{
 		$output = "";
