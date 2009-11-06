@@ -1120,6 +1120,65 @@ class ZIW_Radio extends ZIW_RadioDrop
 	}
 }
 
+/**
+ * Provides an input widget for selecting an available database table.
+ * 
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ *
+ */
+class ZIW_DatabaseTable extends ZIW_Base 
+{
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		$showinternal = (array_key_exists(1,$ep) && ($ep[1] == 'true'));
+		$tables = Zymurgy::$db->enumeratetables();
+		echo "<select id=\"$name\" name=\"$name\">\r\n";
+		foreach ($tables as $tbl)
+		{
+			if (!$showinternal && (substr($tbl,0,4) == 'zcm_'))
+				continue;
+			echo "\t<option value=\"$tbl\"";
+			if ($tbl == $value)
+				echo " selected=\"selected\"";
+			echo ">$tbl</option>\r\n";
+		}
+		echo "</select>\r\n";
+	}
+	
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return 'varchar(64)';
+	}
+	
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_DatabaseTable(inputspecName) {\n";
+		$output .= " var description = \"Database Table Selection\"\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = description;\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineCheckboxParameter(\"Show Internal Tables\", \"\"));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+}
+
 class ZIW_Drop extends ZIW_RadioDrop
 {
 	/**
@@ -2609,6 +2668,7 @@ InputWidget::Register('colour',new ZIW_Color());
 InputWidget::Register('hidden',new ZIW_Hidden());
 InputWidget::Register('gmap',new ZIW_GMap());
 InputWidget::Register("page", new ZIW_Page());
+InputWidget::Register("databasetable", new ZIW_DatabaseTable());
 //InputWidget::Register('',new ZIW_);
 
 if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
