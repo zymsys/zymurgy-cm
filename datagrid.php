@@ -309,10 +309,12 @@ class DataSetRow
 				}
 			}
 
-			//Store flavoured values
+			// -----
+			// Store flavoured values and tags
 			foreach($this->DataSet->DataGrid->columns as $column)
 			{
 				$iw = InputWidget::GetFromInputSpec($column->editor);
+
 				if ($iw->SupportsFlavours())
 				{
 					$cname = str_replace("`", "",array_pop(explode('.',$column->datacolumn)));
@@ -369,6 +371,70 @@ class DataSetRow
 
 			$this->values[$this->DataSet->masterkey] = $rid;
 			//echo "[rid:$rid][key:{$this->DataSet->masterkey}][sql:$sql]";exit;
+		}
+
+		foreach($this->DataSet->DataGrid->columns as $column)
+		{
+//			die("Tag cloud loop entered");
+
+			$iw = InputWidget::GetFromInputSpec($column->editor);
+
+			if($iw instanceof PIW_CloudTags)
+			{
+				$inputspec = explode(".", $column->editor);
+
+				$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE `name` = '".
+					Zymurgy::$db->escape_string($inputspec[1]).
+					"' AND EXISTS( SELECT 1 FROM  `zcm_plugin` WHERE `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `name` = 'TagCloud')";
+				// die($sql);
+				$instanceID = Zymurgy::$db->get($sql);
+
+				$sql = "DELETE FROM `zcm_tagcloudrelatedrow` WHERE `instance` = '".
+					Zymurgy::$db->escape_string($instanceID).
+					"'";
+				Zymurgy::$db->query($sql)
+					or die("Could not clear old tag list: ".Zymurgy::$db->error().", $sql");
+
+				$tags = explode(",", $this->values["$tname.$cname"]);
+
+				foreach($tags as $tag)
+				{
+					$sql = "SELECT `id` FROM `zcm_tagcloudtag` WHERE `instance` = '".
+						Zymurgy::$db->escape_string($instanceID).
+						"' AND `name` = '".
+						Zymurgy::$db->escape_string($tag).
+						"'";
+					$tagID = Zymurgy::$db->get($sql);
+
+					if($tagID <= 0)
+					{
+						// do nothing
+					}
+					else
+					{
+						$sql = "INSERT INTO `zcm_tagcloudtag` ( `instance`, `name` ) VALUES ( '".
+							Zymurgy::$db->escape_string($instanceID).
+							"', '".
+							Zymurgy::$db->escape_string($tag).
+							"' )";
+						Zymurgy::$db->query($sql)
+							or die("Could not add tag to list: ".Zymurgy::$db->error().", $sql");
+
+						$tagID = Zymurgy::$db->insert_id();
+					}
+
+					$sql = "INSERT INTO `zcm_tagcloudrelatedrow` ( `instance`, `tag`, `relatedrow` ) VALUES ( '".
+						Zymurgy::$db->escape_string($instanceID).
+						"', '".
+						Zymurgy::$db->escape_string($tagID).
+						"', '".
+						Zymurgy::$db->escape_string($tname.".".$this->values[$this->DataSet->masterkey]).
+						"' )";
+//					die($sql);
+					Zymurgy::$db->query($sql)
+						or die("Could not assign tag to row: ".Zymurgy::$db->error().", $sql");
+				}
+			}
 		}
 
 		//Check for DisplayOrder update required
