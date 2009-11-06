@@ -29,7 +29,7 @@ include('header.php');
  if(mine) {
  	mine.close();
  } else {
- 	alert('You have a pop-up blocker active in your browser.\r\nCertain Zymurgy:CM features may fail while the blocker is enabled for this site.');
+ 	alert('You have a pop-up blocker active in your browser.\r\nCertain '.<?= Zymurgy::GetLocaleString("Common.ProductName") ?>.' features may fail while the blocker is enabled for this site.');
  }
 </script>
 <?

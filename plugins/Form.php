@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class Form extends PluginBase
@@ -1471,7 +1471,7 @@ xmlns=\"http://www.w3.org/TR/REC-html40\">
 <head>
 <meta http-equiv=Content-Type content=\"text/html; charset=windows-1252\">
 <meta name=ProgId content=Excel.Sheet>
-<meta name=Generator content=\"Zymurgy:CM Form Plugin\">
+<meta name=Generator content=\"".Zymurgy::GetLocaleString("Common.ProductName")." Form Plugin\">
 <style>
 <!--table
 	{mso-displayed-decimal-separator:\"\\.\";

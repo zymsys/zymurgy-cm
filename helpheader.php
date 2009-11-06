@@ -1,8 +1,8 @@
 <?
-function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars) 
+function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 {
-	$time=date("d M Y H:i:s"); 
-	// Get the error type from the error number 
+	$time=date("d M Y H:i:s");
+	// Get the error type from the error number
 	$errortype = array (1    => "Error",
 	                 2    => "Warning",
 	                 4    => "Parsing Error",
@@ -18,21 +18,21 @@ function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 	                 4096 => "Catchable Fatal Error");
 	$errlevel=$errortype[$errno];
 	if (empty($errlevel)) $errlevel = $errno;
-	
-	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\r\n"; 
+
+	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\r\n";
 }
 
 $h = 0 + $_GET['h'];
 
 if (array_key_exists('showerrors',$_GET))
 {
-	error_reporting(0); 
+	error_reporting(0);
 	$old_error_handler = set_error_handler("userErrorHandler");
 }
 
 if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 	$ZymurgyRoot = $_SERVER["APPL_PHYSICAL_PATH"];
-else 
+else
 	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
 require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
 $zauth = new ZymurgyAuth();
@@ -69,7 +69,7 @@ ob_start();
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>Zymurgy:CM - Content Management</title>
+<title><?= Zymurgy::GetLocaleString("Common.ProductName") ?> - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
 <style type="text/css">
@@ -158,7 +158,7 @@ body {
 		<?php  if ((isset(Zymurgy::$config['vendorlogo'])) && (Zymurgy::$config['vendorlogo'] != '')) echo "<a target=\"_blank\" href=\"".Zymurgy::$config['vendorlink']."\"><img border=\"0\" src=\"".Zymurgy::$config['vendorlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['vendorname'])."\"></a>"; ?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
-		Zymurgy:CM
+		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
 	</div>
 	<div id="ZymurgySearch" class="ZymurgySearch">
 		<form method="GET" action="help.php">
@@ -170,7 +170,7 @@ body {
 		<?php  if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://".Zymurgy::$config['sitehome']."/\"><img border=\"0\" src=\"".Zymurgy::$config['clientlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['defaulttitle'])."\"></a>"; ?>
 	</div>
 </div>
-<?php 
+<?php
 if ($h != 0)
 {
 	if (isset($crumbs))
@@ -200,13 +200,13 @@ if ($h != 0)
 			$breadcrumbTrail = implode(" &gt; ",$crumbbits);
 		}
 	}
-	if(isset($breadcrumbTrail)) 
-	{ 
+	if(isset($breadcrumbTrail))
+	{
 ?>
 		<div id="breadcrumbTrail" class="ZymurgyBreadcrumbs">
 			<?= $breadcrumbTrail ?>
 		</div>
-<?php 
+<?php
 	}
 }
 ?>

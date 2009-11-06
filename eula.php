@@ -2,7 +2,7 @@
 
 /**
  * Ask for user to approve EULA.
- * 
+ *
  * @access private
  * @package
  */
@@ -46,7 +46,7 @@ function allowContinue()
 </script>
 <form method="POST" action="<?=$_SERVER['REQUEST_URI']?>">
 <p>
-<input type="checkbox" id="agree" name="agree" onchange="allowContinue()"><label for="agree">I agree to the Zymurgy:CM End User License Agreement.</label>
+<input type="checkbox" id="agree" name="agree" onchange="allowContinue()"><label for="agree">I agree to the <?= Zymurgy::GetLocaleString("Common.ProductName") ?> End User License Agreement.</label>
 </p>
 <p>
 <input type="submit" id="continue" value="Continue" disabled>

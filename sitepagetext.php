@@ -78,7 +78,7 @@ if ($t)
 }
 else
 {
-	echo "This template hasn't yet been processed by Zymurgy:CM.  Please load it once in your browser, and then try again.";
+	echo "This template hasn't yet been processed by ".Zymurgy::GetLocaleString("Common.ProductName").".  Please load it once in your browser, and then try again.";
 	include('footer.php');
 	exit;
 }

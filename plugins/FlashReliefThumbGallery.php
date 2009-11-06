@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 if (!class_exists('PluginBase'))
@@ -535,7 +535,7 @@ class FlashReliefThumbGallery extends PluginBase
 
 		include("../header_html.php");
 
-		echo("<p>The Zymurgy:CM&trade; Picasa Upload Utility allows you to upload your images directly from Google Picasa into your Flash Relief Image Gallery. It also takes care of re-sizing your images for the Web, so you don't have to wait a long time to upload images taken with your digital camera.</p>");
+		echo("<p>The ".Zymurgy::GetLocaleString("Common.ProductName")." Picasa Upload Utility allows you to upload your images directly from Google Picasa into your Flash Relief Image Gallery. It also takes care of re-sizing your images for the Web, so you don't have to wait a long time to upload images taken with your digital camera.</p>");
 
 		echo("<form name=\"f\" method=\"POST\" action=\"FlashReliefThumbGallery.php\">");
 		echo("<input type=\"hidden\" name=\"process\" value=\"true\">");

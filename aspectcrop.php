@@ -206,7 +206,7 @@ window.close();
 
  <html>
  	<head>
- 		<title>Zymurgy:CM Thumbnail Selection Tool</title>
+ 		<title><?= Zymurgy::GetLocaleString("Common.ProductName") ?> Thumbnail Selection Tool</title>
  		<?php
  		if (Zymurgy::$yuitest) echo Zymurgy::YUI("logger/assets/skins/sam/logger.css");
  		echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");

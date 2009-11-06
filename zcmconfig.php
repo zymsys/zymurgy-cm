@@ -6,7 +6,7 @@
  */
 	ini_set("display_errors", 1);
 
-	$breadcrumbTrail = "Zymurgy:CM Configuration";
+	$breadcrumbTrail = Zymurgy::GetLocaleString("Common.ProductName")." Configuration";
 
 	include_once("header.php");
 	include_once("InputWidget.php");

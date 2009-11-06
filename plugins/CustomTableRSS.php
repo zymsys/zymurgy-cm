@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 	if (!class_exists('PluginBase'))
@@ -125,7 +125,7 @@
 				"<link>{1}</link>\n".
 				"<description>{2}</description>\n".
 				"<language>{3}</language>\n".
-				"<generator>Zymurgy:CM</generator>\n".
+				"<generator>".Zymurgy::GetLocaleString("Common.ProductName")."</generator>\n".
 				"<managingEditor>{4}</managingEditor>\n".
 				"<webMaster>{5}</webMaster>\n".
 				"<ttl>120</ttl>\n".

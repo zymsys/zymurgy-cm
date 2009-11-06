@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-base
  */
@@ -10,7 +10,7 @@ include("cmo.php");
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>Zymurgy:CM Content Management Login</title>
+<title><?= Zymurgy::GetLocaleString("Common.ProductName") ?> Content Management Login</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
 <style type="text/css">
@@ -80,7 +80,7 @@ body {
 			.(isset(Zymurgy::$config['vendorlink']) ? Zymurgy::$config['vendorlink'] : "javascript:;")
 			.'"><img border="0" src="'.Zymurgy::$config['vendorlogo'].'" alt="'
 			.(isset(Zymurgy::$config['vendorname']) ? htmlspecialchars(Zymurgy::$config['vendorname']) : "")."\"></a>";
-		} 
+		}
 		?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
@@ -91,7 +91,7 @@ body {
 		if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')){
 			echo '<a target="_blank" href="http://'.Zymurgy::$config['sitehome'].'/">'
 				.'<img border="0" src="'.Zymurgy::$config['clientlogo'].'" alt="'
-				.htmlspecialchars(Zymurgy::$config['defaulttitle']).'"></a>'; 
+				.htmlspecialchars(Zymurgy::$config['defaulttitle']).'"></a>';
 		}
 		?>
 	</div>

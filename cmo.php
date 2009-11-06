@@ -513,7 +513,7 @@ if (!class_exists('Zymurgy'))
 			if (Zymurgy::$db->num_rows($ri)==0)
 			{
 				//Create new sitetext entry
-				$body = 'Please edit the general content called <b>"'.$tag.'"</b> in Zymurgy:CM.';
+				$body = 'Please edit the general content called <b>"'.$tag.'"</b> in '.Zymurgy::GetLocaleString("Common.ProductName").'.';
 				Zymurgy::$db->query("insert into zcm_sitetext (tag,inputspec,body) values ('".Zymurgy::$db->escape_string($tag)."','".
 					Zymurgy::$db->escape_string($type)."','".Zymurgy::$db->escape_string($body)."')");
 				Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
@@ -614,7 +614,7 @@ if (!class_exists('Zymurgy'))
 													{ context:\"ST$jstag\",
 													  hidedelay: 10000,
 													  autodismissdelay: 10000,
-													  text:\"<a href='javascript:ShowEditWindow(\\\"$link\\\")'>Edit &quot;$tag&quot; with Zymurgy:CM</a>\" });
+													  text:\"<a href='javascript:ShowEditWindow(\\\"$link\\\")'>Edit &quot;$tag&quot; with ".Zymurgy::GetLocaleString("Common.ProductName")."</a>\" });
 							YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount.onClick = undefined;
 						</script>";
 						/*$jstag = str_replace("'","''",$tag);
