@@ -1,0 +1,38 @@
+.ZymurgyTagCloudBd, .ZymurgyTagCloudHd {
+	width: 500px;
+}
+.ZymurgyTagCloudBd {
+	text-align: center;
+}
+.ZymurgyTagCloudTag {
+	display: inline;
+	margin: 2px;
+	padding: 2px;
+	cursor: pointer;
+}
+.ZymurgyTagCloudSelectedTag {
+	display: inline;
+	background-color:#eeeeee;
+	margin: 2px;
+}
+.ZymurgyTagCloudSelectedCloseTag {
+	cursor: pointer;
+}
+.ZymurgyTagCloudTagText {
+	white-space: nowrap;
+}
+.ZymurgyTagCloudTag1 {
+	font-size: 22pt;
+}
+.ZymurgyTagCloudTag2 {
+	font-size: 18pt;
+}
+.ZymurgyTagCloudTag3 {
+	font-size: 14pt;
+}
+.ZymurgyTagCloudTag4 {
+	font-size: 10pt;
+}
+.ZymurgyTagCloudTag5 {
+	font-size: 6pt;
+}
