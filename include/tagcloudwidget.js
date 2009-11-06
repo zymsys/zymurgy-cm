@@ -116,6 +116,7 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl, startValue) {
 	};
 
 	var dsTags = new YAHOO.util.XHRDataSource(tagsUrl);
+//	alert("Datasource set");
 	dsTags.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
 	dsTags.responseSchema = {
 		resultNode: "tag",
@@ -125,14 +126,14 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl, startValue) {
 	var oAC = new YAHOO.widget.AutoComplete("ZymurgyTCWI_"+widgetId, "ZymurgyTCWACC_"+widgetId, dsTags);
 	this.tweakUI();
 	oAC.generateRequest = function(sQuery) {
-    	return "?what=tags&q=" + sQuery;
+    	return "&what=tags&q=" + sQuery;
 	};
 	YAHOO.util.Event.addListener(elInput, "keyup", function () {
 		var disabled = (elInput.value == '');
 		elAdd.disabled = disabled;
 	}, null, this);
 	YAHOO.util.Event.addListener(elAdd, "click", function() {
-		var dsAddTag = new YAHOO.util.XHRDataSource(tagsUrl+'?what=add&tag='+elInput.value);
+		var dsAddTag = new YAHOO.util.XHRDataSource(tagsUrl+'&what=add&tag='+elInput.value);
 		dsAddTag.sendRequest(); //Make a success handler to consume the ID returned by data source.
 		this.appendTag(elInput.value);
 		elInput.value = "";

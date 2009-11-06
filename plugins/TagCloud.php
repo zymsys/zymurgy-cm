@@ -3,6 +3,14 @@
  *
  * @package Zymurgy_Plugins
  */
+
+if (!class_exists('PluginBase'))
+{
+	require_once('../cms.php');
+	require_once('../PluginBase.php');
+	require_once('../include/Thumb.php');
+}
+
 class TagCloud extends PluginBase
 {
 	function GetTitle()
@@ -102,6 +110,24 @@ class TagCloud extends PluginBase
 
 	function Render()
 	{
+		$r = "n/a";
+
+		switch($this->extra)
+		{
+			case 'xml':
+				$r = $this->RenderXML();
+
+				break;
+
+			default:
+				$r = $this->RenderHTML();
+				break;
+		}
+		return $r;
+	}
+
+	function RenderHTML()
+	{
 		$myname = "ZymurgyTagCloud_".$this->iid;
 		$r =
 			Zymurgy::YUI('fonts/fonts-min.css').
@@ -126,6 +152,39 @@ ENDBLOCK;
 		return $r;
 	}
 
+	function RenderXML()
+	{
+		$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` ON `zcm_tagcloudtag`.`id` = `zcm_tagcloudrelatedrow`.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
+			Zymurgy::$db->escape_string($this->iid).
+			"' AND `name` LIKE '%".
+			Zymurgy::$db->escape_string($_GET["q"]).
+			"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
+
+		header('Content-type: text/xml');
+
+		echo("<?xml version=\"1.0\"?>\n");
+		echo "<results>\r\n";
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			echo("<tag><id>".
+				$row["id"].
+				"</id><name>".
+				htmlentities($row["name"]).
+				"</name><hits>".
+				$row["count"].
+				"</hits></tag>\r\n");
+
+			$firstRow = false;
+		}
+
+		echo "</results>\r\n";
+
+		Zymurgy::$db->free_result($ri);
+	}
+
 	function AdminMenuText()
 	{
 		return 'TagCloud';
@@ -140,6 +199,11 @@ ENDBLOCK;
 function TagCloudFactory()
 {
 	return new TagCloud();
+}
+
+if (array_key_exists('DataInstance',$_GET))
+{
+	echo plugin('TagCloud',$_GET['DataInstance'], "xml");
 }
 
 /**
@@ -176,7 +240,8 @@ class PIW_CloudTags extends ZIW_Base
 <input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
 <div id="tcw{$jsName}"></div>
 <script type="text/javascript">
-	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/tags.php', {0});
+	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}', {0});
+//	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/tags.php?bobs=1', {0});
 </script>
 BLOCK;
 
