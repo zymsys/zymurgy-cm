@@ -154,11 +154,35 @@ ENDBLOCK;
 
 	function RenderXML()
 	{
-		$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` ON `zcm_tagcloudtag`.`id` = `zcm_tagcloudrelatedrow`.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
-			Zymurgy::$db->escape_string($this->iid).
-			"' AND `name` LIKE '%".
-			Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
-			"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+		$selected = array();
+		foreach ($_GET as $key=>$value)
+		{
+			if ($key[0]=='s')
+			{
+				if (is_numeric(substr($key,1)))
+				{
+					$selected[] = $value;
+				}
+			}
+		}
+
+		if(count($selected) > 0)
+		{
+			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` row1 ON `zcm_tagcloudtag`.`id` = row1.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
+				Zymurgy::$db->escape_string($this->iid).
+				"' AND `zcm_tagcloudtag`.`name` NOT IN ( '".
+				implode("','", $selected).
+				"' ) AND EXISTS(SELECT 1 FROM `zcm_tagcloudrelatedrow` row2 WHERE row2.`relatedrow` = row1.`relatedrow` AND row2.`tag` <> row1.`tag`) GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+		}
+		else
+		{
+			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` ON `zcm_tagcloudtag`.`id` = `zcm_tagcloudrelatedrow`.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
+				Zymurgy::$db->escape_string($this->iid).
+				"' AND `name` LIKE '%".
+				Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
+				"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+		}
+
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
 
