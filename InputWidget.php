@@ -2671,9 +2671,10 @@ InputWidget::Register("databasetable", new ZIW_DatabaseTable());
 include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
 include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
 
-if(class_exists("PIW_CloudTags"))
+if(class_exists("PIW_CloudTagInput"))
 {
-	InputWidget::Register("taglist", new PIW_CloudTags());
+	InputWidget::Register("taglist", new PIW_CloudTagInput());
+	InputWidget::Register("tagcloud", new PIW_CloudTagCloud());
 }
 
 //InputWidget::Register('',new ZIW_);

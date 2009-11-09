@@ -7,7 +7,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 	var selected = new Array(); //Tags on the selected list
 	var maxmag = 5;
 	var DataTableRefresh; //Function to refresh the table view
-	
+
 	this.buildUI = function() {
 		elHd = document.createElement("div");
 		elHd.setAttribute("class","ZymurgyTagCloudHd");
@@ -20,7 +20,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		elBd.setAttribute("class","ZymurgyTagCloudBd");
 		elTarget.appendChild(elBd);
 	};
-	
+
 	this.createTags = function (tagData) {
 		for (var i in tagData.results) {
 			var tag = tagData.results[i];
@@ -48,7 +48,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 			return Math.random() - 0.5;
 		});
 	};
-	
+
 	this.createTagElement = function (oTag) {
 		var elTag = document.createElement("div");
 		var elTxtSpan = document.createElement("span");
@@ -58,7 +58,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		elTag.appendChild(elTxtSpan);
 		return elTag;
 	};
-	
+
 	this.onCloseSelectedClick = function (e, oTagCloud) {
 		var elTag = e.currentTarget.parentNode;
 		var oTag = selected[elTag.zymurgy_idx];
@@ -70,7 +70,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		elSelected.removeChild(elTag);
 		oTagCloud.loadTags();
 	};
-	
+
 	this.onTagClick = function (e, oTagCloud) {
 		var elTag = e.currentTarget;
 		var oTag = tags[elTag.zymurgy_idx];
@@ -91,7 +91,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		YAHOO.util.Event.addListener(elClose,'click', oTagCloud.onCloseSelectedClick, oTagCloud);
 		oTagCloud.loadTags();
 	};
-	
+
 	this.renderTags = function () {
 		for (var i in tags) {
 			var oTag = tags[i];
@@ -105,7 +105,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 			tags[i].el = elTag;
 		}
 	};
-	
+
 	this.getQueryString = function () {
 		var query = new Array();
 		for (var i in selected) {
@@ -113,7 +113,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		}
 		return query.join('&');
 	}
-	
+
 	this.loadTags = function() {
 		for (var i in tags) {
 			elBd.removeChild(tags[i].el);
@@ -129,14 +129,14 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 			failure: function () {
 				alert('Failed to load tag cloud data.');
 			}
-			
+
 		});
 		if (DataTableRefresh) {
 			DataTableRefresh(qs);
 		}
 	};
-	
-	var CloudDataSource = tagsUrl + "?";
+
+	var CloudDataSource = tagsUrl + "&"; // + "?";
 	var dsTags = new YAHOO.util.XHRDataSource(CloudDataSource);
 	dsTags.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
 	dsTags.responseSchema = {
@@ -168,11 +168,11 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
             failure : myFailureHandler,
             scope : myDataTable
         };
-        
+
         DataTableRefresh = function(queryString) {
 			myDataTable.deleteRows(myDataTable.getRecordSet().getLength() - 1, -1 * myDataTable.getRecordSet().getLength());
 			myDataTable.initializeTable();
-			myDataTable.render(); 
+			myDataTable.render();
         	dsTable.sendRequest(queryString+'&what=results', callbackObj);
         }
     }();

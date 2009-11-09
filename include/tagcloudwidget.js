@@ -3,7 +3,7 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl, startValue) {
 	var elInput;
 	var elAdd;
 	var elSelected;
-	var selected = startValue.split(","); // new Array();
+	var selected = startValue ? startValue.split(",") : new Array();
 
 	this.buildUI = function() {
 		elTarget.setAttribute("class","yui-skin-sam");

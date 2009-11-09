@@ -157,7 +157,7 @@ ENDBLOCK;
 		$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` ON `zcm_tagcloudtag`.`id` = `zcm_tagcloudrelatedrow`.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
 			Zymurgy::$db->escape_string($this->iid).
 			"' AND `name` LIKE '%".
-			Zymurgy::$db->escape_string($_GET["q"]).
+			Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
 			"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
@@ -213,7 +213,7 @@ if (array_key_exists('DataInstance',$_GET))
  * @subpackage inputwidgets
  *
  */
-class PIW_CloudTags extends ZIW_Base
+class PIW_CloudTagInput extends ZIW_Base
 {
 	/**
 	 * Render the actual input interface to the user.
@@ -241,7 +241,6 @@ class PIW_CloudTags extends ZIW_Base
 <div id="tcw{$jsName}"></div>
 <script type="text/javascript">
 	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}', {0});
-//	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/tags.php?bobs=1', {0});
 </script>
 BLOCK;
 
@@ -270,7 +269,70 @@ BLOCK;
 	{
 		$output = "";
 
-		$output .= "function GetSpecifier_PIW_CloudTags(inputspecName) {\n";
+		$output .= "function GetSpecifier_PIW_CloudTagInput(inputspecName) {\n";
+		$output .= " var description = \"Cloud Tags\"\n";
+
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = description;\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"For Tag Cloud Named\", 30, 200, \"\"));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+}
+
+class PIW_CloudTagCloud extends ZIW_Base
+{
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		$jsName = Zymurgy::getsitenav()->linktext2linkpart($name);
+
+		echo Zymurgy::YUI('fonts/fonts-min.css');
+		echo Zymurgy::YUI('autocomplete/assets/skins/sam/autocomplete.css');
+		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+		echo Zymurgy::YUI("dragdrop/dragdrop.js");
+		echo Zymurgy::YUI("element/element.js");
+		echo Zymurgy::YUI('connection/connection-min.js');
+		echo Zymurgy::YUI('animation/animation-min.js');
+		echo Zymurgy::YUI('datasource/datasource-min.js');
+		echo Zymurgy::YUI("datatable/datatable.js");
+		echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
+
+		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloud.js");
+
+		$output = <<<BLOCK
+<input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
+<div id="tc{$jsName}"></div>
+<script type="text/javascript">
+	ZymurgyTagCloud('tc{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}');
+</script>
+BLOCK;
+
+		echo $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		die("Not to be used to store content. Only used for display.");
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_PIW_CloudTagCloud(inputspecName) {\n";
 		$output .= " var description = \"Cloud Tags\"\n";
 
 		$output .= " var specifier = new InputSpecifier;\n";
