@@ -209,7 +209,10 @@ BLOCK;
 				Zymurgy::$db->escape_string($this->GetConfigValue("Input plugin instance")).
 				"' AND `name` NOT IN('".
 				implode("','", $selected).
-				"') AND EXISTS(SELECT 1 FROM `zcm_tagcloudrelatedrow` WHERE `zcm_tagcloudrelatedrow`.`tag` = `zcm_tagcloudtag`.`id`)";
+				"') AND EXISTS(SELECT 1 FROM `zcm_tagcloudrelatedrow` WHERE `zcm_tagcloudrelatedrow`.`tag` = `zcm_tagcloudtag`.`id` AND `relatedrow` = '".
+				Zymurgy::$db->escape_string($relatedRow["relatedrow"]).
+				"')";
+//			die($sql);
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not related tags: ".Zymurgy::$db->error().", $sql");
 
