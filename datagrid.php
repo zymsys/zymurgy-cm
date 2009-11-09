@@ -64,8 +64,14 @@ if (!function_exists('getapplpath'))
 	}
 }
 
-if(!isset($suppressDatagridJavascript))
+//var_dump($GLOBALS);
+global $suppressDatagridJavascript;
+
+if(!isset($GLOBALS["suppressDatagridJavascript"]))
 {
+//	print_r(debug_backtrace());
+//	die();
+
 ?>
 <script language="JavaScript">
 <!--
@@ -379,22 +385,27 @@ class DataSetRow
 
 			$iw = InputWidget::GetFromInputSpec($column->editor);
 
-			if($iw instanceof PIW_CloudTags)
+			if($iw instanceof PIW_CloudTagInput)
 			{
 				$inputspec = explode(".", $column->editor);
 
 				$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE `name` = '".
 					Zymurgy::$db->escape_string($inputspec[1]).
 					"' AND EXISTS( SELECT 1 FROM  `zcm_plugin` WHERE `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `name` = 'TagCloud')";
-				// die($sql);
+//				die($sql);
 				$instanceID = Zymurgy::$db->get($sql);
+//				die($instanceID);
 
 				$sql = "DELETE FROM `zcm_tagcloudrelatedrow` WHERE `instance` = '".
 					Zymurgy::$db->escape_string($instanceID).
+					"' AND `relatedrow` = '".
+					Zymurgy::$db->escape_string($tname.".".$this->values[$this->DataSet->masterkey]).
 					"'";
 				Zymurgy::$db->query($sql)
 					or die("Could not clear old tag list: ".Zymurgy::$db->error().", $sql");
 
+//				die("$tname.$cname: ".$column->editor);
+//				die(print_r($this->values, true));
 				$tags = explode(",", $this->values["$tname.$cname"]);
 
 				foreach($tags as $tag)
@@ -404,9 +415,10 @@ class DataSetRow
 						"' AND `name` = '".
 						Zymurgy::$db->escape_string($tag).
 						"'";
+//					die($sql);
 					$tagID = Zymurgy::$db->get($sql);
 
-					if($tagID <= 0)
+					if($tagID > 0)
 					{
 						// do nothing
 					}

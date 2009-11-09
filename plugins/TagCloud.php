@@ -4,6 +4,8 @@
  * @package Zymurgy_Plugins
  */
 
+ini_set("display_errors", 1);
+
 if (!class_exists('PluginBase'))
 {
 	require_once('../cms.php');
@@ -30,20 +32,10 @@ class TagCloud extends PluginBase
 	function GetConfigItems()
 	{
 		$configItems = array();
-		$configItems["Table"] = array(
-			"name" => "Table",
+		$configItems["Cloud"] = array(
+			"name" => "Name of tag cloud",
 			"default" => "",
-			"inputspec" => "databasetable.false",
-			"authlevel" => 0);
-		$configItems["Random"] = array(
-			"name" => "Randomize Tags",
-			"default" => "yes",
-			"inputspec" => "drop.yes,no",
-			"authlevel" => 0);
-		$configItems["SearchBox"] = array(
-			"name" => "Search Box",
-			"default" => "yes",
-			"inputspec" => "drop.yes,no",
+			"inputspec" => "input.20.50",
 			"authlevel" => 0);
 		return $configItems;
 	}
@@ -128,28 +120,13 @@ class TagCloud extends PluginBase
 
 	function RenderHTML()
 	{
-		$myname = "ZymurgyTagCloud_".$this->iid;
-		$r =
-			Zymurgy::YUI('fonts/fonts-min.css').
-			Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js').
-			Zymurgy::YUI('dragdrop/dragdrop.js').
-			Zymurgy::YUI('element/element.js').
-			Zymurgy::YUI('datasource/datasource.js').
-			Zymurgy::YUI('connection/connection.js').
-			Zymurgy::RequireOnce('/zymurgy/include/tagcloud.css').
-			Zymurgy::RequireOnce('/zymurgy/include/tagcloud.js');
-		$r .= <<<ENDBLOCK
-<div id=\"$myname\"></div>
-<script type="text/javascript">
-/* <![CDATA[ */
-YAHOO.util.Event.onDOMReady(function () {
-        //Create and render tag cloud
-        var zymurgyTagCloud{$this->iid} = new ZymurgyTagCloud("$myname","/zymurgy/include/tagcloud.php?iid={$this->iid}");
-});
-/* ]]> */
-</script>
-ENDBLOCK;
-		return $r;
+		require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+		$widget = new InputWidget();
+
+		$widget->Render(
+			"tagcloud.".$this->GetConfigValue("Name of tag cloud"),
+			"cloud".$this->iid,
+			"");
 	}
 
 	function RenderXML()
@@ -182,7 +159,7 @@ ENDBLOCK;
 				Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
 				"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		}
-
+//		die($sql);
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
 
@@ -278,7 +255,7 @@ BLOCK;
 		}
 		else
 		{
-			$output = str_replace("{0}", "", $output);
+			$output = str_replace("{0}", "\"\"", $output);
 		}
 
 		echo $output;
@@ -340,7 +317,20 @@ class PIW_CloudTagCloud extends ZIW_Base
 <input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
 <div id="tc{$jsName}"></div>
 <script type="text/javascript">
-	ZymurgyTagCloud('tc{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}');
+	YAHOO.util.Event.onDOMReady(function() {
+		ZymurgyTagCloud('tc{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}');
+
+//		alert("Checking for results table.");
+
+		if(document.getElementById('tcr{$jsName}')) {
+//			alert("Found results table.");
+//			alert(datafor{$jsName});
+			datafor{$jsName}.startRequest("");
+//			alert("Request for results sent.");
+		}
+
+//		alert("onDOMReady fin");
+	});
 </script>
 BLOCK;
 
