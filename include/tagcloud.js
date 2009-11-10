@@ -142,6 +142,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 			var elTag = this.createTagElement(oTag);
 			var ndWhiteSpace = document.createTextNode(" ");
 			elTag.zymurgy_idx = i;
+			elTag.setAttribute("id", cloudID + "_" + oTag.name);
 			elTag.setAttribute("class","ZymurgyTagCloudTag ZymurgyTagCloudTag"+oTag.magnitude);
 			elBd.appendChild(elTag);
 			elBd.appendChild(ndWhiteSpace);
@@ -181,6 +182,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 	};
 	this.buildUI();
 	this.loadTags();
+	/*
     var dt = function() {
         var myColumnDefs = [ {key:"name", label:"Name"} ];
         var dsTable = new YAHOO.util.XHRDataSource(CloudDataSource);
@@ -212,4 +214,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
         	dsTable.sendRequest(queryString+'&what=results', callbackObj);
         }
     }();
+    */
+
+    return this;
 }

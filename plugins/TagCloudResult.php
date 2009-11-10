@@ -216,7 +216,7 @@ BLOCK;
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not related tags: ".Zymurgy::$db->error().", $sql");
 
-			echo("<td class=\"tags\">");
+			echo("<td class=\"ZymurgyRelatedTagList\">");
 			$tags = array();
 
 			while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
@@ -224,7 +224,17 @@ BLOCK;
 //				echo("<tag>".
 //					htmlentities($row["name"]).
 //					"</tag>");
-				$tags[] = htmlentities($row["name"]);
+				$tags[] = "<a class=\"ZymurgyRelatedTag\" href=\"javascript:;\" onclick=\"tagcloud".
+					$this->GetConfigValue("Input plugin instance").
+					".onTagClick({ currentTarget: document.getElementById('cloud".
+					$this->GetConfigValue("Input plugin instance").
+					"_".
+					htmlentities($row["name"]).
+					"') }, tagcloud".
+					$this->GetConfigValue("Input plugin instance").
+					");\">".
+					htmlentities($row["name"]).
+					"</a>";
 			}
 
 			echo(implode(", ", $tags));
