@@ -26,10 +26,20 @@ class TagCloudResult extends PluginBase
 	function GetConfigItems()
 	{
 		$configItems = array();
-		$configItems["Cloud"] = array(
+		$configItems[] = array(
 			"name" => "Input plugin instance",
 			"default" => "",
 			"inputspec" => "lookup.zcm_plugininstance.id.name.name",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Content Link",
+			"default" => "",
+			"inputspec" => "input.50.200",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Table Header",
+			"default" => "",
+			"inputspec" => "textarea.60.5",
 			"authlevel" => 0);
 		return $configItems;
 	}
@@ -150,10 +160,15 @@ BLOCK;
 
 		echo("<table class=\"ZymurgyTagCloudResult\">");
 
+		if(strlen($this->GetConfigValue("Table Header")) > 0)
+		{
+			echo($this->GetConfigValue("Table Header"));
+		}
+
 		while(($relatedRow = Zymurgy::$db->fetch_array($riRelatedRows)) !== FALSE)
 		{
 //			echo("<hit>");
-			echo("<tr>");
+			echo("<tr class=\"ZymurgyTagCloudResultRow\">");
 
 			$relatedRowList = explode(".", $relatedRow["relatedrow"]);
 
@@ -197,7 +212,19 @@ BLOCK;
 
 //					echo("<".$fieldName.">".htmlentities($fieldValue)."</".$fieldName.">");
 //					echo("<".$fieldName.">".$field["inputspec"]."</".$fieldName.">");
-					echo("<td class=\"field_".$fieldName."\">".htmlentities($fieldValue)."</td>");
+
+					if(strlen($this->GetConfigValue("Content Link")) > 0)
+					{
+						echo("<td class=\"ZymurgyTagCloudResultField_".$fieldName."\"><a href=\"".
+							str_replace("{0}", $row["id"],
+							str_replace("{1}", $relatedRowList[0], $this->GetConfigValue("Content Link"))).
+							"\">".
+							htmlentities($fieldValue)."</a></td>");
+					}
+					else
+					{
+						echo("<td class=\"ZymurgyTagCloudResultField_".$fieldName."\">".htmlentities($fieldValue)."</td>");
+					}
 				}
 
 //				$records[] = implode(",", $recordFields);

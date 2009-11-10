@@ -1,6 +1,7 @@
 <?
 /**
- * 
+ * Provides basic functionality for Zymurgy:CM plugin classes.
+ *
  * @package Zymurgy
  * @subpackage frontend
  */
@@ -12,38 +13,105 @@ else
 
 class PluginBase
 {
-	var $pid; //Plugin ID# from the database
-	var $iid; //Instance ID# from the database
-	var $configid; // Config ID from the zcm_pluginconfiggroup table
+	/**
+	 * The ID of the plugin, as set in the database when the plugin was
+	 * installed.
+	 *
+	 * @var int
+	 */
+	var $pid;
 
-	var $dbrelease; //Release known to the database
+	/**
+	 * The ID of the plugin instance, as set in the database when the instance
+	 * is created.
+	 *
+	 * @var int
+	 */
+	var $iid;
+
+	/**
+	 * The ID of the configuration set used by the plugin instance, as set in
+	 * the zcm_pluginconfiggroup table.
+	 *
+	 * @var int
+	 */
+	var $configid;
+
+	/**
+	 * The version of the database schema currently supported by the plugin.
+	 *
+	 * @var int
+	 */
+	var $dbrelease;
+
+	/**
+	 * The plugin instance configuration. This is loaded when the plugin is
+	 * instantiated
+	 *
+	 * @var mixed
+	 */
 	var $config = array();
 
-	function PluginBase()
+	/**
+	 * Constructor
+	 *
+	 * @return PluginBase
+	 */
+	public function PluginBase()
 	{
 		//Stub so that ancestors can call parent and when we need one the wiring is in place.
 	}
 
-	function CompleteUpgrade()
+	/**
+	 * Complete the plugin upgrade and update the database release ID. Used by
+	 * the installer/upgrade script.
+	 *
+	 */
+	public function CompleteUpgrade()
 	{
 		$this->dbrelease = $this->GetRelease();
 		Zymurgy::$db->query("update zcm_plugin set `release`={$this->dbrelease} where id={$this->pid}");
 	}
 
-	function GetTitle()
+	/**
+	 * Return the user-friendly name of the plugin to display on the Plugin
+	 * Management screen.
+	 *
+	 */
+	public function GetTitle()
 	{
 		die("GetTitle must be implemented by plugins.");
 	}
 
-	function GetRelease()
+	/**
+	 * The current version number of the plugin. Used by the installer/upgrade
+	 * script to determine when to run the install/upgrade scripts.
+	 *
+	 * @return unknown
+	 */
+	public function GetRelease()
 	{
 		return 1; //Default release number.
 	}
 
-	function GetUninstallSQL()
+	/**
+	 * The SQL scripts to run when uninstalling the plugin.
+	 *
+	 */
+	public function GetUninstallSQL()
 	{
 	}
 
+	/**
+	 * Create a new instance of the plugin in the database, and assign a copy
+	 * of the default configuration set to it.
+	 *
+	 * @param PluginBase $pi The instance of the plugin to create in the database
+	 * @param string $plugin The name of the plugin
+	 * @param string $instance The name of the instance
+	 * @param boolean $private If true, do not list the instance in the instance
+	 * list within the Plugin Management section of Zymurgy:CM
+	 */
 	public function CreateInstance(&$pi, $plugin, $instance, $private)
 	{
 		$sql = "select id,enabled from zcm_plugin where name='".
@@ -93,7 +161,8 @@ class PluginBase
 	}
 
 	/**
-	 * Remove related records and files for this instance.  Base method removes the plugin's configuration.
+	 * Remove related records and files for this instance.  Base method removes
+	 * the plugin's configuration.
 	 *
 	 */
 	function RemoveInstance()
@@ -102,16 +171,34 @@ class PluginBase
 //		Zymurgy::$db->query($sql) or die ("Unable to remove plugin configuration ($sql): ".Zymurgy::$db->error());
 	}
 
+	/**
+	 * Get the default configuration for the plugin.
+	 *
+	 * @return unknown
+	 * @deprecated
+	 */
 	function GetDefaultConfig()
 	{
 		return array();
 	}
 
+	/**
+	 * Return the list of keys used in the configuration for the plugin.
+	 *
+	 * @deprecated
+	 * @return unknown
+	 */
 	function GetUserConfigKeys()
 	{
 		return array();
 	}
 
+	/**
+	 * Get the list of supported data types for the config items for this plugin.
+	 *
+	 * @deprecated
+	 * @return unknown
+	 */
 	function GetConfigItemTypes()
 	{
 		//Data types are in the format:
@@ -137,16 +224,33 @@ class PluginBase
 	{
 	}
 
+	/**
+	 * Render the plugin, as it should appear on the front-end web site.
+	 *
+	 */
 	function Render()
 	{
 		die("Render must be implemented by plugins.");
 	}
 
+	/**
+	 * Render the screen displayed when the user selects the instance in the
+	 * Plugin Management section of Zymurgy:CM, or when they select
+	 * "Edit Gadget" in the pages section of Zymurgy:CM.
+	 *
+	 */
 	function RenderAdmin()
 	{
 		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
 	}
 
+	/**
+	 * Render the menu of commands shown on the bottom of the screen displayed
+	 * when the user select the instance in the Plugin Management section of
+	 * Zymurgy:CM, or when they select "Edit Gadget" in the pages section of
+	 * Zymurgy:CM.
+	 *
+	 */
 	function RenderCommandMenu()
 	{
 		global $zauth;
@@ -200,16 +304,38 @@ class PluginBase
 		}
 	}
 
+	/**
+	 * Not sure what this is for.
+	 *
+	 * @deprecated
+	 * @return unknown
+	 */
 	function AdminMenuText()
 	{
 		return '';
 	}
 
+	/**
+	 * Build the config item.
+	 *
+	 * @deprecated ?
+	 * @param unknown_type $cfg
+	 * @param unknown_type $key
+	 * @param unknown_type $default
+	 * @param unknown_type $inputspec
+	 * @param unknown_type $authlevel
+	 */
 	function BuildConfig(&$cfg,$key,$default,$inputspec='input.40.60',$authlevel=0)
 	{
 		$cfg[$key]=new PluginConfig($key,$default,$inputspec,$authlevel);
 	}
 
+	/**
+	 * Set the given config item to the given value for this plugin instance.
+	 *
+	 * @param unknown_type $key
+	 * @param unknown_type $value
+	 */
 	function SetConfigValue($key, $value)
 	{
 //		echo("Setting $key to $value");
@@ -220,6 +346,14 @@ class PluginBase
 			$this->config[$key] = new PluginConfig($key,$value);
 	}
 
+	/**
+	 * Retrieve the value for the given config item for this plugin instance.
+	 *
+	 * @param string $key
+	 * @param string $default Value to return if the config item does not
+	 * actually exist.
+	 * @return mixed
+	 */
 	function GetConfigValue($key,$default='')
 	{
 //		print_r($this->config);
@@ -230,6 +364,15 @@ class PluginBase
 			return $default;
 	}
 
+	/**
+	 * Build the provided menu item for use in the RenderCommandItems() method.
+	 *
+	 * @param unknown_type $array
+	 * @param unknown_type $text
+	 * @param unknown_type $url
+	 * @param unknown_type $authlevel
+	 * @param unknown_type $confirmation
+	 */
 	function BuildMenuItem(&$array, $text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$array[] = new PluginMenuItem(
@@ -239,6 +382,13 @@ class PluginBase
 			$confirmation);
 	}
 
+	/**
+	 * Build the "Edit Settings" menu item for use in the RenderCommandItems()
+	 * method.
+	 *
+	 * @param mixed $r The command items array to append the "Edit Settings"
+	 * menu item to.
+	 */
 	function BuildSettingsMenuItem(&$r)
 	{
 		$this->BuildMenuItem(
@@ -248,6 +398,13 @@ class PluginBase
 			0);
 	}
 
+	/**
+	 * Build the "Delete this plugin" menu item for use in the RenderCommandItems()
+	 * method
+	 *
+	 * @param mixed $r The command items array to append the "Delete this
+	 * plugin" menu item to.
+	 */
 	function BuildDeleteMenuItem(&$r)
 	{
 		$this->BuildMenuItem(
@@ -257,7 +414,15 @@ class PluginBase
 			0,
 			"Are you sure you want to delete this instance?  This action is not reversible.");
 	}
-	
+
+	/**
+	 * Retrieve the default command menu for use in the RenderCommandItems()
+	 * method.
+	 *
+	 * Plugins that have additional commands are to re-implement this method.
+	 *
+	 * @return mixed
+	 */
 	function GetCommandMenuItems()
 	{
 		$r = array();
@@ -268,11 +433,25 @@ class PluginBase
 		return $r;
 	}
 
+	/**
+	 * Get the list of extension classes supported by the plugin.
+	 *
+	 * @return mixed
+	 */
 	function GetExtensions()
 	{
 		return array();
 	}
 
+	/**
+	 * Call the extension method implemented by one or more extension classes.
+	 * If more than one extension implements the method, the methods may be
+	 * called in the same order they were listed in the GetExtensions() method,
+	 * but this is not guaranteed.
+	 *
+	 * @param unknown_type $methodName
+	 * @return unknown
+	 */
 	function CallExtensionMethod($methodName)
 	{
 		$extensions = $this->GetExtensions();
@@ -295,6 +474,12 @@ class PluginBase
 		return $returnValue;
 	}
 
+	/**
+	 * Build the list of configuration items specific to plugin extension
+	 * classes.
+	 *
+	 * @param unknown_type $r
+	 */
 	function BuildExtensionConfig(&$r)
 	{
 		$extensions = $this->GetExtensions();
@@ -315,6 +500,11 @@ class PluginBase
 		}
 	}
 
+	/**
+	 * Build the list of command items specific to plugin extension classes.
+	 *
+	 * @param unknown_type $r
+	 */
 	function BuildExtensionMenu(&$r)
 	{
 		$extensions = $this->GetExtensions();
