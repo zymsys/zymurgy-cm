@@ -324,7 +324,10 @@ class PIW_CloudTagCloud extends ZIW_Base
 <div id="tc{$jsName}"></div>
 <script type="text/javascript">
 	YAHOO.util.Event.onDOMReady(function() {
-		ZymurgyTagCloud('tc{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}');
+		ZymurgyTagCloud(
+			'tc{$jsName}',
+			'/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}',
+			'{$jsName}');
 
 //		alert("Checking for results table.");
 

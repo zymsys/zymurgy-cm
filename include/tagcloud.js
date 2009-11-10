@@ -1,4 +1,4 @@
-function ZymurgyTagCloud(elTarget, tagsUrl) {
+function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 	elTarget = YAHOO.util.Dom.get(elTarget);
 	var elHd;
 	var elBd;
@@ -68,8 +68,34 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 			selected[i].el.zymurgy_idx = i;
 		}
 		elSelected.removeChild(elTag);
+
+		if(document.getElementById("tcr" + cloudID))
+		{
+			// For some reason I can't call getQueryString() from here,
+			// so I'll just copy that code block instead.
+			var query = new Array();
+			for (var i in selected) {
+				query.push('s'+i+'='+escape(selected[i].name));
+			}
+			// return query.join('&');
+
+			eval("datafor" +
+				cloudID +
+				".startRequest(\"" +
+				query.join("&") +
+				"\");");
+		}
+
 		oTagCloud.loadTags();
 	};
+
+	this.getQueryString = function () {
+		var query = new Array();
+		for (var i in selected) {
+			query.push('s'+i+'='+escape(selected[i].name));
+		}
+		return query.join('&');
+	}
 
 	this.onTagClick = function (e, oTagCloud) {
 		var elTag = e.currentTarget;
@@ -89,6 +115,24 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 		oTag.el = elTag;
 		elTag.zymurgy_idx = selected.push(oTag)-1;
 		YAHOO.util.Event.addListener(elClose,'click', oTagCloud.onCloseSelectedClick, oTagCloud);
+
+		if(document.getElementById("tcr" + cloudID))
+		{
+			// For some reason I can't call getQueryString() from here,
+			// so I'll just copy that code block instead.
+			var query = new Array();
+			for (var i in selected) {
+				query.push('s'+i+'='+escape(selected[i].name));
+			}
+			// return query.join('&');
+
+			eval("datafor" +
+				cloudID +
+				".startRequest(\"" +
+				query.join("&") +
+				"\");");
+		}
+
 		oTagCloud.loadTags();
 	};
 
@@ -105,14 +149,6 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 			tags[i].el = elTag;
 		}
 	};
-
-	this.getQueryString = function () {
-		var query = new Array();
-		for (var i in selected) {
-			query.push('s'+i+'='+escape(selected[i].name));
-		}
-		return query.join('&');
-	}
 
 	this.loadTags = function() {
 		for (var i in tags) {
