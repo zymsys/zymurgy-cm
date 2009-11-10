@@ -145,11 +145,13 @@ class TagCloud extends PluginBase
 
 		if(count($selected) > 0)
 		{
-			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` row1 ON `zcm_tagcloudtag`.`id` = row1.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
+			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) as `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` row1 ON `zcm_tagcloudtag`.`id` = row1.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
 				Zymurgy::$db->escape_string($this->iid).
-				"' AND `zcm_tagcloudtag`.`name` NOT IN ( '".
+				"' AND `relatedrow` IN ( SELECT `relatedrow` FROM `zcm_tagcloudrelatedrow` row2 INNER JOIN `zcm_tagcloudtag` tag2 ON tag2.`id` = row2.`tag` WHERE tag2.`name` IN ( '".
 				implode("','", $selected).
-				"' ) AND EXISTS(SELECT 1 FROM `zcm_tagcloudrelatedrow` row2 WHERE row2.`relatedrow` = row1.`relatedrow` AND row2.`tag` <> row1.`tag`) GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+				"' ) ) AND `zcm_tagcloudtag`.`name` NOT IN ( '".
+				implode("','", $selected).
+				"' ) GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		}
 		else
 		{
@@ -159,7 +161,6 @@ class TagCloud extends PluginBase
 				Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
 				"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		}
-//		die($sql);
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
 
@@ -170,6 +171,11 @@ class TagCloud extends PluginBase
 
 		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 		{
+			if(count($selected) > 0)
+			{
+				// fancy query here
+			}
+
 			echo("<tag><id>".
 				$row["id"].
 				"</id><name>".

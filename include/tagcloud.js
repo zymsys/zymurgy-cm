@@ -50,13 +50,13 @@ function ZymurgyTagCloud(elTarget, tagsUrl) {
 	};
 
 	this.createTagElement = function (oTag) {
-		var elTag = document.createElement("div");
+//		var elTag = document.createElement("div");
 		var elTxtSpan = document.createElement("span");
 		var ndTxt = document.createTextNode(oTag.name);
 		elTxtSpan.setAttribute("class","ZymurgyTagCloudTagText");
 		elTxtSpan.appendChild(ndTxt);
-		elTag.appendChild(elTxtSpan);
-		return elTag;
+//		elTag.appendChild(elTxtSpan);
+		return elTxtSpan; // elTag;
 	};
 
 	this.onCloseSelectedClick = function (e, oTagCloud) {
