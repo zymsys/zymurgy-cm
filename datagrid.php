@@ -120,11 +120,35 @@ if (get_magic_quotes_gpc()) {
    $_COOKIE = array_map('stripslashes_deep', $_COOKIE);
 }
 
+/**
+ * Represents a single column within a DataSet.
+ *
+ */
 class DataColumn
 {
+	/**
+	 * The name of the column
+	 *
+	 * @var string
+	 */
 	var $name;
+
+	/**
+	 * When true, the data within the column is to be wrapped in quotes during
+	 * inserts and deletes.
+	 *
+	 * @var boolean
+	 */
 	var $quoted;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $name The name of the column
+	 * @param boolean $quoted When true, the data within the column is to be
+	 * wrapped in quotes during inserts and deletes.
+	 * @return DataColumn
+	 */
 	function DataColumn($name,$quoted)
 	{
 		$this->name = $name;
@@ -132,11 +156,33 @@ class DataColumn
 	}
 }
 
+/**
+ * Represents a single row within a DataSet.
+ *
+ */
 class DataSetRow
 {
+	/**
+	 * The list of values in the row, before changes made in the form are
+	 * applied.
+	 *
+	 * @var mixed
+	 */
 	var $originalvalues;
+
+	/**
+	 * The list of values in the row, after changes in the form are applied.
+	 *
+	 * @var mixed
+	 */
 	var $values;
-	var $dirty; //Has been changed
+
+	/**
+	 * If true, at least one of the values in the row has been changed.
+	 *
+	 * @var mixed
+	 */
+	var $dirty;
 
 	/**
 	 * DataSet which owns this DataSetRow
@@ -148,7 +194,12 @@ class DataSetRow
 	var $edittype; //Blank, INSERT or UPDATE
 	var $invalidmsg; //Set when OnBeforeInsert or OnBeforeUpdate fail with an error or validation message
 
-	function DataSetRow()
+	/**
+	 * Constructor.
+	 *
+	 * @return DataSetRow
+	 */
+	public function DataSetRow()
 	{
 		$this->dirty = false;
 		$this->values = array();
@@ -157,7 +208,13 @@ class DataSetRow
 		$this->edittype = '';
 	}
 
-	function SetValue($columnname,$value)
+	/**
+	 * Set the value of a column to a new value.
+	 *
+	 * @param string $columnname
+	 * @param mixed $value
+	 */
+	public function SetValue($columnname,$value)
 	{
 		if ($this->state != 'EDITING')
 		{
@@ -168,25 +225,43 @@ class DataSetRow
 		$this->dirty = true;
 	}
 
-	function Cancel()
+	/**
+	 * Revert any edits made to the record.
+	 *
+	 */
+	public function Cancel()
 	{
 		$this->values = $this->originalvalues;
 		$this->state = 'NORMAL';
 		$this->edittype = '';
 	}
 
-	function Edit()
+	/**
+	 * Allow changes to be made to the record.
+	 *
+	 */
+	public function Edit()
 	{
 		$this->state = 'EDITING';
 		$this->edittype = 'UPDATE';
 	}
 
-	function Insert()
+	/**
+	 * Flag the record for insertion into the database.
+	 *
+	 */
+	public function Insert()
 	{
 		$this->state = 'EDITING';
 		$this->edittype = 'INSERT';
 	}
 
+	/**
+	 * Return a list of the table the record belongs to, as well as any child
+	 * tables with records associated with the base record.
+	 *
+	 * @return mixed
+	 */
 	function GetMyTables()
 	{
 		$tables = array();
@@ -208,6 +283,11 @@ class DataSetRow
 		return array($tables,$tablekeys);
 	}
 
+	/**
+	 * Delete the record from the database.
+	 *
+	 * @return The recordset resulting in the final delete.
+	 */
 	function Delete()
 	{
 		if (isset($this->DataSet->OnDelete))
@@ -236,6 +316,11 @@ class DataSetRow
 		return $ri;
 	}
 
+	/**
+	 * Update the record in the database.
+	 *
+	 * @return int The ID of the updated record.
+	 */
 	function Update()
 	{
 		$rid = 0;
