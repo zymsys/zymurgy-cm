@@ -529,13 +529,51 @@ class PluginBase
 	}
 }
 
+/**
+ * Plugin Configuration Item
+ *
+ */
 class PluginConfig
 {
+	/**
+	 * The plugin configuration item's key
+	 *
+	 * @var string
+	 */
 	var $key;
+
+	/**
+	 * The plugin configuration item's value
+	 *
+	 * @var mixed
+	 */
 	var $value;
+
+	/**
+	 * The inputspec to use when rendering the plugin configuration screen.
+	 *
+	 * @var string
+	 */
 	var $inputspec;
+
+	/**
+	 * The authlevel required to modify the plugin configuration item.
+	 *
+	 * @var int
+	 */
 	var $authlevel;
 
+	/**
+	 * Constructor
+	 *
+	 * @param string $key The plugin configuration item's key
+	 * @param mixed $value The plugin configuration item's value
+	 * @param string $inputspec The inputspec to use when rendering the plugin
+	 * configuration screen.
+	 * @param int $authlevel The authlevel required to modify the plugin
+	 * configuration item
+	 * @return PluginConfig
+	 */
 	function PluginConfig($key, $value, $inputspec='input.40.60', $authlevel=0)
 	{
 		$this->key = $key;
@@ -545,13 +583,55 @@ class PluginConfig
 	}
 }
 
+/**
+ * Represents a single item on the menu displayed on the bottom of the
+ * Plugin screen.
+ *
+ */
 class PluginMenuItem
 {
+	/**
+	 * The text of the plugin's menu item.
+	 *
+	 * @var string
+	 */
 	var $text;
+
+	/**
+	 * The URL to display when the user clicks on the plugin's menu item.
+	 *
+	 * @var string
+	 */
 	var $url;
+
+	/**
+	 * The authlevel required to see the plugin's menu item.
+	 *
+	 * @var int
+	 */
 	var $authlevel;
+
+	/**
+	 * When set, a confirmation dialog is displayed using the value of the
+	 * property as a message. If null, no dialog is displayed.
+	 *
+	 * @var string
+	 */
 	var $confirmation;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param unknown_type $text The text of the plugin's menu item.
+	 * @param unknown_type $url The URL to display when the user clicks on the
+	 * plugin's menu item.
+	 * @param unknown_type $authlevel The authlevel required to see the
+	 * plugin's menu item.
+	 * @param unknown_type $confirmation When set, a confirmation dialog is
+	 * displayed using the value of the property as a message. If null, no
+	 * dialog is displayed.
+	 * @return PluginMenuItem
+	 */
 	function PluginMenuItem($text, $url, $authlevel = 0, $confirmation = NULL)
 	{
 		$this->text = $text;
@@ -561,12 +641,51 @@ class PluginMenuItem
 	}
 }
 
+/**
+ * Interface describing the methods that must be provided by a plugin
+ * extension class.
+ *
+ */
 interface PluginExtension
 {
+	/**
+	 * Returns the name of the extension displayed in the left-hand menu
+	 * when the user is on the "Edit Settings" screen.
+	 *
+	 * @return string
+	 */
 	public function GetExtensionName();
+
+	/**
+	 * Returns the description of the extension to display before the actual
+	 * extension settings when the user is on the "Edit Settings" screen.
+	 *
+	 * @return string
+	 */
 	public function GetDescription();
+
+	/**
+	 * Determine if the extension is enabled, and return the result.
+	 *
+	 * @param PluginBase $plugin
+	 * @return boolean If true, the plugin is enabled.
+	 */
 	public function IsEnabled($plugin);
+
+	/**
+	 * Returns an array of the configuration items required by the plugin
+	 * extension.
+	 *
+	 * @return mixed
+	 */
 	public function GetConfigItems();
+
+	/**
+	 * Returns an array of menu items to append to the plugin's list of menu
+	 * items.
+	 *
+	 * @return mixed
+	 */
 	public function GetCommands();
 }
 ?>
