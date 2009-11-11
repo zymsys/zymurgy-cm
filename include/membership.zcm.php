@@ -1,7 +1,7 @@
 <?php
 /**
  * Contains the information and validation routines for a Member.
- *  
+ *
  * @package Zymurgy
  * @subpackage auth
  */
@@ -1161,6 +1161,11 @@
 			include("footer.php");
 		}
 
+		/**
+		 * Display the Commands menu for the Edit Member screen.
+		 *
+		 * @param Member $member The member to display the commands menu for
+		 */
 		public static function DisplayCommands($member)
 		{
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
@@ -1173,6 +1178,11 @@
 			echo("</table>\n");
 		}
 
+		/**
+		 * E-mail the member's password to them.
+		 *
+		 * @param Member $member The member to send the password to
+		 */
 		public static function SendPassword($member)
 		{
 			$sql = "SELECT `password` FROM `zcm_member` WHERE `email` = '".
@@ -1202,6 +1212,12 @@
 			}
 		}
 
+		/**
+		 * Display the "Send Password" message to the user that clicked on the
+		 * "Send Password" menu command in Zymurgy:CM.
+		 *
+		 * @param Member $member The member the password was sent to
+		 */
 		public static function DisplayPasswordSentMessage($member)
 		{
 			$breadcrumbTrail = "<a href=\"editmember.php?action=list_members\">".
@@ -1584,6 +1600,10 @@
 					$_GET["memberid"]);
 		}
 
+		/**
+		 * Send the member's password to them.
+		 *
+		 */
 		private function send_password()
 		{
 			$member = MemberPopulator::PopulateByID($_GET["id"]);
