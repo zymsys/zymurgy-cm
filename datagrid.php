@@ -618,12 +618,43 @@ class DataRelationship
 	}
 }
 
+/**
+ * Describes a filter to apply to the records returned by a DataSet.
+ *
+ */
 class DataSetFilter
 {
+	/**
+	 * The name of the column to filter.
+	 *
+	 * @var string
+	 */
 	var $columnname;
+
+	/**
+	 * The value to filter the column against.
+	 *
+	 * @var string
+	 */
 	var $value;
+
+	/**
+	 * The operator to use to perform the comparison. Corresponds to the
+	 * operator used in the corresponding SQL WHERE clause.
+	 *
+	 * @var string
+	 */
 	var $operator;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $columnname The name of the column to filter.
+	 * @param string $value The value to filter the column against.
+	 * @param string $operator The operator to use to perform the comparison.
+	 *  Corresponds to the operator used in the corresponding SQL WHERE clause.
+	 * @return DataSetFilter
+	 */
 	function DataSetFilter($columnname,$value,$operator="=")
 	{
 		$this->columnname = $columnname;
@@ -642,14 +673,65 @@ class DataSet
 	 * @var array
 	 */
 	var $tables;
+
+	/**
+	 * List of columns used by this dataset.
+	 *
+	 * @var mixed
+	 */
 	var $columns;
+
+	/**
+	 * List of rows returned by this dataset.
+	 *
+	 * @var mixed
+	 */
 	var $rows;
+
+	/**
+	 * The ID of the row being edited in this dataset.
+	 *
+	 * @var int
+	 */
 	var $editrow;
+
+	/**
+	 * The list of relationships between the master and detail tables being
+	 * maintained by this dataset.
+	 *
+	 * @var mixed
+	 */
 	var $relationships;
+
+	/**
+	 * The maximum number of rows to return when the dataset is queried.
+	 *
+	 * @var int
+	 */
 	var $fetchrows;
+
+	/**
+	 * Does not appear to be used.
+	 *
+	 * @deprecated
+	 * @var unknown_type
+	 */
 	var $DisplayOrder;
+
+	/**
+	 * List of filters to apply to the returned dataset.
+	 *
+	 * @var mixed
+	 */
 	var $Filters;
-	var $ExtraSQL; //Used for full text queries
+
+	/**
+	 * Extra SQL parameters to apply to the query. Used primarily on tables
+	 * that use Full Text Search.
+	 *
+	 * @var string
+	 */
+	var $ExtraSQL;
 
 	/**
 	 * DataGrid (if any) which owns this DataSet
@@ -662,7 +744,14 @@ class DataSet
 	//var $OnInsert($dataset)
 	//var $OnUpdate($dataset)
 
-	function DataSet($mastertable,$masterkey)
+	/**
+	 * Constructor
+	 *
+	 * @param string $mastertable The name of the master table
+	 * @param string $masterkey The name of the primary key for the master table
+	 * @return DataSet
+	 */
+	public function DataSet($mastertable,$masterkey)
 	{
 		$this->tables = array($mastertable);
 		$this->relationships = array();
@@ -674,48 +763,94 @@ class DataSet
 		$this->DisplayOrder = '';
 	}
 
-	function AddDataFilter($columnname,$value,$operator="=")
+	/**
+	 * Apply a filter to a dataset.
+	 *
+	 * @param string $columnname The name of the column to filter.
+	 * @param string $value The value to filter the column against.
+	 * @param string $operator The operator to use to perform the comparison.
+	 * Corresponds to the operator used in the corresponding SQL WHERE clause.
+	 */
+	public function AddDataFilter($columnname,$value,$operator="=")
 	{
 		if (!(strpos($columnname,'.')!==false))
 			$columnname = $this->tables[0].".$columnname";
 		$this->Filters[] = new DataSetFilter($columnname,$value,$operator);
 	}
 
-	function Clear()
+	/**
+	 * Remove all of the rows from the dataset.
+	 *
+	 */
+	public function Clear()
 	{
 		//$this->columns = array();
 		$this->rows = array();
 	}
 
-	function AddTable($detailtable,$detailcolumn)
+	/**
+	 * Add a detail table to the dataset.
+	 *
+	 * @param string $detailtable The name of the child/detail table.
+	 * @param string $detailcolumn The name of the child/detail table's foriegn
+	 * key column.
+	 */
+	public function AddTable($detailtable,$detailcolumn)
 	{
 		$this->tables[] = $detailtable;
 		$kp = explode(".",$this->masterkey,2);
-		$this->relationships[$detailtable] = new DataRelationship($kp[0],$kp[1],$detailtable,$detailcolumn);
+		$this->relationships[$detailtable] = new DataRelationship(
+			$kp[0],
+			$kp[1],
+			$detailtable,
+			$detailcolumn);
 	}
 
-	function AddColumn($name,$quoted)
+	/**
+	 * Add a column to the dataset.
+	 *
+	 * @param string $name The name of the column to add to the dataset
+	 * @param boolean $quoted If true, the value in the column must be wrapped
+	 * in quotes while being inserted or updated in the database.
+	 */
+	public function AddColumn($name,$quoted)
 	{
 		if (!(strpos($name,'.')!==false))
 			$name = $this->tables[0].".$name";
 		$this->columns[$name] = new DataColumn($name,$quoted);
 	}
 
-	function AddColumns()
+	/**
+	 * Add a series of quoted columns to the dataset.
+	 *
+	 * @param string $name[] The name of the column to add to the dataset.
+	 */
+	public function AddColumns()
 	{
 		$args = func_get_args();
 		foreach ($args as $colname)
 			$this->AddColumn($colname,true);
 	}
 
-	function GetBlankRow()
+	/**
+	 * Return a new, unpopulated row.
+	 *
+	 * @return DataSetRow
+	 */
+	public function GetBlankRow()
 	{
 		$r = new DataSetRow();
 		$r->DataSet = &$this;
 		return $r;
 	}
 
-	function getwhere()
+	/**
+	 * Returns a list of strings to use as the WHERE clause for the SQL SELECT
+	 * statement, based on the list of filters set in the DataSet.
+	 *
+	 * @return mixed
+	 */
+	public function getwhere()
 	{
 		$where = array();
 		foreach ($this->Filters as $f)
@@ -737,6 +872,13 @@ class DataSet
 		return $where;
 	}
 
+	/**
+	 * Populate the dataset.
+	 *
+	 * @param int $start The index of the first record to return
+	 * @param int $length The maximum number of records to return
+	 * @return int The number of rows returned by the query
+	 */
 	function fill($start=0,$length=0)
 	{
 		$selectcols = array();
