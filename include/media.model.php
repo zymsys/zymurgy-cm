@@ -1,12 +1,11 @@
 <?php
 /**
  * regerenced from include/media.php (orphanned)
- * 
+ *
  * @package Zymurgy
  * @subpackage orphanned
  */
 	ini_set("display_errors", 1);
-	require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 	/*
 		Zymurgy:CM Media File Component
@@ -1144,6 +1143,8 @@
 
 		static function GetTableDefinitions_zcm_media_file()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_file",
 				"columns" => array(
@@ -1983,6 +1984,8 @@
 
 		static function GetTableDefinitions_zcm_media_package()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_package",
 				"columns" => array(
@@ -2001,6 +2004,7 @@
 
 		static function GetTableDefinitions_zcm_media_file_package()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
 			return array(
 				"name" => "zcm_media_file_package",
@@ -2744,6 +2748,8 @@
 
 		static function GetTableDefinitions_zcm_media_package_type()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_package_type",
 				"columns" => array(
@@ -2760,6 +2766,8 @@
 
 		static function GetTableDefinitions_zcm_media_package_type_allowed_relation()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_package_type_allowed_relation",
 				"columns" => array(
@@ -2849,6 +2857,8 @@
 
 		static function GetTableDefinitions_zcm_media_restriction()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_restriction",
 				"columns" => array(
@@ -3402,6 +3412,8 @@
 
 		static function GetTableDefinitions_zcm_media_relation()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_relation",
 				"columns" => array(
@@ -3420,6 +3432,8 @@
 
 		static function GetTableDefinitions_zcm_media_file_relation()
 		{
+			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+
 			return array(
 				"name" => "zcm_media_file_relation",
 				"columns" => array(
