@@ -22,16 +22,9 @@ class FlashReliefThumbGallery extends PluginBase
 		$this->VerifyTableDefinitions();
 	}
 
-	function GetRelease()
-	{
-		return 3; //Renamed table to zcm_fr_galleryimage; rename corresponding files as well.
-		//return 2; //Added link to zcm_fr_galleryimage table
-	}
-
 	function Upgrade()
 	{
 		$this->VerifyTableDefinitions();
-		$this->CompleteUpgrade();
 	}
 
 	function VerifyTableDefinitions()

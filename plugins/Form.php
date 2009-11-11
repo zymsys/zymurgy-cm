@@ -291,94 +291,51 @@ class Form extends PluginBase
 		$diemsg = "Unable to upgrade Form plugin: ";
 		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
-		if ($this->dbrelease < 2)
+		// -----
+		// Convert the validators from straight regex to a foriegn key of
+		// the zcm_form_validator table
+		$ri = Zymurgy::$db->query("select id,validator from zcm_form_input");
+		$reregex = array();
+		while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
 		{
-			//Upgrade to r2 - capture/export support
-			//Need export table to track exports and when they happened and for who.
-			//Need to be able to re-download any exports we want.
-			//Need to be able to flush data from any export we want from the server side.
-			//Capture table needs to link to which export that capture belongs to.
-			//Null export info in capture means it's fresh.
-
-			Zymurgy::$db->query("alter table zcm_form_capture change `values` formvalues text NOT NULL");
+			$reregex[$row['id']] = $row['validator'];
 		}
-		if ($this->dbrelease < 3)
+		Zymurgy::$db->free_result($ri);
+		$unknowncount = 0;
+		foreach($reregex as $id=>$validator)
 		{
-			//Upgrade to r3 - capture member relationship, report on member ID in export and email.
-		}
-		if ($this->dbrelease < 4)
-		{
-			//Upgrade to r4 - Renamed tables.
-			$map = array(
-				'formcapture' => 'zcm_form_capture',
-				'formexport' => 'zcm_form_export',
-				'formheader' => 'zcm_form_header',
-				'forminput' => 'zcm_form_input',
-				'forminputtype' => 'zcm_form_inputtype');
-			foreach ($map as $oldname=>$newname)
+			switch($validator)
 			{
-				$sql = "rename table $oldname to $newname";
-				@mysql_query($sql);// or die("Can't rename table ($sql): ".mysql_error());
+				case '':
+					break;
+				case '^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$':
+					Zymurgy::$db->query("update zcm_form_input set validator=2 where id=$id");
+					break;
+				case '^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$':
+					Zymurgy::$db->query("update zcm_form_input set validator=3 where id=$id");
+					break;
+				case '^[2-9]\d{2}-\d{3}-\d{4}$':
+					Zymurgy::$db->query("update zcm_form_input set validator=4 where id=$id");
+					break;
+				default:
+					if(is_numeric($validator))
+					{
+						// Validator is already set by ID. Ignore.
+					}
+					else
+					{
+						$unknowncount++;
+						$sql = "INSERT INTO `zcm_form_regex` (`name`, `regex`) VALUES ('Unknown Validator #$unknowncount','".
+							Zymurgy::$db->escape_string($validator)."')";
+						Zymurgy::$db->query($sql);
+						$newregex = Zymurgy::$db->insert_id();
+						Zymurgy::$db->query("update zcm_form_regex set disporder=$newregex where id=$newregex");
+						Zymurgy::$db->query("update zcm_form_input set validator=$newregex where id=$id");
+					}
+
+					break;
 			}
 		}
-		if ($this->dbrelease < 5)
-		{
-			$ri = Zymurgy::$db->query("select id,validator from zcm_form_input");
-			$reregex = array();
-			while (($row = Zymurgy::$db->fetch_array($ri))!==FALSE)
-			{
-				$reregex[$row['id']] = $row['validator'];
-			}
-			Zymurgy::$db->free_result($ri);
-			$unknowncount = 0;
-			foreach($reregex as $id=>$validator)
-			{
-				switch($validator)
-				{
-					case '':
-						break;
-					case '^([a-zA-Z0-9_\-\.])+@(([0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5]\.[0-2]?[0-5]?[0-5])|((([a-zA-Z0-9\-])+\.)+([a-zA-Z\-])+))$':
-						Zymurgy::$db->query("update zcm_form_input set validator=2 where id=$id");
-						break;
-					case '^\d{5}-\d{4}|\d{5}|[A-Z,a-z]\d[A-Z,a-z] \d[A-Z,a-z]\d$':
-						Zymurgy::$db->query("update zcm_form_input set validator=3 where id=$id");
-						break;
-					case '^[2-9]\d{2}-\d{3}-\d{4}$':
-						Zymurgy::$db->query("update zcm_form_input set validator=4 where id=$id");
-						break;
-					default:
-						if(is_numeric($validator))
-						{
-							// Validator is already set by ID. The dbrelease for this plugin was
-							// probably set incorrectly.
-							//
-							// Ignore.
-						}
-						else
-						{
-							$unknowncount++;
-							$sql = "INSERT INTO `zcm_form_regex` (`name`, `regex`) VALUES ('Unknown Validator #$unknowncount','".
-								Zymurgy::$db->escape_string($validator)."')";
-							Zymurgy::$db->query($sql);
-							$newregex = Zymurgy::$db->insert_id();
-							Zymurgy::$db->query("update zcm_form_regex set disporder=$newregex where id=$newregex");
-							Zymurgy::$db->query("update zcm_form_input set validator=$newregex where id=$id");
-						}
-
-						break;
-				}
-			}
-
-			Zymurgy::$db->query("alter table zcm_form_input change validator validator bigint");
-		}
-		$this->CompleteUpgrade();
-	}
-
-	function GetRelease()
-	{
-		return 6; // Added support for PaymentForm, which uses the same db schema
-		// return 5; //Added capture/export capabilities to db.
-		// return 3; //Added capture/export capabilities to db.
 	}
 
 	function LoadInputData()

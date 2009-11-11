@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage installer
  */
@@ -55,7 +55,12 @@ function RenameOldTables()
 			'help'=>'zcm_help',
 			'helpalso'=>'zcm_helpalso',
 			'helpindex'=>'zcm_helpindex',
-			'helpindexphrase'=>'zcm_helpindexphrase');
+			'helpindexphrase'=>'zcm_helpindexphrase',
+			'formcapture' => 'zcm_form_capture',
+			'formexport' => 'zcm_form_export',
+			'formheader' => 'zcm_form_header',
+			'forminput' => 'zcm_form_input',
+			'forminputtype' => 'zcm_form_inputtype');
 		foreach ($map as $oldname=>$newname)
 		{
 			if (array_key_exists($oldname,$etables))
@@ -236,7 +241,7 @@ function VerifyColumnExists(
 			{
 				Zymurgy::ConvertVanillaToFlavoured($table,$name);
 			}
-			else 
+			else
 			{
 				$sql = "ALTER TABLE `$table` MODIFY COLUMN `$name` $type $params";
 				mysql_query($sql)

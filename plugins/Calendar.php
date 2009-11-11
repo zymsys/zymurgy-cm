@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class Calendar extends PluginBase
@@ -8,7 +8,6 @@ class Calendar extends PluginBase
 	function Upgrade()
 	{
 		$this->VerifyTableDefinitions();
-		$this->CompleteUpgrade();
 	}
 
 	function VerifyTableDefinitions()
@@ -41,11 +40,6 @@ class Calendar extends PluginBase
 	function GetTitle()
 	{
 		return 'Calendar Plugin';
-	}
-
-	function GetRelease()
-	{
-		return 3;
 	}
 
 	function GetUninstallSQL()

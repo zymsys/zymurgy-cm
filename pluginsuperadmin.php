@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -24,13 +24,10 @@ $fn = "{$plugin['name']}Factory";
 $pi = $fn();
 $pi->pid = $pid;
 $pi->iid = $iid;
-$pi->dbrelease = $plugin['release'];
-//echo "[".$pi->GetRelease().",{$pi->dbrelease}]"; exit;
-if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 Zymurgy::LoadPluginConfig($pi);
 if (@method_exists($pi,'RenderSuperAdmin'))
 	$pi->RenderSuperAdmin();
-else 
+else
 	echo "This plugin has no super admin configuration.";
 
 require_once('footer.php');

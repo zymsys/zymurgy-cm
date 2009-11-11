@@ -49,17 +49,9 @@ class ImageGallery extends PluginBase
 		ProcessTableDefinitions($tableDefinitions);
 	}
 
-	function GetRelease()
-	{
-		return 4; // ZK: Recreated ImageGallery, based on FlashReliefThumbGallery.
-		//return 3; //Renamed table to zcm_fr_galleryimage; rename corresponding files as well.
-		//return 2; //Added link to zcm_fr_galleryimage table
-	}
-
 	function Upgrade()
 	{
 		$this->VerifyTableDefinitions();
-		$this->CompleteUpgrade();
 	}
 
 	function GetUninstallSQL()

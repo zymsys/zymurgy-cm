@@ -38,13 +38,6 @@ class PluginBase
 	var $configid;
 
 	/**
-	 * The version of the database schema currently supported by the plugin.
-	 *
-	 * @var int
-	 */
-	var $dbrelease;
-
-	/**
 	 * The plugin instance configuration. This is loaded when the plugin is
 	 * instantiated
 	 *
@@ -63,17 +56,6 @@ class PluginBase
 	}
 
 	/**
-	 * Complete the plugin upgrade and update the database release ID. Used by
-	 * the installer/upgrade script.
-	 *
-	 */
-	public function CompleteUpgrade()
-	{
-		$this->dbrelease = $this->GetRelease();
-		Zymurgy::$db->query("update zcm_plugin set `release`={$this->dbrelease} where id={$this->pid}");
-	}
-
-	/**
 	 * Return the user-friendly name of the plugin to display on the Plugin
 	 * Management screen.
 	 *
@@ -81,17 +63,6 @@ class PluginBase
 	public function GetTitle()
 	{
 		die("GetTitle must be implemented by plugins.");
-	}
-
-	/**
-	 * The current version number of the plugin. Used by the installer/upgrade
-	 * script to determine when to run the install/upgrade scripts.
-	 *
-	 * @return unknown
-	 */
-	public function GetRelease()
-	{
-		return 1; //Default release number.
 	}
 
 	/**

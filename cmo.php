@@ -897,14 +897,12 @@ if (!class_exists('Zymurgy'))
 			$row = Zymurgy::$db->fetch_array($ri);
 			$pi->extra = $extra;
 			$pi->InstanceName = $instance;
-			//echo "[".$pi->GetRelease().",{$pi->dbrelease}]"; exit;
+
 			if ($row !== false)
 			{
 				$pi->pid = $row['pid'];
 				$pi->iid = $row['pii'];
 				$pi->configid = $row["configid"];
-				$pi->dbrelease = $row['release'];
-				if ($pi->GetRelease() > $pi->dbrelease) $pi->Upgrade();
 				Zymurgy::LoadPluginConfig($pi);
 			}
 			else
