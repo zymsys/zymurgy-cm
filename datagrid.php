@@ -970,8 +970,17 @@ class DataGridValidator
 	}
 }
 
+/**
+ * Represents a column in a DataGrid control.
+ *
+ */
 class DataGridColumn
 {
+	/**
+	 * The text to display in the Header row of the datagrid for this column.
+	 *
+	 * @var string
+	 */
 	var $headertxt;
 	var $datacolumn;
 	var $template;
