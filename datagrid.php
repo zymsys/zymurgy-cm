@@ -563,13 +563,52 @@ class DataSetRow
 	}
 }
 
+/**
+ * Describes the relationship between a parent/master table, and one of its
+ * child/detail tables.
+ *
+ */
 class DataRelationship
 {
+	/**
+	 * The name of the parent/master table.
+	 *
+	 * @var string
+	 */
 	var $mastertable;
+
+	/**
+	 * The name of the parent/master table's primary key column.
+	 *
+	 * @var string
+	 */
 	var $mastercolumn;
+
+	/**
+	 * The name of the child/detail table.
+	 *
+	 * @var string
+	 */
 	var $detailtable;
+
+	/**
+	 * The name of the child/detail table's foriegn key column.
+	 *
+	 * @var unknown_type
+	 */
 	var $detailcolumn;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $mastertable The name of the parent/master table.
+	 * @param string $mastercolumn The name of the parent/master table's
+	 * primary key column.
+	 * @param string $detailtable The name of the child/detail table.
+	 * @param string $detailcolumn The name of the child/detail table's foriegn
+	 * key column.
+	 * @return DataRelationship
+	 */
 	function DataRelationship($mastertable,$mastercolumn,$detailtable,$detailcolumn)
 	{
 		$this->mastertable = $mastertable;
