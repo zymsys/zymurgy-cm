@@ -10,6 +10,16 @@ class Faq extends PluginBase
 		return 'FAQ Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Frequently Asked Question (FAQ) Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows you to easily add a categorized Frequently
+			Asked Question section to your web site.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return 'drop table faq; drop table faq_cat';

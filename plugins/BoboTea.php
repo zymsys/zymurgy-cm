@@ -20,6 +20,22 @@ class BoboTea extends PluginBase
 	}
 
 	/**
+	 * Return the user-friendly description of the plugin to display on the
+	 * Plugin Details and Add Plugin screens.
+	 *
+	 * @return string
+	 */
+	public function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>BoboTea Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This is a sample "skeleton" plugin for developers who want to
+			create their own plugins for Zymurgy:CM.</p>
+BLOCK;
+	}
+
+	/**
 	 * Return the SQL scripts to run when uninstalling the plugin.
 	 *
 	 * If your plugin creates tables to store data specific to the plugin,

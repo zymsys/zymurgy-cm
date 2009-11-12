@@ -18,6 +18,17 @@
 			return 'Custom Table Repeater Plugin';
 		}
 
+		function GetDescription()
+		{
+			return <<<BLOCK
+				<h3>Custom Table Repeater Plugin</h3>
+				<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+				<p>This plugin allows you to place the contents of a custom
+				table on a page, with a greater control over the layout than
+				is provided by the Custom Table Display plugin.</p>
+BLOCK;
+		}
+
 		function GetUninstallSQL()
 		{
 			return "";

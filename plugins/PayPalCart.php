@@ -61,6 +61,16 @@ class PayPalCart extends PluginBase
 		return 'PayPal Shopping Cart';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>PayPal Shopping Cart Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows you to add a simple shopping cart to your
+			web site, with the payments processed by PayPal.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		//return 'drop table bobotea';

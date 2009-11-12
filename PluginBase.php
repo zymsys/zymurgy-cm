@@ -30,6 +30,14 @@ interface ZymurgyPlugin
 	public function GetTitle();
 
 	/**
+	 * Return the user-friendly description of the plugin to display on the
+	 * Plugin Details and Add Plugin screens.
+	 *
+	 * @return string
+	 */
+	public function GetDescription();
+
+	/**
 	 * Render the contents of the plugin, as it should appear on the front-end
 	 * web site.
 	 *

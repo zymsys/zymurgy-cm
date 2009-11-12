@@ -10,6 +10,17 @@ class InputSpecGadget extends PluginBase
 		return 'Input Spec Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Input Specifier (inputspec) Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>Use this plugin to render data using the appropriate
+			InputWidget. This is used primarily to show items, such as dates,
+			that need to be differently based on localization rules.</p>
+BLOCK;
+	}
+
 	function VerifyTableDefinitions()
 	{
 		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");

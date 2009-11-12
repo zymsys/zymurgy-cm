@@ -10,6 +10,18 @@ class IncludeCodeFile extends PluginBase
 		return 'Include Code File Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Include Code File Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plug-in allows you to run a PHP file inside the page using
+			a standard PHP include. Using this plugin is the simplest way of
+			providing custom functionality within your web site, while still
+			maintaining your content within the Pages system.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		// return 'drop table zcm_';

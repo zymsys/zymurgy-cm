@@ -17,6 +17,16 @@ class ImageGallery extends PluginBase
 		return 'Image Gallery Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Image Gallery Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin displays a gallery of images using the YUI Carousel
+			widget.</p>
+BLOCK;
+	}
+
 	function Initialize()
 	{
 		$this->VerifyTableDefinitions();

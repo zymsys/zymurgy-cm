@@ -18,6 +18,19 @@ class TagCloudResult extends PluginBase
 		return 'Tag Cloud Results Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Tag Cloud Results Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin provides the table of results for the associated
+			TagCloud plugin instance.</p>
+			<p>This plugin must be used in association with the TagCloud
+			plugin, which provides the filters to apply to the results
+			table.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return '';

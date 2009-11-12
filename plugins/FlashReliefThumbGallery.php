@@ -17,6 +17,20 @@ class FlashReliefThumbGallery extends PluginBase
 		return 'Flash Relief Thumb Gallery Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Flash Relief Thumb Gallery Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin displays a gallery of images using the Flash
+			Relief Thumb Gallery component.</p>
+			<p>To use this plugin, you must first purchase a license to the
+			Flash Relief Thumb Gallery component, and place it on your web
+			site. The component is available here:</p>
+			<p><a href="http://www.flashrelief.com/thumbgallery/features.html">http://www.flashrelief.com/thumbgallery/features.html</a></p>
+BLOCK;
+	}
+
 	function Initialize()
 	{
 		$this->VerifyTableDefinitions();

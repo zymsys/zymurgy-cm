@@ -10,6 +10,16 @@ class MemberLogin extends PluginBase
 		return 'Member Login Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Member Login Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows you to easily place a member login form onto
+			you pages.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return '';

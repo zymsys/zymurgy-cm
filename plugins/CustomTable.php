@@ -18,6 +18,17 @@
 			return 'Custom Table Display Plugin';
 		}
 
+		function GetDescription()
+		{
+			return <<<BLOCK
+				<h3>Custom Table Display Plugin</h3>
+				<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+				<p>This plugin renders a paginated and sortable YUI DataTable,
+				containing the contents of a specified custom table. The
+				contents can be filtered using standard SQL syntax.</p>
+BLOCK;
+		}
+
 		function GetUninstallSQL()
 		{
 			return "";

@@ -28,6 +28,26 @@ class Form extends PluginBase
 		return 'Form Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Form Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows you to add Forms to your web site. Using the
+			Form plugin, you can create forms that:</p>
+			<ul>
+				<li>Send an e-mail to a specified e-mail address (Contact Us
+				Forms)</li>
+				<li>Send an e-mail back to the user that filled out the form
+				confirming that the form was properly submitted</li>
+				<li>Capture the data to Export to Excel</li>
+				<li>Capture the data in a custom table</li>
+			</ul>
+			<p>The Form plugin also has an extensive Extension system, allowing
+			you to add custom functionality to a given Form.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return 'drop table zcm_form_capture; drop table zcm_form_input; drop table zcm_form_inputtype';

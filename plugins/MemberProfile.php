@@ -10,6 +10,16 @@ class MemberProfile extends PluginBase
 		return 'Member Profile Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Member Profile Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows logged-in members to edit their profile,
+			including username and password information.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return '';

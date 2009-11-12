@@ -10,6 +10,16 @@ class EmbeddedContent extends PluginBase
 		return 'Embedded Content Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Embedded Content Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin allows you to embed content, such as embedded
+			YouTube videos, onto your pages.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return '';

@@ -16,6 +16,17 @@
 			return "Custom Table RSS Feed";
 		}
 
+		function GetDescription()
+		{
+			return <<<BLOCK
+				<h3>Custom Table RSS Feed Plugin</h3>
+				<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+				<p>This plugin adds a link tag to an RSS feed for a custom
+				table. In the browser, this will cause an RSS icon to appear
+				in the address bar, which users can then subscribe to.</p>
+BLOCK;
+		}
+
 		function GetUninstallSQL()
 		{
 			return "";

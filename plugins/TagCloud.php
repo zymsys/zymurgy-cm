@@ -20,6 +20,24 @@ class TagCloud extends PluginBase
 		return 'Tag Cloud Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Tag Cloud Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin provides:</p>
+			<ul>
+				<li>A front end component for selecting tags from a tag
+				cloud</li>
+				<li>A custom inputspec (taglist) for associating records in
+				custom tables to tags</li>
+			</ul>
+			<p>This plugin is best used in association with the TagCloudResult
+			plugin, which displays the records associated with a given tag
+			in a table.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return

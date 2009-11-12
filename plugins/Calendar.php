@@ -42,6 +42,15 @@ class Calendar extends PluginBase
 		return 'Calendar Plugin';
 	}
 
+	function GetDescription()
+	{
+		return <<<BLOCK
+			<h3>Calendar Plugin</h3>
+			<p><b>Provider:</b> Zymurgy Systems, Inc.</p>
+			<p>This plugin provides a simple Calendar of Events.</p>
+BLOCK;
+	}
+
 	function GetUninstallSQL()
 	{
 		return 'drop table calendar';
