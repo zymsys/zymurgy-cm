@@ -175,17 +175,6 @@ abstract class PluginBase implements ZymurgyPlugin
 		return array();
 	}
 
-	/**
-	 * Return the list of keys used in the configuration for the plugin.
-	 *
-	 * @deprecated
-	 * @return unknown
-	 */
-	function GetUserConfigKeys()
-	{
-		return array();
-	}
-
 	function Initialize()
 	{
 	}
