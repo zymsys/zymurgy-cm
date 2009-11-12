@@ -11,10 +11,35 @@ if (isset($ZymurgyRoot))
 else
 	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 
+/**
+ * Defines the methods that have to be implemented by classes that extend
+ * PluginBase.
+ *
+ * This could have been done by marking the classes in PluginBase as abstract,
+ * but putting them in an interface makes for clearer error messaging.
+ *
+ */
 interface ZymurgyPlugin
 {
+	/**
+	 * Return the user-friendly name of the plugin to display on the Plugin
+	 * Management screen.
+	 *
+	 */
 	public function GetTitle();
+
+	/**
+	 * Render the plugin, as it should appear on the front-end web site.
+	 *
+	 */
 	public function Render();
+
+	/**
+	 * Render the screen displayed when the user selects the instance in the
+	 * Plugin Management section of Zymurgy:CM, or when they select
+	 * "Edit Gadget" in the pages section of Zymurgy:CM.
+	 *
+	 */
 	public function RenderAdmin();
 }
 
@@ -61,16 +86,6 @@ abstract class PluginBase implements ZymurgyPlugin
 	{
 		//Stub so that ancestors can call parent and when we need one the wiring is in place.
 	}
-
-	/**
-	 * Return the user-friendly name of the plugin to display on the Plugin
-	 * Management screen.
-	 *
-	 */
-//	public function GetTitle()
-//	{
-//		die("GetTitle must be implemented by plugins.");
-//	}
 
 	/**
 	 * The SQL scripts to run when uninstalling the plugin.
@@ -201,26 +216,6 @@ abstract class PluginBase implements ZymurgyPlugin
 	function Upgrade()
 	{
 	}
-
-	/**
-	 * Render the plugin, as it should appear on the front-end web site.
-	 *
-	 */
-//	function Render()
-//	{
-//		die("Render must be implemented by plugins.");
-//	}
-
-	/**
-	 * Render the screen displayed when the user selects the instance in the
-	 * Plugin Management section of Zymurgy:CM, or when they select
-	 * "Edit Gadget" in the pages section of Zymurgy:CM.
-	 *
-	 */
-//	function RenderAdmin()
-//	{
-//		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
-//	}
 
 	/**
 	 * Render the menu of commands shown on the bottom of the screen displayed
