@@ -387,24 +387,7 @@ UpdateStatus("Configuring media file support");
 require_once("../cmo.php");
 require_once("../include/media.php");
 
-// ZK: Because of the new table definition system, the upgrade script for
-// the media file components can now be run every time the base upgrade
-// script is run.
-MediaFileInstaller::Upgrade(0, 1);
-
-// $installedVersion = MediaFileInstaller::InstalledVersion();
-// $targetVersion = MediaFileInstaller::Version();
-
-// if($installedVersion < $targetVersion)
-// {
-// 	echo("-- Installing/upgrading from version $installedVersion to version $targetVersion<br>");
-//
-//	MediaFileInstaller::Upgrade($installedVersion, $targetVersion);
-// }
-// else
-// {
-//	echo("-- No install/upgrade required<br>");
-// }
+MediaFileInstaller::Upgrade();
 
 UpdateStatus("-- Done");
 UpdateStatus("");
@@ -454,10 +437,10 @@ while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {
 	if (array_key_exists($row['name'],$plugins))
 	{
-		if ($row['enabled'] == 1)
+//		if ($row['enabled'] == 1)
 			$plugins[$row['name']] = 'E'; // (E)nabled
-		else
-			$plugins[$row['name']] = 'D'; // (D)isabled
+//		else
+//			$plugins[$row['name']] = 'D'; // (D)isabled
 	}
 	else
 	{
@@ -566,7 +549,7 @@ if(!isset($_GET["debug"]))
 		$plugin = $factory();
 		$plugin->Upgrade();
 	}
-	
+
 	function  ExecuteAdd($source)
 	{
 		global $plugins;

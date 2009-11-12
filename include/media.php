@@ -1,19 +1,19 @@
 <?php
 /**
  * 1 reference left from inputWidget.php
- * 
+ *
  * Zymurgy:CM Media File Component
  * Z:CM View and Controller classes
- * 
+ *
  * This component has been built using a self-contained MVC structure. To insert
  * media file code from within Zymurgy:CM, the controller should be instantiated
  * and called as follows:
- * 
+ *
  * -----
  * $mediaController = new MediaFileController();
  * $mediaController->Execute($action);
  * -----
- * 
+ *
  * The valid values for $action are as follows:
  *     - Installation Actions
  *  		- install (when explicitly enabled - see comment in Controller class)
@@ -53,7 +53,7 @@
  * 		- act_edit_media_relation
  * 		- delete_media_relation
  * 		- act_delete_media_relation
- * 
+ *
  * @package Zymurgy
  * @subpackage oprhanned
  */
@@ -63,62 +63,7 @@
 
 	class MediaFileInstaller
 	{
-		static function InstalledVersion()
-		{
-			// ZK: Not sure version detection is actually required any more
-			return 0;
-
-			$sql = "show tables like 'zcm_media_file'";
-			$tableExists = Zymurgy::$db->get($sql);
-
-			if(!($tableExists == 'zcm_media_file'))
-			{
-				return 0;
-			}
-			else
-			{
-				// Check for a column defined in each version of the
-				// table definition, in descending order. If the column is
-				// found, the return statement ensures that older versions
-				// won't be checked.
-
-				// If none of the columns are found, return as version 1.
-
-				$sql = "SHOW COLUMNS FROM `zcm_media_package_type` LIKE 'builtin'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				if(isset($fieldExists[0]) && $fieldExists[0] == 'builtin') return 6;
-
-				$sql = "SHOW COLUMNS FROM `zcm_media_relation` LIKE 'thumbnails'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				if(isset($fieldExists[0]) && $fieldExists[0] == 'thumbnails') return 5;
-
-				$sql = "SHOW COLUMNS FROM `zcm_media_file` LIKE 'price'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				if(isset($fieldExists[0]) && $fieldExists[0] == 'price') return 4;
-
-				$sql = "SHOW COLUMNS FROM `zcm_media_package` LIKE 'media_package_type_id'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_package_type_id') return 3;
-
-				$sql = "SHOW COLUMNS FROM `zcm_media_file` LIKE 'media_relation_id'";
-				$fieldExists = Zymurgy::$db->get($sql);
-				if(isset($fieldExists[0]) && $fieldExists[0] == 'media_relation_id') return 2;
-
-				return 1;
-			}
-		}
-
-		static function Version()
-		{
-			return 6;
-		}
-
-		static function Install()
-		{
-			MediaFileInstaller::Upgrade(0, MediaFileInstaller::Version());
-		}
-
-		static function Upgrade($currentVersion, $targetVersion)
+		static function Upgrade()
 		{
 			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
 
@@ -2209,7 +2154,7 @@
 				die("Unsupported action ".$action);
 			}
 		}
-		
+
 		static function EnsureLocalPathExists()
 		{
 			if (!array_key_exists('Media File Local Path',Zymurgy::$config))
@@ -2224,7 +2169,7 @@
 
 		private function install()
 		{
-			MediaFileInstaller::Install();
+			MediaFileInstaller::Upgrade();
 		}
 
 		private function uninstall()
