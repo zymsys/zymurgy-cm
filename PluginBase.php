@@ -41,6 +41,12 @@ interface ZymurgyPlugin
 	 *
 	 */
 	public function RenderAdmin();
+
+	/**
+	 * The SQL scripts to run when uninstalling the plugin.
+	 *
+	 */
+	public function GetUninstallSQL();
 }
 
 abstract class PluginBase implements ZymurgyPlugin
@@ -85,14 +91,6 @@ abstract class PluginBase implements ZymurgyPlugin
 	public function PluginBase()
 	{
 		//Stub so that ancestors can call parent and when we need one the wiring is in place.
-	}
-
-	/**
-	 * The SQL scripts to run when uninstalling the plugin.
-	 *
-	 */
-	public function GetUninstallSQL()
-	{
 	}
 
 	/**
