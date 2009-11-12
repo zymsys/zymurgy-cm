@@ -59,23 +59,6 @@ class IncludeCodeFile extends PluginBase
 		return $r;
 	}
 
-	function GetConfigItemTypes()
-	{
-		//Data types are in the format:
-		//Implemented:
-		//Not Implemented:
-//		"input.$size.$maxlength"
-//		"textarea.$width.$height"
-//		"html.$widthpx.$heightpx"
-//		"radio.".serialize($optionarray)
-//		"drop.".serialize($optionarray)
-//		"attachment"
-//		"money"
-//		"unixdate"
-//		"lookup.$table"
-		return array();
-	}
-
 	function Initialize()
 	{
 		// mysql_query('create table bobotea(int id)');

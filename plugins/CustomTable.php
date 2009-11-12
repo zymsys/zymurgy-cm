@@ -61,11 +61,6 @@
 			return $r;
 		}
 
-		function GetConfigItemTypes()
-		{
-			return array();
-		}
-
 		function Initialize()
 		{
 		}

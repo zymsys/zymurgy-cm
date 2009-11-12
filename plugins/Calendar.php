@@ -133,11 +133,6 @@ class Calendar extends PluginBase
 		return $r;
 	}
 
-	function GetConfigItemTypes()
-	{
-		return;
-	}
-
 	function Initialize()
 	{
 		$this->VerifyTableDefinitions();

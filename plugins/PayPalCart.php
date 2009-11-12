@@ -99,11 +99,6 @@ class PayPalCart extends PluginBase
 		return $r;
 	}
 
-	function GetConfigItemTypes()
-	{
-		return array();
-	}
-
 	public function Initialize()
 	{
 		$this->VerifyTableDefinitions();
