@@ -137,11 +137,6 @@ class ImageGallery extends PluginBase
 		return $r;
 	}
 
-	function AdminMenuText()
-	{
-		return "Galleries";
-	}
-
 	function RenderAdmin()
 	{
 		$usegimage = ($this->GetConfigValue('Generate Gallery Image')=='true');

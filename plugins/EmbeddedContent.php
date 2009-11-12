@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class EmbeddedContent extends PluginBase
@@ -54,11 +54,6 @@ class EmbeddedContent extends PluginBase
 	function Render()
 	{
 		return $this->GetConfigValue('Embed Code');
-	}
-
-	function AdminMenuText()
-	{
-		return 'EmbeddedContent Admin menu text?';
 	}
 
 	function RenderAdmin()

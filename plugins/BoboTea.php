@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class BoboTea extends PluginBase
@@ -72,11 +72,6 @@ class BoboTea extends PluginBase
 	function Render()
 	{
 		return "I am the BoboTea Plugin.  I represent {$this->config['bobo']}.";
-	}
-
-	function AdminMenuText()
-	{
-		return 'BoboTea';
 	}
 
 	function RenderAdmin()

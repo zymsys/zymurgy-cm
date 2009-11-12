@@ -270,11 +270,6 @@
 <?
 		}
 
-		function AdminMenuText()
-		{
-			return 'CustomTable';
-		}
-
 		function RenderAdmin()
 		{
 			echo "";

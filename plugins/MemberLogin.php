@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class MemberLogin extends PluginBase
@@ -56,11 +56,6 @@ class MemberLogin extends PluginBase
 		if (!array_key_exists('reg',$_GET))
 			$r .= "<a href=\"{$_SERVER['REQUEST_URI']}?reg=username\">Not a member?  Sign-up.</a>";
 		return $r;
-	}
-
-	function AdminMenuText()
-	{
-		return '';
 	}
 
 	function RenderAdmin()

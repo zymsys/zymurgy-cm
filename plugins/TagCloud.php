@@ -192,11 +192,6 @@ class TagCloud extends PluginBase
 		Zymurgy::$db->free_result($ri);
 	}
 
-	function AdminMenuText()
-	{
-		return 'TagCloud';
-	}
-
 	function RenderAdmin()
 	{
 		echo "This is the admin for the TagCloud plugin.";

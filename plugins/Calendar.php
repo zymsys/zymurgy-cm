@@ -175,11 +175,6 @@ class Calendar extends PluginBase
 		return "<div class=\"Calendar\">".join($this->GetConfigValue('Event Separator'),$cal)."</div>";
 	}
 
-	function AdminMenuText()
-	{
-		return 'Calendar';
-	}
-
 	function RenderAdmin()
 	{
 		$ds = new DataSet('calendar','id');

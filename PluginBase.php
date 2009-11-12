@@ -11,7 +11,14 @@ if (isset($ZymurgyRoot))
 else
 	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
 
-class PluginBase
+interface ZymurgyPlugin
+{
+	public function GetTitle();
+	public function Render();
+	public function RenderAdmin();
+}
+
+abstract class PluginBase implements ZymurgyPlugin
 {
 	/**
 	 * The ID of the plugin, as set in the database when the plugin was
@@ -60,10 +67,10 @@ class PluginBase
 	 * Management screen.
 	 *
 	 */
-	public function GetTitle()
-	{
-		die("GetTitle must be implemented by plugins.");
-	}
+//	public function GetTitle()
+//	{
+//		die("GetTitle must be implemented by plugins.");
+//	}
 
 	/**
 	 * The SQL scripts to run when uninstalling the plugin.
@@ -199,10 +206,10 @@ class PluginBase
 	 * Render the plugin, as it should appear on the front-end web site.
 	 *
 	 */
-	function Render()
-	{
-		die("Render must be implemented by plugins.");
-	}
+//	function Render()
+//	{
+//		die("Render must be implemented by plugins.");
+//	}
 
 	/**
 	 * Render the screen displayed when the user selects the instance in the
@@ -210,10 +217,10 @@ class PluginBase
 	 * "Edit Gadget" in the pages section of Zymurgy:CM.
 	 *
 	 */
-	function RenderAdmin()
-	{
-		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
-	}
+//	function RenderAdmin()
+//	{
+//		die("If a plugin implements AdminMenuText() it must also implement RenderAdmin().");
+//	}
 
 	/**
 	 * Render the menu of commands shown on the bottom of the screen displayed
@@ -273,17 +280,6 @@ class PluginBase
 
 			echo("</table>");
 		}
-	}
-
-	/**
-	 * Not sure what this is for.
-	 *
-	 * @deprecated
-	 * @return unknown
-	 */
-	function AdminMenuText()
-	{
-		return '';
 	}
 
 	/**

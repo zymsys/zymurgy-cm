@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class MemberProfile extends PluginBase
@@ -91,11 +91,6 @@ class MemberProfile extends PluginBase
 			$this->GetConfigValue("Password Field Name"),
 			$this->GetConfigValue("Confirm Password Field Name"),
 			$this->GetConfigValue("Forward URL"));
-	}
-
-	function AdminMenuText()
-	{
-		return '';
 	}
 
 	function RenderAdmin()

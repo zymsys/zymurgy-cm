@@ -263,11 +263,6 @@ YAHOO.util.Event.addListener(window, "load", function () {
 		echo "</table>\r\n";
 	}
 
-	function AdminMenuText()
-	{
-		return 'PayPalCart';
-	}
-
 	function RenderAdmin()
 	{
 		if (array_key_exists('ppcio',$_GET))

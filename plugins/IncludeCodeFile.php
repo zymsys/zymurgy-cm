@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class IncludeCodeFile extends PluginBase
@@ -84,11 +84,6 @@ class IncludeCodeFile extends PluginBase
 	function Render()
 	{
 		include(Zymurgy::$root.$this->GetConfigValue("URL"));
-	}
-
-	function AdminMenuText()
-	{
-		return 'Include Code File';
 	}
 
 	function RenderAdmin()

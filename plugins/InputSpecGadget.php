@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy_Plugins
  */
 class InputSpecGadget extends PluginBase
@@ -32,7 +32,7 @@ class InputSpecGadget extends PluginBase
 
 		ProcessTableDefinitions($tableDefinitions);
 	}
-	
+
 	function GetUninstallSQL()
 	{
 		return 'drop table zcm_inputspecplugin';
@@ -86,11 +86,6 @@ class InputSpecGadget extends PluginBase
 		return $iw->Display($inputspec,'{0}',$value);
 	}
 
-	function AdminMenuText()
-	{
-		return 'InputSpec Admin menu text?';
-	}
-
 	function RenderAdmin()
 	{
 		$inputspec = $this->GetConfigValue('Input Spec');
@@ -98,7 +93,7 @@ class InputSpecGadget extends PluginBase
 		{
 			echo 'Please configure the input specifier first.';
 		}
-		else 
+		else
 		{
 			if ($_SERVER['REQUEST_METHOD'] == 'POST')
 			{

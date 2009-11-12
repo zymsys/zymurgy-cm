@@ -268,11 +268,6 @@
 			return $fields;
 		}
 
-		function AdminMenuText()
-		{
-			return 'Repeater';
-		}
-
 		function RenderAdmin()
 		{
 			echo "";

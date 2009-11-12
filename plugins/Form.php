@@ -678,11 +678,6 @@ function Validate$name(me) {
 		}
 	}
 
-	function AdminMenuText()
-	{
-		return 'Forms';
-	}
-
 	function RenderSuperAdmin()
 	{
 		$ds = new DataSet('zcm_form_inputtype','id');

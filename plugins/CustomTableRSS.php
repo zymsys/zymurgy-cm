@@ -211,11 +211,6 @@
 			return $xml;
 		}
 
-		function AdminMenuText()
-		{
-			return 'Custom Table RSS Feed';
-		}
-
 		function RenderAdmin()
 		{
 			echo "Content pending";

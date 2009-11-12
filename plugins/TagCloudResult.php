@@ -308,11 +308,6 @@ BLOCK;
 		return $fields;
 	}
 
-	function AdminMenuText()
-	{
-		return 'TagCloud';
-	}
-
 	function RenderAdmin()
 	{
 		echo "This is the admin for the TagCloud plugin.";
