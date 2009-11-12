@@ -25,11 +25,13 @@ interface ZymurgyPlugin
 	 * Return the user-friendly name of the plugin to display on the Plugin
 	 * Management screen.
 	 *
+	 * @return string
 	 */
 	public function GetTitle();
 
 	/**
-	 * Render the plugin, as it should appear on the front-end web site.
+	 * Render the contents of the plugin, as it should appear on the front-end
+	 * web site.
 	 *
 	 */
 	public function Render();
@@ -43,10 +45,21 @@ interface ZymurgyPlugin
 	public function RenderAdmin();
 
 	/**
-	 * The SQL scripts to run when uninstalling the plugin.
+	 * Return the SQL scripts to run when uninstalling the plugin.
 	 *
+	 * @return string;
 	 */
 	public function GetUninstallSQL();
+
+	/**
+	 * Return the list of settings for the plugin to display when the user
+	 * clicks on "Default Settings" on the Plugin Management screen, the
+	 * "Edit Settings" menu item for a plugin instance, or the "Edit Gadget"
+	 * link in the pages system.
+	 *
+	 * @return mixed
+	 */
+	public function GetConfigItems();
 }
 
 abstract class PluginBase implements ZymurgyPlugin
