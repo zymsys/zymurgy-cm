@@ -9,6 +9,10 @@
 				DisablePlugin($_POST["id"]);
 				Zymurgy::JSRedirect("plugin.php");
 
+			case "act_remove":
+				RemovePlugin($_POST["id"]);
+				Zymurgy::JSRedirect("plugin.php");
+
 			default:
 				die("Invalid action ".$_POST["action"]);
 		}
@@ -19,17 +23,17 @@
 		{
 			case "removelist":
 				$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; Remove/Disable Plugin";
-
 				$ri = GetInstalledPlugins();
 				DisplayPluginList($ri, $_GET["action"]);
 				Zymurgy::$db->free_result($ri);
 				break;
 
 			case "disable":
+			case "remove":
 				$plugin = GetPluginDetails($_GET["id"]);
-				$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; <a href=\"pluginlist.php?action=removelist\">Disable Plugin</a> &gt; ".
+				$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; <a href=\"pluginlist.php?action=removelist\">".ucfirst($_GET["action"])." Plugin</a> &gt; ".
 					$plugin->GetTitle();
-				DisplayPluginDetails($plugin, $_GET["id"], "disable");
+				DisplayPluginDetails($plugin, $_GET["id"], $_GET["action"]);
 				break;
 
 			default:
@@ -39,7 +43,7 @@
 
 	function GetInstalledPlugins()
 	{
-		$sql = "SELECT `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, CASE WHEN `zcm_plugininstance`.`id` > 0 THEN 1 ELSE 0 END AS `hasinstances`, COUNT(*) AS `count` FROM `zcm_plugin` LEFT JOIN `zcm_plugininstance` ON `zcm_plugininstance`.`plugin` = `zcm_plugin`.`id` WHERE `enabled` = 1 GROUP BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name` ORDER BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`";
+		$sql = "SELECT `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled`, CASE WHEN `zcm_plugininstance`.`id` > 0 THEN 1 ELSE 0 END AS `hasinstances`, COUNT(*) AS `count` FROM `zcm_plugin` LEFT JOIN `zcm_plugininstance` ON `zcm_plugininstance`.`plugin` = `zcm_plugin`.`id` GROUP BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled` ORDER BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled`";
 
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of installed plugins: ".Zymurgy::$db->error().", $sql");
@@ -69,6 +73,37 @@
 			or die("Could not disable plugin: ".Zymurgy::$db->error().", $sql");
 	}
 
+	function RemovePlugin($id)
+	{
+		$sql = "DELETE FROM `zcm_pluginconfigitem` WHERE EXISTS( SELECT 1 FROM `zcm_pluginconfiggroup` WHERE `zcm_pluginconfiggroup`.`id` = `zcm_pluginconfigitem`.`config` AND EXISTS( SELECT 1 FROM `zcm_plugininstance` WHERE `zcm_plugininstance`.`config` = `zcm_pluginconfiggroup`.`id` AND `zcm_plugininstance`.`plugin` = '".
+			Zymurgy::$db->escape_string($id).
+			"' ) OR EXISTS( SELECT 1 FROM `zcm_plugin` WHERE `zcm_plugin`.`defaultconfig` = `zcm_pluginconfiggroup`.`id` AND `zcm_plugin`.`id` = '".
+			Zymurgy::$db->escape_string($id).
+			"' ) )";
+		Zymurgy::$db->query($sql)
+			or die("Could not remove config items associated with plugin: ".Zymurgy::$db->error().", $sql");
+
+		$sql = "DELETE FROM `zcm_pluginconfiggroup` WHERE EXISTS( SELECT 1 FROM `zcm_plugininstance` WHERE `zcm_plugininstance`.`config` = `zcm_pluginconfiggroup`.`id` AND `zcm_plugininstance`.`plugin` = '".
+			Zymurgy::$db->escape_string($id).
+			"' ) OR EXISTS( SELECT 1 FROM `zcm_plugin` WHERE `zcm_plugin`.`defaultconfig` = `zcm_pluginconfiggroup`.`id` AND `zcm_plugin`.`id` = '".
+			Zymurgy::$db->escape_string($id).
+			"' )";
+		Zymurgy::$db->query($sql)
+			or die("Could not remove config groups associated with plugin: ".Zymurgy::$db->error().", $sql");
+
+		$sql = "DELETE FROM `zcm_plugininstance` WHERE `plugin` = '".
+			Zymurgy::$db->escape_string($id).
+			"'";
+		Zymurgy::$db->query($sql)
+			or die("Could not remove orphaned instances of plugin: ".Zymurgy::$db->error().", $sql");
+
+		$sql = "DELETE FROM `zcm_plugin` WHERE `id` = '".
+			Zymurgy::$db->escape_string($id).
+			"'";
+		Zymurgy::$db->query($sql)
+			or die("Could not remove plugin: ".Zymurgy::$db->error().", $sql");
+	}
+
 	function DisplayPluginList($ri, $action)
 	{
 		global $breadcrumbTrail;
@@ -91,10 +126,12 @@
 		<tr class="DataGridRow<?= $isEven ? "Alternate" : "" ?>">
 			<td><?= $row["title"] ?></td>
 			<td><?= $row["hasinstances"] <= 0
-					? "<a href=\"pluginlist.php?action=disable&amp;id=".$row["id"]."\">Disable</a>"
+					? $row["enabled"] > 0
+						? "<a href=\"pluginlist.php?action=disable&amp;id=".$row["id"]."\">Disable</a>"
+						: "Already disabled"
 					: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot disable" ?></td>
 			<td><?= $row["hasinstances"] <= 0
-					? "Remove"
+					? "<a href=\"pluginlist.php?action=remove&amp;id=".$row["id"]."\">Remove</a>"
 					: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot delete" ?></td>
 		</tr>
 <?
