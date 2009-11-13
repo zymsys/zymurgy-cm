@@ -5,6 +5,10 @@
 	{
 		switch($_POST["action"])
 		{
+			case "act_enable":
+				EnablePlugin($_POST["id"]);
+				Zymurgy::JSRedirect("plugin.php");
+
 			case "act_disable":
 				DisablePlugin($_POST["id"]);
 				Zymurgy::JSRedirect("plugin.php");
@@ -21,6 +25,13 @@
 	{
 		switch($_GET["action"])
 		{
+			case "addlist":
+				$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; Add/Enable Plugin";
+				$ri = GetDisabledPlugins();
+				DisplayPluginList($ri, $_GET["action"]);
+				Zymurgy::$db->free_result($ri);
+				break;
+
 			case "removelist":
 				$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; Remove/Disable Plugin";
 				$ri = GetInstalledPlugins();
@@ -28,6 +39,7 @@
 				Zymurgy::$db->free_result($ri);
 				break;
 
+			case "enable":
 			case "disable":
 			case "remove":
 				$plugin = GetPluginDetails($_GET["id"]);
@@ -39,6 +51,16 @@
 			default:
 				die("Invalid action ".$_GET["action"]);
 		}
+	}
+
+	function GetDisabledPlugins()
+	{
+		$sql = "SELECT `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled`, CASE WHEN `zcm_plugininstance`.`id` > 0 THEN 1 ELSE 0 END AS `hasinstances`, COUNT(*) AS `count` FROM `zcm_plugin` LEFT JOIN `zcm_plugininstance` ON `zcm_plugininstance`.`plugin` = `zcm_plugin`.`id` WHERE `enabled` <> 1 GROUP BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled` ORDER BY `zcm_plugin`.`id`, `zcm_plugin`.`title`, `zcm_plugin`.`name`, `zcm_plugin`.`enabled`";
+
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of disabled plugins: ".Zymurgy::$db->error().", $sql");
+
+		return $ri;
 	}
 
 	function GetInstalledPlugins()
@@ -62,6 +84,15 @@
 		include_once("plugins/".$pluginName.".php");
 
 		return new $pluginName;
+	}
+
+	function EnablePlugin($id)
+	{
+		$sql = "UPDATE `zcm_plugin` SET `enabled` = 1 WHERE `id` = '".
+			Zymurgy::$db->escape_string($id).
+			"'";
+		Zymurgy::$db->query($sql)
+			or die("Could not disable plugin: ".Zymurgy::$db->error().", $sql");
 	}
 
 	function DisablePlugin($id)
@@ -114,8 +145,12 @@
 	<table class="DataGrid" rules="cols" cellspacing="0" cellpadding="3" border="1" bordercolor="#999999">
 		<tr class="DataGridHeader">
 			<td>Plugin</td>
-			<td>Disable</td>
-			<td>Remove</td>
+			<? if($action == "addlist") { ?>
+				<td>Enable</td>
+			<? } else { ?>
+				<td>Disable</td>
+				<td>Remove</td>
+			<? } ?>
 		</tr>
 <?
 		$isEven = false;
@@ -125,14 +160,18 @@
 ?>
 		<tr class="DataGridRow<?= $isEven ? "Alternate" : "" ?>">
 			<td><?= $row["title"] ?></td>
-			<td><?= $row["hasinstances"] <= 0
-					? $row["enabled"] > 0
-						? "<a href=\"pluginlist.php?action=disable&amp;id=".$row["id"]."\">Disable</a>"
-						: "Already disabled"
-					: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot disable" ?></td>
-			<td><?= $row["hasinstances"] <= 0
-					? "<a href=\"pluginlist.php?action=remove&amp;id=".$row["id"]."\">Remove</a>"
-					: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot delete" ?></td>
+			<? if($action == "addlist") { ?>
+				<td><a href="pluginlist.php?action=enable&amp;id=<?= $row["id"] ?>">Enable</a></td>
+			<? } else { ?>
+				<td><?= $row["hasinstances"] <= 0
+						? $row["enabled"] > 0
+							? "<a href=\"pluginlist.php?action=disable&amp;id=".$row["id"]."\">Disable</a>"
+							: "Already disabled"
+						: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot disable" ?></td>
+				<td><?= $row["hasinstances"] <= 0
+						? "<a href=\"pluginlist.php?action=remove&amp;id=".$row["id"]."\">Remove</a>"
+						: "<a href=\"pluginadmin.php?pid=".$row["id"]."\">".$row["count"]." instances</a>, cannot delete" ?></td>
+			<? } ?>
 		</tr>
 <?
 			$isEven = !$isEven;
