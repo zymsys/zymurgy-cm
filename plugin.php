@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -35,7 +35,19 @@
 	$dg->AddColumn('','id',"<a href='pluginadmin.php?pid={0}'>Instances</a>");
 	$dg->insertlabel='';
 	$dg->Render();
-
+?>
+	<table class="DataGrid">
+		<tr class="DataGridHeader">
+			<td>Commands</td>
+		</tr>
+		<tr class="DataGridRow">
+			<td><a href="pluginlist.php?action=addlist">Add/Enable Plugins</a></td>
+		</tr>
+		<tr class="DataGridRowAlternate">
+			<td><a href="pluginlist.php?action=removelist">Remove/Disable Plugins</a></td>
+		</tr>
+	</table>
+<?php
 	include('footer.php');
 
 	// To remove a plug-in outside the updater, use the following URL template:
