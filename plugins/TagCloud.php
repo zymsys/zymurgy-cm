@@ -98,7 +98,7 @@ BLOCK;
 					DefineTableField("id", "BIGINT", "UNSIGNED NOT NULL AUTO_INCREMENT"),
 					DefineTableField("instance", "BIGINT", "UNSIGNED NOT NULL"),
 					DefineTableField("tag", "bigint", "UNSIGNED NOT NULL"),
-					DefineTableField("relatedrow", "VARCHAR(200)", "UNSIGNED NOT NULL")
+					DefineTableField("relatedrow", "VARCHAR(200)", "NOT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "instance", "unique" => "false", "type" => ""),
