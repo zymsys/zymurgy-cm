@@ -28,6 +28,7 @@
 
 	$ds = new DataSet('zcm_plugin','id');
 	$ds->AddColumns('id','title','name','enabled');
+	$ds->AddDataFilter("enabled", 1);
 	$dg = new DataGrid($ds);
 	$dg->AddColumn('Plugin Name','title');
 	$dg->AddColumn('Invocation','name',"&lt;?php echo Zymurgy::plugin('{0}','Instance Name'); ?&gt;");
