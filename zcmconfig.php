@@ -5,6 +5,8 @@
  * @subpackage backend-modules
  */
 	ini_set("display_errors", 1);
+	
+	require_once('cmo.php');
 
 	$breadcrumbTrail = Zymurgy::GetLocaleString("Common.ProductName")." Configuration";
 
