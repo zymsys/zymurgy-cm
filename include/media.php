@@ -15,10 +15,10 @@
  * -----
  *
  * The valid values for $action are as follows:
- *     - Installation Actions
- *  		- install (when explicitly enabled - see comment in Controller class)
- *  		- uninstall (when explicitly enabled - see comment in Controller class)
- *  	- Media File Actions
+ *  - Installation Actions
+ *  	- install (when explicitly enabled - see comment in Controller class)
+ *  	- uninstall (when explicitly enabled - see comment in Controller class)
+ *  - Media File Actions
  * 		- list_media_files
  * 		- add_media_file
  * 		- act_add_media_file
@@ -55,7 +55,7 @@
  * 		- act_delete_media_relation
  *
  * @package Zymurgy
- * @subpackage oprhanned
+ * @access private
  */
 
 	// Include the model

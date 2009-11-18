@@ -83,6 +83,7 @@ if (!class_exists('Zymurgy'))
 		 * Appearance and Webmaster > Appearance Items sections in Zymurgy:CM.
 		 *
 		 * @var array
+		 * @see Config
 		 */
 		public static $userconfig;
 
@@ -118,6 +119,7 @@ if (!class_exists('Zymurgy'))
 		 * Zymurgy:CM release number
 		 *
 		 * @var int
+		 * @access private
 		 */
 		public static $build = 1987;
 
@@ -1254,11 +1256,13 @@ if (!class_exists('Zymurgy'))
 		 *  - Text Color
 		 *  - Link Color
 		 *
-		 * @param mixed $index The index of the color within the theme, either as a
+		 * @param string|int $index The index of the color within the theme, either as a
 		 * number, or as a text value set in the $ThemeColor static array.
+		 * 
 		 * @param string $theme The theme definition, either as a comma-delimited list
 		 * of color values, or as a reference to an item in the site config.
-		 * @return The color value.
+		 * 
+		 * @return string The color value.
 		 */
 		static function theme(
 			$index,
@@ -1296,6 +1300,12 @@ if (!class_exists('Zymurgy'))
 			return substr($color, 1);
 		}
 
+		/**
+		 * The navigation structure of the site
+		 * 
+		 * @var ZymurgySiteNav
+		 * @see getsitenav
+		 */
 		public static $sitenav = null;
 
 		/**
@@ -1303,7 +1313,8 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * Please create an instance of {@link ZymurgySitenavRenderer_YUI} instead.
 		 *
-		 * @deprecated
+		 * @deprecated Create a {@link ZymurgySiteNavRenderer_YUI} instead.
+		 * 
 		 * @param $ishorizontal
 		 * @param $currentleveonly
 		 * @param $childlevelsonly
@@ -1330,7 +1341,7 @@ if (!class_exists('Zymurgy'))
 		/**
 		 * Get site's navigation structure.
 		 *
-		 * Initializes and returns {@link $sitenav}
+		 * generates (if necessary) and returns {@link $sitenav}
 		 *
 		 * @return ZymurgySiteNav
 		 */
@@ -1442,7 +1453,9 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * Retrieve the value of the specified Appearance Item.
+		 * Return a key form the User Config table.
+		 * 
+		 * If the required key doesn't exist, create it with the given default value and imputspec.
 		 *
 		 * @param string $keyname The name of the Appearance Item
 		 * @param string $defaultvalue The default value to set the entry to if
@@ -1451,7 +1464,7 @@ if (!class_exists('Zymurgy'))
 		 * exist.
 		 * @return mixed
 		 */
-		function Config($keyname, $defaultvalue, $inputspec='input.30.30')
+		public static function Config($keyname, $defaultvalue, $inputspec='input.30.30')
 		{
 			if (!array_key_exists($keyname,Zymurgy::$userconfig))
 			{
@@ -1474,6 +1487,7 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @param string $key
 		 * @return string
+		 * @access private
 		 */
 		function GetLocaleString($key)
 		{
@@ -1609,6 +1623,7 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @param string $table
 		 * @param string $column
+		 * @access private
 		 */
 		static function ConvertVanillaToFlavoured($table,$column)
 		{

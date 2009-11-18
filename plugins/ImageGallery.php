@@ -241,8 +241,8 @@ BLOCK;
 
 		$html .= Zymurgy::YUI("carousel/assets/skins/sam/carousel.css")."\n";
 		$html .= Zymurgy::YUI("yahoo/yahoo-dom-event.js")."\n";
-		$html .= Zymurgy::YUI("element/element-beta-min.js")."\n";
-		$html .= Zymurgy::YUI("carousel/carousel-beta-min.js")."\n";
+		$html .= Zymurgy::YUI("element/element-min.js")."\n";
+		$html .= Zymurgy::YUI("carousel/carousel-min.js")."\n";
 
 
 		$html .= "<style>\n";

@@ -84,7 +84,7 @@ body {
 		?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
-		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
+		Zymurgy:CM
 	</div>
 	<div class="ZymurgyClient">
 		<?php

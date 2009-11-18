@@ -170,7 +170,7 @@ div.ZymurgyBreadcrumbs
 		?>
 	</div>
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
-		<?= Zymurgy::GetLocaleString("Common.ProductName") ?>
+		Zymurgy:CM
 	</div>
 	<div class="ZymurgyClient">
 		<?php  if ((isset(Zymurgy::$config['clientlogo'])) && (Zymurgy::$config['clientlogo'] != '')) echo "<a target=\"_blank\" href=\"http://".Zymurgy::$config['sitehome']."/\"><img border=\"0\" src=\"".Zymurgy::$config['clientlogo']."\" alt=\"".htmlspecialchars(Zymurgy::$config['defaulttitle'])."\"></a>"; ?>

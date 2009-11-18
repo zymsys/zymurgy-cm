@@ -3,7 +3,7 @@
  * referenced from include/media.php (orphanned) through cmo.php
  *
  * @package Zymurgy
- * @subpackage orphanned
+ * @access private
  */
 
 	// ini_set("display_errors", 1);

@@ -254,8 +254,9 @@ class ZymurgyTemplate
 	{
 		$regexparts = array();
 		// was mod_rewrite used?
-		if (preg_match('@^/([^/]+)/(.+)@', $_SERVER['REQUEST_URI'], $regexparts)){
+		if (preg_match('@^/([^/]+)/([^?#]+)@', $_SERVER['REQUEST_URI'], $regexparts)){
 			unset($_GET['f']);
+			// redo the rewrite because of a bug in mod_rewrite
 
 			$_GET['p']=$regexparts[2];
 			if ($regexparts[1] != 'pages')
@@ -550,7 +551,6 @@ class ZymurgyTemplate
 	}
 }
 
-ob_start();
 $do404 = false;
 
 ZymurgyTemplate::LoadParams();
