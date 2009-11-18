@@ -245,7 +245,7 @@ class ZymurgySiteNav
 		$hrefroot = 'pages')
 	{
 		$yuinavbar = new ZymurgySiteNavRender_YUI($startpath);
-		$yuinavbar->ishorizontal = $ishorizontal;
+
 		if ($childlevelsonly) $yuinavbar->startat_thispage();
 		if ($currentlevelonly){
 			$yuinavbar->maxdepth = 1;
@@ -253,7 +253,7 @@ class ZymurgySiteNav
 		}
 
 		$yuinavbar->headtags();
-		$yuinavbar->render();
+		$yuinavbar->render($ishorizontal);
 	}
 
 	/**
@@ -374,6 +374,11 @@ abstract class ZymurgySiteNavRenderer{
 	 * @var string
 	 */
 	protected $hrefprefix;
+	/**
+	 * IDs of the current page and its anscestors.
+	 * @var array
+	 */
+	protected $crumbs = array();
 
 	########################################
 	
@@ -453,6 +458,8 @@ abstract class ZymurgySiteNavRenderer{
 		}
 		
 		$this->hrefprefix .= '/';
+		
+		$this->crumbs = $this->sitenav->getanscestors(Zymurgy::$pageid);
 	}
 
 	########################################
@@ -476,67 +483,43 @@ abstract class ZymurgySiteNavRenderer{
  *
  */
 class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
-	/**
-	 * Make sure this nav is unique from other YUI navs on the same page.
-	 * Generated in the constructor, and can be set through setUniqueID().
-	 *
-	 * @var string
-	 */
-	private $uniqueid;
-	
-	/**
-	 * if ture dray a horizontal bar, if false draw a vertical menu.
-	 *
-	 * @var bool
-	 */
-	public $ishorizontal = true;
-	
-	/**
-	 * Creates a new YUI navigation renderer that shows navigation from $startpath.
-	 * 
-	 * @param string $startpath
-	 */
-	public function __construct($startpath = '')
-	{
-		parent::__construct($startpath);
-		$this->uniqueid = uniqid();
-	}
-	
-	/**
-	 * Sets the unique ID used to set this YUI nav apart from others on the same page.
-	 * Can be used to force known IDs for YUI nav elements.
-	 *
-	 * @param string $uniqueid
-	 */
-	public function setUniqueID($uniqueid)
-	{
-		$this->uniqueid = $uniqueid;
-	}
-	
+
 	/**
 	 * Include the required YUI css and javascript for the menus.
 	 */
 	public function headtags(){
-		echo "\t".Zymurgy::YUI('fonts/fonts-min.css');
-		echo "\t".Zymurgy::YUI('menu/assets/skins/sam/menu.css');
-		echo "\t".Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
-		echo "\t".Zymurgy::YUI('container/container_core-min.js');
-		echo "\t".Zymurgy::YUI('menu/menu-min.js');
-		$idpart = $this->uniqueid.ZymurgySiteNav::linktext2linkpart($this->startpath);
-		$bar = $this->ishorizontal ? 'Bar' : '';
+		// only needeed once
+		static $included = 0;
+		if ($included) return;
+		$included = 1;
+		
+		echo Zymurgy::YUI('fonts/fonts-min.css');
+		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
+		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
+		echo Zymurgy::YUI("selector/selector-min.js");
+		echo Zymurgy::YUI('container/container_core-min.js');
+		echo Zymurgy::YUI('menu/menu-min.js');
+		
 ?>
-<script type="text/javascript">
-  // <![CDATA[
-	YAHOO.util.Event.onContentReady("ZymurgyMenu_<?= $idpart ?>", function () {
-		var oMenu = new YAHOO.widget.Menu<?= $bar ?>("ZymurgyMenu_<?= $idpart ?>", {
-			<?= $this->ishorizontal? 'autosubmenudisplay: true' : 'position: "static"' ?>,
+<script type="text/javascript">// <![CDATA[
+YAHOO.util.Event.onDOMReady(function(){
+	YAHOO.util.Dom.batch(YAHOO.util.Selector.query('.ZymurgyMenu_YUI_H'), function(item){
+		var oMenu = new YAHOO.widget.MenuBar(item, {
+			autosubmenudisplay: true,
 			hidedelay: 750,
 			lazyload: true });
 		oMenu.render();
 	});
-  // ]]>
-</script>
-<?
+	YAHOO.util.Dom.batch(YAHOO.util.Selector.query('.ZymurgyMenu_YUI_V'), function(item){
+		var oMenu = new YAHOO.widget.Menu("ZymurgyMenu_item", {
+			position: "static",
+			hidedelay: 750,
+			lazyload: true });
+		oMenu.render();
+	});
+});
+// ]]></script>
+<?php
 	}
 
 	/**
@@ -546,17 +529,16 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 	 */
 	public function render($ishorizontal = true){
 		$this->initialize_data();
-		$idpart = $this->uniqueid.ZymurgySiteNav::linktext2linkpart($this->startpath);
-		$bar = $this->ishorizontal ? 'Bar' : '';
-?>
-<div class="yui-skin-sam ">
-    <div id="ZymurgyMenu_<?= $idpart ?>" class="yuimenu<?php  if($this->ishorizontal) echo "bar yuimenubarnav"?>" >
-        <div class="bd" style="border-style: none">
-<?php  $this->renderpart($this->rootnode, 0, $this->ishorizontal); ?>
-        </div>
-    </div>
-</div>
-<?
+		
+		echo '<div class="yui-skin-sam">'."\n";
+		if ($ishorizontal){
+			echo '  <div class="yuimenubar yuimenubarnav ZymurgyMenu_YUI_H">'."\n";
+		}else{
+			echo '  <div class="yuimenu ZymurgyMenu_YUI_V">'."\n";
+		}
+        echo '    <div class="bd" style="border-style: none">'."\n";
+		$this->renderpart($this->rootnode, 0, $ishorizontal);
+		echo "    </div>\n  </div>\n</div>\n";
 	}
 
 	/**
@@ -567,13 +549,13 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 	 * @param array $sp Structure Part; the part of the nav to be rendered
 	 * @param array $anscestors Ancestor nav names
 	 */
-	private function renderpart($node, $depth)//$hrefroot,$horizontal,$depth,$sp,$anscestors)
+	private function renderpart($node, $depth, $horizontal)//$hrefroot,$horizontal,$depth,$sp,$anscestors)
 	{
 		$tabs = str_repeat("    ",$depth+3);
 
 		if ($depth > 0) echo "$tabs<div class=\"yuimenu\"><div class=\"bd\">\n";
 		echo "$tabs<ul";
-		if ($this->ishorizontal)
+		if ($horizontal)
 		{
 			echo ' class="first-of-type';
 			if ($depth == 0) echo ' zymurgy-horizontal-menu';
@@ -623,7 +605,7 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 				htmlspecialchars($this->getname($key)).'</a>';
 			if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
 			{
-				$this->renderpart($key,$depth+1);
+				$this->renderpart($key,$depth+1,$horizontal);
 				echo "\n$tabs";
 			}
 			echo "</li>\n";
