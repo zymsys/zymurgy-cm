@@ -274,6 +274,15 @@
 			return MemberPopulator::PopulateMultiple("1 = 1");
 		}
 
+		public static function PopulateByGroup($groupID)
+		{
+			$filter = "EXISTS( SELECT 1 FROM `zcm_membergroup` WHERE `zcm_membergroup`.`memberid` = `zcm_member`.`id` AND `zcm_membergroup`.`groupid` = '".
+				Zymurgy::$db->escape_string($groupID).
+				"')";
+
+			return MemberPopulator::PopulateMultiple($filter);
+		}
+
 		/**
 		 * Retrieve a list of all of the members in the database that match the
 		 * specified criteria.
@@ -790,7 +799,7 @@
 		 *
 		 * @param array $members
 		 */
-		public static function DisplayList($members)
+		public static function DisplayList($members, $groups, $groupID)
 		{
 			$breadcrumbTrail = "Members";
 
@@ -798,6 +807,45 @@
 			include('datagrid.php');
 
 			DumpDataGridCSS();
+
+			$groupList = array();
+
+			foreach($groups as $group)
+			{
+				$groupList[] = "<option value=\"".
+					$group->get_id().
+					"\"".
+					($groupID == $group->get_id() ? " SELECTED" : "").
+					">".
+					$group->get_name().
+					"</option>";
+			}
+
+			$groupListText = implode("\n", $groupList);
+
+			echo <<<BLOCK
+				<form name="frmFilter" method="POST">
+					<input type="hidden" name="action" value="list_members">
+					<table>
+						<tr>
+							<td>Only show members in group:</td>
+							<td>
+								<select name="group">
+									<option value="">(all)</option>
+									{$groupListText}
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td><input type="submit" value="Filter">
+						</tr>
+						<tr>
+							<td colspan="2">&nbsp;</td>
+						</tr>
+					</table>
+				</form>
+BLOCK;
 
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 			echo("<tr class=\"DataGridHeader\">");
@@ -1450,9 +1498,25 @@
 		 */
 		private function list_members()
 		{
-			$members = MemberPopulator::PopulateAll();
+			$members = array();
 
-			MemberView::DisplayList($members);
+			if(isset($_POST["group"]) && $_POST["group"] > 0)
+			{
+				$groupID = $_POST["group"];
+				$members = MemberPopulator::PopulateByGroup($groupID);
+			}
+			else
+			{
+				$groupID = 0;
+				$members = MemberPopulator::PopulateAll();
+			}
+
+			$groups = GroupPopulator::PopulateAll();
+
+			MemberView::DisplayList(
+				$members,
+				$groups,
+				$groupID);
 		}
 
 		/**
