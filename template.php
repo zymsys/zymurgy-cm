@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage frontend
  */
@@ -162,8 +162,20 @@ class ZymurgyTemplate
 
 	private function GetSitePage($criteria)
 	{
-		$sql = "SELECT `id`, `template`, `retire`, `golive`, `softlaunch` ".
+		$sql = "SELECT `id`, `linktext`, `parent`, `template`, `retire`, `golive`, `softlaunch`, `retire`, `acl` ".
 			"FROM `zcm_sitepage` WHERE $criteria ORDER BY `disporder` LIMIT 0, 1";
+		$row = Zymurgy::$db->get($sql);
+
+		$sitepage = new ZymurgySiteNavItem(
+			$row["id"],
+			$row["linktext"],
+			$row["linktext"],
+			$row["parent"],
+			$row["golive"],
+			$row["softlaunch"],
+			$row["retire"],
+			$row["acl"],
+			$row["template"]);
 
 		return Zymurgy::$db->get($sql);
 	}
@@ -555,7 +567,7 @@ $do404 = false;
 
 ZymurgyTemplate::LoadParams();
 
-if(array_key_exists("f", $_GET))
+if(!array_key_exists("pageid", $_GET) && array_key_exists("f", $_GET))
 {
 	$flavour = $_GET["f"];
 	if (!Zymurgy::SetActiveFlavour($flavour))
