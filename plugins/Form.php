@@ -865,7 +865,7 @@ class FormEmailToWebmaster implements PluginExtension
 	{
 		return "<p>When enabled, the information a user enters into the ".
 			"form will be automatically e-mailed to you. This is great for ".
-			"Contact Us forms, or other forms requiring immeiate action.</p>";
+			"Contact Us forms, or other forms requiring immediate action.</p>";
 	}
 
 	public function GetConfigItems($plugin = NULL)
