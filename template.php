@@ -109,7 +109,7 @@ class ZymurgyTemplate
 			$this->sitepage = $navpage;
 		}
 
-		die("<pre>".print_r($this->sitepage, true)."</pre>");
+//		die("<pre>".print_r($this->sitepage, true)."</pre>");
 
 		// -----
 		// Check the page to make sure the user actually has permission to view it
