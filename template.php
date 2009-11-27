@@ -109,6 +109,8 @@ class ZymurgyTemplate
 			$this->sitepage = $navpage;
 		}
 
+		die("<pre>".print_r($this->sitepage, true)."</pre>");
+
 		// -----
 		// Check the page to make sure the user actually has permission to view it
 		if(!Zymurgy::getsitenav()->haspermission($this->sitepage->id, null))
@@ -177,7 +179,7 @@ class ZymurgyTemplate
 			$row["acl"],
 			$row["template"]);
 
-		return Zymurgy::$db->get($sql);
+		return $sitepage;
 	}
 
 	public function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
