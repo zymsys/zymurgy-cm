@@ -38,6 +38,9 @@
 	<content>
 {8}
 	</content>
+	<gadgets>
+{11}
+	</gadgets>
 	<children>
 {9}
 	</children>
@@ -55,6 +58,7 @@ XML;
 		$xml = str_replace("{8}", GetPageContent($pageid), $xml);
 		$xml = str_replace("{9}", GetPageChildren($pageid), $xml);
 		$xml = str_replace("{10}", GetFullPath($pageid, GetFlavouredLabel($page["linkurl"])), $xml);
+		$xml = str_replace("{11}", GetPageGadgets($pageid), $xml);
 
 		ob_clean();
 		ob_start();
@@ -176,5 +180,74 @@ XML;
 		}
 
 		return implode("/", $splitpath)."/".$linkURL;
+	}
+
+	function GetPageGadgets($pageid)
+	{
+		$template = <<<XML
+		<gadget name="{0}" align="{1}" acl="{2}">
+{3}
+		</gadget>
+XML;
+
+		$sql = "SELECT `disporder`, `plugin`, `align`, `acl` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
+			Zymurgy::$db->escape_string($pageid).
+			"'";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of gadgets for page: ".Zymurgy::$db->error().", $sql");
+
+		$gadgets = array();
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$gadget = $template;
+
+			$gadget = str_replace("{0}", htmlspecialchars($row["plugin"]), $gadget);
+			$gadget = str_replace("{1}", $row["align"], $gadget);
+			$gadget = str_replace("{2}", $row["acl"], $gadget);
+
+			$gadget = str_replace("{3}", GetGadgetConfig($row["plugin"]), $gadget);
+
+			$gadgets[] = $gadget;
+		}
+
+		Zymurgy::$db->free_result($ri);
+//		die();
+		return implode("", $gadgets);
+	}
+
+	function GetGadgetConfig($pluginName)
+	{
+		$template = <<<XML
+			<config name="{0}">{1}</config>
+XML;
+
+		$pluginNameParts = explode("&", $pluginName);
+
+		$sql = "SELECT `key`, `value` FROM `zcm_pluginconfigitem` WHERE EXISTS(SELECT 1 FROM `zcm_plugininstance` WHERE `name` = '".
+			Zymurgy::$db->escape_string(urldecode($pluginNameParts[1])).
+			"' AND `zcm_plugininstance`.`config` = `zcm_pluginconfigitem`.`config` AND EXISTS(SELECT 1 FROM `zcm_plugin` WHERE `name` = '".
+			Zymurgy::$db->escape_string($pluginNameParts[0]).
+			"' AND `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin`))";
+//		echo($sql);
+//		die($sql);
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve plugin config: ".Zymurgy::$db->error().", $sql");
+
+		$configs = array();
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$config = $template;
+
+			$config = str_replace("{0}", $row["key"], $config);
+			$config = str_replace("{1}", $row["value"], $config);
+
+			$configs[] = $config;
+		}
+
+		Zymurgy::$db->free_result($ri);
+
+		return implode("", $configs);
 	}
 ?>
