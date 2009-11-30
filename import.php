@@ -203,34 +203,13 @@
 				echo "---- ".((string) $block["name"]).": Flavoured widget detected.<br>";
 
 				$textID = InsertFlavourText((string) $block[0]);
-
-				$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
-					Zymurgy::$db->escape_string($pageID).
-					"', '".
-					Zymurgy::$db->escape_string((string) $block["name"]).
-					"', '".
-					Zymurgy::$db->escape_string($textID).
-					"', '".
-					Zymurgy::$db->escape_string(GetACL($page->acl[0])).
-					"' )";
-				Zymurgy::$db->query($sql)
-					or die("Could not add flavoured text block link: ".Zymurgy::$db->error().", $sql");
+				InsertPageText($pageID, ((string) $block["name"]), $textID, GetACL($page->acl[0]));
 			}
 			else
 			{
 				echo "---- ".((string) $block["name"]).": Non-flavoured widget detected.<br>";
 
-				$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
-					Zymurgy::$db->escape_string($pageID).
-					"', '".
-					Zymurgy::$db->escape_string((string) $block["name"]).
-					"', '".
-					Zymurgy::$db->escape_string((string) $block[0]).
-					"', '".
-					Zymurgy::$db->escape_string(GetACL($page->acl[0])).
-					"' )";
-				Zymurgy::$db->query($sql)
-					or die("Could not add flavoured text block link: ".Zymurgy::$db->error().", $sql");
+				InsertPageText($pageID, ((string) $block["name"]), ((string) $block[0]), GetACL($page->acl[0]));
 			}
 
 		}
@@ -261,6 +240,21 @@
 			or die("Could not add linktext: ".Zymurgy::$db->error().", $sql");
 
 		return Zymurgy::$db->insert_id();
+	}
+
+	function InsertPageText($pageID, $tag, $body, $acl)
+	{
+		$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
+			Zymurgy::$db->escape_string($pageID).
+			"', '".
+			Zymurgy::$db->escape_string($tag).
+			"', '".
+			Zymurgy::$db->escape_string($body).
+			"', '".
+			Zymurgy::$db->escape_string($acl).
+			"' )";
+		Zymurgy::$db->query($sql)
+			or die("Could not add page text block: ".Zymurgy::$db->error().", $sql");
 	}
 
 	function GetParentIDFromPath($path)
