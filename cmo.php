@@ -1070,10 +1070,13 @@ if (!class_exists('Zymurgy'))
 		 * @param string $password
 		 * @return boolean
 		 */
-		static function memberdologin($userid, $password)
+		static function memberdologin($userid, $password, $writeCookie = true)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberdologin($userid,$password);
+			return Zymurgy::$MemberProvider->memberdologin(
+				$userid,
+				$password,
+				$writeCookie);
 		}
 
 		/**
@@ -1258,10 +1261,10 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @param string|int $index The index of the color within the theme, either as a
 		 * number, or as a text value set in the $ThemeColor static array.
-		 * 
+		 *
 		 * @param string $theme The theme definition, either as a comma-delimited list
 		 * of color values, or as a reference to an item in the site config.
-		 * 
+		 *
 		 * @return string The color value.
 		 */
 		static function theme(
@@ -1302,7 +1305,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * The navigation structure of the site
-		 * 
+		 *
 		 * @var ZymurgySiteNav
 		 * @see getsitenav
 		 */
@@ -1314,7 +1317,7 @@ if (!class_exists('Zymurgy'))
 		 * Please create an instance of {@link ZymurgySitenavRenderer_YUI} instead.
 		 *
 		 * @deprecated Create a {@link ZymurgySiteNavRenderer_YUI} instead.
-		 * 
+		 *
 		 * @param $ishorizontal
 		 * @param $currentleveonly
 		 * @param $childlevelsonly
@@ -1454,7 +1457,7 @@ if (!class_exists('Zymurgy'))
 
 		/**
 		 * Return a key form the User Config table.
-		 * 
+		 *
 		 * If the required key doesn't exist, create it with the given default value and imputspec.
 		 *
 		 * @param string $keyname The name of the Appearance Item

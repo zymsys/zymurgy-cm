@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage auth
  */
@@ -115,7 +115,7 @@ class ZymurgyMember
 		}
 	}
 
-	public function createauthkey($id)
+	public function createauthkey($id, $writeCookie = true)
 	{
 		//Set up the authkey and last auth
 		$authkey = md5(uniqid(rand(),true));
@@ -133,11 +133,14 @@ class ZymurgyMember
 		// die($cookieSet ? "Cookie set" : "Cookie not set");
 		// if(!$cookieSet) die("Could not set cookie.");
 
-		echo "<script language=\"javascript\">
-			<!--
-			document.cookie = \"ZymurgyAuth=$authkey; path=/\";
-			//-->
-			</script>";
+		if($writeCookie)
+		{
+			echo "<script language=\"javascript\">
+				<!--
+				document.cookie = \"ZymurgyAuth=$authkey; path=/\";
+				//-->
+				</script>";
+		}
 
 		$this->memberaudit("Successful login for [$id]");
 	}
@@ -150,7 +153,7 @@ class ZymurgyMember
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password)
+	public function memberdologin($userid, $password, $writeCookie = true)
 	{
 		// die("memberdologin called");
 
@@ -166,7 +169,7 @@ class ZymurgyMember
 
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
-			$this->createauthkey($row['id']);
+			$this->createauthkey($row['id'], $writeCookie);
 			return true;
 		}
 		else
@@ -821,7 +824,7 @@ var zymurgyDialogButtons = [ { text:"Save", handler:function() {
 	this.cancel();
 }} ];
 </script>
-<?php 
+<?php
 		}
 		echo "<div class=\"yui-skin-sam\">\r\n";
 		$f->renderDialogs();
