@@ -157,19 +157,10 @@
 
 		$templateID = GetTemplate($page->template[0]);
 
-		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
-			Zymurgy::$db->escape_string(str_replace($oldPath, $newPath, $page->linktext[0])).
-			"')";
-		Zymurgy::$db->query($sql)
-			or die("Could not add linktext: ".Zymurgy::$db->error().", $sql");
-		$linkTextID = Zymurgy::$db->insert_id();
-
-		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
-			Zymurgy::$db->escape_string(str_replace($oldPath, $newPath, $page->linkurl[0])).
-			"')";
-		Zymurgy::$db->query($sql)
-			or die("Could not add linkurl: ".Zymurgy::$db->error().", $sql");
-		$linkURLID = Zymurgy::$db->insert_id();
+		$linkTextID = InsertFlavourText(
+			str_replace($oldPath, $newPath, $page->linktext[0]));
+		$linkURLID = InsertFlavourText(
+			str_replace($oldPath, $newPath, $page->linkurl[0]));
 
 		$sql = "INSERT INTO `zcm_sitepage` ( `disporder`, `linktext`, `linkurl`, `parent`, `retire`, `golive`, `softlaunch`, `template`, `acl` ) VALUES ( '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')";
 
@@ -211,12 +202,7 @@
 			{
 				echo "---- ".((string) $block["name"]).": Flavoured widget detected.<br>";
 
-				$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
-					((string) $block[0]).
-					"')";
-				Zymurgy::$db->query($sql)
-					or die("Could not add flavoured text block: ".Zymurgy::$db->error().", $sql");
-				$textID = Zymurgy::$db->insert_id();
+				$textID = InsertFlavourText((string) $block[0]);
 
 				$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
 					Zymurgy::$db->escape_string($pageID).
@@ -264,6 +250,17 @@
 		}
 
 		return $children;
+	}
+
+	function InsertFlavourText($text)
+	{
+		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
+			Zymurgy::$db->escape_string($text).
+			"')";
+		Zymurgy::$db->query($sql)
+			or die("Could not add linktext: ".Zymurgy::$db->error().", $sql");
+
+		return Zymurgy::$db->insert_id();
 	}
 
 	function GetParentIDFromPath($path)
