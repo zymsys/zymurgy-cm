@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -25,7 +25,7 @@ if (array_key_exists('action',$_GET) || array_key_exists('editkey',$_GET))
 	$crumbs['/zymurgy/sitepageextra.php?p='.$p] = "Gadgets";
 	$crumbs[] = 'Edit';
 }
-else 
+else
 {
 	$crumbs[] = "Gadgets";
 }
@@ -50,6 +50,27 @@ $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add a Gadget';
 $dg->Render();
+
+?>
+<div id="instancenamescratch" style="display: none;">
+</div>
+<script type="text/javascript">
+	document.datagridform.onsubmit = function() {
+		zcm_sitepageplugin_plugin_update();
+
+		if(document.getElementById("zcm_sitepageplugin.plugin-input").value == "")
+		{
+			alert("You must provide the name of the gadget.");
+			return false;
+		}
+		else
+		{
+//			alert(document.getElementById("zcm_sitepageplugin.plugin").value);
+		}
+//		alert("Submitting Form");
+	};
+</script>
+<?
 
 include('footer.php');
 ?>
