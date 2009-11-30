@@ -369,7 +369,7 @@ class ZymurgyTemplate
 			$this->pagetextcache[$tag] = null;
 			$this->inputspeccache[$tag] = $type;
 		}
-		if ($this->inputspeccache[$tag] != $type)
+		if (!array_key_exists($tag, $this->inputspeccache) || $this->inputspeccache[$tag] != $type)
 		{
 			//Input spec has changed.  Update the DB and the cache.
 			$this->inputspeccache[$tag] = $type;
