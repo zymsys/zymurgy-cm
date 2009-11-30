@@ -8,6 +8,8 @@
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
+		echo("Processing<br>");
+
 		$page = RetrievePageByPath(
 			$_POST["domain"],
 			$_POST["user"],
@@ -57,6 +59,8 @@
 
 			$pagesToImport = array_merge($childrenToImport, $pagesToImport);
 		}
+
+		echo("<br>Import complete.<br>");
 	}
 	else
 	{
@@ -70,6 +74,13 @@
 ?>
 	<p>This section allows you to import Pages from one Zymurgy:CM installation
 	into another.</p>
+
+	<p><b>Before Importing</b></p>
+
+	<ul style="margin-left: 120px;">
+		<li>Make sure that all of the templates used for the content being imported are installed on this copy of Zymurgy:CM.</li>
+		<li>Make sure that all of the ACLs used for the content being imported are installed on this copy of Zymurgy:CM. The ACLs do not have to reference the same groups, but must have the same name.</li>
+	</ul>
 
 	<form name="frm" method="POST">
 		<table>
@@ -174,7 +185,7 @@
 		$sql = str_replace("{7}", $templateID, $sql);
 		$sql = str_replace("{8}", GetACL($page->acl[0]), $sql);
 
-		echo($sql."<br>");
+//		echo($sql."<br>");
 
 		Zymurgy::$db->query($sql)
 			or die("Could not insert page: ".Zymurgy::$db->error().", $sql");
@@ -189,7 +200,7 @@
 				"' AND `tag` = '".
 				Zymurgy::$db->escape_string((string) $block["name"]).
 				"'";
-			echo($sql."<br>");
+//			echo($sql."<br>");
 			$inputspec = Zymurgy::$db->get($sql);
 			$ep = explode(".", $inputspec);
 			$widget = InputWidget::Get($ep[0]);
@@ -198,7 +209,7 @@
 
 			if($widget->SupportsFlavours())
 			{
-				echo "Flavoured widget detected.<br>";
+				echo "---- ".((string) $block["name"]).": Flavoured widget detected.<br>";
 
 				$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
 					((string) $block[0]).
@@ -221,7 +232,7 @@
 			}
 			else
 			{
-				echo "Non-flavoured widget detected.<br>";
+				echo "---- ".((string) $block["name"]).": Non-flavoured widget detected.<br>";
 
 				$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
 					Zymurgy::$db->escape_string($pageID).
@@ -243,9 +254,9 @@
 
 		foreach($childrenXML as $child)
 		{
-			echo("<pre>");
-			print_r($child);
-			echo("</pre>");
+//			echo("<pre>");
+//			print_r($child);
+//			echo("</pre>");
 
 			$children[] = array(
 				"parentid" => $pageID,
@@ -291,7 +302,16 @@
 		$sql = "SELECT `id` FROM `zcm_template` WHERE `name` = '".
 			Zymurgy::$db->escape_string($templateName).
 			"'";
-		return Zymurgy::$db->get($sql);
+		$templateID = Zymurgy::$db->get($sql);
+
+		if($templateID <= 0)
+		{
+			echo("Warning: Template $templateName is not installed on this copy of Zymurgy:CM. Data may not be migrated properly. If this occurs, add the $templateName template to this installation, and try the import again.<br>");
+
+			$templateID = 1;
+		}
+
+		return $templateID;
 	}
 
 	function GetACL($aclName)
@@ -299,6 +319,17 @@
 		$sql = "SELECT `id` FROM `zcm_acl` WHERE `name` = '".
 			Zymurgy::$db->escape_string($aclName).
 			"'";
-		return Zymurgy::$db->get($sql);
+		$acl = Zymurgy::$db->get($sql);
+
+
+		if($acl <= 0 && strlen($aclName) > 0)
+		{
+			echo("Warning: ACL $aclName is not installed on this copy of Zymurgy:CM. ACL will not be applied to this document.<br>");
+
+			$acl = 0;
+		}
+
+		return $acl;
+
 	}
 ?>
