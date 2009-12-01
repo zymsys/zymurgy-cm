@@ -211,7 +211,78 @@
 
 				InsertPageText($pageID, ((string) $block["name"]), ((string) $block[0]), GetACL($page->acl[0]));
 			}
+		}
 
+		$gadgetXML = $page->xpath("//gadgets/gadget");
+		$gadgetCount = 1;
+
+		foreach($gadgetXML as $gadget)
+		{
+			$pluginParts = explode("&", urldecode((string) $gadget["name"]));
+
+			$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE `name` = '".
+				Zymurgy::$db->escape_string($pluginParts[1]).
+				"' AND EXISTS(SELECT 1 FROM `zcm_plugin` WHERE `name` = '".
+				Zymurgy::$db->escape_string($pluginParts[0]).
+				"' AND `zcm_plugininstance`.`plugin` = `zcm_plugin`.`id`)";
+			$instanceID = Zymurgy::$db->get($sql);
+
+			if($instanceID <= 0)
+			{
+				echo("---- Gadget ".((string) $gadget["name"])." not found. Creating.<br>");
+
+				$configGroupName = $pluginParts[0].": ".$pluginParts[1];
+
+
+				$sql = "INSERT INTO `zcm_pluginconfiggroup` ( `name`) VALUES ('".
+					Zymurgy::$db->escape_string($configGroupName).
+					"')";
+				Zymurgy::$db->query($sql)
+					or die("Could not create plugin config group: ".Zymurgy::$db->error().", $sql");
+				$configGroupID = Zymurgy::$db->insert_id();
+
+				foreach($gadget->config as $configItem)
+				{
+					$key = ((string) $configItem["name"]);
+					$value = ((string) $configItem[0]);
+
+					$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) VALUES ( '".
+						Zymurgy::$db->escape_string($configGroupID).
+						"', '".
+						Zymurgy::$db->escape_string($key).
+						"', '".
+						Zymurgy::$db->escape_string($value).
+						"')";
+					Zymurgy::$db->query($sql)
+						or die("Could not create plugin config item: ".Zymurgy::$db->error().", $sql");
+				}
+
+				$sql = "INSERT INTO `zcm_plugininstance` ( `plugin`, `name`, `private`, `config` ) SELECT `id`, '".
+					Zymurgy::$db->escape_string($pluginParts[1]).
+					"', '0', '".
+					Zymurgy::$db->escape_string($configGroupID).
+					"' FROM `zcm_plugin` WHERE `name` = '".
+					Zymurgy::$db->escape_string($pluginParts[0]).
+					"' LIMIT 0, 1";
+				Zymurgy::$db->query($sql)
+					or die("Could not create plugin instance: ".Zymurgy::$db->error().", $sql");
+			}
+
+			$sql = "INSERT INTO `zcm_sitepageplugin` ( `zcm_sitepage`, `disporder`, `plugin`, `align`, `acl` ) VALUES ('".
+				Zymurgy::$db->escape_string($pageID).
+				"', '".
+				Zymurgy::$db->escape_string($gadgetCount).
+				"', '".
+				Zymurgy::$db->escape_string((string) $gadget["name"]).
+				"', '".
+				Zymurgy::$db->escape_string((string) $gadget["align"]).
+				"', '".
+				Zymurgy::$db->escape_string(GetACL((string) $gadget["acl"])).
+				"')";
+			Zymurgy::$db->query($sql)
+				or die("Could not associate plugin with page: ".Zymurgy::$db->error().", $sql");
+
+			$gadgetCount++;
 		}
 
 		$children = array();
