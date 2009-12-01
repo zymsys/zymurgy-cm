@@ -825,6 +825,135 @@ function Validate$name(me) {
 		}
 	}
 
+	public function GetDefinitionForExport()
+	{
+		$template = <<<XML
+<?xml version="1.0"?>
+<form>
+	<extensions>
+{0}
+	</extensions>
+	<inputtypes>
+{1}
+	</inputtypes>
+	<validators>
+{2}
+	</validators>
+	<inputs>
+{3}
+	</inputs>
+</form>
+XML;
+
+		$xml = str_replace("{0}", $this->GetDefinitionForExport_RequiredExtensions(), $template);
+		$xml = str_replace("{1}", $this->GetDefinitionForExport_InputTypes(), $template);
+		$xml = str_replace("{2}", $this->GetDefinitionForExport_Validators(), $template);
+		$xml = str_replace("{3}", $this->GetDefinitionForExport_Inputs(), $template);
+
+		return $xml;
+	}
+
+	private function GetDefinitionForExport_RequiredExtensions()
+	{
+		$template = <<<XML
+		<extension name="{0}"/>
+XML;
+		$extensions = $this->GetExtensions();
+		$extensionXML = array();
+
+		foreach($extensions as $extension)
+		{
+			if($extension->IsEnabled($this))
+			{
+				$xml = $template;
+				$xml = str_replace("{0}", $extension->GetExtensionName(), $xml);
+				$extensionXML[] = $xml;
+			}
+		}
+
+		return implode("", $extensionXML);
+	}
+
+	private function GetDefinitionForExport_InputTypes()
+	{
+		$template = <<<XML
+		<inputtype takesxtra="{0}" name="{1}" specifier="{2}" />
+XML;
+		$inputTypes = array();
+
+		$sql = "SELECT `takesxtra`, `name`, `specifier` FROM `zcm_form_inputtype`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of input types: ".Zymurgy::$db->error().", $sql");
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$xml = $template;
+			$xml = str_replace("{0}", $row["takesxtra"], $xml);
+			$xml = str_replace("{1}", $row["name"], $xml);
+			$xml = str_replace("{2}", $row["specifier"], $xml);
+			$inputTypes[] = $xml;
+		}
+
+		Zymurgy::$db->free_result($ri);
+
+		return implode("", $inputTypes);
+	}
+
+	private function GetDefinitionForExport_Validators()
+	{
+		$template = <<<XML
+		<validator disporder="{0}" name="{1}" regex="{2}" />
+XML;
+		$validators = array();
+
+		$sql = "SELECT `disporder`, `name`, `regex` FROM `zcm_form_regex` ORDER BY `disporder`";
+		$ri = Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of validators: ".Zymurgy::$db->error().", $sql");
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$xml = $template;
+			$xml = str_replace("{0}", $row["disporder"], $xml);
+			$xml = str_replace("{1}", $row["name"], $xml);
+			$xml = str_replace("{2}", $row["specifier"], $xml);
+			$validators[] = $xml;
+		}
+
+		Zymurgy::$db->free_result($ri);
+
+		return implode("", $validators);
+	}
+
+	private function GetDefinitionForExport_Inputs()
+	{
+		$template = <<<XML
+		<input disporder="{0}" type="{1}" caption="{2}" header="{3}" defaultvalue="{4}" required="{5}" validator="{6}" validatormessage="{7}"/>
+XML;
+		$inputs = array();
+
+		$sql = "SELECT `disporder`, `zcm_form_inputtype`.`name` AS `inputtype`, `caption`, `header`, `defaultvalue`, `isrequired`, `zcm_form_regex`.`name` AS `validator`, `validatormsg` FROM `zcm_form_input` INNER JOIN `zcm_form_inputtype` ON `zcm_form_inputtype`.`id` = `zcm_form_input`.`inputtype` INNER JOIN `zcm_form_regex` ON `zcm_form_regex`.`id` = `zcm_form_input`.`validater` WHERE `instance` = '".
+			Zymurgy::$db->escape_string($this->iid).
+			"' ORDER BY `disporder`";
+		$ri =Zymurgy::$db->query($sql)
+			or die("Could not retrieve list of inputs: ".Zymurgy::$db->error().", $sql");
+
+		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+		{
+			$xml = $template;
+			$xml = str_replace("{0}", $row["disporder"], $xml);
+			$xml = str_replace("{1}", $row["inputtype"], $xml);
+			$xml = str_replace("{2}", $row["caption"], $xml);
+			$xml = str_replace("{3}", $row["header"], $xml);
+			$xml = str_replace("{4}", $row["defaultvalue"], $xml);
+			$xml = str_replace("{5}", $row["isrequired"], $xml);
+			$xml = str_replace("{6}", $row["validator"], $xml);
+			$xml = str_replace("{7}", $row["validatormessage"], $xml);
+			$inputs[] = $xml;
+		}
+
+		return implode("", $inputs);
+	}
+
 	function GetExtensions()
 	{
 		$extensions = array();
