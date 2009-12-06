@@ -9,7 +9,7 @@
 
 $onload = '';
 include('nlheader.php');
-require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
+require_once(Zymurgy::$root."/zymurgy/ZymurgyAuth.php");
 $zauth = new ZymurgyAuth();
 $zauth->Authenticate("login.php");
 $zp = explode(',',$zauth->authinfo['extra']);
