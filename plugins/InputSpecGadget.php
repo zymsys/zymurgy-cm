@@ -116,10 +116,22 @@ BLOCK;
 			}
 			$iw = new InputWidget();
 			$value = Zymurgy::$db->get("select value from zcm_inputspecplugin where instance=".$this->iid);
-			echo "<form action=\"".$_SERVER['REQUEST_URI']."\" method=\"post\">";
-			echo $this->GetConfigValue('Item Name').': ';
-			$iw->Render($this->GetConfigValue('Input Spec'),"InputSpec",$value);
-			echo "<br /><br /><input type=\"submit\" value=\"Save\"></form>";
+?>
+<form action="<?= $_SERVER["REQUEST_URI"] ?>" method="POST">
+	<table>
+		<tr>
+			<td><?= $this->GetConfigValue("Item Name") ?>:</td>
+			<td><? $iw->Render($this->GetConfigValue("Input Spec"), "InputSpec", $value); ?></td>
+		</tr>
+		<tr>
+			<td colspan="2">&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center"><input type="submit" value="Save"></td>
+		</tr>
+	</table>
+</form>
+<?
 		}
 	}
 }
