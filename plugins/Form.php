@@ -964,6 +964,7 @@ XML;
 		$extensions[] = new FormCaptureToDatabase();
 		$extensions[] = new FormExportFromDatabase();
 		$extensions[] = new FormPrefillFromMemberCustomTable();
+		$extensions[] = new FormForward();
 
 		if(file_exists(Zymurgy::$root."/zymurgy/custom/plugins/Form.php"))
 		{
@@ -1863,6 +1864,63 @@ class FormAddToCustomTable implements PluginExtension
 	}
 }
 
+class FormForward implements PluginExtension
+{
+	public function GetExtensionName()
+	{
+		return "Forward to URL";
+	}
+	
+	public function GetDescription()
+	{
+		return "Forwards the user who submits a form to a URL";
+	}
+	
+	public function IsEnabled($plugin)
+	{
+		return $plugin->GetConfigValue('Forward user to a URL after submit') == "on";
+	}
+	
+	public function GetConfigItems()
+	{
+		$configItems = array();
+		$configItems[] = array(
+			"name" => "Forward user to a URL after submit",
+			"default" => "",
+			"inputspec" => "checkbox",
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Forward to URL",
+			"default" => "http://www.google.com/",
+			"inputspec" => "input.50.4096",
+			"authlevel" => 0);
+		
+		return $configItems;
+	}
+	
+	public function GetCommands()
+	{
+		return array();
+	}
+	
+	public function ConfirmPluginCompatability($plugin)
+	{
+		if(!($plugin instanceof Form))
+		{
+			die("FormForward: plugin sent not an instance of Form. Aborting.");
+		}
+	}
+	
+	public function CaptureFormData($plugin)
+	{
+	}
+	
+	public function Forward($plugin)
+	{
+		Zymurgy::JSRedirect($plugin->GetConfigValue('Forward to URL'));
+	}
+}
+                
 class FormPrefillFromMemberCustomTable implements PluginExtension
 {
 	public function GetExtensionName()

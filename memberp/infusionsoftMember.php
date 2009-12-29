@@ -6,7 +6,7 @@
  */
 class infusionsoftMember extends ZymurgyMember
 {
-	public function insfusionsoftMember()
+	public function infusionsoftMember()
 	{
 		$isValid = true;
 
