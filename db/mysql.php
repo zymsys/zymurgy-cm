@@ -228,7 +228,7 @@ class Zymurgy_DB
 	 * 
 	 * @see PHP_MANUAL#mysql_error
 	 * 
-	 * @return int
+	 * @return string
 	 */
 	public function error()
 	{
