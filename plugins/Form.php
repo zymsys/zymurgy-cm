@@ -1260,17 +1260,28 @@ class FormCaptureToDatabase implements PluginExtension
 	{
 		return "<p>When a form is submitted, the data will be automatically ".
 			"saved to the database for later retrieval.</p>".
-			"<p>There are no items to configure for this feature.</p>";
+			"<p>This functionality is enabled by default. Check the box ".
+			"below to DISABLE this functionality. Note that some other ".
+			"features may not work correctly if this functionality is ".
+			"disabled.</p>";
 	}
 
 	public function IsEnabled($plugin)
 	{
-		return true;
+		return !($plugin->GetConfigValue("DISABLE capture to database") == "on");
 	}
 
 	public function GetConfigItems($plugin = NULL)
 	{
-		return array();
+		$configItems = array();
+
+		$configItems[] = array(
+			"name" => "DISABLE capture to database",
+			"default" => "",
+			"inputspec" => "checkbox",
+			"authlevel" => 0);
+
+		return $configItems;
 	}
 
 	public function GetCommands()
@@ -1340,7 +1351,9 @@ class FormExportFromDatabase implements PluginExtension
 	{
 		return "<p>Data submitted to the form can be retrieved from the ".
 			"database in Microsoft Excel format.</p>".
-			"<p>There are no items to configure for this feature.</p>";
+			"<p>There are no items to configure for this feature.</p>".
+			"<p>This feature will only work correctly if the Capture to ".
+			"Database feature is enabled.</p>";
 	}
 
 	public function IsEnabled($plugin)
@@ -1870,17 +1883,17 @@ class FormForward implements PluginExtension
 	{
 		return "Forward to URL";
 	}
-	
+
 	public function GetDescription()
 	{
 		return "Forwards the user who submits a form to a URL";
 	}
-	
+
 	public function IsEnabled($plugin)
 	{
 		return $plugin->GetConfigValue('Forward user to a URL after submit') == "on";
 	}
-	
+
 	public function GetConfigItems()
 	{
 		$configItems = array();
@@ -1894,15 +1907,15 @@ class FormForward implements PluginExtension
 			"default" => "http://www.google.com/",
 			"inputspec" => "input.50.4096",
 			"authlevel" => 0);
-		
+
 		return $configItems;
 	}
-	
+
 	public function GetCommands()
 	{
 		return array();
 	}
-	
+
 	public function ConfirmPluginCompatability($plugin)
 	{
 		if(!($plugin instanceof Form))
@@ -1910,17 +1923,17 @@ class FormForward implements PluginExtension
 			die("FormForward: plugin sent not an instance of Form. Aborting.");
 		}
 	}
-	
+
 	public function CaptureFormData($plugin)
 	{
 	}
-	
+
 	public function Forward($plugin)
 	{
 		Zymurgy::JSRedirect($plugin->GetConfigValue('Forward to URL'));
 	}
 }
-                
+
 class FormPrefillFromMemberCustomTable implements PluginExtension
 {
 	public function GetExtensionName()
