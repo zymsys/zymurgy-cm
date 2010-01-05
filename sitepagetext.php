@@ -46,7 +46,9 @@ if ($t)
 	$templatetags = array();
 	$pagetags = array();
 	$specs = array();
-	$ri = Zymurgy::$db->run("select id,tag,inputspec from zcm_templatetext where template=$t");
+	$sql = "select id,tag,inputspec from zcm_templatetext where template=$t";
+	$ri = Zymurgy::$db->run($sql);
+//	echo("specs: ".Zymurgy::$db->num_rows($ri).": $sql<br>");
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
 		$templatetags[] = $row['tag'];
@@ -60,6 +62,7 @@ if ($t)
 		$pagetags[] = $row['tag'];
 		if (array_key_exists('editkey',$_GET) && ($row['id'] == $_GET['editkey']))
 		{
+//			echo "<pre>".print_r($specs, true)."</pre>";
 			$inputspec = $specs[$row['tag']];
 			$editcaption = $row['tag'].":";
 		}

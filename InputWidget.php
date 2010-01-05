@@ -270,7 +270,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 		<table>
 			<tr>
 				<td>Default:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= $this->GetFlavouredValue($value, '') ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value='<?= $this->GetFlavouredValue($value, '') ?>'></td>
 			</tr>
 <?
 		$flavours = Zymurgy::GetAllFlavours();
@@ -280,7 +280,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 ?>
 			<tr>
 				<td><?= $flavour['label'] ?>:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" value="<?= $this->GetFlavouredValue($value, $flavour['code']) ?>"></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" value='<?= $this->GetFlavouredValue($value, $flavour['code']) ?>'></td>
 			</tr>
 <?
 		}
@@ -1732,6 +1732,68 @@ class ZIW_RichTextBase extends ZIW_Base
 	}
 }
 
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
+class ZIW_FlavouredRichTextBase extends ZIW_Base
+{
+	/**
+	 * Take posted value(s) and return the value to be stored in the database
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $postname Posted value name
+	 * @return string
+	 */
+	function PostValue($ep,$postname)
+	{
+		if (array_key_exists($postname,$_POST))
+		{
+			if (array_key_exists('allowabletags',Zymurgy::$config))
+				return strip_tags($_POST[$postname],Zymurgy::$config['allowabletags']);
+			else
+				return $_POST[$postname];
+		}
+		else
+			return '';
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"WYSIWYG HTML Input\";\n";
+		$output .= " specifier.type = \"html\";\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (pixels)\", 3, 5, 600));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Height (pixels)\", 3, 5, 400));\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		return "BIGINT";
+	}
+
+	/**
+	 * Determine if the InputWidget supports the Flavours system
+	 *
+	 * @return unknown
+	 */
+	function SupportsFlavours()
+	{
+		return true;
+	}
+}
+
 class ZIW_YUIHtml extends ZIW_RichTextBase
 {
 	/**
@@ -2019,6 +2081,86 @@ class ZIW_Html extends ZIW_RichTextBase
 		// The input specifier should only be available to the base class
 
 		return "";
+	}
+}
+
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
+class ZIW_FlavouredHtml extends ZIW_FlavouredRichTextBase
+{
+	function __construct()
+	{
+		$this->xlatehtmlentities = false;
+	}
+
+	function Display($ep,$display,$shell)
+	{
+		return $this->GetFlavouredValue($display);
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
+
+?>
+		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
+		<table>
+			<tr>
+				<td>Default:</td>
+				<td>
+<?
+		$fck = new FCKeditor($name."_default");
+		$fck->BasePath = "/zymurgy/fckeditor/";
+		$fck->ToolbarSet = 'Zymurgy';
+		$fck->Width = $ep[1];
+		$fck->Height = $ep[2];
+		$fck->Value = $this->GetFlavouredValue($value, '');
+		if (array_key_exists('fckeditorcss',$this->extra))
+			$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
+		else if (array_key_exists('sitecss',Zymurgy::$config))
+			$fck->Config['EditorAreaCSS'] = Zymurgy::$config['sitecss'];
+		$fck->Create();
+?>
+				</td>
+			</tr>
+<?
+		$flavours = Zymurgy::GetAllFlavours();
+		foreach($flavours as $flavour)
+		{
+			if (!$flavour['providescontent']) continue;
+?>
+			<tr>
+				<td><?= $flavour['label'] ?>:</td>
+				<td>
+<?
+		$fck = new FCKeditor($name."_".$flavour['code']);
+		$fck->BasePath = "/zymurgy/fckeditor/";
+		$fck->ToolbarSet = 'Zymurgy';
+		$fck->Width = $ep[1];
+		$fck->Height = $ep[2];
+		$fck->Value = $this->GetFlavouredValue($value, $flavour['code']);
+		if (array_key_exists('fckeditorcss',$this->extra))
+			$fck->Config['EditorAreaCSS'] = $this->extra['fckeditorcss'];
+		else if (array_key_exists('sitecss',Zymurgy::$config))
+			$fck->Config['EditorAreaCSS'] = Zymurgy::$config['sitecss'];
+		$fck->Create();
+?>
+				</td>
+			</tr>
+<?
+		}
+?>
+		</table>
+<?
 	}
 }
 
@@ -2650,6 +2792,9 @@ InputWidget::Register('yuihtml',new ZIW_YUIHtml());
 InputWidget::Register('fckhtml',new ZIW_Html());
 InputWidget::Register('html',InputWidget::Get(
 	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
+
+InputWidget::Register("flavourhtml", new ZIW_FlavouredHtml());
+
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking
 InputWidget::Register('remote',new ZIW_RemoteLookup());

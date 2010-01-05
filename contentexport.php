@@ -1,8 +1,8 @@
 <?php
 	include_once("cmo.php");
 
-	$userid = $_GET["user"];
-	$passwd = $_GET["pass"];
+	$userid = $_POST["user"];
+	$passwd = $_POST["pass"];
 
 	if (Zymurgy::memberdologin($userid,$passwd))
 	{
@@ -13,38 +13,40 @@
 			die("User does not have required access for content export. Aborting.");
 		}
 
-		$pageid = isset($_GET["pageid"])
-			? $_GET["pageid"]
-			: GetPageIDFromPath($_GET["path"]);
-//		die($pageid." - ".$_GET["pageid"]);
+		$pageid = isset($_POST["pageid"])
+			? $_POST["pageid"]
+			: GetPageIDFromPath($_POST["path"]);
+//		die($pageid." - ".$_POST["pageid"]);
 
-		$sql = "SELECT `disporder`, `linktext`, `linkurl`, `retire`, `golive`, `softlaunch`, `zcm_template`.`name` AS `template`, `zcm_acl`.`name` AS `acl` FROM `zcm_sitepage` INNER JOIN `zcm_template` ON `zcm_template`.`id` = `zcm_sitepage`.`template` LEFT JOIN `zcm_acl` ON `zcm_acl`.`id` = `zcm_sitepage`.`acl` WHERE `zcm_sitepage`.`id` = '".
+		$sql = "SELECT `zcm_sitepage`.`id` AS `id`, `disporder`, `linktext`, `linkurl`, `retire`, `golive`, `softlaunch`, `zcm_template`.`name` AS `template`, `zcm_acl`.`name` AS `acl` FROM `zcm_sitepage` INNER JOIN `zcm_template` ON `zcm_template`.`id` = `zcm_sitepage`.`template` LEFT JOIN `zcm_acl` ON `zcm_acl`.`id` = `zcm_sitepage`.`acl` WHERE `zcm_sitepage`.`id` = '".
 			Zymurgy::$db->escape_string($pageid)
 			."'";
 		$page = Zymurgy::$db->get($sql);
 
 		$xml = <<<XML
 <?xml version="1.0"?>
-<page>
-	<disporder>{0}</disporder>
-	<linktext>{1}</linktext>
-	<linkurl>{2}</linkurl>
-	<fullpath>{10}</fullpath>
-	<retire>{3}</retire>
-	<golive>{4}</golive>
-	<softlaunch>{5}</softlaunch>
-	<template>{6}</template>
-	<acl>{7}</acl>
-	<content>
+<pages>
+	<page pageid="{12}">
+		<disporder>{0}</disporder>
+		<linktext>{1}</linktext>
+		<linkurl>{2}</linkurl>
+		<fullpath>{10}</fullpath>
+		<retire>{3}</retire>
+		<golive>{4}</golive>
+		<softlaunch>{5}</softlaunch>
+		<template>{6}</template>
+		<acl>{7}</acl>
+		<content>
 {8}
-	</content>
-	<gadgets>
-{11}
-	</gadgets>
-	<children>
+		</content>
+		<gadgets>
+	{11}
+		</gadgets>
+		<children>
 {9}
-	</children>
-</page>
+		</children>
+	</page>
+</pages>
 XML;
 
 		$xml = str_replace("{0}", $page["disporder"], $xml);
@@ -59,6 +61,7 @@ XML;
 		$xml = str_replace("{9}", GetPageChildren($pageid), $xml);
 		$xml = str_replace("{10}", GetFullPath($pageid, GetFlavouredLabel($page["linkurl"])), $xml);
 		$xml = str_replace("{11}", GetPageGadgets($pageid), $xml);
+		$xml = str_replace("{12}", $page["id"], $xml);
 
 		ob_clean();
 		ob_start();
@@ -77,9 +80,9 @@ XML;
 	function GetPageContent($pageid)
 	{
 		$template = <<<XML
-		<block name="{0}" acl="{1}">
-			<![CDATA[{2}]]>
-		</block>
+			<block name="{0}" acl="{1}">
+				<![CDATA[{2}]]>
+			</block>
 XML;
 		$blocks = array();
 
@@ -108,7 +111,7 @@ XML;
 	function GetPageChildren($pageid)
 	{
 		$template = <<<XML
-		<child childid="{0}" />
+			<child childid="{0}" />
 XML;
 		$children = array();
 
@@ -185,9 +188,9 @@ XML;
 	function GetPageGadgets($pageid)
 	{
 		$template = <<<XML
-		<gadget name="{0}" align="{1}" acl="{2}">
+			<gadget name="{0}" align="{1}" acl="{2}">
 {3}
-		</gadget>
+			</gadget>
 XML;
 
 		$sql = "SELECT `disporder`, `plugin`, `align`, `acl` FROM `zcm_sitepageplugin` WHERE `zcm_sitepage` = '".
@@ -219,7 +222,7 @@ XML;
 	function GetGadgetConfig($pluginName)
 	{
 		$template = <<<XML
-			<config name="{0}">{1}</config>
+				<config name="{0}">{1}</config>
 XML;
 
 		$pluginNameParts = explode("&", $pluginName);

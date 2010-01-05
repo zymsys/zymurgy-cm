@@ -47,7 +47,7 @@
 //			print_r(htmlentities($page));
 //			echo("</pre>");
 
-			$oldPath = (string) $pageXML->fullpath;
+			$oldPath = (string) $pageXML->page[0]->fullpath;
 //			echo($oldPath."<br>");
 			$newPath = preg_replace("/".$_POST["oldpath"]."/", $_POST["newpath"], ((string) $oldPath), 1);
 
@@ -118,8 +118,13 @@
 
 	function RetrievePageByPath($domain, $user, $pass, $path)
 	{
-		$url = "http://".$domain."/zymurgy/contentexport.php?user=".$user."&pass=".$pass."&path=".$path;
+		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&path=".$path;
 //		die($url);
+
+		$postFields = array(
+			"user" => $user,
+			"pass" => $pass,
+			"path" => $path);
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -127,6 +132,8 @@
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 		$httpResponse = curl_exec($ch);
 
 		return $httpResponse;
@@ -134,8 +141,13 @@
 
 	function RetrievePageByID($domain, $user, $pass, $id)
 	{
-		$url = "http://".$domain."/zymurgy/contentexport.php?user=".$user."&pass=".$pass."&pageid=".$id;
+		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&pageid=".$id;
 //		die($url);
+
+		$postFields = array(
+			"user" => $user,
+			"pass" => $pass,
+			"pageid" => $id);
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -143,6 +155,8 @@
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 		$httpResponse = curl_exec($ch);
 
 		return $httpResponse;
@@ -151,7 +165,8 @@
 	function ImportPage($pageXML, $oldPath, $newPath, $parentID)
 	{
 //		$page = new SimpleXMLElement($pageXML);
-		$page = simplexml_load_string($pageXML, "SimpleXMLElement", LIBXML_NOCDATA);
+		$pageXML = simplexml_load_string($pageXML, "SimpleXMLElement", LIBXML_NOCDATA);
+		$page = $pageXML->page[0];
 
 //		echo("<pre>".print_r($page, true)."</pre>");
 

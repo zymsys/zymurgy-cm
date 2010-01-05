@@ -514,12 +514,31 @@ if (!class_exists('Zymurgy'))
 				die("Unable to read metaid. ($sql): ".Zymurgy::$db->error());
 			if (Zymurgy::$db->num_rows($ri)==0)
 			{
-				//Create new sitetext entry
 				$body = 'Please edit the general content called <b>"'.$tag.'"</b> in '.Zymurgy::GetLocaleString("Common.ProductName").'.';
-				Zymurgy::$db->query("insert into zcm_sitetext (tag,inputspec,body) values ('".Zymurgy::$db->escape_string($tag)."','".
-					Zymurgy::$db->escape_string($type)."','".Zymurgy::$db->escape_string($body)."')");
-				Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
-				$t = $body;
+
+				$widget = InputWidget::GetFromInputSpec($type);
+
+				if($widget->SupportsFlavours())
+				{
+					$flavourID = $widget->StoreFlavouredValue(null, $body, array());
+
+					Zymurgy::$db->query("insert into zcm_sitetext (tag,inputspec,body) values ('".
+						Zymurgy::$db->escape_string($tag).
+						"','".
+						Zymurgy::$db->escape_string($type).
+						"','".
+						Zymurgy::$db->escape_string($flavourID)."')");
+					Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
+					$t = $body;
+				}
+				else
+				{
+					//Create new sitetext entry
+					Zymurgy::$db->query("insert into zcm_sitetext (tag,inputspec,body) values ('".Zymurgy::$db->escape_string($tag)."','".
+						Zymurgy::$db->escape_string($type)."','".Zymurgy::$db->escape_string($body)."')");
+					Zymurgy::$db->query("insert into zcm_textpage(metaid,sitetextid) values (".Zymurgy::$pageid.",".Zymurgy::$db->insert_id().")");
+					$t = $body;
+				}
 			}
 			else
 			{
