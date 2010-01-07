@@ -2793,7 +2793,7 @@ InputWidget::Register('fckhtml',new ZIW_Html());
 InputWidget::Register('html',InputWidget::Get(
 	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
 
-InputWidget::Register("flavourhtml", new ZIW_FlavouredHtml());
+InputWidget::Register("fckhtmlf", new ZIW_FlavouredHtml());
 
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking
