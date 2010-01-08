@@ -1785,7 +1785,7 @@ class ZIW_FlavouredRichTextBase extends ZIW_Base
 
 		$output .= "function GetSpecifier_".get_class($this)."(inputspecName) {\n";
 		$output .= " var specifier = new InputSpecifier;\n";
-		$output .= " specifier.description = \"WYSIWYG HTML Input\";\n";
+		$output .= " specifier.description = \"Flavoured HTML Input\";\n";
 		$output .= " specifier.type = \"html\";\n";
 
 		$output .= " specifier.inputparameters.push(".
