@@ -145,8 +145,29 @@ class ZIW_Base
 		{
 			$flavour = $codes[$code];
 			$value = Zymurgy::$db->escape_string($value);
-			Zymurgy::$db->run("insert into zcm_flavourtextitem (zcm_flavourtext,flavour,`text`) values (".
-				"$flavourID,{$flavour['id']},'$value') on duplicate key update `text`='$value'");
+
+			$sql = "SELECT `id` FROM `zcm_flavourtextitem` WHERE `flavour` = '".
+				Zymurgy::$db->escape_string($flavour["id"]).
+				"' AND `zcm_flavourtext` = '".
+				Zymurgy::$db->escape_string($flavourID).
+				"'";
+			$id = Zymurgy::$db->get($sql);
+
+			if($id <= 0)
+			{
+				Zymurgy::$db->run("insert into zcm_flavourtextitem (zcm_flavourtext,flavour,`text`) values (".
+					"$flavourID,{$flavour['id']},'$value')");
+			}
+			else
+			{
+				Zymurgy::$db->run("UPDATE `zcm_flavourtextitem` SET `text` = '".
+					$value. // Already escaped - Zymurgy::$db->escape_string($value).
+					"' WHERE `flavour` = '".
+					Zymurgy::$db->escape_string($flavour["id"]).
+					"' AND `zcm_flavourtext` = '".
+					Zymurgy::$db->escape_string($flavourID).
+					"'");
+			}
 		}
 		return $flavourID;
 	}
