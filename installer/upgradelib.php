@@ -491,4 +491,65 @@ function GetAllColumnSQL(
 	return implode(", ", $columnSQL);
 }
 
+	function  ExecuteAdd($source)
+	{
+		global $plugins;
+
+		//Get an instance of the plugin class
+		echo("---- Getting instance of $source plugin<br>");
+		$factory = "{$source}Factory";
+		$plugin = $factory();
+
+		//Create a configuration group for this plugin
+		Zymurgy::$db->run("insert into zcm_pluginconfiggroup (name) values ('".
+			Zymurgy::$db->escape_string($plugin->GetTitle()).": Default')");
+		$pcg = Zymurgy::$db->insert_id();
+
+		//Add plugin to the plugin table
+		echo("---- Adding plugin definition to database<br>");
+		Zymurgy::$db->query("insert into zcm_plugin(title,name,uninstallsql,enabled,defaultconfig) values ('".
+			Zymurgy::$db->escape_string($plugin->GetTitle())."','".
+			Zymurgy::$db->escape_string($source)."','".
+			Zymurgy::$db->escape_string($plugin->GetUninstallSQL())."',1,$pcg)");
+		$id = Zymurgy::$db->insert_id();
+		//	$id = 7;
+
+		//Add default configuration
+		echo("---- Retrieving default plugin configuration<br>");
+		$defconf = $plugin->GetDefaultConfig();
+
+		//	print_r($defconf);
+		//	echo("<br><br><br>");
+		//	die();
+
+		foreach ($defconf as $cv)
+		{
+			//echo("cv: ");
+			//print_r($cv);
+			//echo("<br>");
+
+			$key = $cv->key;
+			$value = $cv->value;
+
+			// echo($key.": ".$value."<br>");
+			echo("------ $key<br>");
+
+			$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) values ($pcg, '".
+				Zymurgy::$db->escape_string($key)."', '".
+				Zymurgy::$db->escape_string($value)."')";
+			$ri = Zymurgy::$db->query($sql);
+			if (!$ri)
+				die("Error adding plugin config: ".Zymurgy::$db->error()."<br>$sql");
+
+			// echo(htmlentities($sql)."<br>");
+		}
+
+		// die();
+
+		echo("---- Initializing plugin<br>");
+
+		$plugin->Initialize();
+	}
+
+
 ?>

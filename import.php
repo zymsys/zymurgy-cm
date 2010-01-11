@@ -32,6 +32,19 @@
 						mkdir(Zymurgy::$root."/".$filename);
 					}
 				}
+				else if(strpos($filename, "zymurgy/plugins") === 0
+					&& strpos($filename, ".php") > 0)
+				{
+					// This is probably a plugin - try to install it
+
+					file_put_contents(
+						Zymurgy::$root."/".$filename,
+						zip_entry_read($entry, zip_entry_filesize($entry)));
+					include_once(Zymurgy::$root."/".$filename);
+
+					list($name,$extension) = explode('.',$filename);
+					ExecuteAdd($name);
+				}
 				else
 				{
 					if(!file_exists(Zymurgy::$root."/".$filename))
