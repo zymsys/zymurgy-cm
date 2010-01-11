@@ -1,4 +1,5 @@
 <?php
+	set_time_limit(120);
 	include_once("cmo.php");
 
 	$userid = $_POST["user"];
@@ -18,14 +19,47 @@
 			: GetPageIDFromPath($_POST["path"]);
 //		die($pageid." - ".$_POST["pageid"]);
 
+		$fullXML = <<<XML
+<?xml version="1.0"?>
+<pages>
+{0}
+</pages>
+XML;
+
+		$pages = array();
+		$children = array($pageid);
+
+//		$pages[] = GetPageXML($pageid, $children);
+
+		//die("Count: ".count($children));
+
+		for($cntr = 0; $cntr < count($children); $cntr++)
+		{
+//			if($cntr > 5) break;
+
+			$pages[] = GetPageXML($children[$cntr], $children);
+//			echo("<pre>".print_r($children, true)."</pre>");
+		}
+
+//		die();
+
+		$fullXML = str_replace("{0}", implode("\n", $pages), $fullXML);
+
+		ob_clean();
+		ob_start();
+		header("Content-type: text/xml");
+		echo($fullXML);
+	}
+
+	function GetPageXML($pageid, &$children)
+	{
 		$sql = "SELECT `zcm_sitepage`.`id` AS `id`, `disporder`, `linktext`, `linkurl`, `retire`, `golive`, `softlaunch`, `zcm_template`.`name` AS `template`, `zcm_acl`.`name` AS `acl` FROM `zcm_sitepage` INNER JOIN `zcm_template` ON `zcm_template`.`id` = `zcm_sitepage`.`template` LEFT JOIN `zcm_acl` ON `zcm_acl`.`id` = `zcm_sitepage`.`acl` WHERE `zcm_sitepage`.`id` = '".
 			Zymurgy::$db->escape_string($pageid)
 			."'";
 		$page = Zymurgy::$db->get($sql);
 
+
 		$xml = <<<XML
-<?xml version="1.0"?>
-<pages>
 	<page pageid="{12}">
 		<disporder>{0}</disporder>
 		<linktext>{1}</linktext>
@@ -46,7 +80,6 @@
 {9}
 		</children>
 	</page>
-</pages>
 XML;
 
 		$xml = str_replace("{0}", $page["disporder"], $xml);
@@ -58,15 +91,12 @@ XML;
 		$xml = str_replace("{6}", $page["template"], $xml);
 		$xml = str_replace("{7}", $page["acl"], $xml);
 		$xml = str_replace("{8}", GetPageContent($pageid), $xml);
-		$xml = str_replace("{9}", GetPageChildren($pageid), $xml);
+		$xml = str_replace("{9}", GetPageChildren($pageid, $children), $xml);
 		$xml = str_replace("{10}", GetFullPath($pageid, GetFlavouredLabel($page["linkurl"])), $xml);
 		$xml = str_replace("{11}", GetPageGadgets($pageid), $xml);
 		$xml = str_replace("{12}", $page["id"], $xml);
 
-		ob_clean();
-		ob_start();
-		header("Content-type: text/xml");
-		echo($xml);
+		return $xml;
 	}
 
 	function GetFlavouredLabel($flavourID)
@@ -108,12 +138,13 @@ XML;
 		return implode("", $blocks);
 	}
 
-	function GetPageChildren($pageid)
+	function GetPageChildren($pageid, &$allchildren)
 	{
 		$template = <<<XML
 			<child childid="{0}" />
 XML;
 		$children = array();
+		$childids = array();
 
 		$sql = "SELECT `id` FROM `zcm_sitepage` WHERE `parent` = '".
 			Zymurgy::$db->escape_string($pageid).
@@ -128,7 +159,10 @@ XML;
 			$child = str_replace("{0}", $row["id"], $child);
 
 			$children[] = $child;
+			$childids[] = $row["id"];
 		}
+
+		$allchildren = array_merge($allchildren, $childids);
 
 		return implode("", $children);
 	}

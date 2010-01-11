@@ -28,6 +28,7 @@
 //		echo(count($pagesToImport));
 //		die();
 
+/*
 		while(count($pagesToImport) > 0)
 		{
 //			echo(count($pagesToImport)."<br>");
@@ -59,6 +60,7 @@
 
 			$pagesToImport = array_merge($childrenToImport, $pagesToImport);
 		}
+*/
 
 		echo("<br>Import complete.<br>");
 	}
@@ -162,94 +164,109 @@
 		return $httpResponse;
 	}
 
-	function ImportPage($pageXML, $oldPath, $newPath, $parentID)
+	function ImportPage($pageXML, $theOldPath, $theNewPath, $parentID)
 	{
 //		$page = new SimpleXMLElement($pageXML);
 		$pageXML = simplexml_load_string($pageXML, "SimpleXMLElement", LIBXML_NOCDATA);
-		$page = $pageXML->page[0];
 
-//		echo("<pre>".print_r($page, true)."</pre>");
-
-		$templateID = GetTemplate($page->template[0]);
-
-		$linkTextID = InsertFlavourText(
-			str_replace($oldPath, $newPath, $page->linktext[0]));
-		$linkURLID = InsertFlavourText(
-			str_replace($oldPath, $newPath, $page->linkurl[0]));
-
-		$sql = "INSERT INTO `zcm_sitepage` ( `disporder`, `linktext`, `linkurl`, `parent`, `retire`, `golive`, `softlaunch`, `template`, `acl` ) VALUES ( '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')";
-
-		$sql = str_replace("{0}", $page->disporder[0], $sql);
-//		$sql = str_replace("{1}", str_replace($oldPath, $newPath, $page->linktext[0]), $sql);
-//		$sql = str_replace("{2}", str_replace($oldPath, $newPath, $page->linkurl[0]), $sql);
-		$sql = str_replace("{1}", $linkTextID, $sql);
-		$sql = str_replace("{2}", $linkURLID, $sql);
-		$sql = str_replace("{3}", $parentID, $sql);
-		$sql = str_replace("{4}", $page->retire[0], $sql);
-		$sql = str_replace("{5}", $page->golive[0], $sql);
-		$sql = str_replace("{6}", $page->softlaunch[0], $sql);
-		$sql = str_replace("{7}", $templateID, $sql);
-		$sql = str_replace("{8}", GetACL($page->acl[0]), $sql);
-
-//		echo($sql."<br>");
-
-		Zymurgy::$db->query($sql)
-			or die("Could not insert page: ".Zymurgy::$db->error().", $sql");
-		$pageID = Zymurgy::$db->insert_id();
-
-		$contentXML = $page->xpath("//content/block");
-
-		foreach($contentXML as $block)
+		foreach($pageXML->page as $page)
 		{
-			$sql = "SELECT `inputspec` FROM `zcm_templatetext` WHERE `template` = '".
-				Zymurgy::$db->escape_string($templateID).
-				"' AND `tag` = '".
-				Zymurgy::$db->escape_string((string) $block["name"]).
-				"'";
+			$oldPath = (string) $page->fullpath;
+			if(substr($oldPath, 0, 1) == "/")
+			{
+				$oldPath = substr($oldPath, 1);
+			}
+//			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, ((string) $oldPath), 1);
+			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, $oldPath, 1);
+
+//			echo("-- $oldPath<br>-- $newPath<br><br>");
+
+//			$page = $pageXML->page[0];
+
+	//		echo("<pre>".print_r($page, true)."</pre>");
+
+			$templateID = GetTemplate($page->template[0]);
+
+			$linkTextID = InsertFlavourText(
+				str_replace($oldPath, $newPath, $page->linktext[0]));
+			$linkURLID = InsertFlavourText(
+				str_replace($oldPath, $newPath, $page->linkurl[0]));
+
+			$sql = "INSERT INTO `zcm_sitepage` ( `disporder`, `linktext`, `linkurl`, `parent`, `retire`, `golive`, `softlaunch`, `template`, `acl` ) VALUES ( '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')";
+
+			$sql = str_replace("{0}", $page->disporder[0], $sql);
+	//		$sql = str_replace("{1}", str_replace($oldPath, $newPath, $page->linktext[0]), $sql);
+	//		$sql = str_replace("{2}", str_replace($oldPath, $newPath, $page->linkurl[0]), $sql);
+			$sql = str_replace("{1}", $linkTextID, $sql);
+			$sql = str_replace("{2}", $linkURLID, $sql);
+//			$sql = str_replace("{3}", $parentID, $sql);
+			$sql = str_replace("{3}", GetParentIDFromPath($newPath), $sql);
+			$sql = str_replace("{4}", $page->retire[0], $sql);
+			$sql = str_replace("{5}", $page->golive[0], $sql);
+			$sql = str_replace("{6}", $page->softlaunch[0], $sql);
+			$sql = str_replace("{7}", $templateID, $sql);
+			$sql = str_replace("{8}", GetACL($page->acl[0]), $sql);
+
 //			echo($sql."<br>");
-			$inputspec = Zymurgy::$db->get($sql);
-			$ep = explode(".", $inputspec);
-			$widget = InputWidget::Get($ep[0]);
 
-//			die("<pre>".print_r($block, true)."</pre>");
+			Zymurgy::$db->query($sql)
+				or die("Could not insert page: ".Zymurgy::$db->error().", $sql");
+			$pageID = Zymurgy::$db->insert_id();
 
-			if($widget->SupportsFlavours())
+//			$contentXML = $page->xpath("//content/block");
+
+			foreach($page->content[0]->block as $block)
 			{
-				echo "---- ".((string) $block["name"]).": Flavoured widget detected.<br>";
+				$sql = "SELECT `inputspec` FROM `zcm_templatetext` WHERE `template` = '".
+					Zymurgy::$db->escape_string($templateID).
+					"' AND `tag` = '".
+					Zymurgy::$db->escape_string((string) $block["name"]).
+					"'";
+	//			echo($sql."<br>");
+				$inputspec = Zymurgy::$db->get($sql);
+				$ep = explode(".", $inputspec);
+				$widget = InputWidget::Get($ep[0]);
 
-				$textID = InsertFlavourText((string) $block[0]);
-				InsertPageText($pageID, ((string) $block["name"]), $textID, GetACL($page->acl[0]));
+	//			die("<pre>".print_r($block, true)."</pre>");
+
+				if($widget->SupportsFlavours())
+				{
+//					echo "---- ".((string) $block["name"]).": Flavoured widget detected.<br>";
+
+					$textID = InsertFlavourText((string) $block[0]);
+					InsertPageText($pageID, ((string) $block["name"]), $textID, GetACL($page->acl[0]));
+				}
+				else
+				{
+//					echo "---- ".((string) $block["name"]).": Non-flavoured widget detected.<br>";
+
+					InsertPageText($pageID, ((string) $block["name"]), ((string) $block[0]), GetACL($page->acl[0]));
+				}
 			}
-			else
+
+			$gadgetXML = $page->xpath("//gadgets/gadget");
+			$gadgetCount = 1;
+
+			foreach($gadgetXML as $gadget)
 			{
-				echo "---- ".((string) $block["name"]).": Non-flavoured widget detected.<br>";
+				ImportGadget($gadget, $pageID, $gadgetCount);
 
-				InsertPageText($pageID, ((string) $block["name"]), ((string) $block[0]), GetACL($page->acl[0]));
+				$gadgetCount++;
 			}
-		}
 
-		$gadgetXML = $page->xpath("//gadgets/gadget");
-		$gadgetCount = 1;
+			$children = array();
+			$childrenXML = $page->xpath("//children/child");
 
-		foreach($gadgetXML as $gadget)
-		{
-			ImportGadget($gadget, $pageID, $gadgetCount);
+			foreach($childrenXML as $child)
+			{
+	//			echo("<pre>");
+	//			print_r($child);
+	//			echo("</pre>");
 
-			$gadgetCount++;
-		}
-
-		$children = array();
-		$childrenXML = $page->xpath("//children/child");
-
-		foreach($childrenXML as $child)
-		{
-//			echo("<pre>");
-//			print_r($child);
-//			echo("</pre>");
-
-			$children[] = array(
-				"parentid" => $pageID,
-				"pageid" => intval($child["childid"]));
+				$children[] = array(
+					"parentid" => $pageID,
+					"pageid" => intval($child["childid"]));
+			}
 		}
 
 		return $children;
@@ -260,6 +277,7 @@
 		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
 			Zymurgy::$db->escape_string($text).
 			"')";
+//		echo($sql."<br>");
 		Zymurgy::$db->query($sql)
 			or die("Could not add linktext: ".Zymurgy::$db->error().", $sql");
 
@@ -300,6 +318,7 @@
 				"' OR EXISTS( SELECT 1 FROM `zcm_flavourtext` WHERE `default` = '".
 				Zymurgy::$db->escape_string($navpart).
 				"' AND `zcm_flavourtext`.`id` = `zcm_sitepage`.`linkurl` ) )";
+//			echo($sql."<br>");
 			$parent = Zymurgy::$db->get($sql);
 
 			if($parent <= 0)
