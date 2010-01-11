@@ -8,61 +8,54 @@
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
-		echo("Processing<br>");
+		echo("Processing files<br>");
 
-		$page = RetrievePageByPath(
-			$_POST["domain"],
-			$_POST["user"],
-			$_POST["pass"],
-			$_POST["oldpath"]);
+		$zipfile = zip_open($_FILES["file"]["tmp_name"]);
+		$xml = "";
 
-//		echo($page);
-
-		$pagesToImport = ImportPage(
-			$page,
-			$_POST["oldpath"],
-			$_POST["newpath"],
-			GetParentIDFromPath($_POST["newpath"]));
-//		print_r($pagesToImport);
-
-//		echo(count($pagesToImport));
-//		die();
-
-/*
-		while(count($pagesToImport) > 0)
+		while($entry = zip_read($zipfile))
 		{
-//			echo(count($pagesToImport)."<br>");
-			$pageID = array_pop($pagesToImport);
-//			echo(count($pagesToImport)."<br>");
-//			die();
-			if(!is_array($pageID)) break;
+			if(zip_entry_name($entry) == "content.xml")
+			{
+				$xml = zip_entry_read($entry, zip_entry_filesize($entry));
+				// break;
+			}
+			else
+			{
+				$filename = zip_entry_name($entry);
 
-			$page = RetrievePageByID(
-				$_POST["domain"],
-				$_POST["user"],
-				$_POST["pass"],
-				$pageID["pageid"]);
-			$pageXML = new SimpleXMLElement($page);
-
-//			echo("<pre>");
-//			print_r(htmlentities($page));
-//			echo("</pre>");
-
-			$oldPath = (string) $pageXML->page[0]->fullpath;
-//			echo($oldPath."<br>");
-			$newPath = preg_replace("/".$_POST["oldpath"]."/", $_POST["newpath"], ((string) $oldPath), 1);
-
-			$childrenToImport = ImportPage(
-				$page,
-				$oldPath,
-				$newPath,
-				GetParentIDFromPath($newPath));
-
-			$pagesToImport = array_merge($childrenToImport, $pagesToImport);
+				echo("-- ".$filename."<br>");
+				if(substr($filename, -1) == "/")
+				{
+					if(!file_exists(Zymurgy::$root."/".$filename))
+					{
+						mkdir(Zymurgy::$root."/".$filename);
+					}
+				}
+				else
+				{
+					if(!file_exists(Zymurgy::$root."/".$filename))
+					{
+						file_put_contents(
+							Zymurgy::$root."/".$filename,
+							zip_entry_read($entry, zip_entry_filesize($entry)));
+					}
+					else
+					{
+						echo("---- File exists. Skipping.<br>");
+					}
+				}
+			}
 		}
-*/
 
-		echo("<br>Import complete.<br>");
+		echo("Files processed.<br><br>Importing page content.<br>");
+
+		if(strlen($xml) > 0)
+		{
+			ImportPage($xml);
+		}
+
+		echo("Page content imported.<br><br>Import complete.<br>");
 	}
 	else
 	{
@@ -84,27 +77,11 @@
 		<li>Make sure that all of the ACLs used for the content being imported are installed on this copy of Zymurgy:CM. The ACLs do not have to reference the same groups, but must have the same name.</li>
 	</ul>
 
-	<form name="frm" method="POST">
+	<form name="frm" method="POST" enctype="multipart/form-data">
 		<table>
 			<tr>
-				<td>Domain:</td>
-				<td><input type="text" name="domain" size="30" maxlength="100"></td>
-			</tr>
-			<tr>
-				<td>Zymurgy:CM Username:</td>
-				<td><input type="text" name="user" size="15" maxlength="30"></td>
-			</tr>
-			<tr>
-				<td>Zymurgy:CM Password:</td>
-				<td><input type="password" name="pass" size="15" maxlength="30"></td>
-			</tr>
-			<tr>
-				<td>Path of Root Node:</td>
-				<td>pages/<input type="text" name="oldpath" size="30" maxlength="200"></td>
-			</tr>
-			<tr>
-				<td>Path to Import Into:</td>
-				<td>pages/<input type="text" name="newpath" size="30" maxlength="200"></td>
+				<td>Add-on File:</td>
+				<td><input type="file" name="file"></td>
 			</tr>
 			<tr>
 				<td colspan="2">&nbsp;</td>
@@ -118,88 +95,38 @@
 <?
 	}
 
-	function RetrievePageByPath($domain, $user, $pass, $path)
+	function ImportPage($pageXML)
 	{
-		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&path=".$path;
-//		die($url);
-
-		$postFields = array(
-			"user" => $user,
-			"pass" => $pass,
-			"path" => $path);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_VERBOSE, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-		$httpResponse = curl_exec($ch);
-
-		return $httpResponse;
-	}
-
-	function RetrievePageByID($domain, $user, $pass, $id)
-	{
-		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&pageid=".$id;
-//		die($url);
-
-		$postFields = array(
-			"user" => $user,
-			"pass" => $pass,
-			"pageid" => $id);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_VERBOSE, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-		$httpResponse = curl_exec($ch);
-
-		return $httpResponse;
-	}
-
-	function ImportPage($pageXML, $theOldPath, $theNewPath, $parentID)
-	{
-//		$page = new SimpleXMLElement($pageXML);
 		$pageXML = simplexml_load_string($pageXML, "SimpleXMLElement", LIBXML_NOCDATA);
 
 		foreach($pageXML->page as $page)
 		{
 			$oldPath = (string) $page->fullpath;
-			if(substr($oldPath, 0, 1) == "/")
-			{
-				$oldPath = substr($oldPath, 1);
-			}
-//			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, ((string) $oldPath), 1);
-			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, $oldPath, 1);
+			$newPath = $oldPath;
+//			if(substr($oldPath, 0, 1) == "/")
+//			{
+//				$oldPath = substr($oldPath, 1);
+//			}
+//			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, $oldPath, 1);
 
 //			echo("-- $oldPath<br>-- $newPath<br><br>");
-
-//			$page = $pageXML->page[0];
-
-	//		echo("<pre>".print_r($page, true)."</pre>");
+//			echo("<pre>".print_r($page, true)."</pre>");
 
 			$templateID = GetTemplate($page->template[0]);
 
-			$linkTextID = InsertFlavourText(
-				str_replace($oldPath, $newPath, $page->linktext[0]));
-			$linkURLID = InsertFlavourText(
-				str_replace($oldPath, $newPath, $page->linkurl[0]));
+//			$linkTextID = InsertFlavourText(
+//				str_replace($oldPath, $newPath, $page->linktext[0]));
+//			$linkURLID = InsertFlavourText(
+//				str_replace($oldPath, $newPath, $page->linkurl[0]));
+
+			$linkTextID = InsertFlavourText($page->linktext[0]);
+			$linkURLID = InsertFlavourText($page->linkurl[0]);
 
 			$sql = "INSERT INTO `zcm_sitepage` ( `disporder`, `linktext`, `linkurl`, `parent`, `retire`, `golive`, `softlaunch`, `template`, `acl` ) VALUES ( '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')";
 
 			$sql = str_replace("{0}", $page->disporder[0], $sql);
-	//		$sql = str_replace("{1}", str_replace($oldPath, $newPath, $page->linktext[0]), $sql);
-	//		$sql = str_replace("{2}", str_replace($oldPath, $newPath, $page->linkurl[0]), $sql);
 			$sql = str_replace("{1}", $linkTextID, $sql);
 			$sql = str_replace("{2}", $linkURLID, $sql);
-//			$sql = str_replace("{3}", $parentID, $sql);
 			$sql = str_replace("{3}", GetParentIDFromPath($newPath), $sql);
 			$sql = str_replace("{4}", $page->retire[0], $sql);
 			$sql = str_replace("{5}", $page->golive[0], $sql);
@@ -212,8 +139,6 @@
 			Zymurgy::$db->query($sql)
 				or die("Could not insert page: ".Zymurgy::$db->error().", $sql");
 			$pageID = Zymurgy::$db->insert_id();
-
-//			$contentXML = $page->xpath("//content/block");
 
 			foreach($page->content[0]->block as $block)
 			{
@@ -254,22 +179,22 @@
 				$gadgetCount++;
 			}
 
-			$children = array();
-			$childrenXML = $page->xpath("//children/child");
+//			$children = array();
+//			$childrenXML = $page->xpath("//children/child");
 
-			foreach($childrenXML as $child)
-			{
+//			foreach($childrenXML as $child)
+//			{
 	//			echo("<pre>");
 	//			print_r($child);
 	//			echo("</pre>");
 
-				$children[] = array(
-					"parentid" => $pageID,
-					"pageid" => intval($child["childid"]));
-			}
+//				$children[] = array(
+//					"parentid" => $pageID,
+//					"pageid" => intval($child["childid"]));
+//			}
 		}
 
-		return $children;
+//		return $children;
 	}
 
 	function InsertFlavourText($text)
