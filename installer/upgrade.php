@@ -325,16 +325,17 @@ SetNavigationFeature(14, 15, "- Custom Tables", "customtable.php");
 SetNavigationFeature(15, 16, "- Custom Code Generator", "mkcustom.php");
 SetNavigationFeature(16, 17, "- Template Manager", "templatemgr.php");
 SetNavigationFeature(27, 18, "- Zymurgy:CM Config", "zcmconfig.php");
-SetNavigationFeature(24, 19, "--- Media Files ---", "");
-SetNavigationFeature(6,  20, "- Media Files", "media.php");
-SetNavigationFeature(7,  21, "- Media Packages", "media.php?action=list_media_packages");
-SetNavigationFeature(8,  22, "- Media Package Types", "media.php?action=list_media_package_types");
-SetNavigationFeature(9,  23, "- Media Relations", "media.php?action=list_relations");
-SetNavigationFeature(25, 24, "--- General ---", "");
-SetNavigationFeature(17, 25, "- Appearance", "configuration.php");
-SetNavigationFeature(18, 26, "- Profile", "profile.php");
-SetNavigationFeature(19, 27, "- Help", "help.php");
-SetNavigationFeature(20, 28, "- Logout", "logout.php");
+SetNavigationFeature(29, 19, "- Migrate Data", "migrate.php");
+SetNavigationFeature(24, 20, "--- Media Files ---", "");
+SetNavigationFeature(6,  21, "- Media Files", "media.php");
+SetNavigationFeature(7,  22, "- Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8,  23, "- Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9,  24, "- Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(25, 25, "--- General ---", "");
+SetNavigationFeature(17, 26, "- Appearance", "configuration.php");
+SetNavigationFeature(18, 27, "- Profile", "profile.php");
+SetNavigationFeature(19, 28, "- Help", "help.php");
+SetNavigationFeature(20, 29, "- Logout", "logout.php");
 
 UpdateStatus("-- Zymurgy:CM Feature list configured");
 
@@ -365,8 +366,9 @@ if ($count==0)
 		(16, 18, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
 		(17, 19, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
 		(18, 20, 4, 2, 'Page Templates',       'Zymurgy:CM Feature', '16'),
-		(19,  5, 0, 0, 'Appearance',           'Zymurgy:CM Feature', '17'),
-		(20,  6, 1, 0, 'Pages',                'Zymurgy:CM Feature', '2')
+		(19, 21, 4, 2, 'Migrate Data',         'Zymurgy:CM Feature', '29'),
+		(20,  5, 0, 0, 'Appearance',           'Zymurgy:CM Feature', '17'),
+		(21,  6, 1, 0, 'Pages',                'Zymurgy:CM Feature', '2')
 		;";
 	$ri = mysql_query($sql) or die ("Can't create default navigation ($sql): ".mysql_error());
 
