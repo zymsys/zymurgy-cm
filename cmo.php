@@ -237,6 +237,16 @@ if (!class_exists('Zymurgy'))
 		public static $Locales = array();
 
 		/**
+		 * Container for catalogues of data which may be stored within the Zymurgy container.
+		 * Two container arrays are created under $catalogue as defaults:
+		 *  - Vendors who wish to store generic catalogues here should so so under $catalogue['vendors']
+		 *  - Implementation specific catalogues should be placed under $catalogue['implementation']
+		 *
+		 * @var array
+		 */
+		public static $catalogue = array();
+		
+		/**
 		 * Cache of remote lookup items. Used to avoid having to make multiple
 		 * requests for the same information to the same remote source.
 		 *
@@ -1749,6 +1759,9 @@ if (!class_exists('Zymurgy'))
 	include(Zymurgy::$root."/zymurgy/config/config.php");
 	Zymurgy::$config = $ZymurgyConfig;
 	unset($ZymurgyConfig);
+	
+	Zymurgy::$catalogue['vendors'] = array();
+	Zymurgy::$catalogue['implementation'] = array();
 
 	if ((array_key_exists('FixSlashes',Zymurgy::$config)) && (Zymurgy::$config['FixSlashes']) && (get_magic_quotes_gpc())) {
 	   $_POST = array_map('Zymurgy::stripslashes_deep', $_POST);
