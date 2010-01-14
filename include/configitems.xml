@@ -139,9 +139,14 @@
 		</item>
 	</group>
 	<group>
-		<name>Access Control</name>
+		<name>Pages System</name>
 		<description>
 		</description>
+		<item>
+			<code>PagesDontLoadParams</code>
+			<label>Override standard parameter code with specific rules in .htaccess (if you don't know what this means, leave it unchecked)</label>
+			<inputspec>checkbox</inputspec>
+		</item>
 		<item>
 			<code>PagesOnACLFailure</code>
 			<label>ACL Failure Action:</label>

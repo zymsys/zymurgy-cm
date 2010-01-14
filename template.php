@@ -266,25 +266,29 @@ class ZymurgyTemplate
 	 */
 	public static function LoadParams()
 	{
-		$regexparts = array();
-		// was mod_rewrite used?
-		if (preg_match('@^/([^/]+)/([^?#]+)@', $_SERVER['REQUEST_URI'], $regexparts)){
-			unset($_GET['f']);
-			// redo the rewrite because of a bug in mod_rewrite
+		if(!isset(Zymurgy::$config["PagesDontLoadParams"])
+			|| Zymurgy::$config["PagesDontLoadParams"] !== "on")
+		{
+			$regexparts = array();
+			// was mod_rewrite used?
+			if (preg_match('@^/([^/]+)/([^?#]+)@', $_SERVER['REQUEST_URI'], $regexparts)){
+				unset($_GET['f']);
+				// redo the rewrite because of a bug in mod_rewrite
 
-			$_GET['p']=$regexparts[2];
-			if ($regexparts[1] != 'pages')
-				$_GET['f'] = $regexparts[1];
-		}else{
-			// this page was called directly
-			$ru = explode('?',$_SERVER['REQUEST_URI'],2);
-			if (array_key_exists(1,$ru))
-			{
-				$pp = explode('&',$ru[1]);
-				foreach ($pp as $part)
+				$_GET['p']=$regexparts[2];
+				if ($regexparts[1] != 'pages')
+					$_GET['f'] = $regexparts[1];
+			}else{
+				// this page was called directly
+				$ru = explode('?',$_SERVER['REQUEST_URI'],2);
+				if (array_key_exists(1,$ru))
 				{
-					$get = explode('=',$part,2);
-					$_GET[$get[0]] = array_key_exists(1,$get) ? $get[1] : false;
+					$pp = explode('&',$ru[1]);
+					foreach ($pp as $part)
+					{
+						$get = explode('=',$part,2);
+						$_GET[$get[0]] = array_key_exists(1,$get) ? $get[1] : false;
+					}
 				}
 			}
 		}
