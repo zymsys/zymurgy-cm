@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage frontend
  */
@@ -13,8 +13,8 @@ class ZymurgySiteNavItem
 	 * @var integer
 	 */
 	public $id;
-	
-	/** 
+
+	/**
 	 * The page title to display in the nav nemu.
 	 * @var string
 	 */
@@ -24,7 +24,7 @@ class ZymurgySiteNavItem
 	 * @var string
 	 */
 	public $linkurl;
-	
+
 	/**
 	 * The golive date
 	 * @var timestamp
@@ -40,13 +40,13 @@ class ZymurgySiteNavItem
 	 * @var timestamp
 	 */
 	public $retiredate;
-	
+
 	/**
 	 * The ACL database ID
 	 * @var int
 	 */
 	public $acl;
-	
+
 	/**
 	 * The template database ID
 	 *
@@ -58,19 +58,19 @@ class ZymurgySiteNavItem
 	 * @var array
 	 */
 	public $aclitems = array();
-	
+
 	/**
 	 * The database ID of the page's parent (root is 0)
 	 * @var int
 	 */
 	public $parent;
-	
+
 	/**
 	 * The database IDs of the page's children
 	 * @var array of integers
 	 */
 	public $children = array();
-	
+
 	/**
 	 * The database IDs of the page's children indexed by the nav name of the child
 	 * @var array of integers
@@ -102,7 +102,7 @@ class ZymurgySiteNavItem
 
 /**
  * A class to hold the site navigation tree.  Will fill itself when constructed.
- * 
+ *
  * @author George
  *
  */
@@ -110,23 +110,23 @@ class ZymurgySiteNav
 {
 	/**
 	 * The nav items by database ID.
-	 * 
+	 *
 	 * @var array of ZymurgySiteNavItem objects
 	 */
 	public $items = array();
-	
+
 	/**
 	 * Create a new navigation tree and fill it from the database.
-	 * 
+	 *
 	 */
 	function __construct()
 	{
 		Zymurgy::memberauthenticate();
 		Zymurgy::memberauthorize("");
-		
+
 		// temporary holding point for navigation tree structure
 		$structureparts = array();
-		
+
 		// check if user can see softlaunch pages
 		$cansoftlaunch = false;
 		$softlaunch_ACL = array('Zymurgy:CM - User', 'Zymurgy:CM - Administrator', 'Zymurgy:CM - Webmaster');
@@ -154,7 +154,7 @@ class ZymurgySiteNav
 						//Yeah, we haven't even soft-launched yet.  Bail.
 						continue;
 					}
-					
+
 					//We've soft-launched, but not gone live.  Is the user allowed to view soft launch pages?
 					if (!$cansoftlaunch)
 					{
@@ -175,17 +175,17 @@ class ZymurgySiteNav
 				$row['acl'],
 				$row['template']
 			);
-			
+
 			// add item as child of parent node
 			$structureparts[$row['parent']][] = $row['id'];
-			
+
 		}
 
 		Zymurgy::$db->free_result($ri);
-		
+
 		// dummy node for root to assint in tree trversal
 			$this->items[0] = new ZymurgySiteNavItem(0,'Root','',0,null,null,null,null,0);
-			
+
 		// copy the structure into the nav items children attributes.
 		foreach ($structureparts as $key => $children)
 		{
@@ -205,20 +205,25 @@ class ZymurgySiteNav
 		{
 			foreach($this->items as $key => &$item)
 			{
-				if($item->acl == $row["zcm_acl"])
-					$item->aclitems[] = array(
-						"group" => $row["group"],
-						"permission" => $row["permission"]
-					);
+//				echo("<pre>".print_r($item, true)."</pre>");
+
+				if($item instanceof ZymurgySiteNavItem)
+				{
+					if($item->acl == $row["zcm_acl"])
+						$item->aclitems[] = array(
+							"group" => $row["group"],
+							"permission" => $row["permission"]
+						);
+				}
 			}
 		}
 
 		Zymurgy::$db->free_result($ri);
 	}
-	
+
 	/**
 	 * escape a page title for use in URLs
-	 * 
+	 *
 	 * @param string $text utf-8
 	 * @return string urlencoded
 	 */
@@ -228,9 +233,9 @@ class ZymurgySiteNav
 
 	/**
 	 * Deprecated, renders a YUI menu bar.  Use ZymurgySiteNavRenderer_YUI instead.
-	 * 
+	 *
 	 * @deprecated
-	 * 
+	 *
 	 * @param $ishorizontal bool
 	 * @param $currentlevelonly bool
 	 * @param $childlevelsonly bool
@@ -258,7 +263,7 @@ class ZymurgySiteNav
 
 	/**
 	 * Check if the user has permission to viey the page with the ID $key.
-	 * 
+	 *
 	 * @param int $key
 	 * @return bool
 	 */
@@ -279,18 +284,18 @@ class ZymurgySiteNav
 				// user's groups are not in ACL, no permission
 				return false;
 			}
-			
+
 			// no ACL here, check parent page
 			$key = $this->items[$key]->parent;
 		}
-		
+
 		// root is always readable
 		return true;
 	}
 
 	/**
 	 * Get the list of anscestors of the page with id $key.
-	 * 
+	 *
 	 * @param int $key
 	 * @return array in the form id=>title
 	 */
@@ -312,35 +317,35 @@ class ZymurgySiteNav
 
 /**
  * Base class to create navigation renderers.
- * 
+ *
  * Extend this class to create navigation renderers.
  * This provides common utility functions to select the start and depth of the navigation tree shown.
  * Your renderer inpmlementation will orerride headtags() and render() which are called to display the navigation.
- *  
+ *
  * @author George
  *
  */
 abstract class ZymurgySiteNavRenderer{
-	
+
 	/**
 	 * The number of levels to show in the navigation tree. 0 for unlimited.
-	 * 
+	 *
 	 * @var int
 	 */
 	public $maxdepth = 0;
-	
+
 	/**
 	 * The navigation URL part of the root page.  Blank for the site root.
 	 * @var string
 	 */
 	public $startpath = '';
-	
+
 	/**
 	 * The string to add to the start of the URL path.  This is usually "pages" (default).
 	 * @var string
 	 */
 	public $hrefroot = 'pages';
-	
+
 	/**
 	 * For absolute links in menues, for example http://example.com would make all links absolute to example.com.
 	 * Do not include the trailing slash.
@@ -348,17 +353,17 @@ abstract class ZymurgySiteNavRenderer{
 	 * @var string
 	 */
 	public $baseurl = '';
-	
+
 	########################################
-	
+
 	/**
 	 * A reference to the navigation tree.  Set by constructor.
 	 * @var Zymurgy_SiteNav
 	 */
 	protected $sitenav;
-	
+
 	########################################
-	
+
 	/**
 	 * The foot key of the displayed navigation tree.  Filled dy initialize_data().
 	 * @var int
@@ -381,10 +386,10 @@ abstract class ZymurgySiteNavRenderer{
 	protected $crumbs = array();
 
 	########################################
-	
+
 	/**
 	 * Creates a new navigation renderer that shows navigation from $startpath.
-	 * 
+	 *
 	 * @param string $startpath
 	 */
 	public function __construct(
@@ -397,7 +402,7 @@ abstract class ZymurgySiteNavRenderer{
 
 	########################################
 	// start control
-	
+
 	/**
 	 * Start the navigation at the current page.  Displays children.
 	 */
@@ -416,7 +421,7 @@ abstract class ZymurgySiteNavRenderer{
 	public function startat_depth($depth){
 		$this->startpath = implode('/',array_slice(explode('/', Zymurgy::$template->navpath), 0, $depth));
 	}
-	
+
 	########################################
 	/**
 	 * Get the text for the page with id $key to show in the menu.
@@ -426,7 +431,7 @@ abstract class ZymurgySiteNavRenderer{
 	protected function getname($key){
 		return $this->sitenav->items[$key]->linktext;
 	}
-	
+
 	/**
 	 * get the URL to likg to the page with id $key.
 	 * @param $key
@@ -434,10 +439,10 @@ abstract class ZymurgySiteNavRenderer{
 	 */
 	protected function geturl($key){
 		if ($key == 0) return '/'.$this->hrefroot;
-		
+
 		return $this->geturl($this->sitenav->items[$key]->parent).'/'.$this->sitenav->items[$key]->linkurl;
 	}
-	
+
 	/**
 	 * Call this at the start your render function.
 	 * @return unknown_type
@@ -446,7 +451,7 @@ abstract class ZymurgySiteNavRenderer{
 		$this->anscestors = array();
 		$this->hrefprefix = '/'.$this->hrefroot;
 		$this->rootnode = 0;
-		
+
 		foreach (explode('/', $this->startpath) as $pathpart){
 			foreach ($this->sitenav->items[$this->rootnode]->children as $child){
 				if ($this->sitenav->items[$child]->linkurl == $pathpart){
@@ -456,14 +461,14 @@ abstract class ZymurgySiteNavRenderer{
 				}
 			}
 		}
-		
+
 		$this->hrefprefix .= '/';
-		
+
 		$this->crumbs = $this->sitenav->getanscestors(Zymurgy::$pageid);
 	}
 
 	########################################
-	
+
 	/**
 	 * emit the head tags required by the renderer.
 	 */
@@ -478,7 +483,7 @@ abstract class ZymurgySiteNavRenderer{
 
 /**
  * Renderer to show YUI sitenav menus.
- * 
+ *
  * @author George
  *
  */
@@ -492,14 +497,14 @@ class ZymurgySiteNavRender_YUI extends ZymurgySiteNavRenderer{
 		static $included = 0;
 		if ($included) return;
 		$included = 1;
-		
+
 		echo Zymurgy::YUI('fonts/fonts-min.css');
 		echo Zymurgy::YUI('menu/assets/skins/sam/menu.css');
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
 		echo Zymurgy::YUI("selector/selector-min.js");
 		echo Zymurgy::YUI('container/container_core-min.js');
 		echo Zymurgy::YUI('menu/menu-min.js');
-		
+
 ?>
 <script type="text/javascript">// <![CDATA[
 YAHOO.util.Event.onDOMReady(function(){
@@ -524,12 +529,12 @@ YAHOO.util.Event.onDOMReady(function(){
 
 	/**
 	 * Actually show the menu.
-	 * 
+	 *
 	 * @param bool $ishorizontal if ture dray a horizontal bar, if false draw a vertical menu.
 	 */
 	public function render($ishorizontal = true){
 		$this->initialize_data();
-		
+
 		echo '<div class="yui-skin-sam">'."\n";
 		if ($ishorizontal){
 			echo '  <div class="yuimenubar yuimenubarnav ZymurgyMenu_YUI_H">'."\n";
@@ -619,14 +624,14 @@ YAHOO.util.Event.onDOMReady(function(){
 
 /**
  * The simplest possible nav renderer.  Shows an ascii list.
- * 
+ *
  * Use this as an example of how to write your own renderers.
- * 
+ *
  * @author George
  *
  */
 class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
-	
+
 	// no headtags necessary
 	public function headtags(){
 
@@ -636,28 +641,28 @@ class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
 	public function render(){
 		// this does some setup: call it at the start of your renderer.
 		$this->initialize_data();
-		
+
 		// actually start rendering.
 		$this->renderpart($this->rootnode, 0);
 	}
 
 	/**
 	 * Render a part of the navigation menu
-	 * 
+	 *
 	 * @param int $node The id of the node to start from.
 	 * @param int $depth we are currently this many levels deep.
 	 */
 	private function renderpart($node, $depth){
 		// we need some tabs to show structure
 		$tabs = str_repeat("    ",$depth);
-		
+
 		// for each child of the current node
 		foreach ($this->sitenav->items[$node]->children as $key){
 			// if the user can see it
 			if ($this->sitenav->haspermission($key)){
 				// display list entry
 				echo "$tabs* ".$this->getname($key).': '.$this->geturl($key)."\n";
-				
+
 				// if we want to show children and the node has any, recurse
 				if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
 					$this->renderpart($key, $depth+1);
