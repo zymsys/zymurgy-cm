@@ -123,7 +123,7 @@ BLOCK;
 			$sql = "SELECT COUNT(*) FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
 				"` ".
-				(strlen($this->GetConfigValue("Filter")) > 0 ? $this->GetConfigValue("Filter") : "").
+				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$this->GetConfigValue("Filter") : "").
 				" ".
 				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : ""));
 //			die($sql);
@@ -134,7 +134,7 @@ BLOCK;
 				" FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
 				"` ".
-				(strlen($this->GetConfigValue("Filter")) > 0 ? $this->GetConfigValue("Filter") : "").
+				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$this->GetConfigValue("Filter") : "").
 				" ".
 				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : "")).
 				" LIMIT ".
