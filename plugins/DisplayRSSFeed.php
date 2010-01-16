@@ -70,7 +70,22 @@ BLOCK;
 			"inputspec" => 'input.50.200',
 			"authlevel" => 0);
 		$configItems[] = array(
-			"name" => 'Output Template',
+			"name" => 'Show no more channels than',
+			"default" => '1',
+			"inputspec" => 'input.5.5',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'Show no more items than',
+			"default" => '10',
+			"inputspec" => 'input.5.5',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'RSS Channel Template',
+			"default" => '',
+			"inputspec" => 'textarea.60.5',
+			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => 'RSS Item Template',
 			"default" => '',
 			"inputspec" => 'textarea.60.5',
 			"authlevel" => 0);
@@ -143,20 +158,57 @@ BLOCK;
 	 */
 	function Render()
 	{
-		if(isset($_GET["TemplateInstance"]))
+		include(Zymurgy::$root."/zymurgy/include/rss.php");
+		$reader = new ZymurgyRSSFeedReader($this->GetConfigValue("Feed URL"));
+		
+		//Get config values
+		$channeltemplate = $this->GetConfigValue("RSS Channel Template");
+		$itemtemplate = $this->GetConfigValue("RSS Item Template");
+		$maxchannels = $this->GetConfigValue("Show no more channels than");
+		$maxitems = $this->GetConfigValue("Show no more items than");
+		
+		//Get channel properties
+		$channelvars = array_keys(get_class_vars("ZymurgyRSSFeed"));
+		
+		//Get item properties
+		$itemvars = array_keys(get_class_vars('ZymurgyRSSFeedItem'));
+		
+		$channelcount = 0;
+		foreach ($reader->channels as $channel)
 		{
-//			return "Hi";
+			if ($channelcount == $maxchannels) break;
+			$channelcount++;
+			$itemcount = 0;
+			
+			//Create substitution array for channel header
+			$sa = array();
+			foreach ($channelvars as $varname)
+			{
+				if ($varname != 'items')
+				{
+					$sa["{{$varname}}"] = $channel->$varname;
+				}
+			}
 
-			echo $this->GetConfigValue("Output Template");
-		}
-		else
-		{
-			$_GET["XMLFILE"] = $this->GetConfigValue("Feed URL");
-			$_GET["TEMPLATE"] = "http://".$_SERVER['SERVER_NAME']."/zymurgy/plugins/DisplayRSSFeed.php?TemplateInstance=".urlencode($this->InstanceName);
-			$_GET["MAXITEMS"] = 4;
-
-//			die($_GET["TEMPLATE"]);
-			include(Zymurgy::$root."/zymurgy/include/rss2html.php");
+			//Draw channel header
+			echo str_replace(array_keys($sa),$sa,$channeltemplate);
+			
+			//Now draw items for this channel
+			foreach ($channel->items as $item)
+			{
+				if ($itemcount == $maxitems) break;
+				$itemcount++;
+				
+				//Create substitution array for item
+				$sa = array();
+				foreach ($itemvars as $varname)
+				{
+					$sa["{{$varname}}"] = $item->$varname;
+				}
+				
+				//Draw item
+				echo str_replace(array_keys($sa),$sa,$itemtemplate);
+			}
 		}
 	}
 
@@ -168,7 +220,7 @@ BLOCK;
 	 */
 	function RenderAdmin()
 	{
-		echo "There are no settings for this plugin.";
+		echo "Click 'Edit Settings' to configure your RSS feed.";
 	}
 }
 
