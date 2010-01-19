@@ -1238,7 +1238,10 @@ class FormEmailConfirmation implements PluginExtension
 		if (!array_key_exists($tofield,$values))
 			die("This form doesn't have a field called '$tofield' for email confirmation.");
 		$to = str_replace(array("\r","\n"),'',$values[$tofield]);
-		list($mail->FromName, $mail->From) = $plugin->AddressElements($plugin->GetConfigValue('Confirmation Email From'));
+
+		$from = $plugin->GetConfigValue('Confirmation Email From');
+		list($mail->FromName, $mail->From) = $plugin->AddressElements(array_key_exists($from, $values) ? $values[$from] : $from);
+
 		$body = $plugin->GetConfigValue('Confirmation Email Contents');
 		$mail->Subject = str_replace(array_keys($subvalues),$subvalues,$plugin->GetConfigValue('Confirmation Email Subject'));
 		$mail->AltBody = strip_tags($body);
