@@ -368,10 +368,12 @@ BLOCK;
 		}
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			$this->InputRows[] = $row;
+			$this->InputRows[$row["header"]] = $row;
 		}
 		Zymurgy::$db->free_result($ri);
 		$this->InputDataLoaded = true;
+
+		$this->CallExtensionMethod("LoadInputData");
 	}
 
 	function RenderForm()
