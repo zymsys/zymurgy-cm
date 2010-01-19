@@ -301,7 +301,7 @@
 		{
 			echo("<script type=\"text/javascript\">\n");
 			echo("function mf_aspectcrop_popup(media_file_id, thumbnail) {\n");
-			echo("url = 'media.php?action=edit_media_file_thumbnail&media_file_id={0}&thumbnail={1}&refresh=$forceRefresh';\n");
+			echo("url = '/zymurgy/media.php?action=edit_media_file_thumbnail&media_file_id={0}&thumbnail={1}&refresh=$forceRefresh';\n");
 			echo("url = url.replace(\"{0}\", media_file_id);\n");
 			echo("url = url.replace(\"{1}\", thumbnail);\n");
 			echo("window.open(url, \"thumber\", \"scrollbars=no,width=780,height=500\");\n");
@@ -2089,19 +2089,19 @@
 					$height.
 					");\"><img id=\"dlgImg_".
 					$mediaFile->get_media_file_id().
-					"\" src=\"media.php?action=stream_media_file&amp;media_file_id=".
+					"\" src=\"/zymurgy/media.php?action=stream_media_file&amp;media_file_id=".
 					$mediaFile->get_media_file_id().
 					"&amp;suffix=thumb50x50\" height=\"50\" width=\"50\" border=\"0\" ".
 					"style=\"border: 2px solid white;\"></a>\n");
 				echo("</td>\n");
 			}
 
-			echo("<td><a href=\"javascript:;\" onclick=\"window.open('media.php?action=add_media_file_dialog".
+			echo("<td><a href=\"javascript:;\" onclick=\"window.open('/zymurgy/media.php?action=add_media_file_dialog".
 				"&amp;media_package_id=".
 				$mediaPackage->get_media_package_id().
 				"&amp;imagelist=".
 				$yuiHtmlID.
-				"', 'newMediaFileDialog', 'width=350,height=200');\"><img id=\"dlgImg_new\" src=\"images/newImage.gif\" height=\"50\" ".
+				"', 'newMediaFileDialog', 'width=350,height=200');\"><img id=\"dlgImg_new\" src=\"/zymurgy/images/newImage.gif\" height=\"50\" ".
 				"width=\"50\" style=\"border: 2px solid white;\"></a>\n");
 			echo("</td>\n");
 
