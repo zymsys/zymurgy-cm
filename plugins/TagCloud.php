@@ -71,7 +71,7 @@ BLOCK;
 					DefineTableField("name", "VARCHAR(100)", "DEFAULT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -85,9 +85,9 @@ BLOCK;
 					DefineTableField("tagb", "bigint", "UNSIGNED NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => ""),
-					array("columns" => "taga", "unique" => "false", "type" => ""),
-					array("columns" => "tagb", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => ""),
+					array("columns" => "taga", "unique" => false, "type" => ""),
+					array("columns" => "tagb", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -101,9 +101,9 @@ BLOCK;
 					DefineTableField("relatedrow", "VARCHAR(200)", "NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => ""),
-					array("columns" => "tag", "unique" => "false", "type" => ""),
-					array("columns" => "relatedrow", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => ""),
+					array("columns" => "tag", "unique" => false, "type" => ""),
+					array("columns" => "relatedrow", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"

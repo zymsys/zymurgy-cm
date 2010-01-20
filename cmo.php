@@ -769,7 +769,7 @@ if (!class_exists('Zymurgy'))
 				$r[] = "Zymurgy.track('$userid');
 					</script>";
 			}
-			$r = implode("\r\n",$r)."\r\n";
+			$r = implode("\n",$r)."\n";
 			return $r;
 		}
 

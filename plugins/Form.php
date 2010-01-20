@@ -219,7 +219,7 @@ BLOCK;
 					DefineTableField("validatormsg", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance, disporder", "unique" => "false", "type" => "")
+					array("columns" => "instance, disporder", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -245,8 +245,8 @@ BLOCK;
 					DefineTableField("instance", "INT(11)", "DEFAULT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "exptime", "unique" => "false", "type" => ""),
-					array("columns" => "instance", "unique" => "false", "type" => "")
+					array("columns" => "exptime", "unique" => false, "type" => ""),
+					array("columns" => "instance", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -259,7 +259,7 @@ BLOCK;
 					DefineTableField("header", "VARCHAR(60)", "DEFAULT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -273,7 +273,7 @@ BLOCK;
 					DefineTableField("regex", "TEXT", "")
 				),
 				"indexes" => array(
-					array("columns" => "disporder", "unique" => "false", "type" => "")
+					array("columns" => "disporder", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"

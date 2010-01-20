@@ -57,8 +57,8 @@ BLOCK;
 					DefineTableField("disporder", "INTEGER", "UNSIGNED DEFAULT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => ""),
-					array("columns" => "disporder", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => ""),
+					array("columns" => "disporder", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"

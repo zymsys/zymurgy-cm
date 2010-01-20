@@ -34,7 +34,7 @@ BLOCK;
 					DefineTableField("value", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => "false", "type" => "")
+					array("columns" => "instance", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1"

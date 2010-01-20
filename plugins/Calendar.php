@@ -27,7 +27,7 @@ class Calendar extends PluginBase
 					DefineTableField("description", "TEXT", "NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "start, end", "unique" => "false", "type" => "")
+					array("columns" => "start, end", "unique" => false, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1"
