@@ -119,7 +119,7 @@
 	{
 		return '
             this.dialog = new YAHOO.widget.Dialog("yui-picker-panel", { 
-				width : "370px",
+				width : "400px",
 				close: true,
 				fixedcenter : false,
 				visible : false, 

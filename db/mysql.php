@@ -71,7 +71,12 @@ class Zymurgy_DB
 	public function run($sql, $errormsg = 'Unable to run query')
 	{
 		// should this throw an exception instead?
-		$ri = $this->query($sql) or die ("$errormsg ($sql): ".$this->error());
+		$ri = $this->query($sql);
+		if (!$ri)
+		{
+			$bt = array_shift(debug_backtrace());
+			die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']);
+		}
 		return $ri;
 	}
 	
