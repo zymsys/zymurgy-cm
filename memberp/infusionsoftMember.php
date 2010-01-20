@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage auth
  */
@@ -139,7 +139,7 @@ class infusionsoftMember extends ZymurgyMember
 				}
  			}
 		}
-		
+
 		if ($groupname == 'Registered User') return true;
 		return is_array(Zymurgy::$member['groups'])
 			? in_array($groupname, Zymurgy::$member['groups'])
@@ -468,7 +468,13 @@ class infusionsoftMember extends ZymurgyMember
 
 				if($ri)
 				{
-					$this->membersignup_AuthenticateNewMember($userid, $password);
+					$this->membersignup_AuthenticateNewMember(
+						$userid,
+						$password,
+						$pi,
+						$rurl,
+						$joinchar,
+						$values);
 				}
 			}
 			else
@@ -669,6 +675,8 @@ class infusionsoftMember extends ZymurgyMember
 					'Email' => $userid,
 					'Password' => $password));
 		}
+
+		return $ri;
 	}
 
 	private function membersignup_UpdateInfusionsoftUserID($userid, &$pi)
