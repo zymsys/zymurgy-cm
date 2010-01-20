@@ -2,7 +2,7 @@
 /**
  * Request a file from the UserFiles folder.  Don't allow .. style attacks.  If the mime type is blank then return a 1x1 transparent gif so that
  * image references show as a blank.
- * 
+ *
  * GET parameters:
  * 	mime: mime type of the requested file; this should be in the database for the attachment or image
  * 	dataset: source table (for path construction)
@@ -15,11 +15,11 @@
 
 if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 	$root = $_SERVER["APPL_PHYSICAL_PATH"];
-else 
+else
 	$root = $_SERVER['DOCUMENT_ROOT'];
 
 require_once("$root/zymurgy/cmo.php");
-	
+
 function get_http_mdate($fname)
 {
    return gmdate("D, d M Y H:i:s",filemtime($fname))." GMT";
@@ -37,7 +37,7 @@ function check_modified_header($gmtime)
 	   $if_modified_since=preg_replace('/;.*$/', '', $headers['If-Modified-Since']);
 	   if(!$if_modified_since)
 	       return;
-	
+
 	   if ($if_modified_since == $gmtime) {
 	       header("HTTP/1.1 304 Not Modified");
 	       exit;
@@ -52,6 +52,8 @@ function safeparam($param)
 
 function returnblankgif()
 {
+//	die(print_r(debug_backtrace(), true));
+
     header("Content-type: image/gif");
     echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x40\x02\x01\x44\x00\x3b";
     exit;
@@ -61,6 +63,7 @@ $mime = $_GET['mime'];
 $dataset = safeparam($_GET['dataset']);
 $datacolumn = safeparam($_GET['datacolumn']);
 $id = 0 + $_GET['id'];
+$thumbName = "";
 
 if ($mime == '')
 {
@@ -77,6 +80,7 @@ else
 		$ext = Thumb::mime2ext($mime);
 		$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}thumb$requestedSize.$ext";
 		$rawimage = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.$ext";
+
 		$makethumb = false;
 		if (file_exists($thumbName))
 		{
@@ -88,11 +92,19 @@ else
 				$makethumb = true;
 			}
 		}
-		else 
+		else
 		{
 			//Thumb doesn't exist...  Try to build it.
 			$makethumb = true;
 		}
+
+		if(!file_exists($rawimage))
+		{
+			$thumbName = "$root/zymurgy/uploads/$dataset.$datacolumn.{$id}";
+			$rawimage = "$root/zymurgy/uploads/$dataset.$datacolumn.{$id}";
+			$makethumb = false;
+		}
+
 		if ($makethumb)
 		{
 			if (!file_exists($rawimage))
@@ -106,7 +118,7 @@ else
 				Thumb::MakeFixedThumb($w,$h,$rawimage,$thumbName);
 				$mime = "image/jpeg"; //Resized images are all image/jpeg
 			}
-			else 
+			else
 			{
 				echo "noauth";
 				exit;
@@ -126,16 +138,19 @@ else
     	$safefn = "$root/zymurgy/uploads/$safefn";
     if (!file_exists($safefn))
     {
+//    	die($safefn);
+
     	//Maybe this is a thumb...
     	if (file_exists($thumbName))
     		$safefn = $thumbName;
-    	else 
+    	else
     	{
     		//Last ditch effort to supply a valid file...  See if there's a raw thumb.
 			$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.jpg";
+//			die($thumbName);
 	    	if (file_exists($thumbName))
 	    		$safefn = $thumbName;
-	    	else 
+	    	else
     			returnblankgif();
     	}
     }

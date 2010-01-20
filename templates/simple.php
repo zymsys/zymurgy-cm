@@ -1,10 +1,10 @@
 <?
 /**
  * Simple example template.
- * 
+ *
  * WARNING: This file will be over-written when Zymurgy:CM is upgraded.  Copy it to a location outside of
  * the /zymurgy folder to make customizations to it.
- * 
+ *
  * @package Zymurgy
  * @subpackage defaulttemplates
  */
@@ -45,7 +45,7 @@ echo ">";
     	<? if ($navpos == 0) $yuinav->render(true); ?>
     </div>
     <div id="bd">
-    <? 
+    <?
     if ($navpos != 0)
     {
     	echo "<div id=\"yui-main\"><div id=\"zymurgy-main\" class=\"yui-b\">";

@@ -279,14 +279,7 @@ if (!empty($tbl['selfref']))
 
 foreach($cols as $col=>$inputspec)
 {
-	if (array_key_exists($col,$thumbs))
-	{
-		$dg->AddAttachmentEditor($col,$capts[$col]);
-	}
-	else
-	{
-		$dg->AddEditor($col,$capts[$col],$inputspec);
-	}
+	$dg->AddEditor($col,$capts[$col],$inputspec);
 }
 
 $dg->AddEditColumn();

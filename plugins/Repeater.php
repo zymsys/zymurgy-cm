@@ -205,6 +205,16 @@ BLOCK;
 								? $fieldTypes[$fieldName]["inputspec"]
 								: "input.10.20", "{0}", $row[$fieldName]),
 							$output);
+							
+						if (isset($fieldTypes[$fieldName]) && is_a(InputWidget::GetFromInputSpec($fieldTypes[$fieldName]["inputspec"]),"ZIW_Image"))
+						{
+							$ep = explode('.',$fieldTypes[$fieldName]["inputspec"],2);
+							$tp = explode(',',$ep[1]);
+							list($w,$h) = explode('.',$tp[0]);
+							$output = str_replace("{".$fieldName.",path}",
+								"/zymurgy/file.php?mime=".$row[$fieldName]."&dataset=".$table['tname']."&datacolumn=".$fieldName."&id={$row['id']}&w=$w&h=$h",
+								$output);
+						}
 					}
 
 					echo($output);
