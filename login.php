@@ -8,6 +8,7 @@
 
 // ini_set("display_errors", 1);
 //echo "<pre>"; print_r($_POST); echo "</pre>"; exit;
+ob_start();
 $onload = 'onload="document.login.userid.focus();"';
 include_once("cmo.php");
 
