@@ -405,6 +405,88 @@ class ZIW_TextArea extends ZIW_Base
  * @package Zymurgy
  * @subpackage inputwidgets
  */
+class ZIW_TextAreaFlavoured extends ZIW_Base
+{
+	function Display($ep,$display,$shell)
+	{
+		return $this->GetFlavouredValue($display);
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+?>
+		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
+		<table>
+			<tr>
+				<td valign="top">Default:</td>
+				<td><textarea id="<?= $name ?>_default" name="<?= $name ?>_default" rows="<?= $ep[2] ?>" cols="<?= $ep[1] ?>"><?= $this->GetFlavouredValue($value, '') ?></textarea></td>
+			</tr>
+<?
+		$flavours = Zymurgy::GetAllFlavours();
+		foreach($flavours as $flavour)
+		{
+			if (!$flavour['providescontent']) continue;
+?>
+			<tr>
+				<td valign="top"><?= $flavour['label'] ?>:</td>
+				<td><textarea id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" rows="<?= $ep[2] ?>" cols="<?= $ep[1] ?>"><?= $this->GetFlavouredValue($value, $flavour['code']) ?></textarea></td>
+			</tr>
+<?
+		}
+?>
+		</table>
+<?
+	}
+
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_TextAreaFlavoured(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Flavoured Text - multiple lines\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Width (characters)\", 3, 5, 40));\n";
+		$output .= " specifier.inputparameters.push(".
+			"DefineTextParameter(\"Height (characters)\", 3, 5, 5));\n";
+
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
+
+	function GetDatabaseType($inputspecName, $parameters)
+	{
+		//Always bigint to refer to zcm_flavourtext table
+		return "BIGINT";
+	}
+
+	/**
+	 * Determine if the InputWidget supports the Flavours system
+	 *
+	 * @return unknown
+	 */
+	function SupportsFlavours()
+	{
+		return true;
+	}
+}
+
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
 class ZIW_Hidden extends ZIW_Base
 {
 	/**
@@ -2799,6 +2881,7 @@ InputWidget::Register('input',new ZIW_Input());
 InputWidget::Register("inputf", new ZIW_InputFlavoured());
 InputWidget::Register('lookup',new ZIW_Lookup());
 InputWidget::Register('textarea',new ZIW_TextArea());
+InputWidget::Register("textareaf", new ZIW_TextAreaFlavoured());
 InputWidget::Register('unixdatetime',new ZIW_UnixDateTime());
 InputWidget::Register('autocomplete',new ZIW_AutoComplete());
 InputWidget::Register('drop',new ZIW_Drop());
