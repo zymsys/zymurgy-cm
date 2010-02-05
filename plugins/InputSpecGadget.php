@@ -108,6 +108,16 @@ BLOCK;
 		{
 			if ($_SERVER['REQUEST_METHOD'] == 'POST')
 			{
+				$iw = InputWidget::GetFromInputSpec($inputspec);
+
+				if($iw->SupportsFlavours())
+				{
+//					echo("Flavoured inputspec detected.");
+
+					$flavourTextID = $iw->StoreFlavouredValueFromPost('InputSpec', $_POST["InputSpec"]);
+					$_POST["InputSpec"] = $flavourTextID;
+				}
+
 				$id = Zymurgy::$db->get("select id from zcm_inputspecplugin where instance=".$this->iid);
 				if ($id)
 					Zymurgy::$db->run("update zcm_inputspecplugin set value='".Zymurgy::$db->escape_string($_POST['InputSpec'])."' where id=$id");
