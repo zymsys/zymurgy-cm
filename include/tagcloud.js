@@ -3,6 +3,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 	var elHd;
 	var elBd;
 	var elSelected;
+	var elNotice;
 	var tags = new Array(); //Tags in the cloud
 	var selected = new Array(); //Tags on the selected list
 	var maxmag = 5;
@@ -137,21 +138,36 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 	};
 
 	this.renderTags = function () {
-		for (var i in tags) {
-			var oTag = tags[i];
-			var elTag = this.createTagElement(oTag);
-			var ndWhiteSpace = document.createTextNode(" ");
-			elTag.zymurgy_idx = i;
-			elTag.setAttribute("id", cloudID + "_" + oTag.name);
-			elTag.setAttribute("class","ZymurgyTagCloudTag ZymurgyTagCloudTag"+oTag.magnitude);
-			elBd.appendChild(elTag);
-			elBd.appendChild(ndWhiteSpace);
-			YAHOO.util.Event.addListener(elTag,'click', this.onTagClick, this);
-			tags[i].el = elTag;
+		if(tags.length <= 0)
+		{
+//			alert("No related tags");
+			elNotice = document.createTextNode("No related tags");
+			elBd.appendChild(elNotice);
+		}
+		else
+		{
+			for (var i in tags) {
+				var oTag = tags[i];
+				var elTag = this.createTagElement(oTag);
+				var ndWhiteSpace = document.createTextNode(" ");
+				elTag.zymurgy_idx = i;
+				elTag.setAttribute("id", cloudID + "_" + oTag.name);
+				elTag.setAttribute("class","ZymurgyTagCloudTag ZymurgyTagCloudTag"+oTag.magnitude);
+				elBd.appendChild(elTag);
+				elBd.appendChild(ndWhiteSpace);
+				YAHOO.util.Event.addListener(elTag,'click', this.onTagClick, this);
+				tags[i].el = elTag;
+			}
 		}
 	};
 
 	this.loadTags = function() {
+		if(elNotice)
+		{
+			elBd.removeChild(elNotice);
+			elNotice = null;
+		}
+
 		for (var i in tags) {
 			elBd.removeChild(tags[i].el);
 		}
