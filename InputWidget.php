@@ -1313,6 +1313,34 @@ class ZIW_Drop extends ZIW_RadioDrop
  */
 class ZIW_Time extends ZIW_Base
 {
+	//Lifted from http://guru-forum.net/showthread.php?t=7, and lovingly improved
+	function mysqlToUnix ($datetime) {
+	    if ($datetime) 
+	    {
+	    	$parts = explode(' ', $datetime);
+		    $datebits = explode('-', $parts[0]);
+		    if (3 != count($datebits)) return -1;
+		    if (isset($parts[1])) {
+		        $timebits = explode(':', $parts[1]);
+		        if (3 != count($timebits)) return -1;
+			    if (intval($timebits[0]) +
+			    	intval($timebits[1]) +
+			    	intval($timebits[2]) +
+			    	intval($datebits[0]) +
+			    	intval($datebits[1]) +
+			    	intval($datebits[2]) == 0)
+			    	return 0;
+		        return mktime($timebits[0], $timebits[1], $timebits[2], $datebits[1], $datebits[2], $datebits[0]);
+		    }
+		    if (intval($datebits[0]) +
+		    	intval($datebits[1]) +
+		    	intval($datebits[2]) == 0)
+		    	return 0;
+		    return mktime (0, 0, 0, $datebits[1], $datebits[2], $datebits[0]);
+	    }
+	    return 0;
+	} 	
+	
 	/**
 	 * Take posted value(s) and return the value to be stored in the database
 	 *
@@ -1322,7 +1350,7 @@ class ZIW_Time extends ZIW_Base
 	 */
 	function PostValue($ep,$postname)
 	{
-		$t = strtotime($_POST[$postname]);
+		$t = ZIW_Time::mysqlToUnix($_POST[$postname]);
 		return date('H:i:s',$t);
 	}
 
@@ -1336,7 +1364,7 @@ class ZIW_Time extends ZIW_Base
 	function Display($ep,$display,$shell)
 	{
 		//Convert 24hr clock to hh:mm am/pm
-		return date("g:i a",strtotime($display));
+		return date("g:i a",ZIW_Time::mysqlToUnix($display));
 	}
 
 	/**
@@ -1348,7 +1376,7 @@ class ZIW_Time extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
-		$value = date("g:i a",strtotime($value));
+		$value = date("g:i a",ZIW_Time::mysqlToUnix($value));
 		echo "<input type=\"text\" size=\"8\" maxlength=\"8\" id=\"$name\" name=\"".
 			"$name\" value=\"$value\" /> <i>hh:mm am/pm</i>";
 	}
@@ -1421,7 +1449,8 @@ abstract class ZIW_DateBase extends ZIW_Base
 		$cal->SetIncludeID(true); // false);
 
 		$cal->load_files();
-		$this->SetCalendarParams($date > 0 ? $date : "");
+		$dateval = $date > 0 ? $date : "";
+		$this->SetCalendarParams($dateval);
 		$this->calattributes['name'] = $name;
 		$cal->make_input_field($this->caloptions,$this->calattributes);
 	}
@@ -1491,11 +1520,15 @@ class ZIW_Date extends ZIW_DateBase
 		{
 			$this->calattributes['value'] = strftime($format, $date);
 		}
+		else 
+		{
+			$this->calattributes['value'] = '';
+		}
 	}
 
 	function ToUnixTime($tm)
 	{
-		return strtotime($tm);
+		return ZIW_Time::mysqlToUnix($tm);
 	}
 
 	function GetDatabaseType($inputspecName, $parameters)
@@ -1592,7 +1625,7 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 
 	function ToUnixTime($tm)
 	{
-		return strtotime($tm);
+		return ZIW_Time::mysqlToUnix($tm);
 	}
 
 	function SetCalendarParams($date)
@@ -1603,6 +1636,8 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 
 		if($date > 0)
 			$this->calattributes['value'] = strftime($format, $date);
+		else
+			$this->calattributes['value'] = '';
 	}
 
 	function GetDatabaseType($inputspecName, $parameters)
