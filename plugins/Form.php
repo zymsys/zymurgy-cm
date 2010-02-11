@@ -2012,11 +2012,11 @@ class FormPrefillFromMemberCustomTable implements PluginExtension
 		}
 	}
 
-	public function LoadFormData($plugin)
+	public function LoadInputData($plugin)
 	{
 		$this->ConfirmPluginCompatability($plugin);
 
-		//die("FormPrefillFromMemberCustomTable.LoadFormData called");
+		//die("FormPrefillFromMemberCustomTable.LoadInputData called");
 		// echo("<pre>");
 		// print_r($plugin->InputRows);
 		// echo("</pre><br>");
@@ -2037,11 +2037,11 @@ class FormPrefillFromMemberCustomTable implements PluginExtension
 			{
 				if(!is_numeric($key))
 				{
-					// echo("Setting default for $key to $value<br>");
+//					echo("Setting default for $key to $value<br>");
 
-					for($inputIndex = 0; $inputIndex < count($plugin->InputRows); $inputIndex++)
+					foreach($plugin->InputRows as $inputIndex => $inputRow)
 					{
-						if($plugin->InputRows[$inputIndex]["header"] == $key)
+						if($inputRow["header"] == $key)
 						{
 							$plugin->InputRows[$inputIndex]["defaultvalue"] = $value;
 						}
