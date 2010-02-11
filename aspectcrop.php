@@ -1,5 +1,6 @@
 <?
 require_once('cms.php');
+require_once('include/Thumb.php');
 //Zymurgy::$yuitest = true;
 if (!Zymurgy::memberauthenticate())
 {
@@ -17,6 +18,7 @@ $debugmsg = array(); //Debug messages - Comment out output near the bottom of th
 $stats = array(); //Key: name, Value: array(width, height) - used for making stats table for troubleshooting purposes.
 
 $ds = $_GET['ds']; //Dataset - table.field
+list($table,$column) = explode('.',$ds,2);
 $d = $_GET['d']; //Dimensions - WIDTHxHEIGHT
 $gd = $_GET['gd']; //Dimensions of the image in the grid on the parent window
 $id = 0 + $_GET['id']; //Database row ID
@@ -28,10 +30,16 @@ $minheight = $height;
 $stats['Min (Initial)'] = array($minwidth,$minheight);
 
 $work = array();
-list($work['w'], $work['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}aspectcropNormal.jpg");
+$mime = Zymurgy::$db->get("select `".Zymurgy::$db->escape_string($column)."` from `".Zymurgy::$db->escape_string($table)."` where id=$id");
+$ext = Thumb::mime2ext($mime);
+$fn = Zymurgy::$root.$imgdir.$id."aspectcropNormal.$ext";
+if (!file_exists($fn))
+	die("Can't open $fn");
+
+list($work['w'], $work['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}aspectcropNormal.$ext");
 $stats['Work Image'] = array($work['w'],$work['h']);
 $raw = array();
-list($raw['w'], $raw['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}raw.jpg");
+list($raw['w'], $raw['h'], $type, $attr) = getimagesize("$ZymurgyRoot$imgdir{$id}raw.$ext");
 $stats['Raw Image'] = array($raw['w'],$raw['h']);
 
 $xfactor = $raw['w'] / $work['w'];
@@ -44,7 +52,7 @@ $minwidth *= $work['w'] / $raw['w'];
 $minheight *= $work['h'] / $raw['h'];
 $stats['Min (Adj. for Work)'] = array($minwidth,$minheight);
 
-//Here $width is the requested width, and $work['w'] is the working image for the thumber (aspectcropNormal.jpg)
+//Here $width is the requested width, and $work['w'] is the working image for the thumber (aspectcropNormal.$ext)
 if (($minwidth>$work['w']) || ($minheight>$work['h']))
 {
 	$debugmsg[] = "Adjusting restrictions for small work image.  ([rw:$width>ww{$work['w']}] || [rh:$height>wh:{$work['h']}])";
@@ -80,7 +88,7 @@ else
 if ($minheight >= $work['h']) $minheight = $initheight = $work['h'];*/
 
 	//Try to load previous cropping area
-	$shfn = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg.sh";
+	$shfn = "$ZymurgyRoot$imgdir{$id}thumb$d.$ext.sh";
 	if (file_exists($shfn))
 	{
 		$fc = file_get_contents($shfn);
@@ -106,9 +114,9 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 	{
 		//Remove cached image files
 		$path = "$ZymurgyRoot/UserFiles/DataGrid/$ds";
-		@unlink("$path/{$id}aspectcropDark.jpg");
-		@unlink("$path/{$id}aspectcropNormal.jpg");
-		@unlink("$path/{$id}raw.jpg");
+		@unlink("$path/{$id}aspectcropDark.$ext");
+		@unlink("$path/{$id}aspectcropNormal.$ext");
+		@unlink("$path/{$id}raw.$ext");
 		$thumbs = glob("$path/{$id}thumb*");
 		foreach($thumbs as $thumb)
 		{
@@ -132,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 	}
 	else
 	{
-		require_once('include/Thumb.php');
 
 		$selected = array(
 			'x'=>$_POST['cropX'],
@@ -175,14 +182,14 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			}
 			//echo "Adjusted dest w/h: $width/$height<br>";
 		}
-		$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.jpg";
-		Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.jpg",$thumbpath);
+		$thumbpath = "$ZymurgyRoot$imgdir{$id}thumb$d.$ext";
+		Thumb::MakeThumb($x,$y,$w,$h,$width,$height,"$ZymurgyRoot$imgdir{$id}raw.$ext",$thumbpath);
 
 		//Make smaller grid thumb, if required
 		if ($gd != $d)
 		{
 			list($gw,$gh) = explode('x',$gd);
-			Thumb::MakeThumb($x,$y,$w,$h,$gw,$gh,"$ZymurgyRoot$imgdir{$id}raw.jpg","$ZymurgyRoot$imgdir{$id}thumb$gd.jpg");
+			Thumb::MakeThumb($x,$y,$w,$h,$gw,$gh,"$ZymurgyRoot$imgdir{$id}raw.$ext","$ZymurgyRoot$imgdir{$id}thumb$gd.$ext");
 		}
 	}
 	//1play.image.100x160
@@ -191,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 <!--
 var srcimg = window.opener.document.getElementById('<?= "{$_POST['imgid']}.{$d}" ?>');
 if (srcimg) {
-	var newsrc='<?= "{$imgdir}{$id}thumb$gd.jpg?" ?>' + Math.random();
+	var newsrc='<?= "{$imgdir}{$id}thumb$gd.$ext?" ?>' + Math.random();
 	srcimg.src=newsrc;
 }
 window.close();
@@ -422,12 +429,12 @@ var myLogReader = new YAHOO.widget.LogReader("myLogger");
 
  		<img
  			id="imgBackground"
- 		 	src="<?= "$imgdir/{$id}aspectcropDark.jpg".'?'.time() ?>">
+ 		 	src="<?= "$imgdir/{$id}aspectcropDark.$ext".'?'.time() ?>">
 
  		<div id="panelDiv">
 	 		<img
 	 			id="imgCropped"
-	 			src="<?= "$imgdir/{$id}aspectcropNormal.jpg".'?'.time() ?>">
+	 			src="<?= "$imgdir/{$id}aspectcropNormal.$ext".'?'.time() ?>">
         	<div id="handleDiv"></div>
     	</div>
  	</body>
