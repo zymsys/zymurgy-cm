@@ -567,6 +567,34 @@ class ZymurgyTemplate
 
 		return Zymurgy::plugin($pluginName, $instanceName);
 	}
+
+	public function Track()
+	{
+		//Log the pageview
+		if (array_key_exists('zcmtracking',$_COOKIE))
+		{
+			$orphan = 0;
+			$userid = $_COOKIE['zcmtracking'];
+		}
+		else
+		{
+			$orphan = 1;
+			$userid = uniqid(true);
+		}
+		$sql = "insert into zcm_sitepageview (trackingid, sitepageid,orphan,viewtime) values ('$userid',".
+			$this->sitepage->id.",$orphan,now())";
+		Zymurgy::$db->query($sql);
+		//Send tracking javascript
+		$r[] = "<script>";
+		if (!empty($_SERVER['HTTP_REFERER']))
+		{
+			$r[] = "if (!document.referrer) document.referrer = \"".addslashes($_SERVER['HTTP_REFERER'])."\";";
+		}
+		$r[] = "Zymurgy.track('$userid');
+			</script>";
+
+		echo(implode("\n", $r));
+	}
 }
 
 $do404 = false;
@@ -590,6 +618,11 @@ Zymurgy::$template = new ZymurgyTemplate(
 if ($do404)
 {
 	Zymurgy::$template->DisplayFileNotFound($flavour, 'flavours', '');
+}
+
+if (array_key_exists('tracking',Zymurgy::$config) && (Zymurgy::$config['tracking']))
+{
+	Zymurgy::$template->Track();
 }
 
 $path = Zymurgy::$template->template['path'];

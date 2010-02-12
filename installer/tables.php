@@ -515,6 +515,24 @@
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_sitepageview",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("trackingid", "VARCHAR(23)", "DEFAULT NULL"),
+					DefineTableField("sitepageid", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("orphan", "TINYINT(4)", "DEFAULT NULL"),
+					DefineTableField("viewtime", "DATETIME", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "sitepageid", "unique" => FALSE, "type" => ""),
+					array("columns" => "orphan", "unique" => FALSE, "type" => ""),
+					array("columns" => "trackingid", "unique" => FALSE, "type" => ""),
+					array("columns" => "viewtime", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
 			)
 		);
 	}

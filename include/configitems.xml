@@ -72,6 +72,11 @@
 			<label>HTML Editor CSS:</label>
 			<inputspec>input.50.200</inputspec>
 		</item>
+		<item>
+			<code>tracking</code>
+			<label>Enable user tracking</label>
+			<inputspec>checkbox</inputspec>
+		</item>
 	</group>
 	<group>
 		<name>E-mail</name>
