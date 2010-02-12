@@ -75,7 +75,7 @@
 		<item>
 			<code>tracking</code>
 			<label>Enable user tracking</label>
-			<inputspec>checkbox</inputspec>
+			<inputspec>radio.a:2:{i:0;s:2:"No";i:1;s:3:"Yes";}</inputspec>
 		</item>
 	</group>
 	<group>
