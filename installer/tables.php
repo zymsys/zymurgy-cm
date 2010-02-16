@@ -522,6 +522,7 @@
 					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
 					DefineTableField("trackingid", "VARCHAR(23)", "DEFAULT NULL"),
 					DefineTableField("sitepageid", "BIGINT(20)", "DEFAULT NULL"),
+					DefineTableField("path", "VARCHAR(200)", "DEFAULT NULL"),
 					DefineTableField("orphan", "TINYINT(4)", "DEFAULT NULL"),
 					DefineTableField("viewtime", "DATETIME", "DEFAULT NULL")
 				),

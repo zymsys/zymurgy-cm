@@ -581,8 +581,13 @@ class ZymurgyTemplate
 			$orphan = 1;
 			$userid = uniqid(true);
 		}
-		$sql = "insert into zcm_sitepageview (trackingid, sitepageid,orphan,viewtime) values ('$userid',".
-			$this->sitepage->id.",$orphan,now())";
+		$sql = "insert into zcm_sitepageview (trackingid, sitepageid, path, orphan, viewtime) values ('".
+			$userid.
+			"', ".
+			$this->sitepage->id.
+			", '".
+			$this->navpath.
+			"', $orphan,now())";
 		Zymurgy::$db->query($sql);
 		//Send tracking javascript
 		$r[] = "<script>";
