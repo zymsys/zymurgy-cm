@@ -352,6 +352,7 @@ class PIW_CloudTagCloud extends ZIW_Base
 				$startTags[$cntr] = "s".$cntr."=".$startTags[$cntr];
 			}
 
+			$startTagsParam = implode("&", $startTags);
 			$startTagsParam = "&".$startTagsParam;
 		}
 
