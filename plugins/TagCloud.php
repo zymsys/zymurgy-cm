@@ -55,6 +55,11 @@ BLOCK;
 			"default" => "",
 			"inputspec" => "input.20.50",
 			"authlevel" => 0);
+		$configItems[] = array(
+			"name" => "Magic/Hidden Tags",
+			"default" => "",
+			"inputspec" => "input.50.200",
+			"authlevel" => 0);
 		return $configItems;
 	}
 
@@ -71,7 +76,7 @@ BLOCK;
 					DefineTableField("name", "VARCHAR(100)", "DEFAULT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => false, "type" => "")
+					array("columns" => "instance", "unique" => "false", "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -85,9 +90,9 @@ BLOCK;
 					DefineTableField("tagb", "bigint", "UNSIGNED NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => false, "type" => ""),
-					array("columns" => "taga", "unique" => false, "type" => ""),
-					array("columns" => "tagb", "unique" => false, "type" => "")
+					array("columns" => "instance", "unique" => "false", "type" => ""),
+					array("columns" => "taga", "unique" => "false", "type" => ""),
+					array("columns" => "tagb", "unique" => "false", "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -101,9 +106,9 @@ BLOCK;
 					DefineTableField("relatedrow", "VARCHAR(200)", "NOT NULL")
 				),
 				"indexes" => array(
-					array("columns" => "instance", "unique" => false, "type" => ""),
-					array("columns" => "tag", "unique" => false, "type" => ""),
-					array("columns" => "relatedrow", "unique" => false, "type" => "")
+					array("columns" => "instance", "unique" => "false", "type" => ""),
+					array("columns" => "tag", "unique" => "false", "type" => ""),
+					array("columns" => "relatedrow", "unique" => "false", "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "InnoDB"
@@ -144,7 +149,7 @@ BLOCK;
 		$widget->Render(
 			"tagcloud.".$this->GetConfigValue("Name of tag cloud"),
 			"cloud".$this->iid,
-			"");
+			$this->extra);
 	}
 
 	function RenderXML()
@@ -187,6 +192,8 @@ BLOCK;
 		echo("<?xml version=\"1.0\"?>\n");
 		echo "<results>\r\n";
 
+		$magicTags = explode(",", $this->GetConfigValue("Magic/Hidden Tags"));
+
 		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 		{
 			if(count($selected) > 0)
@@ -194,13 +201,16 @@ BLOCK;
 				// fancy query here
 			}
 
-			echo("<tag><id>".
-				$row["id"].
-				"</id><name>".
-				htmlentities($row["name"]).
-				"</name><hits>".
-				$row["count"].
-				"</hits></tag>\r\n");
+			if(!in_array($row["name"], $magicTags))
+			{
+				echo("<tag><id>".
+					$row["id"].
+					"</id><name>".
+					htmlentities($row["name"]).
+					"</name><hits>".
+					$row["count"].
+					"</hits></tag>\r\n");
+			}
 
 			$firstRow = false;
 		}
@@ -332,6 +342,19 @@ class PIW_CloudTagCloud extends ZIW_Base
 
 		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloud.js");
 
+		$startTags = explode(",", $value);
+		$startTagsParam = "";
+
+		if(count($startTags) > 0)
+		{
+			for($cntr = 0; $cntr < count($startTags); $cntr++)
+			{
+				$startTags[$cntr] = "s".$cntr."=".$startTags[$cntr];
+			}
+
+			$startTagsParam = "&".$startTagsParam;
+		}
+
 		$output = <<<BLOCK
 <input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
 <div id="tc{$jsName}"></div>
@@ -339,7 +362,7 @@ class PIW_CloudTagCloud extends ZIW_Base
 	YAHOO.util.Event.onDOMReady(function() {
 		tag{$jsName} = ZymurgyTagCloud(
 			'tc{$jsName}',
-			'/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}',
+			'/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}{$startTagsParam}',
 			'{$jsName}');
 
 //		alert("Checking for results table.");
