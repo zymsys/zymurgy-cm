@@ -66,22 +66,22 @@ BLOCK;
 			$configItems[] = array(
 				"name" => 'Repeater Header Layout',
 				"default" => '',
-				"inputspec" => 'html.600.200',
+				"inputspec" => 'textarea.60.10',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Repeater Item Layout',
 				"default" => '',
-				"inputspec" => 'html.600.400',
+				"inputspec" => 'textarea.60.10',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Repeater Separator Layout',
 				"default" => '',
-				"inputspec" => 'html.600.200',
+				"inputspec" => 'textarea.60.5',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Repeater Footer Layout',
 				"default" => '',
-				"inputspec" => 'html.600.200',
+				"inputspec" => 'textarea.60.5',
 				"authlevel" => 0);
 			$configItems[] = array(
 				"name" => 'Message for no records',
@@ -141,7 +141,7 @@ BLOCK;
 				(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0).
 				", ".
 				$this->GetConfigValue("Items per page");
-			//die($sql);
+//			echo($sql."<br>");
 			$ri = Zymurgy::$db->query($sql)
 				or die("Could not retrieve data: ".Zymurgy::$db->error().", $sql");
 
@@ -172,6 +172,8 @@ BLOCK;
 
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
+//					echo("<pre>".print_r($row, true)."</pre>");
+
 					if(!$firstRow)
 					{
 						echo($this->GetConfigValue("Repeater Separator Layout"));
@@ -181,12 +183,16 @@ BLOCK;
 						$firstRow = false;
 					}
 
-//					print_r($row);
-
 					$output = $this->GetConfigValue("Repeater Item Layout");
 
 					foreach($fieldNames as $fieldName)
 					{
+						if(strpos($fieldName, "ENDAS") !== FALSE)
+						{
+							$fieldName = substr($fieldName, strpos($fieldName, "ENDAS") + 5);
+						}
+//						echo($fieldName."<br>");
+
 //						$output = str_replace(
 //							"{".$fieldName."}",
 //							$fieldTypes[$fieldName]["inputspec"],
@@ -205,7 +211,7 @@ BLOCK;
 								? $fieldTypes[$fieldName]["inputspec"]
 								: "input.10.20", "{0}", $row[$fieldName]),
 							$output);
-							
+
 						if (isset($fieldTypes[$fieldName]) && is_a(InputWidget::GetFromInputSpec($fieldTypes[$fieldName]["inputspec"]),"ZIW_Image"))
 						{
 							$ep = explode('.',$fieldTypes[$fieldName]["inputspec"],2);
