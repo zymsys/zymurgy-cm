@@ -358,6 +358,17 @@ BLOCK;
 		}
 	}
 
+	function Duplicate($oldpi)
+	{
+		$sql = "INSERT INTO `zcm_form_input` ( `instance`, `inputtype`, `caption`, `header`, `disporder`, `defaultvalue`, `isrequired`, `validator`, `validatormsg` ) SELECT '".
+			Zymurgy::$db->escape_string($this->iid).
+			"', `inputtype`, `caption`, `header`, `disporder`, `defaultvalue`, `isrequired`, `validator`, `validatormsg` FROM `zcm_form_input` WHERE `instance` = '".
+			Zymurgy::$db->escape_string($oldpi->iid).
+			"'";
+		Zymurgy::$db->query($sql)
+			or die("Could not duplicate form fields: ".Zymurgy::$db->error().", $sql");
+	}
+
 	function LoadInputData()
 	{
 		$sql = "select *,zcm_form_input.id as fid from zcm_form_input,zcm_form_inputtype where (instance={$this->iid}) and (zcm_form_input.inputtype=zcm_form_inputtype.id) order by disporder";

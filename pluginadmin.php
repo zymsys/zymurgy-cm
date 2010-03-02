@@ -24,6 +24,29 @@ if (array_key_exists('delkey',$_GET))
 	Zymurgy::$db->query("delete from zcm_plugininstance where id=$delkey");
 }
 
+if(array_key_exists("duplicatekey", $_POST))
+{
+	$duplicatekey = 0 + $_POST["duplicatekey"];
+	$oldName = Zymurgy::$db->get("select name from zcm_plugininstance where id=$duplicatekey");
+	$newName = $_POST["newname"];
+	$oldpi = Zymurgy::mkplugin($pluginname, $oldName);
+	$pi = Zymurgy::mkplugin($pluginname, $newName);
+
+	$sql = "INSERT INTO `zcm_pluginconfigitem` ( `config`, `key`, `value` ) SELECT '".
+		Zymurgy::$db->escape_string($pi->configid).
+		"', `key`, `value` FROM `zcm_pluginconfigitem` WHERE `config` = '".
+		Zymurgy::$db->escape_string($oldpi->configid).
+		"'";
+//	die($sql);
+	Zymurgy::$db->query($sql)
+		or die("Could not duplicate settings: ".Zymurgy::$db->error().", $sql");
+
+	if(method_exists($pi, "Duplicate"))
+	{
+		$pi->Duplicate($oldpi);
+	}
+}
+
 $breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; ";
 if ($iid)
 {
@@ -34,6 +57,51 @@ else
 
 require_once('header.php');
 require_once('datagrid.php');
+
+DumpDataGridCSS();
+
+?>
+<script type="text/javascript">
+	var duplicateForm;
+
+	YAHOO.util.Event.onAvailable("duplicate", function() {
+		var handleSubmit = function()
+		{
+			document.duplicate.submit();
+		}
+
+		var handleCancel = function()
+		{
+			this.cancel();
+		}
+
+		duplicateForm = new YAHOO.widget.Dialog(
+			"duplicate",
+			{
+				width: "400px",
+//				height: "300px",
+				fixedcenter: true,
+				visible: false,
+				constraintoviewport: true,
+				buttons: [
+					{ text: "Duplicate", handler: handleSubmit, isDefault: true },
+					{ text: "Cancel", handler: handleCancel }
+				]
+			});
+
+		duplicateForm.render();
+	});
+
+	function DisplayDuplicateForm(pid, iid, oldname)
+	{
+		document.getElementById("pid").value = pid;
+		document.getElementById("duplicatekey").value = iid;
+		document.getElementById("newname").value = oldname + " Copy";
+
+		duplicateForm.show();
+	}
+</script>
+<?php
 
 if (($pid > 0) && ($iid > 0))
 { // We have both a plugin and an instance, load its config and render it.
@@ -74,7 +142,7 @@ if (($pid > 0) && ($iid > 0))
 }
 else
 {
-	if($_SERVER['REQUEST_METHOD'] == "POST")
+	if($_SERVER['REQUEST_METHOD'] == "POST" && array_key_exists("instancename", $_POST))
 	{
 		Zymurgy::mkplugin($pluginname, $_POST["instancename"]);
 	}
@@ -94,11 +162,47 @@ else
 			header("Location: $redirect");
 			exit;
 		}
-		echo "<h3>Which $title would you like to edit?</h3>";
+?>
+	<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols">
+		<tr class="DataGridHeader">
+			<td><?= $title ?> Instance</td>
+			<td>&nbsp;</td>
+<?php
+	if($zauth->authinfo['admin'] >= 2)
+	{
+?>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+<?php
+	}
+?>
+		</tr>
+<?php
+		$cntr = 0;
+
 		while (($row=Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			echo "<a href=\"pluginadmin.php?pid=$pid&iid={$row['id']}&name=".urlencode($row['name'])."\">{$row['name']}</a><br>";
+			$cntr++;
+			// echo "<a href=\"pluginadmin.php?pid=$pid&iid={$row['id']}&name=".urlencode($row['name'])."\">{$row['name']}</a><br>";
+?>
+		<tr class="DataGridRow<?= $cntr % 2 == 0 ? "Alternate" : "" ?>">
+			<td><?= $row['name'] ?></td>
+			<td><a href="pluginadmin.php?pid=<?= $pid ?>&amp;iid=<?= $row['id'] ?>&amp;name=<?= urlencode($row['name']) ?>">Edit</a></td>
+<?php
+	if($zauth->authinfo['admin'] >= 2)
+	{
+?>
+			<td><a href="pluginadmin.php?pid=<?= $pid ?>&amp;delkey=<?= $row['id'] ?>" onclick="return confirm_delete();">Delete</a></td>
+			<td><a href="javascript:;" onclick="DisplayDuplicateForm(<?= $pid ?>, <?= $row['id'] ?>, '<?= $row['name'] ?>');">Duplicate</a></td>
+<?php
+	}
+?>
+		</tr>
+<?php
 		}
+?>
+	</table>
+<?php
 	}
 
 	if($zauth->authinfo['admin'] >= 2)
@@ -117,6 +221,24 @@ else
 
 		<p><input type="submit" value="Add Instance"></p>
 	</form>
+
+	<div class="yui-skin-sam">
+		<div id="duplicate">
+			<div class="hd">Duplicate <?= $title ?> Instance</div>
+			<div class="bd">
+				<form name="duplicate" method="POST" action="pluginadmin.php?pid=<?= $pid ?>">
+					<input type="hidden" id="pid" name="pid" value="">
+					<input type="hidden" id="duplicatekey" name="duplicatekey" value="">
+					<table>
+						<tr>
+							<td>New Name:</td>
+							<td><input type="text" name="newname" id="newname" size="20" maxlength="50" value=""></td>
+						</tr>
+					</table>
+				</form>
+			</div>
+		</div>
+	</div>
 <?
 	}
 }

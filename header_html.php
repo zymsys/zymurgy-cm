@@ -17,8 +17,12 @@ if (isset($includeNav) && $includeNav)
 {
 echo Zymurgy::YUI("fonts/fonts-min.css");
 echo Zymurgy::YUI("menu/assets/skins/sam/menu.css");
+echo Zymurgy::YUI("button/assets/skins/sam/button.css");
+echo Zymurgy::YUI("container/assets/skins/sam/container.css");
 echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
-echo Zymurgy::YUI("container/container_core-min.js");
+echo Zymurgy::YUI("element/element-min.js");
+echo Zymurgy::YUI("button/button-min.js");
+echo Zymurgy::YUI("container/container-min.js");
 echo Zymurgy::YUI("menu/menu-min.js");
 ?>
 <script type="text/javascript">
