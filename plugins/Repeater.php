@@ -205,12 +205,15 @@ BLOCK;
 
 //						print_r($widget);
 
-						$output = str_replace(
-							"{".$fieldName."}",
-							$widget->Display(isset($fieldTypes[$fieldName])
-								? $fieldTypes[$fieldName]["inputspec"]
-								: "input.10.20", "{0}", $row[$fieldName]),
-							$output);
+						if(array_key_exists($fieldName, $row))
+						{
+							$output = str_replace(
+								"{".$fieldName."}",
+								$widget->Display(isset($fieldTypes[$fieldName])
+									? $fieldTypes[$fieldName]["inputspec"]
+									: "input.10.20", "{0}", $row[$fieldName]),
+								$output);
+						}
 
 						if (isset($fieldTypes[$fieldName]) && is_a(InputWidget::GetFromInputSpec($fieldTypes[$fieldName]["inputspec"]),"ZIW_Image"))
 						{
