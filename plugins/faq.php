@@ -88,7 +88,8 @@ BLOCK;
 		$configItems[] = array(
 			"name" => "Answer Editor",
 			"default" => "HTML",
-			"inputspec" => 'radio.'.serialize(array('HTML'=>'HTML','text'=>'Text')));
+			"inputspec" => 'radio.'.serialize(array('HTML'=>'HTML','text'=>'Text')),
+			"authlevel" => 0);
 			/*
 		$configItems[] = array(
 			"name" => "List Questions",
@@ -299,7 +300,7 @@ BLOCK;
 				$dg = new DataGrid($ds);
 
 				$dg->AddColumn('Name', 'name');
-				$dg->AddButton("Questions","pluginadmin.php?pid=".$this->pid."&iid=".$this->iid."&cat={0}".$this->id);
+				$dg->AddButton("Questions","pluginadmin.php?pid=".$this->pid."&iid=".$this->iid."&cat={0}&name=".urlencode($this->InstanceName));
 				$dg->AddEditColumn();
 				$dg->AddDeleteColumn();
 				$dg->AddUpDownColumn('disporder');
