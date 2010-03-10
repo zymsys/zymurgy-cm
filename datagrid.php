@@ -491,7 +491,7 @@ class DataSetRow
 
 //				die("$tname.$cname: ".$column->editor);
 //				die(print_r($this->values, true));
-				$tags = explode(",", $this->values["$tname.$cname"]);
+				$tags = explode(",", $this->values[$column->datacolumn]);
 
 				foreach($tags as $tag)
 				{
