@@ -5,19 +5,73 @@
 
 	include_once("header.php");
 	include_once("InputWidget.php");
+	include_once("customlib.php");
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
-		echo("Processing files<br>");
+		if(isset($_FILES["file"]))
+		{
+			echo("Processing files<br>");
 
+			switch(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION))
+			{
+				case "xml":
+					$file = file_get_contents($_FILES["file"]["tmp_name"]);
+
+	//				echo htmlentities($file);
+
+	//				echo("Pages: ".strpos($file, "<pages>")."<br>");
+	//				echo("Custom Table: ".strpos($file, "<customtable>")."<br>");
+
+					if(strpos($file, "<pages>") > 0)
+					{
+						ImportPage($file);
+					}
+					else if(strpos($file, "<customtable>") > 0)
+					{
+						ImportCustomTable($file);
+					}
+					else
+					{
+						echo "Unsupported XML document.";
+					}
+
+					break;
+
+				case "zip":
+					ProcessZip();
+					break;
+
+				default:
+					echo "Unsupported file type.";
+			}
+
+			echo "Import complete<br>";
+		}
+	}
+	else
+	{
+		DisplayImportForm();
+	}
+
+	include_once("footer.php");
+
+	function ProcessZip()
+	{
 		$zipfile = zip_open($_FILES["file"]["tmp_name"]);
 		$xml = "";
+		$customtableXML = "";
 
 		while($entry = zip_read($zipfile))
 		{
 			if(zip_entry_name($entry) == "content.xml")
 			{
 				$xml = zip_entry_read($entry, zip_entry_filesize($entry));
+				// break;
+			}
+			else if(zip_entry_name($entry) == "customtable.xml")
+			{
+				$customtableXML = zip_entry_read($entry, zip_entry_filesize($entry));
 				// break;
 			}
 			else
@@ -68,20 +122,23 @@
 			ImportPage($xml);
 		}
 
-		echo("Page content imported.<br><br>Import complete.<br>");
-	}
-	else
-	{
-		DisplayImportForm();
-	}
+		echo("Page content processed.<br><br>Importing custom tables.<br>");
 
-	include_once("footer.php");
+		if(strlen($customtableXML) > 0)
+		{
+			ImportCustomTable($customtableXML);
+		}
+
+		echo("Custom tables processed.<br><br>");
+	}
 
 	function DisplayImportForm()
 	{
 ?>
-	<p>This section allows you to import Pages from one Zymurgy:CM installation
-	into another.</p>
+	<p>This section allows you to install Zymurgy:CM add-ons.</p>
+
+	<p>This section may also be used to migrate Zymurgy:CM Custom Tables from
+	one installation to another.</p>
 
 	<p><b>Before Importing</b></p>
 
@@ -370,5 +427,205 @@
 			"')";
 		Zymurgy::$db->query($sql)
 			or die("Could not associate plugin with page: ".Zymurgy::$db->error().", $sql");
+	}
+
+	function ImportCustomTable($xml)
+	{
+		$tableXML = simplexml_load_string($xml, "SimpleXMLElement", LIBXML_NOCDATA);
+
+//		echo("<pre>".print_r($tableXML, true)."</pre>");
+
+		$tableIDMap = array(0 => 0);
+
+		foreach($tableXML->table as $table)
+		{
+			echo("-- Table: ".$table->name."<br>");
+
+			$sql = "SELECT `id` FROM `zcm_customtable` WHERE `tname` = '".
+				Zymurgy::$db->escape_string($table->name).
+				"'";
+			$newTableID = Zymurgy::$db->get($sql);
+
+			if($newTableID <= 0)
+			{
+				$newTableID = CreateCustomTable(
+					$table->name,
+					$table->linkname,
+					$table->displayorder,
+					$table->memberdata,
+					$table->selfref,
+					$tableIDMap[intval($table->detailfor)]);
+			}
+
+			$tableIDMap[intval($table->id)] = $newTableID;
+			$fieldIndex = 1;
+
+			foreach($table->fields as $fieldXML)
+			{
+//				echo("<pre>".print_r($fieldXML->field, true)."</pre>");
+				$field = $fieldXML->field;
+
+				echo("---- Field: ".$field->name."<br>");
+
+				$sql = "SELECT `id` FROM `zcm_customfield` WHERE `tableid` = '".
+					Zymurgy::$db->escape_string($newTableID).
+					"' AND `cname` = '".
+					Zymurgy::$db->escape_string($field->name).
+					"'";
+				$newFieldID = Zymurgy::$db->get($sql);
+
+				if($newFieldID <= 0)
+				{
+					$newFieldID = CreateCustomField(
+						$newTableID,
+						$field->name,
+						$field->gridheader,
+						$field->caption,
+						$field->inputspec,
+						$field->indexed,
+						$fieldIndex);
+				}
+
+				$fieldIndex++;
+			}
+
+			foreach($table->rows as $rowXML)
+			{
+				$row = $rowXML->row;
+				$fields = array();
+
+				foreach($row->children() as $child)
+				{
+					$fields[$child->getName()] = Zymurgy::$db->escape_string((string) $child);
+				}
+
+				$sql = "INSERT INTO `{$table->name}` ( `".
+					implode("`, `", array_keys($fields)).
+					"` ) VALUES ( '".
+					implode("', '", $fields).
+					"' ) ON DUPLICATE KEY UPDATE id = id";
+//				echo($sql."<br>");
+				Zymurgy::$db->query($sql)
+					or die("Could not insert data: ".Zymurgy::$db->error().", $sql");
+			}
+		}
+	}
+
+	function CreateCustomTable(
+		$tableName,
+		$navName,
+		$hasdisporder,
+		$ismember,
+		$selfref,
+		$detailfor)
+	{
+		echo("---- Creating<br>");
+
+		$newTableID = -1;
+
+		$okname = okname($tableName);
+		if ($okname!==true)
+		{
+			return $okname;
+		}
+		//Try to create table
+		$sql = "create table `{$tableName}` (id bigint not null auto_increment primary key";
+		if ($detailfor>0)
+		{
+			$tbl = gettable($detailfor);
+			$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
+		}
+		if ($hasdisporder == 1)
+		{
+			$sql .= ", disporder bigint, key disporder (disporder)";
+		}
+		if ($ismember == 1)
+		{
+			$sql .= ", member bigint, key member (member)";
+		}
+		$sql .= ")";
+		$ri = mysql_query($sql) or die("Unable to create table ($sql): ".mysql_error());
+		if (!$ri)
+		{
+			$e = mysql_errno();
+			switch ($e)
+			{
+				case 1050:
+					return "The table {$tableName} already exists.  Please select a different name.";
+				default:
+					return "<p>SQL error $e trying to create table: ".mysql_error()."</p>";
+			}
+			return false;
+		}
+		if (strlen($selfref) > 0)
+		{
+			Zymurgy::$db->run("alter table `{$tableName}` add selfref bigint default 0");
+			Zymurgy::$db->run("alter table `{$tableName}` add index(selfref)");
+		}
+
+		$sql = "INSERT INTO `zcm_customtable` ( `tname`, `detailfor`, `hasdisporder`, `ismember`, `navname`, `selfref` ) VALUES ( '".
+			Zymurgy::$db->escape_string($tableName).
+			"', '".
+			Zymurgy::$db->escape_string($detailfor).
+			"', '".
+			Zymurgy::$db->escape_string($hasdisporder).
+			"', '".
+			Zymurgy::$db->escape_string($ismember).
+			"', '".
+			Zymurgy::$db->escape_string($navName).
+			"', '".
+			Zymurgy::$db->escape_string($selfref).
+			"' )";
+		Zymurgy::$db->query($sql)
+			or die("Could not record custom table: ".Zymurgy::$db->error().", $sql");
+		$newTableID = Zymurgy::$db->insert_id();
+
+		return $newTableID;
+	}
+
+	function CreateCustomField(
+		$tableID,
+		$fieldName,
+		$gridheader,
+		$caption,
+		$inputspec,
+		$isIndexed,
+		$disporder)
+	{
+		echo("------ Creating<br>");
+
+		$okname = okname($fieldName);
+		if ($okname!==true)
+		{
+			return $okname;
+		}
+		$tbl = gettable($tableID);
+		$sqltype = inputspec2sqltype($inputspec);
+		$sql = "alter table `{$tbl['tname']}` add `{$fieldName}` $sqltype";
+		mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
+		if ($isIndexed == 1)
+		{
+			$sql = "alter table `{$tbl['tname']}` add index(`{$fieldName}`)";
+		}
+
+		$sql = "INSERT INTO `zcm_customfield` ( `disporder`, `tableid`, `cname`, `inputspec`, `caption`, `indexed`, `gridheader` ) VALUES ( '".
+			Zymurgy::$db->escape_string($disporder).
+			"', '".
+			Zymurgy::$db->escape_string($tableID).
+			"', '".
+			Zymurgy::$db->escape_string($fieldName).
+			"', '".
+			Zymurgy::$db->escape_string($inputspec).
+			"', '".
+			Zymurgy::$db->escape_string($caption).
+			"', '".
+			Zymurgy::$db->escape_string($isIndexed == 1 ? "Y" : "N").
+			"', '".
+			Zymurgy::$db->escape_string($gridheader).
+			"' )";
+		Zymurgy::$db->query($sql)
+			or die("Could not record field: ".Zymurgy::$db->error().", $sql");
+
+		return true;
 	}
 ?>

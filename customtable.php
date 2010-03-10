@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -255,6 +255,7 @@ $dg->AddColumn(
 
 $dg->AddColumn('Fields','id','<a href="customfield.php?t={0}">Fields</a>');
 $dg->AddColumn('Detail Tables','id','<a href="customtable.php?d={0}">Detail Tables</a>');
+$dg->AddColumn("Export", "id", "<a href=\"exportcustomtable.php?t={0}\">Export</a>");
 $dg->AddInput('tname','Table Name:',30,30);
 $dg->AddInput('navname','Link Name:',30,30);
 $dg->AddInput('selfref','Self Reference:',30,30);
