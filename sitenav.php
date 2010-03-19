@@ -131,9 +131,19 @@ class ZymurgySiteNav
 		$cansoftlaunch = false;
 		$softlaunch_ACL = array('Zymurgy:CM - User', 'Zymurgy:CM - Administrator', 'Zymurgy:CM - Webmaster');
 		if (is_array(Zymurgy::$member["groups"]))
+		{
 			foreach(Zymurgy::$member["groups"] as $group)
-				if(array_key_exists($group, $softlaunch_ACL))
+			{
+//				echo("<!-- Searching for $group -->\n");
+
+				if(in_array($group, $softlaunch_ACL))
+				{
+//					echo("<!-- Found -->\n");
+
 					$cansoftlaunch = true;
+				}
+			}
+		}
 
 		$ri = Zymurgy::$db->run("select id,linktext,linkurl,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl, template from zcm_sitepage order by disporder");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
