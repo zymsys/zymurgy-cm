@@ -194,7 +194,7 @@ class ZymurgyMember
 
 			if(!headers_sent())
 			{
-				setcookie('ZymurgyAuth');
+				setcookie('ZymurgyAuth', '', 0, '/');
 			}
 		}
 		/*else
