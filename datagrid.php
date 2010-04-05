@@ -290,11 +290,21 @@ class DataSetRow
 	 */
 	function Delete()
 	{
+		// ZK: Added OnBeforeDelete event to allow for customization on the
+		// Delete event without having to override the existing OnDelete call
+		// in customedit.php each time
+		if (isset($this->DataSet->OnBeforeDelete))
+		{
+			if (call_user_func($this->DataSet->OnBeforeDelete,$this->values) === false)
+				return false; //Callback can abort delete
+		}
+
 		if (isset($this->DataSet->OnDelete))
 		{
 			if (call_user_func($this->DataSet->OnDelete,$this->values) === false)
 				return false; //Callback can abort delete
 		}
+
 		$deletekey = intval($_GET['deletekey']);
 		//Delete relevant flavoured text
 		foreach($this->DataSet->DataGrid->columns as $column)

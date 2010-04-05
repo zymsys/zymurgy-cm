@@ -1,6 +1,6 @@
 <?
 /**
- * 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -226,7 +226,17 @@ if (!empty($tbl['selfref']))
 	$ds->AddDataFilter('selfref',$selfref);
 }
 
+if(file_exists(Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php"))
+{
+	include_once(Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php");
+}
+
 $dg = new DataGrid($ds);
+
+if(isset($displayID) && $displayID == true)
+{
+	$dg->AddColumn("ID", "id", "{0}");
+}
 
 if ($parentrow>0)
 {
