@@ -560,7 +560,7 @@ class DataSetRow
 		if ($this->edittype == 'UPDATE')
 		{
 			if (isset($this->DataSet->OnUpdate))
-				call_user_func($this->DataSet->OnUpdate,@$this->values);
+				call_user_func($this->DataSet->OnUpdate,@$this->values,@$this->originalvalues);
 		}
 		else
 		{
