@@ -2598,6 +2598,86 @@ class ZIW_FlavouredHtml extends ZIW_FlavouredRichTextBase
 <?
 	}
 }
+/**
+ * @package Zymurgy
+ * @subpackage inputwidgets
+ */
+class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
+{
+	function __construct()
+	{
+		$this->xlatehtmlentities = false;
+	}
+
+	function Display($ep,$display,$shell)
+	{
+		return $this->GetFlavouredValue($display);
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+
+?>
+		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
+		<table>
+			<tr>
+				<td>Default:</td>
+				<td>
+<?
+		$config = array();
+		$config["width"] = $ep[1];
+		$config["height"] = $ep[2];
+		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
+			? $this->extra["fckeditorcss"]
+			: Zymurgy::$config["sitecss"];
+
+		$ck = new CKEditor();
+		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->editor($name, $value, $config);
+?>
+				</td>
+			</tr>
+<?
+		$flavours = Zymurgy::GetAllFlavours();
+		foreach($flavours as $flavour)
+		{
+			if (!$flavour['providescontent']) continue;
+?>
+			<tr>
+				<td><?= $flavour['label'] ?>:</td>
+				<td>
+<?
+		$config = array();
+		$config["width"] = $ep[1];
+		$config["height"] = $ep[2];
+		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
+			? $this->extra["fckeditorcss"]
+			: Zymurgy::$config["sitecss"];
+
+		$ck = new CKEditor();
+		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->editor(
+			$name."_".$flavour['code'],
+			$this->GetFlavouredValue($value, $flavour['code']),
+			$config);
+?>
+				</td>
+			</tr>
+<?
+		}
+?>
+		</table>
+<?
+	}
+}
 
 /**
  * @package Zymurgy
@@ -3232,6 +3312,9 @@ InputWidget::Register('html',InputWidget::Get(
 	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
 
 InputWidget::Register("fckhtmlf", new ZIW_FlavouredHtml());
+InputWidget::Register("ckhtmlf", new ZIW_FlavouredCKHtml());
+InputWidget::Register("htmlf", nputWidget::Get(
+	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor']."f" : 'fckhtmlf'));
 
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking
