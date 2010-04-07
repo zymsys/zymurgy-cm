@@ -1,4 +1,12 @@
 <?
+/**
+ * Pop-up window containing the controls to resize an image based on a
+ * defined aspect ratio.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 require_once('cms.php');
 require_once('include/Thumb.php');
 //Zymurgy::$yuitest = true;
