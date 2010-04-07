@@ -3313,7 +3313,7 @@ InputWidget::Register('html',InputWidget::Get(
 
 InputWidget::Register("fckhtmlf", new ZIW_FlavouredHtml());
 InputWidget::Register("ckhtmlf", new ZIW_FlavouredCKHtml());
-InputWidget::Register("htmlf", nputWidget::Get(
+InputWidget::Register("htmlf", InputWidget::Get(
 	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor']."f" : 'fckhtmlf'));
 
 InputWidget::Register('attachment',new ZIW_Attachment());
