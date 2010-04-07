@@ -54,8 +54,14 @@ UpdateStatus("");
 
 UpdateStatus("Configuring Simple Template");
 
-mysql_query("insert ignore into zcm_template (id, name, path) values ('1', 'Simple','/zymurgy/templates/simple.php')");
-mysql_query("insert ignore into zcm_template (id, name,path) values ('2', 'URL Link','/zymurgy/templates/link.php')");
+include_once("../InputWidget.php");
+
+mysql_query("insert ignore into zcm_template (id, name, path) values ('1', 'Simple','".
+	ZIW_Base::StoreFlavouredValue(0, "/zymurgy/templates/simple.php", array()).
+	"')");
+mysql_query("insert ignore into zcm_template (id, name,path) values ('2', 'URL Link','".
+	ZIW_Base::StoreFlavouredValue(0, "/zymurgy/templates/link.php", array()).
+	"')");
 mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('1','1','Body','html.600.400')");
 mysql_query("insert ignore into zcm_templatetext (id,template,tag,inputspec) values ('2','2','Link URL','input.60.255')");
 
@@ -185,7 +191,7 @@ UpdateStatus("");
 
 // ----------
 
-UpdateStatus("Migrating members from e-mair to username-based logins");
+UpdateStatus("Migrating members from e-mail to username-based logins");
 
 $sql = "UPDATE `zcm_member` SET `username` = `email` WHERE `username` = '' OR `username` IS NULL";
 mysql_query($sql)
