@@ -1,4 +1,11 @@
 <?php
+	/**
+	 * Creates a group for each member in the Membership database.
+	 *
+	 * @package Zymurgy
+	 * @subpackage installer
+	 */
+
 	include("../cmo.php");
 
 	$memberProvider = Zymurgy::initializemembership();

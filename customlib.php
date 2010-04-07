@@ -1,6 +1,9 @@
 <?
 /**
  * Provides common items for customtable.php and customfield.php
+ *
+ * @package Zymurgy
+ * @subpackage base
  */
 
 $reserved = array('ADD','ANALYZE','ASC','BETWEEN','BLOB','CALL','CHANGE','CHECK','CONDITION','CONVERT','CURRENT_DATE','CURRENT_USER','DATABASES','DAY_MINUTE',
@@ -20,6 +23,12 @@ $reserved = array('ADD','ANALYZE','ASC','BETWEEN','BLOB','CALL','CHANGE','CHECK'
 	'SQL_CALC_FOUND_ROWS','STARTING','TERMINATED','TINYINT','TRAILING','UNDO','UNLOCK','USAGE','UTC_DATE','VALUES','VARCHARACTER','WHERE','WRITE','ZEROFILL',
 	'CONDITION','DECLARE','ELSEIF','INOUT','LEAVE','OUT','REPEAT','SCHEMAS','SQL','SQLWARNING','WHILE','ID');
 
+/**
+ * Returns an array of parent tables, given the ID of a detail table.
+ *
+ * @param int $tid The ID of the detail table, as defined in the zcm_customtable table.
+ * @return array
+ */
 function tableparents($tid)
 {
 	$r = array();
@@ -33,6 +42,11 @@ function tableparents($tid)
 	return $r;
 }
 
+/**
+ * Adds an array of links to the global for the breadcrumb trail
+ *
+ * @param int $tid The ID of the detail table, as defined in the zcm_customtable table.
+ */
 function tablecrumbs($tid)
 {
 	global $crumbs;
@@ -47,6 +61,13 @@ function tablecrumbs($tid)
 	}
 }
 
+/**
+ * Validates a provided table name, to ensure the name is not an SQL reserved
+ * word, or already being used in the database.
+ *
+ * @param string $name
+ * @return bool True if the name is allowed. Otherwise false.
+ */
 function okname($name)
 {
 	global $reserved;
@@ -64,6 +85,12 @@ function okname($name)
 	return true;
 }
 
+/**
+ * Returns the information on a custom table.
+ *
+ * @param int $t The ID of the detail table, as defined in the zcm_customtable table
+ * @return array
+ */
 function gettable($t)
 {
 	$sql = "select * from zcm_customtable where id=$t";
@@ -74,6 +101,12 @@ function gettable($t)
 	return $tbl;
 }
 
+/**
+ * Returns the SQL type for the given inputspec
+ *
+ * @param string $inputspec
+ * @return string
+ */
 function inputspec2sqltype($inputspec)
 {
 	include_once(Zymurgy::$root."/zymurgy/InputWidget.php");
