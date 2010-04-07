@@ -2481,6 +2481,44 @@ class ZIW_Html extends ZIW_RichTextBase
 	}
 }
 
+class ZIW_CKHtml extends ZIW_RichTextBase
+{
+	function __construct()
+	{
+		$this->xlatehtmlentities = false;
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
+	function Render($ep,$name,$value)
+	{
+		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+
+		$config = array();
+		$config["width"] = $ep[1];
+		$config["height"] = $ep[2];
+		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
+			? $this->extra["fckeditorcss"]
+			: Zymurgy::$config["sitecss"];
+
+		$ck = new CKEditor();
+		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->editor($name, $value, $config);
+	}
+
+	function GetInputSpecifier()
+	{
+		// The input specifier should only be available to the base class
+
+		return "";
+	}
+}
+
 /**
  * @package Zymurgy
  * @subpackage inputwidgets
@@ -3189,6 +3227,7 @@ InputWidget::Register('inputspec',new ZIW_InputSpec());
 InputWidget::Register('image',new ZIW_Image());
 InputWidget::Register('yuihtml',new ZIW_YUIHtml());
 InputWidget::Register('fckhtml',new ZIW_Html());
+InputWidget::Register('ckhtml',new ZIW_CKHtml());
 InputWidget::Register('html',InputWidget::Get(
 	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
 
