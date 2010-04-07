@@ -1,6 +1,7 @@
 <?
 /**
- * 
+ * Management screen(s) for Access Control Lists
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -9,11 +10,8 @@ $breadcrumbTrail = "Access Control Lists";
 include 'header.php';
 include 'datagrid.php';
 
-
-
 $ds = new DataSet('zcm_acl','id');
 $ds->AddColumns('id','name');
-
 
 $dg = new DataGrid($ds);
 $dg->AddColumn('Name','name');
