@@ -1,4 +1,12 @@
 <?
+/**
+ * Returns the data for the AutoComplete widget based on a table in the
+ * Zymurgy:CM database.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 //Get query parameters.  Barf if they're nfg.
 $table = $_GET['t'];
 $idcolumn = $_GET['i'];
@@ -31,13 +39,13 @@ while (($row = Zymurgy::$db->fetch_row($ri))!==false)
 }
 if ($r)
 {
-	echo "{ 
-	    \"found\": \"".count($r)."\", 
-	    \"results\": 
+	echo "{
+	    \"found\": \"".count($r)."\",
+	    \"results\":
 	        [";
 	echo implode(",\r\n",$r);
 	echo "]}";
 }
-else 
+else
 	echo '{}';
 ?>
