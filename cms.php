@@ -1,18 +1,20 @@
 <?
 /**
  * Old globals, use cmo.php instead:
- * 
- * @deprecated
- * 
+ *
  * $ZymurgyRoot: Physical path to the site's root directory on the server
  * $ZymurgyDB: MySQL link identifier to the Zymurgy:CM database
  * $ZymurgyConfig: Config values from the config/config.php file
  * $CONFIG: User supplied site config values from within the Zymurgy:CM control panel front-end
+ *
+ * @package Zymurgy
+ * @subpackage base
+ * @deprecated
  */
 
 if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 	$ZymurgyRoot = $_SERVER["APPL_PHYSICAL_PATH"];
-else 
+else
 	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
 
 include("{$ZymurgyRoot}/zymurgy/cmo.php");
@@ -39,7 +41,7 @@ function sitemap()
 /**
  * Create a plugin object for the named plugin (same as the file name without the extension) and
  * instance name.
- * 
+ *
  * Extra is used to pass extra plugin-specific stuff to a plugin, and private
  * is used to flag an instance that shouldn't be listed with regular instances because it is
  * created and maintained by something else (for example a collection of image galleries).

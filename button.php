@@ -1,4 +1,12 @@
 <?
+/**
+ * ZK: I have no idea what this file is for.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ * @deprecated
+ */
+
 include('header.php');
 include('datagrid.php');
 
@@ -16,7 +24,7 @@ if ($zauth->authinfo['admin']<2)
 {
 	$dg->insertlabel = '';
 }
-else 
+else
 {
 	$dg->AddInput('page','Page:',30,30);
 	$dg->AddDeleteColumn();

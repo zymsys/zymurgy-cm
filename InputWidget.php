@@ -3309,7 +3309,7 @@ InputWidget::Register('yuihtml',new ZIW_YUIHtml());
 InputWidget::Register('fckhtml',new ZIW_Html());
 InputWidget::Register('ckhtml',new ZIW_CKHtml());
 InputWidget::Register('html',InputWidget::Get(
-	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'fckhtml'));
+	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor'] : 'ckhtml'));
 
 InputWidget::Register("fckhtmlf", new ZIW_FlavouredHtml());
 InputWidget::Register("ckhtmlf", new ZIW_FlavouredCKHtml());

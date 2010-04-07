@@ -1,4 +1,13 @@
 <?php
+	/**
+	 * Screen used to export pages from this Zymurgy:CM install into
+	 * a XML document, which can be imported into another Zymurgy:CM install.
+	 *
+	 * @package Zymurgy
+	 * @subpackage import-export
+	 * @todo Turn this into a class, and make the helper methods private
+	 */
+
 	set_time_limit(120);
 	include_once("cmo.php");
 
@@ -51,6 +60,13 @@ XML;
 		echo($fullXML);
 	}
 
+	/**
+	 * Returns the XML snippet describing a specified page.
+	 *
+	 * @param int $pageid The ID of the page to describe
+	 * @param array $children An array of the current list of child objects.
+	 * @return string
+	 */
 	function GetPageXML($pageid, &$children)
 	{
 		$sql = "SELECT `zcm_sitepage`.`id` AS `id`, `disporder`, `linktext`, `linkurl`, `retire`, `golive`, `softlaunch`, `zcm_template`.`name` AS `template`, `zcm_acl`.`name` AS `acl` FROM `zcm_sitepage` INNER JOIN `zcm_template` ON `zcm_template`.`id` = `zcm_sitepage`.`template` LEFT JOIN `zcm_acl` ON `zcm_acl`.`id` = `zcm_sitepage`.`acl` WHERE `zcm_sitepage`.`id` = '".
@@ -99,6 +115,12 @@ XML;
 		return $xml;
 	}
 
+	/**
+	 * Get the label for the specified flavour.
+	 *
+	 * @param id $flavourID The ID of the flavour
+	 * @return string
+	 */
 	function GetFlavouredLabel($flavourID)
 	{
 		$sql = "SELECT `default` FROM `zcm_flavourtext` WHERE `id` = '".
@@ -107,6 +129,12 @@ XML;
 		return Zymurgy::$db->get($sql);
 	}
 
+	/**
+	 * Get the content block elements for the specified page.
+	 *
+	 * @param int $pageid The ID of the page to describe
+	 * @return string
+	 */
 	function GetPageContent($pageid)
 	{
 		$template = <<<XML
@@ -138,6 +166,13 @@ XML;
 		return implode("", $blocks);
 	}
 
+	/**
+	 * Get the list of children for the specified page.
+	 *
+	 * @param int $pageid The ID of the page to describe
+	 * @param array $allchildren
+	 * @return string
+	 */
 	function GetPageChildren($pageid, &$allchildren)
 	{
 		$template = <<<XML
@@ -167,6 +202,12 @@ XML;
 		return implode("", $children);
 	}
 
+	/**
+	 * Get the page ID from the specified path.
+	 *
+	 * @param string $path The path of the page
+	 * @return int The ID of the page
+	 */
 	function GetPageIDFromPath($path)
 	{
 		$parent = 0;
@@ -193,6 +234,13 @@ XML;
 		return $parent;
 	}
 
+	/**
+	 * Get the full path of the page, based on its ID
+	 *
+	 * @param int $id The ID of the page to describe
+	 * @param string $linkURL The path to append to the retrieved parent path
+	 * @return string The full path
+	 */
 	function GetFullPath($id, $linkURL)
 	{
 		$splitpath = array();
@@ -219,6 +267,12 @@ XML;
 		return implode("/", $splitpath)."/".$linkURL;
 	}
 
+	/**
+	 * Returns the list of gadgets attached to the page.
+	 *
+	 * @param int $pageid The ID of the page to describe.
+	 * @return string
+	 */
 	function GetPageGadgets($pageid)
 	{
 		$template = <<<XML
@@ -253,6 +307,12 @@ XML;
 		return implode("", $gadgets);
 	}
 
+	/**
+	 * Get the configuration for the specified gadget
+	 *
+	 * @param string $pluginName The name of the gadget
+	 * @return string
+	 */
 	function GetGadgetConfig($pluginName)
 	{
 		$template = <<<XML

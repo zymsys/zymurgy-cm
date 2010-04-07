@@ -1,4 +1,11 @@
 <?
+/**
+ * Saves the version history for arbitrary data records.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 //Set these to change the max auto-drafts and saved drafts to keep before expiring them.
 $maxauto = 10;
 $maxsaved = 10;
@@ -21,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		Zymurgy::$db->escape_string($_POST['form'])."','".
 		Zymurgy::$db->escape_string($_POST['json'])."')";
 	Zymurgy::$db->query($sql) or die("Unable to save draft ($sql): ".Zymurgy::$db->error());
-	
+
 	//Delete old drafts when lists are requested.
 	exit;
 }
@@ -39,7 +46,7 @@ if (array_key_exists('listdrafts',$_GET))
 	$expired = array();
 	$autocount = 0;
 	$savedcount = 0;
-	foreach($drafts as $key=>$row) 
+	foreach($drafts as $key=>$row)
 	{
 		if ($row['keeper']==1)
 		{
@@ -50,12 +57,12 @@ if (array_key_exists('listdrafts',$_GET))
 				$expired[] = $key;
 				continue;
 			}
-			else 
+			else
 			{
 				$savedcount++;
 			}
 		}
-		else 
+		else
 		{
 			//This is a auto-saved draft, as opposed to an saved draft.  Auto-saved drafts are saved every minute during editing.
 			$description = "Auto-saved at";
@@ -64,7 +71,7 @@ if (array_key_exists('listdrafts',$_GET))
 				$expired[] = $key;
 				continue;
 			}
-			else 
+			else
 			{
 				$autocount++;
 			}
@@ -76,7 +83,7 @@ if (array_key_exists('listdrafts',$_GET))
 	{
 		Zymurgy::$db->query("delete from zcm_draft where id=$oldkey");
 	}
-	exit;	
+	exit;
 }
 if (array_key_exists('fetchdraft',$_GET))
 {
