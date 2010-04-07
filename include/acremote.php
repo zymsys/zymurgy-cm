@@ -1,6 +1,9 @@
 <?
 	/**
 	 * Retrieve data from a remote datasource.
+	 *
+	 * @package Zymurgy
+	 * @subpackage backend-modules
 	 */
 
 	//Get query parameters.  Barf if they're nfg.
