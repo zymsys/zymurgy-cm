@@ -762,7 +762,7 @@ class ZIW_Lookup extends ZIW_Base
 
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		return "BIGINT UNSIGNED NULL";
+		return "VARCHAR(20) NULL";
 	}
 }
 
