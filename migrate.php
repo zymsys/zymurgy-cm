@@ -1,4 +1,11 @@
 <?php
+	/**
+	 * Migrates content from one Zymurgy:CM installation to another.
+	 *
+	 * @package Zymurgy
+	 * @subpackage import-export
+	 */
+
 //	die();
 	ini_set("display_errors", 1);
 	$breadcrumbTrail = "Import Content";
@@ -28,40 +35,6 @@
 //		echo(count($pagesToImport));
 //		die();
 
-/*
-		while(count($pagesToImport) > 0)
-		{
-//			echo(count($pagesToImport)."<br>");
-			$pageID = array_pop($pagesToImport);
-//			echo(count($pagesToImport)."<br>");
-//			die();
-			if(!is_array($pageID)) break;
-
-			$page = RetrievePageByID(
-				$_POST["domain"],
-				$_POST["user"],
-				$_POST["pass"],
-				$pageID["pageid"]);
-			$pageXML = new SimpleXMLElement($page);
-
-//			echo("<pre>");
-//			print_r(htmlentities($page));
-//			echo("</pre>");
-
-			$oldPath = (string) $pageXML->page[0]->fullpath;
-//			echo($oldPath."<br>");
-			$newPath = preg_replace("/".$_POST["oldpath"]."/", $_POST["newpath"], ((string) $oldPath), 1);
-
-			$childrenToImport = ImportPage(
-				$page,
-				$oldPath,
-				$newPath,
-				GetParentIDFromPath($newPath));
-
-			$pagesToImport = array_merge($childrenToImport, $pagesToImport);
-		}
-*/
-
 		echo("<br>Import complete.<br>");
 	}
 	else
@@ -71,6 +44,10 @@
 
 	include_once("footer.php");
 
+	/**
+	 * Display the migration input form.
+	 *
+	 */
 	function DisplayImportForm()
 	{
 ?>
@@ -118,6 +95,15 @@
 <?
 	}
 
+	/**
+	 * Retrieve the XML content for a page/tree by the path on the original server.
+	 *
+	 * @param unknown_type $domain
+	 * @param unknown_type $user
+	 * @param unknown_type $pass
+	 * @param unknown_type $path
+	 * @return unknown
+	 */
 	function RetrievePageByPath($domain, $user, $pass, $path)
 	{
 		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&path=".$path;
@@ -141,6 +127,15 @@
 		return $httpResponse;
 	}
 
+	/**
+	 * Retrieve the XML content for a page/tree by the ID on the original server.
+	 *
+	 * @param unknown_type $domain
+	 * @param unknown_type $user
+	 * @param unknown_type $pass
+	 * @param unknown_type $id
+	 * @return unknown
+	 */
 	function RetrievePageByID($domain, $user, $pass, $id)
 	{
 		$url = "http://".$domain."/zymurgy/contentexport.php"; // ?user=".$user."&pass=".$pass."&pageid=".$id;
@@ -164,6 +159,15 @@
 		return $httpResponse;
 	}
 
+	/**
+	 * Import a page, given the specified page XML snippet.
+	 *
+	 * @param unknown_type $pageXML
+	 * @param unknown_type $theOldPath
+	 * @param unknown_type $theNewPath
+	 * @param unknown_type $parentID
+	 * @return unknown
+	 */
 	function ImportPage($pageXML, $theOldPath, $theNewPath, $parentID)
 	{
 //		$page = new SimpleXMLElement($pageXML);
@@ -272,6 +276,12 @@
 		return $children;
 	}
 
+	/**
+	 * Insert the given flavoured text
+	 *
+	 * @param string $text
+	 * @return The ID of the new flavoured text record
+	 */
 	function InsertFlavourText($text)
 	{
 		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
@@ -284,6 +294,14 @@
 		return Zymurgy::$db->insert_id();
 	}
 
+	/**
+	 * Insert the given page text
+	 *
+	 * @param int $pageID The ID of the page the text is a part of
+	 * @param string $tag The name of the body content item being added
+	 * @param string $body The body content to insert
+	 * @param int $acl The ID of the ACL to apply to the content
+	 */
 	function InsertPageText($pageID, $tag, $body, $acl)
 	{
 		$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
@@ -299,6 +317,12 @@
 			or die("Could not add page text block: ".Zymurgy::$db->error().", $sql");
 	}
 
+	/**
+	 * Get the ID of the parent page, based on the path of the child page
+	 *
+	 * @param string $path The path of the child page
+	 * @return string The ID of the parent page
+	 */
 	function GetParentIDFromPath($path)
 	{
 		echo("-- $path<br>");
@@ -331,6 +355,12 @@
 		return $parent;
 	}
 
+	/**
+	 * Get the ID of the template based on the template's name.
+	 *
+	 * @param string $templateName The name of the template
+	 * @return int The ID of the template
+	 */
 	function GetTemplate($templateName)
 	{
 		$sql = "SELECT `id` FROM `zcm_template` WHERE `name` = '".
@@ -348,6 +378,12 @@
 		return $templateID;
 	}
 
+	/**
+	 * Get the ID of an ACL based on the ACL's name.
+	 *
+	 * @param string $aclName The name of the ACL
+	 * @return int the ID of the ACL
+	 */
 	function GetACL($aclName)
 	{
 		$sql = "SELECT `id` FROM `zcm_acl` WHERE `name` = '".
@@ -367,6 +403,13 @@
 
 	}
 
+	/**
+	 * Import a page gadget
+	 *
+	 * @param string $gadget The name of the gadget
+	 * @param int $pageID The ID of the page to insert the gadget into
+	 * @param int $gadgetCount The current number of gadgets on the page
+	 */
 	function ImportGadget($gadget, $pageID, $gadgetCount)
 	{
 		$pluginParts = explode("&", urldecode((string) $gadget["name"]));

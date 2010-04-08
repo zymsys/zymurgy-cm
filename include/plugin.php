@@ -1,4 +1,11 @@
 <?
+/**
+ * Returns a list of Zymurgy:CM plugins.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 //Get query parameters.  Barf if they're nfg.
 $plugin = 0 + $_GET['pi'];
 $query = $_GET['q'];
@@ -20,6 +27,6 @@ while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 }
 if ($r)
 	echo '["'.implode('", "',$r).'"]';
-else 
+else
 	echo '[]';
 ?>

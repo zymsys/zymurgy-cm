@@ -1,4 +1,12 @@
 <?php
+	/**
+	 * Management screen for adding/removing Zymurgy:CM plugins
+	 *
+	 * @package Zymurgy
+	 * @subpackage backend-modules
+	 * @deprecated
+	 */
+
 	ini_set("display_errors", 1);
 	require_once("cmo.php");
 

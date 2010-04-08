@@ -1,6 +1,17 @@
 <?php
+	/**
+	 * Payment processing base classes.
+	 *
+	 * @package Zymurgy
+	 * @subpackage payment
+	 */
+
 	ini_set("display_errors", 1);
 
+	/**
+	 * Billing Information data object.
+	 *
+	 */
 	class BillingInformation
 	{
 		public $first_name = "";
@@ -17,6 +28,10 @@
 		public $email = "";
 	}
 
+	/**
+	 * Payment Transaction data object
+	 *
+	 */
 	class PaymentTransaction
 	{
 		public $processor = "";
@@ -25,6 +40,10 @@
 		public $postback_variables = array();
 	}
 
+	/**
+	 * Payment Processor interface
+	 *
+	 */
 	interface IPaymentProcessor
 	{
 		public function GetPaymentProcessorName();
@@ -57,6 +76,10 @@
 		public function Callback();
 	}
 
+	/**
+	 * Payment Processor base class
+	 *
+	 */
 	abstract class PaymentProcessor
 	{
 		protected $m_amount;
@@ -185,6 +208,10 @@
 		}
 	}
 
+	/**
+	 * Paypal IPN Payment Processor
+	 *
+	 */
 	class PaypalIPNProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		protected $m_PayPalCmd = "_xclick";
@@ -400,6 +427,10 @@
 		}
 	}
 
+	/**
+	 * Moneris eSELECT payment processor
+	 *
+	 */
 	class MonerisEselectProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		public function MonerisEselectProcessor()
@@ -530,6 +561,10 @@
 		}
 	}
 
+	/**
+	 * AUTHORIZE.NET payment processor
+	 *
+	 */
 	class AuthorizeNetProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		public function AuthorizeNetProcessor()
@@ -627,6 +662,10 @@
 		}
 	}
 
+	/**
+	 * Google Checkout payment processor
+	 *
+	 */
 	class GoogleCheckoutProcessor extends PaymentProcessor implements IPaymentProcessor
 	{
 		public function GoogleCheckoutProcessor(

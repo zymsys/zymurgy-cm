@@ -1,4 +1,12 @@
 <?php
+/**
+ * Help system search page.
+ *
+ * @package Zymurgy
+ * @subpackage help
+ * @deprecated
+ */
+
 $adminlevel = 2;
 $breadcrumbTrail = "Search Results";
 
@@ -39,12 +47,12 @@ if (Zymurgy::$db->num_rows($ri) > 0)
 }
 if (Zymurgy::$db->num_rows($ri) > 0)
 {
-	echo "<tr class=\"DataGridHeader\"><td colspan='{$numColumns}' align='middle'>&nbsp;</td></tr>";	
+	echo "<tr class=\"DataGridHeader\"><td colspan='{$numColumns}' align='middle'>&nbsp;</td></tr>";
 }
-else 
+else
 {
 	echo "The index is empty.";
 }
-echo "</table>"; 
+echo "</table>";
 include('footer.php');
 ?>

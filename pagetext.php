@@ -1,4 +1,12 @@
 <?
+/**
+ * Not sure what this is used for.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ * @deprecated
+ */
+
 $breadcrumbTrail = "<a href=\"headtext.php\">Search Engines</a> &gt; Page Text";
 
 include('header.php');

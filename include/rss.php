@@ -1,11 +1,23 @@
 <?
+/**
+ * RSS Feed support classes.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ *
+ */
+
+/**
+ * Object model for an RSS Feed.
+ *
+ */
 class ZymurgyRSSFeed
 {
 	//Required RSS
 	public $title;
 	public $link;
 	public $description;
-	
+
 	//Optional RSS
 	public $language;
 	public $copyright;
@@ -23,10 +35,10 @@ class ZymurgyRSSFeed
 	public $textInput;
 	public $skipHours;
 	public $skipDays;
-	
+
 	//Child Elements
 	public $items = array();
-	
+
 	/**
 	 * Current item being parsed
 	 *
@@ -51,7 +63,7 @@ class ZymurgyRSSFeed
 				break;
 		}
 	}
-	
+
 	public function endElementHandler($parser, $name, $depth, $chardata)
 	{
 		switch ($depth) {
@@ -76,6 +88,10 @@ class ZymurgyRSSFeed
 	}
 }
 
+/**
+ * Object model for an item within an RSS feed.
+ *
+ */
 class ZymurgyRSSFeedItem
 {
 	public $title;
@@ -88,12 +104,12 @@ class ZymurgyRSSFeedItem
 	public $guid;
 	public $pubDate;
 	public $source;
-	
+
 	public function startElementHandler($parser, $name, $attribs, $depth)
 	{
 		//Don't care, wait for the end of the element.
 	}
-	
+
 	public function endElementHandler($parser, $name, $depth, $chardata)
 	{
 		switch ($depth) {
@@ -110,20 +126,24 @@ class ZymurgyRSSFeedItem
 	}
 }
 
+/**
+ * RSS Feed Reader class
+ *
+ */
 class ZymurgyRSSFeedReader
 {
 	private $depth = 0;
 	private $chardata = '';
-	
+
 	/**
 	 * Current channel being built
 	 *
 	 * @var ZymurgyRSSFeed
 	 */
 	private $channel;
-	
+
 	public $channels = array();
-	
+
 	public function startElementHandler($parser, $name  , array $attribs)
 	{
 		$this->depth++;
@@ -165,7 +185,7 @@ class ZymurgyRSSFeedReader
 				break;
 		}
 	}
-	
+
 	public function endElementHandler($parser, $name)
 	{
 		switch ($this->depth)
@@ -187,17 +207,17 @@ class ZymurgyRSSFeedReader
 				break;
 			default:
 				$this->channel->endElementHandler($parser, $name, $this->depth, $this->chardata);
-				break;				
+				break;
 		}
 		$this->chardata = '';
 		$this->depth--;
 	}
-	
+
 	public function characterDataHandler($parser, $data)
 	{
 		$this->chardata .= $data;
 	}
-	
+
 	public function __construct($rssurl)
 	{
 		$parser = xml_parser_create();
