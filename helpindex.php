@@ -1,9 +1,11 @@
 <?php
 /**
- * 
+ *
  * @package Zymurgy
- * @subpackage backend-modules
+ * @subpackage help
+ * @deprecated
  */
+
 $adminlevel = 2;
 $breadcrumbTrail = "<a href=\"helpeditor.php\">Help Editor</a> &gt; Index Phrases";
 
@@ -32,7 +34,7 @@ if (array_key_exists('action',$_GET))
 				include('footer.php');
 				exit;
 			}
-			else 
+			else
 			{
 				//Must be a post
 				$phrase = Zymurgy::$db->escape_string($_POST['phrase']);
@@ -82,9 +84,9 @@ if (Zymurgy::$db->num_rows($ri) > 0)
 {
 	echo "<tr class=\"DataGridHeader\"><td colspan=\"{$numColumns}\">Existing index References:</td></tr>\r\n";
 	$alternate = false;
-	
+
 	$prevIndexEntry = "";
-	
+
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
 		if ($alternate)
@@ -97,6 +99,6 @@ if (Zymurgy::$db->num_rows($ri) > 0)
 	}
 }
 echo "<tr class=\"DataGridHeader\"><td colspan='{$numColumns}' align='middle'><a href='helpindex.php?h=$h&action=insert'><font color=\"white\">Add a new Entry</font></a></td></tr>";
-echo "</table>"; 
+echo "</table>";
 include('footer.php');
 ?>

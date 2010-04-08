@@ -1,4 +1,11 @@
 <?
+/**
+ * Infusionsoft XML-RPC wrapper
+ *
+ * @package Zymurgy_Thirdparty
+ * @subpackage Infusionsoft
+ */
+
 require_once(Zymurgy::$root.'/zymurgy/xmlrpc/xmlrpc.inc');
 
 class ZymurgyInfusionsoftWrapper

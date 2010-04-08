@@ -11,6 +11,9 @@
  * 	fname: file name (for "save as" type functionality)
  * 	w: return an image and specify the required width and hight.  If w (width) is supplied then h (height) must also be supplied.
  * 	h: height of a re-sized image
+ *
+ * @package Zymurgy
+ * @subpackage frontend
  */
 
 if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
@@ -20,11 +23,25 @@ else
 
 require_once("$root/zymurgy/cmo.php");
 
+/**
+ * Get the Last Modified date of the specified file in standard HTTP date format.
+ *
+ * @param string $fname The path to the file
+ * @return string
+ */
 function get_http_mdate($fname)
 {
    return gmdate("D, d M Y H:i:s",filemtime($fname))." GMT";
 }
 
+/**
+ * Check the Apache Request Headers for the "If-Modified-Since" caching
+ * header. If it exists, check to see if the file has ben modified after the
+ * date in the header. If it has not, send a 304 response instead of the actual
+ * file.
+ *
+ * @param unknown_type $gmtime
+ */
 function check_modified_header($gmtime)
 {
    if (!function_exists('apache_request_headers'))
@@ -45,11 +62,22 @@ function check_modified_header($gmtime)
    }
 }
 
+/**
+ * Convert the specified parameter into a "safe" parameter by removing
+ * file control characters
+ *
+ * @param string $param The unsafe parameter
+ * @return string The safe parameter
+ */
 function safeparam($param)
 {
 	return str_replace(array('/','.'),'',$param);
 }
 
+/**
+ * Return a 1x1 empty GIF file. Typically used if the requested file cannot be found.
+ *
+ */
 function returnblankgif()
 {
 //	die(print_r(debug_backtrace(), true));

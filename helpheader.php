@@ -1,4 +1,11 @@
 <?
+/**
+ * @package Zymurgy
+ * @subpackage help
+ * @deprecated
+ */
+
+
 function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
 {
 	$time=date("d M Y H:i:s");

@@ -1,4 +1,12 @@
 <?php
+	/**
+	 * Import page export XML files, custom table export XML files, or
+	 * Zymurgy:CM extension Zip files.
+	 *
+	 * @package Zymurgy
+	 * @subpackage import-export
+	 */
+
 //	die();
 	ini_set("display_errors", 1);
 	$breadcrumbTrail = "Import Content";
@@ -56,6 +64,10 @@
 
 	include_once("footer.php");
 
+	/**
+	 * Process the Zip file sent via the file upload control.
+	 *
+	 */
 	function ProcessZip()
 	{
 		$zipfile = zip_open($_FILES["file"]["tmp_name"]);
@@ -132,6 +144,10 @@
 		echo("Custom tables processed.<br><br>");
 	}
 
+	/**
+	 * Display the Import Content input form.
+	 *
+	 */
 	function DisplayImportForm()
 	{
 ?>
@@ -165,6 +181,11 @@
 <?
 	}
 
+	/**
+	 * Import the specified page, based on the XML content.
+	 *
+	 * @param string $pageXML
+	 */
 	function ImportPage($pageXML)
 	{
 		$pageXML = simplexml_load_string($pageXML, "SimpleXMLElement", LIBXML_NOCDATA);
@@ -173,21 +194,8 @@
 		{
 			$oldPath = (string) $page->fullpath;
 			$newPath = $oldPath;
-//			if(substr($oldPath, 0, 1) == "/")
-//			{
-//				$oldPath = substr($oldPath, 1);
-//			}
-//			$newPath = preg_replace("/".$theOldPath."/", $theNewPath, $oldPath, 1);
-
-//			echo("-- $oldPath<br>-- $newPath<br><br>");
-//			echo("<pre>".print_r($page, true)."</pre>");
 
 			$templateID = GetTemplate($page->template[0]);
-
-//			$linkTextID = InsertFlavourText(
-//				str_replace($oldPath, $newPath, $page->linktext[0]));
-//			$linkURLID = InsertFlavourText(
-//				str_replace($oldPath, $newPath, $page->linkurl[0]));
 
 			$linkTextID = InsertFlavourText($page->linktext[0]);
 			$linkURLID = InsertFlavourText($page->linkurl[0]);
@@ -248,25 +256,15 @@
 
 				$gadgetCount++;
 			}
-
-//			$children = array();
-//			$childrenXML = $page->xpath("//children/child");
-
-//			foreach($childrenXML as $child)
-//			{
-	//			echo("<pre>");
-	//			print_r($child);
-	//			echo("</pre>");
-
-//				$children[] = array(
-//					"parentid" => $pageID,
-//					"pageid" => intval($child["childid"]));
-//			}
 		}
-
-//		return $children;
 	}
 
+	/**
+	 * Insert the given flavoured text
+	 *
+	 * @param string $text
+	 * @return The ID of the new flavoured text record
+	 */
 	function InsertFlavourText($text)
 	{
 		$sql = "INSERT INTO `zcm_flavourtext` ( `default` ) VALUES ( '".
@@ -279,6 +277,14 @@
 		return Zymurgy::$db->insert_id();
 	}
 
+	/**
+	 * Insert the given page text
+	 *
+	 * @param int $pageID The ID of the page the text is a part of
+	 * @param string $tag The name of the body content item being added
+	 * @param string $body The body content to insert
+	 * @param int $acl The ID of the ACL to apply to the content
+	 */
 	function InsertPageText($pageID, $tag, $body, $acl)
 	{
 		$sql = "INSERT INTO `zcm_pagetext` ( `sitepage`, `tag`, `body`, `acl` ) VALUES ( '".
@@ -294,6 +300,12 @@
 			or die("Could not add page text block: ".Zymurgy::$db->error().", $sql");
 	}
 
+	/**
+	 * Get the ID of the parent page, based on the path of the child page
+	 *
+	 * @param string $path The path of the child page
+	 * @return string The ID of the parent page
+	 */
 	function GetParentIDFromPath($path)
 	{
 		echo("-- $path<br>");
@@ -326,6 +338,12 @@
 		return $parent;
 	}
 
+	/**
+	 * Get the ID of the template based on the template's name.
+	 *
+	 * @param string $templateName The name of the template
+	 * @return int The ID of the template
+	 */
 	function GetTemplate($templateName)
 	{
 		$sql = "SELECT `id` FROM `zcm_template` WHERE `name` = '".
@@ -343,6 +361,12 @@
 		return $templateID;
 	}
 
+	/**
+	 * Get the ID of an ACL based on the ACL's name.
+	 *
+	 * @param string $aclName The name of the ACL
+	 * @return int the ID of the ACL
+	 */
 	function GetACL($aclName)
 	{
 		$sql = "SELECT `id` FROM `zcm_acl` WHERE `name` = '".
@@ -362,6 +386,13 @@
 
 	}
 
+	/**
+	 * Import a page gadget
+	 *
+	 * @param string $gadget The name of the gadget
+	 * @param int $pageID The ID of the page to insert the gadget into
+	 * @param int $gadgetCount The current number of gadgets on the page
+	 */
 	function ImportGadget($gadget, $pageID, $gadgetCount)
 	{
 		$pluginParts = explode("&", urldecode((string) $gadget["name"]));
@@ -429,6 +460,11 @@
 			or die("Could not associate plugin with page: ".Zymurgy::$db->error().", $sql");
 	}
 
+	/**
+	 * Import a custom table, given the Export XML string
+	 *
+	 * @param string $xml
+	 */
 	function ImportCustomTable($xml)
 	{
 		$tableXML = simplexml_load_string($xml, "SimpleXMLElement", LIBXML_NOCDATA);
@@ -511,6 +547,17 @@
 		}
 	}
 
+	/**
+	 * Create a custom table.
+	 *
+	 * @param string $tableName
+	 * @param string $navName
+	 * @param bool $hasdisporder
+	 * @param bool $ismember
+	 * @param string $selfref
+	 * @param int $detailfor
+	 * @return int The ID of the new custom table, as set in the zcm_customtable table
+	 */
 	function CreateCustomTable(
 		$tableName,
 		$navName,
@@ -583,6 +630,18 @@
 		return $newTableID;
 	}
 
+	/**
+	 * Create a field for a custom table.
+	 *
+	 * @param int $tableID
+	 * @param string $fieldName
+	 * @param string $gridheader
+	 * @param string $caption
+	 * @param string $inputspec
+	 * @param bool $isIndexed
+	 * @param int $disporder
+	 * @return int The ID of the new field, as set in the zcm_customtable table
+	 */
 	function CreateCustomField(
 		$tableID,
 		$fieldName,

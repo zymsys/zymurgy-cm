@@ -1,4 +1,12 @@
 <?php
+	/**
+	 * Inputspec dialog box.
+	 *
+	 * @package Zymurgy
+	 * @subpackage backend-modules
+	 */
+
+
 	echo Zymurgy::YUI("yahoo/yahoo-min.js")."\n".
 		Zymurgy::YUI("dom/dom-min.js")."\n".
 		Zymurgy::YUI("event/event-min.js")."\n".
