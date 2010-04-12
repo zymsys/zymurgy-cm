@@ -1875,6 +1875,12 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 		{
 			$dp = explode("-",$pp[0]);
 			$tp = explode(":",$pp[1]);
+
+			/*
+			// ZK: Since the YUI datetime controls return the time in 24h
+			// instead of [H:i meridian] format, this code is no longer
+			// required
+
 			$tp[0] = substr($tp[0],1);
 			if ($pp[2]=='PM]')
 			{
@@ -1886,6 +1892,8 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 				if ($tp[0]==12)
 					$tp[0] = 0;
 			}
+			*/
+
 			return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 		}
 	}
@@ -1919,6 +1927,7 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 	function PostValue($ep,$postname)
 	{
 		$tm = parent::PostValue($ep,$postname);
+//		die("Time: ".$tm.", ".strftime('%Y-%m-%d %H:%M:%S',$tm));
 
 		return strlen($tm) > 0
 			? strftime('%Y-%m-%d %H:%M:%S',$tm)
