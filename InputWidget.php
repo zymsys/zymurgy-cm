@@ -1411,6 +1411,11 @@ abstract class ZIW_DateBase extends ZIW_Base
 		return 0 + $tm;
 	}
 
+	public function IsTime()
+	{
+		return false;
+	}
+
 	/**
 	 * Take a value as it comes from the database, and make it suitable for display
 	 *
@@ -1433,6 +1438,8 @@ abstract class ZIW_DateBase extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
+		echo("<!-- Value: $value -->");
+
         $jsName = str_replace(".", "_", $name);
 
         echo(Zymurgy::YUI("fonts/fonts-min.css"));
@@ -1446,25 +1453,46 @@ abstract class ZIW_DateBase extends ZIW_Base
         echo(Zymurgy::YUI("button/button-min.js"));
 
         echo("<input type=\"hidden\" id=\"{$jsName}\" name=\"{$name}\" value=\"".
-            (is_numeric($value) ? date("Y-m-d", $value) : "").
+            ($this->ToUnixTime($value) > 0 ? date("Y-m-d H:i:s", $this->ToUnixTime($value)) : "").
             "\">\n");
 
         echo("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n");
         echo("<tr>\n");
         echo("<td><input type=\"text\" id=\"{$jsName}year\" name=\"{$name}year\" value=\"".
-            (is_numeric($value) ? date("Y", $value) : "").
+            ($this->ToUnixTime($value) > 0 ? date("Y", $this->ToUnixTime($value)) : "").
             "\" size=\"4\" maxlength=\"4\"></td>\n");
         echo("<td>/</td>\n");
         echo("<td><input type=\"text\" id=\"{$jsName}month\" name=\"{$name}month\" value=\"".
-            (is_numeric($value) ? date("m", $value) : "").
+            ($this->ToUnixTime($value) > 0 ? date("m", $this->ToUnixTime($value)) : "").
             "\" size=\"2\" maxlength=\"2\"></td>\n");
         echo("<td>/</td>\n");
         echo("<td><input type=\"text\" id=\"{$jsName}day\" name=\"{$name}day\" value=\"".
-            (is_numeric($value) ? date("d", $value) : "").
+            ($this->ToUnixTime($value) > 0 ? date("d", $this->ToUnixTime($value)) : "").
             "\" size=\"2\" maxlength=\"2\"></td>\n");
+
+        if($this->IsTime())
+        {
+        	echo("<td>&nbsp;</td>\n");
+        	echo("<td><input type=\"text\" id=\"{$jsName}hour\" name=\"{$jsName}hour\" value=\"".
+        		($this->ToUnixTime($value) > 0 ? date("h", $this->ToUnixTime($value)) : "").
+        		"\" size=\"2\" maxlength=\"2\"></td>\n");
+        	echo("<td>:</td>\n");
+        	echo("<td><input type=\"text\" id=\"{$jsName}minute\" name=\"{$jsName}minute\" value=\"".
+        		($this->ToUnixTime($value) > 0 ? date("i", $this->ToUnixTime($value)) : "").
+        		"\" size=\"2\" maxlength=\"2\"></td>\n");
+        	echo("<td>&nbsp;</td>\n");
+        	echo("<td><select id=\"{$jsName}meridian\" name=\"{$jsName}meridian\">\n");
+        	echo("<option value=\"0\"".
+        			($this->ToUnixTime($value) > 0 && date("H", $this->ToUnixTime($value)) < 12 ? " SELECTED" : "").
+        			">AM</option>\n");
+        	echo("<option value=\"12\"".
+        			($this->ToUnixTime($value) > 0 && date("H", $this->ToUnixTime($value)) >= 12 ? " SELECTED" : "").
+        			">PM</option>\n");
+        	echo("</select></td>\n");
+		}
+
         echo("<td class=\"yui-skin-sam\"><div id=\"{$jsName}ButtonContainer\"></div></td>\n");
-        echo("<td>");
-        echo("</td>");
+        echo("<td>&nbsp;</td>\n");
         echo("</tr>\n");
         echo("<tr>\n");
         echo("<td>year</td>\n");
@@ -1472,6 +1500,15 @@ abstract class ZIW_DateBase extends ZIW_Base
         echo("<td>month</td>\n");
         echo("<td>&nbsp;</td>\n");
         echo("<td>day</td>\n");
+
+        if($this->IsTime())
+        {
+        	echo("<td>&nbsp;</td>\n");
+        	echo("<td>hour</td>\n");
+        	echo("<td>&nbsp;</td>\n");
+        	echo("<td>minute</td>\n");
+		}
+
         echo("<td>&nbsp;</td>\n");
         echo("</tr>\n");
         echo("</table>\n");
@@ -1493,7 +1530,8 @@ abstract class ZIW_DateBase extends ZIW_Base
         echo("YAHOO.util.Dom.get(\"{$jsName}year\").value = year;\n");
         echo("YAHOO.util.Dom.get(\"{$jsName}month\").value = month;\n");
         echo("YAHOO.util.Dom.get(\"{$jsName}day\").value = day;\n");
-        echo("YAHOO.util.Dom.get(\"{$jsName}\").value = \"\" + year + \"-\" + month + \"-\" + day;\n");
+ //       echo("YAHOO.util.Dom.get(\"{$jsName}\").value = \"\" + year + \"-\" + month + \"-\" + day;\n");
+ 		echo("{$jsName}UpdateDate();\n");
         echo("}\n");
         echo("{$jsName}CalendarMenu.hide();\n");
         echo("}\n");
@@ -1612,12 +1650,31 @@ abstract class ZIW_DateBase extends ZIW_Base
 
         echo("var date = \"\" + year + \"-\" + month + \"-\" + day;\n");
 
+        echo("if(YAHOO.util.Dom.get(\"{$jsName}hour\")) {\n");
+        echo(" var hour = parseInt(YAHOO.util.Dom.get(\"{$jsName}hour\").value);\n");
+        echo(" if(isNaN(hour)) hour = 0;\n");
+        echo(" var minute = parseInt(YAHOO.util.Dom.get(\"{$jsName}minute\").value);\n");
+        echo(" if(isNaN(minute)) minute = 0;\n");
+        echo(" var meridiancontrol = document.getElementById(\"{$jsName}meridian\");\n");
+        echo(" var meridian = meridiancontrol.options[meridiancontrol.selectedIndex].value;\n");
+//        echo(" alert(meridian);\n");
+        echo(" date = date + \" \" + ((hour >= 12 ? 0 : hour) + parseInt(meridian)) + \":\" + minute + \":00\";\n");
+//        echo(" alert(date);\n");
+        echo("}\n");
+
         echo("YAHOO.util.Dom.get(\"{$jsName}\").value = date;\n");
+//        echo("alert(YAHOO.util.Dom.get(\"{$jsName}\").value);\n");
         echo("}\n");
 
         echo("YAHOO.util.Event.addListener(\"{$jsName}year\", \"change\", {$jsName}UpdateDate);\n");
         echo("YAHOO.util.Event.addListener(\"{$jsName}month\", \"change\", {$jsName}UpdateDate);\n");
         echo("YAHOO.util.Event.addListener(\"{$jsName}day\", \"change\", {$jsName}UpdateDate);\n");
+
+        echo("if(YAHOO.util.Dom.get(\"{$jsName}hour\")) {\n");
+        echo("YAHOO.util.Event.addListener(\"{$jsName}hour\", \"change\", {$jsName}UpdateDate);\n");
+        echo("YAHOO.util.Event.addListener(\"{$jsName}minute\", \"change\", {$jsName}UpdateDate);\n");
+        echo("YAHOO.util.Event.addListener(\"{$jsName}meridian\", \"change\", {$jsName}UpdateDate);\n");
+        echo("}\n");
 
         echo("</script>\n");
 	}
@@ -1779,6 +1836,11 @@ class ZIW_Date extends ZIW_DateBase
 
 abstract class ZIW_DateTimeBase extends ZIW_DateBase
 {
+	public function IsTime()
+	{
+		return true;
+	}
+
 	function GetFormat()
 	{
 		return 'Y-m-d [g:i A]';
