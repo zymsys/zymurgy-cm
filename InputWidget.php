@@ -1433,26 +1433,193 @@ abstract class ZIW_DateBase extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/jscalendar/calendar.php");
-		$date = $this->unixdate = $this->ToUnixTime($value);
+        $jsName = str_replace(".", "_", $name);
 
-		// ZK: Disabling
-		// if ($date == 0) $date=time();
+        echo(Zymurgy::YUI("fonts/fonts-min.css"));
+        echo(Zymurgy::YUI("container/assets/skins/sam/container.css"));
+        echo(Zymurgy::YUI("calendar/assets/skins/sam/calendar.css"));
+        echo(Zymurgy::YUI("button/assets/skins/sam/button.css"));
+        echo(Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js"));
+        echo(Zymurgy::YUI("calendar/calendar-min.js"));
+        echo(Zymurgy::YUI("container/container-min.js"));
+        echo(Zymurgy::YUI("element/element-min.js"));
+        echo(Zymurgy::YUI("button/button-min.js"));
 
-		$cal = new DHTML_Calendar(
-			"/zymurgy/jscalendar/",
-			'en',
-			'calendar-win2k-2',
-			false);
+        echo("<input type=\"hidden\" id=\"{$jsName}\" name=\"{$name}\" value=\"".
+            (is_numeric($value) ? date("Y-m-d", $value) : "").
+            "\">\n");
 
-		$cal->SetFieldPrefix($name);
-		$cal->SetIncludeID(true); // false);
+        echo("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n");
+        echo("<tr>\n");
+        echo("<td><input type=\"text\" id=\"{$jsName}year\" name=\"{$name}year\" value=\"".
+            (is_numeric($value) ? date("Y", $value) : "").
+            "\" size=\"4\" maxlength=\"4\"></td>\n");
+        echo("<td>/</td>\n");
+        echo("<td><input type=\"text\" id=\"{$jsName}month\" name=\"{$name}month\" value=\"".
+            (is_numeric($value) ? date("m", $value) : "").
+            "\" size=\"2\" maxlength=\"2\"></td>\n");
+        echo("<td>/</td>\n");
+        echo("<td><input type=\"text\" id=\"{$jsName}day\" name=\"{$name}day\" value=\"".
+            (is_numeric($value) ? date("d", $value) : "").
+            "\" size=\"2\" maxlength=\"2\"></td>\n");
+        echo("<td class=\"yui-skin-sam\"><div id=\"{$jsName}ButtonContainer\"></div></td>\n");
+        echo("<td>");
+        echo("</td>");
+        echo("</tr>\n");
+        echo("<tr>\n");
+        echo("<td>year</td>\n");
+        echo("<td>&nbsp;</td>\n");
+        echo("<td>month</td>\n");
+        echo("<td>&nbsp;</td>\n");
+        echo("<td>day</td>\n");
+        echo("<td>&nbsp;</td>\n");
+        echo("</tr>\n");
+        echo("</table>\n");
+        echo("<script type=\"text/javascript\">\n");
+        echo("var {$jsName}CalendarMenu;\n");
+        echo("var {$jsName}Calendar;\n");
+        echo("var {$jsName}Refreshing = false;\n");
 
-		$cal->load_files();
-		$dateval = $date > 0 ? $date : "";
-		$this->SetCalendarParams($dateval);
-		$this->calattributes['name'] = $name;
-		$cal->make_input_field($this->caloptions,$this->calattributes);
+        echo("var {$jsName}ButtonClick = function() {\n");
+
+        echo("function handleSelect(type, args, obj) {\n");
+        // echo("alert('handleSelect Start');\n");
+        echo("if({$jsName}Refreshing) return;\n");
+        echo("if(args) {\n");
+        echo("var dates = args[0];\n");
+        echo("var date = dates[0];\n");
+        echo("var year = date[0], month = date[1], day = date[2];\n");
+        // echo("alert(year);\n");
+        echo("YAHOO.util.Dom.get(\"{$jsName}year\").value = year;\n");
+        echo("YAHOO.util.Dom.get(\"{$jsName}month\").value = month;\n");
+        echo("YAHOO.util.Dom.get(\"{$jsName}day\").value = day;\n");
+        echo("YAHOO.util.Dom.get(\"{$jsName}\").value = \"\" + year + \"-\" + month + \"-\" + day;\n");
+        echo("}\n");
+        echo("{$jsName}CalendarMenu.hide();\n");
+        echo("}\n");
+
+        echo("function handleKeydown(event) {\n");
+        echo("if(YAHOO.util.Event.getCharCode(event) === 27) {\n");
+        echo("{$jsName}CalendarMenu.hide();\n");
+        echo("this.focus();\n");
+        echo("}\n");
+        echo("}\n");
+
+        echo("var focusDay = function() {\n");
+        // echo("alert('focusDay start');\n");
+        echo("var oCalendarTBody = YAHOO.util.Dom.get(\"{$jsName}ButtonContainer\").tBodies[0];\n");
+        echo("var aElements = oCalendarTBody.getElementsByTagName(\"a\");\n");
+        echo("var oAnchor;\n");
+        echo("if(aElements.length > 0) {\n");
+        echo("YAHOO.util.Dom.batch(aElements, function (element) {\n");
+        echo("if(YAHOO.util.Dom.hasClass(element.parentNode, \"today\")) {\n");
+        echo("oAnchor = element;\n");
+        echo("}\n");
+        echo("});\n");
+        echo("if(!oAnchor) {\n");
+        echo("oAnchor = aElements[0];\n");
+        echo("}\n");
+        echo("YAHOO.lang.later(0, oAnchor, function() {\n");
+        echo("try {\n");
+        echo("oAnchor.focus();\n");
+        echo("}\n");
+        echo("catch(e) {}\n");
+        echo("});\n");
+        echo("}\n");
+        echo("};\n");
+
+        echo("{$jsName}CalendarMenu.subscribe(\"show\", focusDay);\n");
+        // echo("{$jsName}Calendar.renderEvent.subscribe(focusDay, {$jsName}Calendar, true);\n");
+
+        echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
+        echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
+        echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
+
+        echo("var pageDate = \"\" + month + \"/\" + year;\n");
+        echo("var date = \"\" + month + \"/\" + day + \"/\" + year;\n");
+
+        // echo("alert('{$jsName}ButtonClick: ' + date);\n");
+
+        echo("if(date !== \"//\") {\n");
+
+        echo("{$jsName}Calendar = new YAHOO.widget.Calendar(\"{$jsName}Calendar\", ".
+            "{$jsName}CalendarMenu.body.id, \n");
+        echo("{ pagedate: pageDate,  selected: date } );\n");
+
+        echo("} else {\n");
+
+        echo("{$jsName}Calendar = new YAHOO.widget.Calendar(\"{$jsName}Calendar\", ".
+            "{$jsName}CalendarMenu.body.id);\n");
+
+        echo("}\n");
+
+        echo("{$jsName}Calendar.render();\n");
+
+        echo("{$jsName}Calendar.selectEvent.subscribe(handleSelect, {$jsName}Calendar, true);\n");
+        echo("YAHOO.util.Event.on({$jsName}CalendarMenu.element, \"keydown\", handleKeydown);\n");
+
+        echo("{$jsName}CalendarMenu.align();\n");
+        echo("this.unsubscribe(\"click\", {$jsName}ButtonClick);\n");
+        echo("this.subscribe(\"click\", {$jsName}Refresh);\n");
+        echo("}\n");
+
+        echo("var {$jsName}Refresh = function() {\n");
+
+        echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
+        echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
+        echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
+
+        echo("var pageDate = \"\" + month + \"/\" + year;\n");
+        echo("var date = \"\" + month + \"/\" + day + \"/\" + year;\n");
+
+        // echo("alert('{$jsName}Refresh: ' + date)\n;");
+
+        echo("if(date !== \"//\") {\n");
+        // echo("alert('applying updated date');\n");
+        echo("{$jsName}Refreshing = true;\n");
+        echo("{$jsName}Calendar.select(date);\n");
+        echo("{$jsName}Calendar.cfg.setProperty(\"pagedate\", pageDate);\n");
+        echo("{$jsName}Calendar.render();\n");
+        echo("{$jsName}Refreshing = false;\n");
+        echo("}\n");
+
+        echo("{$jsName}CalendarMenu.align();\n");
+        // echo("alert('{$jsName}Refresh fin');\n");
+
+        echo("}\n");
+
+        echo("{$jsName}CalendarMenu = new YAHOO.widget.Overlay(\"{$jsName}CalendarMenu\", { visible: false } );\n");
+
+        echo("var {$jsName}Button = new YAHOO.widget.Button( {\n");
+        echo("type: \"menu\",\n");
+        echo("id: \"{$jsName}CalendarPicker\",\n");
+        echo("label: \"\",\n");
+        echo("menu: {$jsName}CalendarMenu,\n");
+        echo("container: \"{$jsName}ButtonContainer\"\n");
+        echo("} );\n");
+
+        echo("{$jsName}Button.on(\"appendTo\", function() {\n");
+        echo("{$jsName}CalendarMenu.setBody(\"&#32;\");\n");
+        echo("{$jsName}CalendarMenu.body.id = \"{$jsName}Container\";\n");
+        echo("});\n");
+
+        echo("{$jsName}Button.on(\"click\", {$jsName}ButtonClick);\n");
+
+        echo("var {$jsName}UpdateDate = function() {\n");
+        echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
+        echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
+        echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
+
+        echo("var date = \"\" + year + \"-\" + month + \"-\" + day;\n");
+
+        echo("YAHOO.util.Dom.get(\"{$jsName}\").value = date;\n");
+        echo("}\n");
+
+        echo("YAHOO.util.Event.addListener(\"{$jsName}year\", \"change\", {$jsName}UpdateDate);\n");
+        echo("YAHOO.util.Event.addListener(\"{$jsName}month\", \"change\", {$jsName}UpdateDate);\n");
+        echo("YAHOO.util.Event.addListener(\"{$jsName}day\", \"change\", {$jsName}UpdateDate);\n");
+
+        echo("</script>\n");
 	}
 }
 
@@ -1513,193 +1680,7 @@ class ZIW_YuiUnixDate extends ZIW_UnixDate
 {
 	public function Render($ep,$name,$value)
 	{
-		$jsName = str_replace(".", "_", $name);
-
-		echo(Zymurgy::YUI("fonts/fonts-min.css"));
-		echo(Zymurgy::YUI("container/assets/skins/sam/container.css"));
-		echo(Zymurgy::YUI("calendar/assets/skins/sam/calendar.css"));
-		echo(Zymurgy::YUI("button/assets/skins/sam/button.css"));
-		echo(Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js"));
-		echo(Zymurgy::YUI("calendar/calendar-min.js"));
-		echo(Zymurgy::YUI("container/container-min.js"));
-		echo(Zymurgy::YUI("element/element-min.js"));
-		echo(Zymurgy::YUI("button/button-min.js"));
-
-		echo("<input type=\"hidden\" id=\"{$jsName}\" name=\"{$name}\" value=\"".
-			(is_numeric($value) ? date("Y-m-d", $value) : "").
-			"\">\n");
-
-		echo("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n");
-		echo("<tr>\n");
-		echo("<td><input type=\"text\" id=\"{$jsName}year\" name=\"{$name}year\" value=\"".
-			(is_numeric($value) ? date("Y", $value) : "").
-			"\" size=\"4\" maxlength=\"4\"></td>\n");
-		echo("<td>/</td>\n");
-		echo("<td><input type=\"text\" id=\"{$jsName}month\" name=\"{$name}month\" value=\"".
-			(is_numeric($value) ? date("m", $value) : "").
-			"\" size=\"2\" maxlength=\"2\"></td>\n");
-		echo("<td>/</td>\n");
-		echo("<td><input type=\"text\" id=\"{$jsName}day\" name=\"{$name}day\" value=\"".
-			(is_numeric($value) ? date("d", $value) : "").
-			"\" size=\"2\" maxlength=\"2\"></td>\n");
-		echo("<td class=\"yui-skin-sam\"><div id=\"{$jsName}ButtonContainer\"></div></td>\n");
-		echo("<td>");
-		echo("</td>");
-		echo("</tr>\n");
-		echo("<tr>\n");
-		echo("<td>year</td>\n");
-		echo("<td>&nbsp;</td>\n");
-		echo("<td>month</td>\n");
-		echo("<td>&nbsp;</td>\n");
-		echo("<td>day</td>\n");
-		echo("<td>&nbsp;</td>\n");
-		echo("</tr>\n");
-		echo("</table>\n");
-		echo("<script type=\"text/javascript\">\n");
-		echo("var {$jsName}CalendarMenu;\n");
-		echo("var {$jsName}Calendar;\n");
-		echo("var {$jsName}Refreshing = false;\n");
-
-		echo("var {$jsName}ButtonClick = function() {\n");
-
-		echo("function handleSelect(type, args, obj) {\n");
-		// echo("alert('handleSelect Start');\n");
-		echo("if({$jsName}Refreshing) return;\n");
-		echo("if(args) {\n");
-		echo("var dates = args[0];\n");
-		echo("var date = dates[0];\n");
-		echo("var year = date[0], month = date[1], day = date[2];\n");
-		// echo("alert(year);\n");
-		echo("YAHOO.util.Dom.get(\"{$jsName}year\").value = year;\n");
-		echo("YAHOO.util.Dom.get(\"{$jsName}month\").value = month;\n");
-		echo("YAHOO.util.Dom.get(\"{$jsName}day\").value = day;\n");
-		echo("YAHOO.util.Dom.get(\"{$jsName}\").value = \"\" + year + \"-\" + month + \"-\" + day;\n");
-		echo("}\n");
-		echo("{$jsName}CalendarMenu.hide();\n");
-		echo("}\n");
-
-		echo("function handleKeydown(event) {\n");
-		echo("if(YAHOO.util.Event.getCharCode(event) === 27) {\n");
-		echo("{$jsName}CalendarMenu.hide();\n");
-		echo("this.focus();\n");
-		echo("}\n");
-		echo("}\n");
-
-		echo("var focusDay = function() {\n");
-		// echo("alert('focusDay start');\n");
-		echo("var oCalendarTBody = YAHOO.util.Dom.get(\"{$jsName}ButtonContainer\").tBodies[0];\n");
-		echo("var aElements = oCalendarTBody.getElementsByTagName(\"a\");\n");
-		echo("var oAnchor;\n");
-		echo("if(aElements.length > 0) {\n");
-		echo("YAHOO.util.Dom.batch(aElements, function (element) {\n");
-		echo("if(YAHOO.util.Dom.hasClass(element.parentNode, \"today\")) {\n");
-		echo("oAnchor = element;\n");
-		echo("}\n");
-		echo("});\n");
-		echo("if(!oAnchor) {\n");
-		echo("oAnchor = aElements[0];\n");
-		echo("}\n");
-		echo("YAHOO.lang.later(0, oAnchor, function() {\n");
-		echo("try {\n");
-		echo("oAnchor.focus();\n");
-		echo("}\n");
-		echo("catch(e) {}\n");
-		echo("});\n");
-		echo("}\n");
-		echo("};\n");
-
-		echo("{$jsName}CalendarMenu.subscribe(\"show\", focusDay);\n");
-		// echo("{$jsName}Calendar.renderEvent.subscribe(focusDay, {$jsName}Calendar, true);\n");
-
-		echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
-		echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
-		echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
-
-		echo("var pageDate = \"\" + month + \"/\" + year;\n");
-		echo("var date = \"\" + month + \"/\" + day + \"/\" + year;\n");
-
-		// echo("alert('{$jsName}ButtonClick: ' + date);\n");
-
-		echo("if(date !== \"//\") {\n");
-
-		echo("{$jsName}Calendar = new YAHOO.widget.Calendar(\"{$jsName}Calendar\", ".
-			"{$jsName}CalendarMenu.body.id, \n");
-		echo("{ pagedate: pageDate,  selected: date } );\n");
-
-		echo("} else {\n");
-
-		echo("{$jsName}Calendar = new YAHOO.widget.Calendar(\"{$jsName}Calendar\", ".
-			"{$jsName}CalendarMenu.body.id);\n");
-
-		echo("}\n");
-
-		echo("{$jsName}Calendar.render();\n");
-
-		echo("{$jsName}Calendar.selectEvent.subscribe(handleSelect, {$jsName}Calendar, true);\n");
-		echo("YAHOO.util.Event.on({$jsName}CalendarMenu.element, \"keydown\", handleKeydown);\n");
-
-		echo("{$jsName}CalendarMenu.align();\n");
-		echo("this.unsubscribe(\"click\", {$jsName}ButtonClick);\n");
-		echo("this.subscribe(\"click\", {$jsName}Refresh);\n");
-		echo("}\n");
-
-		echo("var {$jsName}Refresh = function() {\n");
-
-		echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
-		echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
-		echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
-
-		echo("var pageDate = \"\" + month + \"/\" + year;\n");
-		echo("var date = \"\" + month + \"/\" + day + \"/\" + year;\n");
-
-		// echo("alert('{$jsName}Refresh: ' + date)\n;");
-
-		echo("if(date !== \"//\") {\n");
-		// echo("alert('applying updated date');\n");
-		echo("{$jsName}Refreshing = true;\n");
-		echo("{$jsName}Calendar.select(date);\n");
-		echo("{$jsName}Calendar.cfg.setProperty(\"pagedate\", pageDate);\n");
-		echo("{$jsName}Calendar.render();\n");
-		echo("{$jsName}Refreshing = false;\n");
-		echo("}\n");
-
-		echo("{$jsName}CalendarMenu.align();\n");
-		// echo("alert('{$jsName}Refresh fin');\n");
-
-		echo("}\n");
-
-		echo("{$jsName}CalendarMenu = new YAHOO.widget.Overlay(\"{$jsName}CalendarMenu\", { visible: false } );\n");
-
-		echo("var {$jsName}Button = new YAHOO.widget.Button( {\n");
-		echo("type: \"menu\",\n");
-		echo("id: \"{$jsName}CalendarPicker\",\n");
-		echo("label: \"\",\n");
-		echo("menu: {$jsName}CalendarMenu,\n");
-		echo("container: \"{$jsName}ButtonContainer\"\n");
-		echo("} );\n");
-
-		echo("{$jsName}Button.on(\"appendTo\", function() {\n");
-		echo("{$jsName}CalendarMenu.setBody(\"&#32;\");\n");
-		echo("{$jsName}CalendarMenu.body.id = \"{$jsName}Container\";\n");
-		echo("});\n");
-
-		echo("{$jsName}Button.on(\"click\", {$jsName}ButtonClick);\n");
-
-		echo("var {$jsName}UpdateDate = function() {\n");
-		echo("var year = YAHOO.util.Dom.get(\"{$jsName}year\").value;\n");
-		echo("var month = YAHOO.util.Dom.get(\"{$jsName}month\").value;\n");
-		echo("var day = YAHOO.util.Dom.get(\"{$jsName}day\").value;\n");
-
-		echo("var date = \"\" + year + \"-\" + month + \"-\" + day;\n");
-
-		echo("YAHOO.util.Dom.get(\"{$jsName}\").value = date;\n");
-		echo("}\n");
-
-		echo("YAHOO.util.Event.addListener(\"{$jsName}year\", \"change\", {$jsName}UpdateDate);\n");
-		echo("YAHOO.util.Event.addListener(\"{$jsName}month\", \"change\", {$jsName}UpdateDate);\n");
-		echo("YAHOO.util.Event.addListener(\"{$jsName}day\", \"change\", {$jsName}UpdateDate);\n");
-
-		echo("</script>\n");
+        super::Render($ep,$name,$value);
 	}
 
 

@@ -1452,8 +1452,7 @@ if (!class_exists('Zymurgy'))
 		 * Render the plugins assigned to the page. If the alignFilter parameter
 		 * is provided, only render the plugins assigned to that alignment.
 		 *
-		 * @param string $alignFilter Optional. If provided, must be one of
-		 * "left", "center", or "right".
+		 * @param string $alignFilter Optional. If provided, must be one of "left", "center", or "right".
 		 * @return The rendered plugin output.
 		 */
 		public static function pagegadgets(

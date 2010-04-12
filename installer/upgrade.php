@@ -477,32 +477,6 @@ UpdateStatus("Done");
 UpdateStatus("");
 
 // ==========
-// Fail if the hacked version of JSCalendar is not available
-// ==========
-
-UpdateStatus("Testing for extended third-party components...");
-
-if(!file_exists("../jscalendar/calendar.php"))
-{
-	die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");
-}
-else
-{
-	require_once("../jscalendar/calendar.php");
-
-	$cal = new DHTML_Calendar(
-		"/zymurgy/jscalendar/",
-		'en',
-		'calendar-win2k-2',
-		false);
-
-	if(!method_exists($cal, "SetFieldPrefix"))
-	{
-		die("-- Extended JSCalendar object not available. Please upgrade through the installer before continuing.<br>");
-	}
-}
-
-// ==========
 // ZK: 2009.10.20
 //
 // Check for the .htaccess file. If it does not exist, copy it from the
