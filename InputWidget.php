@@ -1740,6 +1740,20 @@ class ZIW_YuiUnixDate extends ZIW_UnixDate
         super::Render($ep,$name,$value);
 	}
 
+	function GetInputSpecifier()
+	{
+		$output = "";
+
+		$output .= "function GetSpecifier_ZIW_YuiUnixDate(inputspecName) {\n";
+		$output .= " var specifier = new InputSpecifier;\n";
+		$output .= " specifier.description = \"Date\";\n";
+		$output .= " specifier.type = inputspecName;\n";
+
+		$output .= " return specifier;\n";
+		$output .= "}\n";
+
+		return $output;
+	}
 
 	function IsValid($value)
 	{
