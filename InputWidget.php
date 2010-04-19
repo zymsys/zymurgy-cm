@@ -2565,12 +2565,14 @@ class ZIW_CKHtml extends ZIW_RichTextBase
 	{
 		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
 
+		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
+
 		$config = array();
 		$config["width"] = $ep[1];
 		$config["height"] = $ep[2];
 		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
 			? $this->extra["fckeditorcss"]
-			: Zymurgy::$config["sitecss"];
+			: $sitecss;
 
 		$ck = new CKEditor();
 		$ck->basePath = "/zymurgy/ckeditor/";
