@@ -172,10 +172,10 @@ else
 	{
 ?>
 			<td>&nbsp;</td>
-			<td>&nbsp;</td>
 <?php
 	}
 ?>
+			<td>&nbsp;</td>
 		</tr>
 <?php
 		$cntr = 0;
@@ -193,10 +193,10 @@ else
 	{
 ?>
 			<td><a href="pluginadmin.php?pid=<?= $pid ?>&amp;delkey=<?= $row['id'] ?>" onclick="return confirm_delete();">Delete</a></td>
-			<td><a href="javascript:;" onclick="DisplayDuplicateForm(<?= $pid ?>, <?= $row['id'] ?>, '<?= $row['name'] ?>');">Duplicate</a></td>
 <?php
 	}
 ?>
+			<td><a href="javascript:;" onclick="DisplayDuplicateForm(<?= $pid ?>, <?= $row['id'] ?>, '<?= $row['name'] ?>');">Duplicate</a></td>
 		</tr>
 <?php
 		}
@@ -205,7 +205,7 @@ else
 <?php
 	}
 
-	if($zauth->authinfo['admin'] >= 2)
+	if($zauth->authinfo['admin'] >= 1)
 	{
 ?>
 

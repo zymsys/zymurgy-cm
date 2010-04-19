@@ -3131,7 +3131,7 @@ class ZIW_Page extends ZIW_Base
 		{
 			$page = array(
 				"id" => $row["id"],
-				"path" => "/".$row["linkurl"],
+				"path" => $row["linkurl"],
 				"caption" => $row["linktext"],
 				"parent" => $row["parent"]);
 
@@ -3152,20 +3152,20 @@ class ZIW_Page extends ZIW_Base
 		Zymurgy::$db->free_result($ri);
 
 		uasort($pages, "ZIW_Page::ComparePage");
-
+//Zymurgy::DbgAndDie($pages);
 		$output = "";
 		$output .= "<select name=\"$name\" id=\"$name\">\n";
 
 		foreach($pages as $page)
 		{
-			$pageValue = $ep[1] == "id" ? $page["id"] : "/pages".$page["path"];
+			$pageValue = $ep[1] == "id" ? $page["id"] : "/pages/".ZIW_Base::GetFlavouredValue($page["path"]);
 
 			$output .= "<option value=\"".
 				$pageValue.
 				"\"".
 				($value == $pageValue ? " SELECTED" : "").
 				">".
-				$page["caption"].
+				ZIW_Base::GetFlavouredValue($page["caption"]).
 				"</option>\n";
 		}
 
