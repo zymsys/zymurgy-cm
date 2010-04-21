@@ -194,7 +194,13 @@ function OnBeforeInsert($values)
 		return $okname;
 	}
 	//Try to create table
-	$sql = "create table `{$values['zcm_customtable.tname']}` (id bigint not null auto_increment primary key";
+//	echo("<pre>".print_r($values, true)."</pre>");
+	$idfieldname = $values["zcm_customtable.idfieldname"];
+	if(strlen($idfieldname) <= 0) 
+	{
+		$idfieldname = "id";
+	}	
+	$sql = "create table `{$values['zcm_customtable.tname']}` ($idfieldname bigint not null auto_increment primary key";
 	if ($detailfor>0)
 	{
 		$tbl = gettable($detailfor);
@@ -209,6 +215,7 @@ function OnBeforeInsert($values)
 		$sql .= ", member bigint, key member (member)";
 	}
 	$sql .= ")";
+//	die($sql);
 	$ri = mysql_query($sql) or die("Unable to create table ($sql): ".mysql_error());
 	if (!$ri)
 	{
@@ -235,7 +242,7 @@ function OnBeforeInsert($values)
 }
 
 $ds = new DataSet('zcm_customtable','id');
-$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref');
+$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref','idfieldname');
 $ds->AddDataFilter('detailfor',$detailfor);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnBeforeInsert = 'OnBeforeInsert';
@@ -261,6 +268,7 @@ $dg->AddInput('navname','Link Name:',30,30);
 $dg->AddInput('selfref','Self Reference:',30,30);
 $dg->AddDropListEditor('hasdisporder','Display Order?',array(0=>'No',1=>'Yes'));
 $dg->AddDropListEditor('ismember','Member Data?',array(0=>'No',1=>'Yes'));
+$dg->AddInput("idfieldname", "Primary Key:", 30, 30, "id");
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add a New Table';

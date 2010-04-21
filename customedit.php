@@ -182,10 +182,16 @@ $capts = array();
 $ingrid = array();
 $thumbs = array();
 
-$ds = new DataSet($tbl['tname'],'id');
+$idfieldname = $tbl["idfieldname"];
+if(strlen($idfieldname) <= 0)
+{
+	$idfieldname = "id";
+}
+
+$ds = new DataSet($tbl['tname'], $idfieldname);
 $ds->OnDelete = "OnDelete";
 
-$ds->AddColumn('id',false);
+$ds->AddColumn($idfieldname,false);
 if ($tbl['hasdisporder']==1)
 {
 	$ds->AddColumn('disporder',false);
@@ -235,7 +241,7 @@ $dg = new DataGrid($ds);
 
 if(isset($displayID) && $displayID == true)
 {
-	$dg->AddColumn("ID", "id", "{0}");
+	$dg->AddColumn("ID", $idfieldname, "{0}");
 }
 
 if ($parentrow>0)
@@ -274,7 +280,7 @@ $ri = Zymurgy::$db->query($sql) or die("Unable to get detail tables ($sql): ".Zy
 
 while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 {
-	$dg->AddColumn($row['navname'],'id',"<a href=\"customedit.php?t={$row['id']}&d={0}\">{$row['navname']}</a>");
+	$dg->AddColumn($row['navname'],$idfieldname,"<a href=\"customedit.php?t={$row['id']}&d={0}\">{$row['navname']}</a>");
 }
 
 if ($tbl['hasdisporder']==1)
@@ -284,7 +290,7 @@ if ($tbl['hasdisporder']==1)
 
 if (!empty($tbl['selfref']))
 {
-	$dg->AddColumn($tbl['selfref'],'id',"<a href=\"customedit.php?t=$t&s={0}\">{$tbl['selfref']}</a>");
+	$dg->AddColumn($tbl['selfref'],$idfieldname,"<a href=\"customedit.php?t=$t&s={0}\">{$tbl['selfref']}</a>");
 }
 
 foreach($cols as $col=>$inputspec)

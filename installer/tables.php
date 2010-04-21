@@ -330,6 +330,7 @@
 					DefineTableField("ismember", "TINYINT", "DEFAULT NULL"),
 					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("idfieldname", "VARCHAR(30)", "DEFAULT 'id'")
 				),
 				"indexes" => array(
 					array("columns" => "detailfor", "unique" => FALSE, "type" => ""),

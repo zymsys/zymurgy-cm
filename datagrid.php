@@ -998,6 +998,7 @@ class DataGridColumn
 	var $editor;
 	var $editortype;
 	var $validator;
+	var $default;
 
 	function DataGridColumn($headertxt,$datacolumn,$template="{0}")
 	{
@@ -1160,7 +1161,7 @@ class DataGrid
 			urlencode($datacolumn)."&mime={0}&id={ID}&dataset=".urlencode($this->DataSet->tables[0])."'>");
 	}
 
-	function AddEditor($datacolumn,$caption,$type)
+	function AddEditor($datacolumn,$caption,$type, $default = "")
 	{
 		if (!(strpos($datacolumn,'.') !== false))
 			$datacolumn = $this->DataSet->tables[0].".$datacolumn";
@@ -1188,6 +1189,7 @@ class DataGrid
 		//Create thumb entry for the image type
 		$ep = explode('.',$type);
 		$this->columns[$n]->editortype = $ep[0];
+		$this->columns[$n]->default = $default;
 		switch($ep[0])
 		{
 			case 'image':
@@ -1241,9 +1243,9 @@ class DataGrid
 		$this->constants[$datacolumn] = $value;
 	}
 
-	function AddInput($datacolumn,$caption,$maxlength=255,$size=15)
+	function AddInput($datacolumn,$caption,$maxlength=255,$size=15,$default = "")
 	{
-		$this->AddEditor($datacolumn,$caption,"input.$size.$maxlength");
+		$this->AddEditor($datacolumn,$caption,"input.$size.$maxlength", $default);
 	}
 
 	function AddPasswordInput($datacolumn,$caption,$maxlength=255,$size=15)
@@ -1774,6 +1776,7 @@ class DataGrid
 			}
 			foreach ($this->columns as $c)
 			{
+//				echo("<pre>".print_r($c, true)."</pre>");
 				if (isset($c->editcaption))
 				{
 					echo "<tr><td align=right>{$c->editcaption}</td><td id=\"cell-{$c->datacolumn}\">";
@@ -1783,8 +1786,10 @@ class DataGrid
 					$widget->lookups = $this->lookups;
 					$widget->datacolumn = $c->datacolumn;
 					$widget->editkey = array_key_exists('editkey',$_GET) ? 0 + $_GET['editkey'] : 0;
-					$widget->Render($c->editor,$c->datacolumn,
-						array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : '');
+					$widget->Render(
+						$c->editor,
+						$c->datacolumn,
+						array_key_exists($c->datacolumn,$dsr->values) ? $dsr->values[$c->datacolumn] : $c->default);
 					echo "</td></tr>\r\n";
 				}
 			}
