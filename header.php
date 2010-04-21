@@ -216,4 +216,4 @@ if(isset($breadcrumbTrail)) {
 	</div>
 <?php } ?>
 
-<div class="ZymurgyClientArea">
+<div class="ZymurgyClientArea" style="margin-left:150px;">
