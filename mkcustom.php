@@ -198,6 +198,9 @@ function GetCustomTableOptions()
 
 function GetOptions()
 {
+	include_once("datagrid.php");
+	DumpDataGridCSS();
+
 	global $dsevents,$noshow;
 	
 	$table = $_GET['t'];
@@ -205,7 +208,24 @@ function GetOptions()
 	$sql = "show columns from $table";
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Couldn't load columns from $table.");
-	echo "<b>Describe your table's columns:</b><form action=\"{$_SERVER['REQUEST_URI']}\"><input type=\"hidden\" name=\"t\" value=\"$table\"><table>";
+?>
+	<p><b><?= $table ?></b></p>
+
+	<p>To generate PHP code for this table, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use.</p>
+
+	<form>
+		<input type="hidden" name="t" value="<?= $table ?>">
+		<input type="hidden" name="adding" value="0">
+
+		<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols">
+			<tr class="DataGridHeader">
+				<td>Column</td>
+				<td>Data Type</td>
+				<td>Field Type</td>
+			</tr>
+<?php
+	$cntr = 1;
+
 	while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	{
 		$fld = $row['Field'];
@@ -254,14 +274,22 @@ function GetOptions()
 				$opts = "Unknown type: $type";
 				break;
 		}
-		echo "<tr><td>{$row['Field']}</td><td>{$row['Type']}</td><td>$opts</td></tr>\r\n";
+?>
+		<tr class="DataGridRow<?= $cntr % 2 == 0 ? "Alternate" : "" ?>">
+			<td><?= $row["Field"] ?></td>
+			<td><?= $row["Type"] ?></td>
+			<td><?= $opts ?></td>
+		</tr>
+<?php
+
+		$cntr++;
 	}
 	echo "</table><br /><b>Generate data event stubs:</b><table>";
 	foreach ($dsevents as $event=>$code)
 	{
 		echo "<tr><td><input type=\"checkbox\" name=\"e$event\"> $event</td></tr>\r\n";
 	}
-	echo "</table><input type=\"submit\" value=\"Get Code\"></form>";
+	echo "</table><p><input type=\"submit\" value=\"Generate Code\"> <input type=\"button\" value=\"Cancel\" onclick=\"history.go(-1);\"></p></form>";
 }
 
 /**
