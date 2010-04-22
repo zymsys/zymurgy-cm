@@ -203,8 +203,18 @@ function OnBeforeInsert($values)
 	$sql = "create table `{$values['zcm_customtable.tname']}` ($idfieldname bigint not null auto_increment primary key";
 	if ($detailfor>0)
 	{
+//		$tbl = gettable($detailfor);
+//		$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
+
 		$tbl = gettable($detailfor);
-		$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
+		$detailForField = $values["zcm_customtable.detailforfield"];
+		if(strlen($detailForField) <= 0)
+		{
+			$detailForField = $tbl["tname"];
+		}
+
+		$sql .= ", `$detailForField` BIGINT, KEY `{$tbl['tname']}` (`$detailForField`)";
+//		$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
 	}
 	if ($values['zcm_customtable.hasdisporder'] == 1)
 	{
@@ -242,7 +252,7 @@ function OnBeforeInsert($values)
 }
 
 $ds = new DataSet('zcm_customtable','id');
-$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref','idfieldname');
+$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref','idfieldname','detailforfield');
 $ds->AddDataFilter('detailfor',$detailfor);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnBeforeInsert = 'OnBeforeInsert';
@@ -269,6 +279,13 @@ $dg->AddInput('selfref','Self Reference:',30,30);
 $dg->AddDropListEditor('hasdisporder','Display Order?',array(0=>'No',1=>'Yes'));
 $dg->AddDropListEditor('ismember','Member Data?',array(0=>'No',1=>'Yes'));
 $dg->AddInput("idfieldname", "Primary Key:", 30, 30, "id");
+
+if($detailfor > 0)
+{
+	$tbl = gettable($detailfor);
+	$dg->AddInput("detailforfield", "Foreign Key Field Name:", 30, 30, $tbl["tname"]);
+}
+
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add a New Table';
