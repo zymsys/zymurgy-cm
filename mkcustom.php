@@ -123,19 +123,56 @@ function GetCustomTableOptions()
 
 		<p>Custom Tables in Zymurgy:CM may have Detail Tables associated with them, which maintain a one-to-many relationship with the parent table.</p>
 
-		<p>The Custom Table system assumes that the foriegn key relationship is a single field in the Detail Table, which is named after the parent table. For example, a Detail Table named galleryitem would assume that a field named gallery exists, linking it to a table named gallery. If the table you are importing does not follow this convention, set the foriegn key up as a lookup instead.</p>
-
 		<p>If the <?= $table ?> table is a Detail Table for a table that has already been added to the list of Custom Tables, select the name of the parent table from the list below.</p>
 
-		<select name="parenttable">
-			<option value="0">Not a detail table</option>
+		<table>
+			<tr>
+				<td>This is a detail table of:</td>
+				<td>
+					<select name="parenttable">
+						<option value="0">Not a detail table</option>
 <?php
-			foreach($customtables as $key => $value)
-			{
-				echo("<option value=\"$key\">$value</option>\n");
-			}
+	foreach($customtables as $key => $value)
+	{
+		echo("<option value=\"$key\">$value</option>\n");
+	}
 ?>
-		</select>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Field used for foriegn key:</td>
+				<td>
+					<select name="detailforfield">
+<?php
+	while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+	{
+		// only include items that are integers in the list
+		list($type,$length) = ParseType($row['Type']);
+		switch ($type)
+		{
+			case('bigint'):
+			case('smallint'):
+			case('tinyint'):
+			case('int'):
+				if($row["Key"] == "PRI")
+				{
+					// don't include the primary key
+				}
+				else
+				{
+					echo("<option value=\"{$row['Field']}\">{$row['Field']}</option>\n");
+				}
+				break;
+		}
+	}
+	
+	mysql_data_seek($ri, 0);
+?>
+					</select>
+				</td>
+			</tr>
+		</table>
 
 		<p><b>Lookups</b></p>
 
@@ -614,6 +651,7 @@ function AddToCustomTable()
 	$tableID = Zymurgy::$db->insert_id();
 
 	$parentTableName = "";
+	$detailForField = "";
 
 	if($_GET["parenttable"] > 0)
 	{
@@ -621,11 +659,12 @@ function AddToCustomTable()
 			Zymurgy::$db->escape_string($_GET["parenttable"]).
 			"'";
 		$parentTableName = Zymurgy::$db->get($sql);
+		$detailForField = $_GET["detailforfield"];
 	}
 
 	foreach($_GET as $key => $value)
 	{
-		if(strpos($key, "f") === 0 && $key != $idfieldname && $key != "f".$parentTableName)
+		if(strpos($key, "f") === 0 && $key != $idfieldname && $key != "f".$detailForField)
 		{
 			$fieldName = substr($key, 1);
 			if(array_key_exists("x".$fieldName, $_GET))
