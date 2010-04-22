@@ -97,6 +97,16 @@ function GetCustomTableOptions()
 	include_once("datagrid.php");
 	DumpDataGridCSS();
 
+	$sql = "SELECT `id`, `tname` FROM `zcm_customtable` ORDER BY `tname`";
+	$ri = Zymurgy::$db->query($sql)
+		or die("Could not retrieve list of custom tables: ".Zymurgy::$db->error().", $sql");
+	$customtables = array();
+	while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
+	{
+		$customtables[$row["id"]] = $row["tname"];
+	}
+	Zymurgy::$db->free_result($ri);
+
 	$table = $_GET['t'];
 	$tblname = strtoupper(substr($table,0,1)).substr($table,1);
 	$sql = "show columns from $table";
@@ -104,29 +114,50 @@ function GetCustomTableOptions()
 		or die("Could not retrieve columns: ".Zymurgy::$db->error.", $sql");
 
 ?>
-	<p><b><?= $table ?></b></p>
-
-	<p>To add this table to the list of custom tables in Zymurgy:CM, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use on the built-in management screens.</p>
-
-	<p><b>Lookups</b></p>
-
-	<p>To specify a look-up field, provide a dot-separated string with the following items:</p>
-	<ul>
-		<li>The name of the table the value is coming from (the table does not have to be specified as a Custom Table in Zymurgy:CM)</li>
-		<li>The name of the field the value is coming from</li>
-		<li>The name of the field containing the value to display in the drop-down list</li>
-		<li>The name of the field used to sort the values in the drop-down list</li>
-	</ul>
-	<p>For example, given a reference table named <b>issuestatus</b> with the following fields:</p>
-	<ul>
-		<li><b>id</b> - int(10) unsigned, auto_increment, primary key</li>
-		<li><b>name</b> - varchar(50)</li>
-		<li><b>disporder</b> - int(10) unsigned</li>
-	</ul>
-	<p>You would enter the following string for the lookup:</p>
-	<blockquote>issuestatus.id.name.disporder</blockquote>
-
 	<form method="GET">
+		<p><b><?= $table ?></b></p>
+
+		<p>To add this table to the list of custom tables in Zymurgy:CM, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use on the built-in management screens.</p>
+
+		<p><b>Detail Table</b><p>
+
+		<p>Custom Tables in Zymurgy:CM may have Detail Tables associated with them, which maintain a one-to-many relationship with the parent table.</p>
+
+		<p>The Custom Table system assumes that the foriegn key relationship is a single field in the Detail Table, which is named after the parent table. For example, a Detail Table named galleryitem would assume that a field named gallery exists, linking it to a table named gallery. If the table you are importing does not follow this convention, set the foriegn key up as a lookup instead.</p>
+
+		<p>If the <?= $table ?> table is a Detail Table for a table that has already been added to the list of Custom Tables, select the name of the parent table from the list below.</p>
+
+		<select name="parenttable">
+			<option value="0">Not a detail table</option>
+<?php
+			foreach($customtables as $key => $value)
+			{
+				echo("<option value=\"$key\">$value</option>\n");
+			}
+?>
+		</select>
+
+		<p><b>Lookups</b></p>
+
+		<p>To specify a look-up field, provide a dot-separated string with the following items:</p>
+		<ul>
+			<li>The name of the table the value is coming from (the table does not have to be specified as a Custom Table in Zymurgy:CM)</li>
+			<li>The name of the field the value is coming from</li>
+			<li>The name of the field containing the value to display in the drop-down list</li>
+			<li>The name of the field used to sort the values in the drop-down list</li>
+		</ul>
+		<p>For example, given a reference table named <b>issuestatus</b> with the following fields:</p>
+		<ul>
+			<li><b>id</b> - int(10) unsigned, auto_increment, primary key
+			<br>The primary key for the table</li>
+			<li><b>name</b> - varchar(50)
+			<br>The user-friendly name of the record</li>
+			<li><b>disporder</b> - int(10) unsigned
+			<br>The order index for the record</li>
+		</ul>
+		<p>You would enter the following string for the lookup:</p>
+		<blockquote>issuestatus.id.name.disporder</blockquote>
+
 		<input type="hidden" name="t" value="<?= $table ?>">
 		<input type="hidden" name="adding" value="1">
 
@@ -571,7 +602,9 @@ function AddToCustomTable()
 
 	$sql = "INSERT INTO `zcm_customtable` ( `tname`, `detailfor`, `hasdisporder`, `ismember`, `navname`, `selfref`, `idfieldname` ) VALUES ( '".
 		Zymurgy::$db->escape_string($_GET["t"]).
-		"', '', 0, 0, '".
+		"', '".
+		Zymurgy::$db->escape_string($_GET["parenttable"]).
+		"', 0, 0, '".
 		Zymurgy::$db->escape_string($_GET["t"]).
 		"', '', '".
 		Zymurgy::$db->escape_string(substr($idfieldname, 1)).
@@ -580,9 +613,19 @@ function AddToCustomTable()
 		or die("Could not add to list of custom tables: ".Zymurgy::$db->error().", $sql");
 	$tableID = Zymurgy::$db->insert_id();
 
+	$parentTableName = "";
+
+	if($_GET["parenttable"] > 0)
+	{
+		$sql = "SELECT `tname` FROM `zcm_customtable` WHERE `id` = '".
+			Zymurgy::$db->escape_string($_GET["parenttable"]).
+			"'";
+		$parentTableName = Zymurgy::$db->get($sql);
+	}
+
 	foreach($_GET as $key => $value)
 	{
-		if(strpos($key, "f") === 0 && $key != $idfieldname)
+		if(strpos($key, "f") === 0 && $key != $idfieldname && $key != "f".$parentTableName)
 		{
 			$fieldName = substr($key, 1);
 			if(array_key_exists("x".$fieldName, $_GET))
@@ -605,6 +648,8 @@ function AddToCustomTable()
 				or die("Could not add field definition: ".Zymurgy::$db->error().", $sql");
 		}
 	}
+
+	Zymurgy::JSRedirect("/zymurgy/customtable.php");
 }
 
 if (!array_key_exists('t',$_GET))
