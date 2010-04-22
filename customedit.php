@@ -38,7 +38,7 @@ function DeleteChildren(
 {
 	// echo("DeleteChildren called ($tableID, $tableName, $baseRowID)<br>");
 
-	$sql = "SELECT `id`, `tname` FROM `zcm_customtable` WHERE `detailfor` = '".
+	$sql = "SELECT `id`, `tname`, `idfieldname`, `detailforfield` FROM `zcm_customtable` WHERE `detailfor` = '".
 		Zymurgy::$db->escape_string($tableID).
 		"'";
 	$ri = Zymurgy::$db->query($sql)
@@ -48,18 +48,26 @@ function DeleteChildren(
 
 	while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 	{
+		// Get the DetailForField value from the database. If it's not specified, then use 
+		// the default field name, which matches the name of the parent table
+		$detailForField = $row["detailforfield"];
+		if(strlen($detailForField) <= 0) $detailForField = $tableName;
+
 		// Delete any child records for this child before deleting the child
 		// itself.
-		$childSQL = "SELECT `id` FROM `".
-			$row["tname"].
+		// select child.idfieldname from child.tname where child.detailforfield = baseRowID
+		$childSQL = "SELECT `".
+			Zymurgy::$db->escape_string($row["idfieldname"]).
+			"` FROM `".
+			Zymurgy::$db->escape_string($row["tname"]).
 			"` WHERE `".
-			$tableName.
+			Zymurgy::$db->escape_string($detailForField).
 			"` = '".
 			Zymurgy::$db->escape_string($baseRowID).
 			"'";
 		// echo($childSQL."<br>");
 		$childRI = Zymurgy::$db->query($childSQL)
-			or die("Could not retrieve list of child records: ".mysql_error().", $childSQL");
+			or die("Could not retrieve list of child records: ".Zymurgy::$db->error().", $childSQL");
 
 		// echo(Zymurgy::$db->num_rows($childRI)." child records found for ID $baseRowID<br>");
 
@@ -74,13 +82,13 @@ function DeleteChildren(
 		$deleteSQL = "DELETE FROM `".
 			$row["tname"].
 			"` WHERE `".
-			$tableName.
+			Zymurgy::$db->escape_string($detailForField).
 			"` = '".
 			Zymurgy::$db->escape_string($baseRowID).
 			"'";
 		// echo($deleteSQL."<br>");
 		Zymurgy::$db->query($deleteSQL)
-			or die("Could not delete child records: ".mysql_error().", $deleteSQL");
+			or die("Could not delete child records: ".Zymurgy::$db->error().", $deleteSQL");
 	}
 }
 
@@ -100,10 +108,24 @@ function getdkey($me,$parent,$myd)
 	//echo "<div>[{$parent['tname']}: {$parent['detailfor']}]</div>";
 	if ($parent['detailfor'] > 0 && strlen($myd) > 0)
 	{
-		$grandparent = gettable($parent['detailfor']);
-		$dkey = Zymurgy::$db->get(
-			"select {$grandparent['tname']} from {$parent['tname']} where id=$myd",
-			"getdkey: Could not get parent table information");
+		$detailForField = $parent["detailForField"];
+		if(strlen($detailForField) <= 0) 
+		{
+			$grandparent = gettable($parent['detailfor']);
+			$detailForField = $grandparent["tname"];
+		}
+
+		$sql = "SELECT `".
+			Zymurgy::$db->escape_string($detailForField).
+			"` FROM `".
+			Zymurgy::$db->escape_string($parent["tname"]).
+			"` WHERE `".
+			Zymurgy::$db->escape_string($parent["idfieldname"]).
+			"` = '".
+			Zymurgy::$db->escape_string($myd).
+			"'";
+		$dkey = Zymurgy::$db->get($sql);
+
 		return $dkey;
 	}
 	else

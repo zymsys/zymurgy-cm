@@ -326,6 +326,7 @@
 					DefineTableField("disporder", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("tname", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("detailfor", "BIGINT(20)", "DEFAULT '0'"),
+					DefineTableField("detailforfield", "VARCHAR(30)", "DEFAULT ''"),
 					DefineTableField("hasdisporder", "TINYINT(4)", "DEFAULT NULL"),
 					DefineTableField("ismember", "TINYINT", "DEFAULT NULL"),
 					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
