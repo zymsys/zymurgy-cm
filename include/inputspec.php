@@ -6,11 +6,8 @@
 	 * @subpackage backend-modules
 	 */
 
-
-	echo Zymurgy::YUI("yahoo/yahoo-min.js")."\n".
-		Zymurgy::YUI("dom/dom-min.js")."\n".
-		Zymurgy::YUI("event/event-min.js")."\n".
-		"<script src=\"/zymurgy/include/inputspec.js\"></script>\r\n";
+	echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
+	echo Zymurgy::RequireOnce("/zymurgy/include/inputspec.js");
 
 	echo("<script type=\"text/javascript\">\n");
 ?>
