@@ -97,6 +97,10 @@ function GetCustomTableOptions()
 	include_once("datagrid.php");
 	DumpDataGridCSS();
 
+	echo Zymurgy::RequireOnce("include/inputspec.js");
+	include_once("include/inputspec.php");
+	echo Zymurgy::RequireOnce("include/filteredspecifiers.js");
+
 	$sql = "SELECT `id`, `tname` FROM `zcm_customtable` ORDER BY `tname`";
 	$ri = Zymurgy::$db->query($sql)
 		or die("Could not retrieve list of custom tables: ".Zymurgy::$db->error().", $sql");
@@ -221,8 +225,12 @@ function GetCustomTableOptions()
 				break;
 			case('longtext'):
 			case('text'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"textarea.40.5\">Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"html.600.400\" checked>HTML";
+//				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"textarea.40.5\">Text ".
+//					"<input type=\"radio\" name=\"f$fld\" value=\"html.600.400\" checked>HTML";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
+HTML;
 				break;
 			case('bigint'):
 			case('smallint'):
