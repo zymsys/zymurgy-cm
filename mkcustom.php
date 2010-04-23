@@ -288,6 +288,10 @@ function GetOptions()
 	include_once("datagrid.php");
 	DumpDataGridCSS();
 
+	echo Zymurgy::RequireOnce("include/inputspec.js");
+	include_once("include/inputspec.php");
+	echo Zymurgy::RequireOnce("include/filteredspecifiers.js");
+
 	global $dsevents,$noshow;
 	
 	$table = $_GET['t'];
@@ -328,9 +332,14 @@ function GetOptions()
 				break;
 			case('longtext'):
 			case('text'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\">Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"html\" checked>HTML";
+//				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\">Text ".
+//					"<input type=\"radio\" name=\"f$fld\" value=\"html\" checked>HTML";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
+HTML;
 				break;
+
 			case('bigint'):
 			case('smallint'):
 			case('tinyint'):
@@ -551,12 +560,21 @@ function ShowCode()
 					}
 					break;
 				case('text'):
-					switch ($opts)
+					$params = explode(".", $opts);
+
+					switch ($params[0])
 					{
-						case('text'): $dg[] = "\$dg->AddTextArea('$fld','$name:');"; break;
-						default: $dg[] = "\$dg->AddHtmlEditor('$fld','$name:');"; break;
+						case 'textarea': 
+							$dg[] = "\$dg->AddTextArea('$fld', '$name:', {$params[1]}, {$params[2]});"; 
+							break;
+						case 'html':
+							$dg[] = "\$dg->AddHtmlEditor('$fld','$name:', {$params[1]}, {$params[2]});"; 
+							break;
+						default:
+							die("Invalid inputspec specified for $fld.");
 					}
 					break;
+
 				case('bigint'):
 				case('smallint'):
 				case('tinyint'):
