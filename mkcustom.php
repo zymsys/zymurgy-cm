@@ -115,7 +115,7 @@ function GetCustomTableOptions()
 
 ?>
 	<form method="GET">
-		<p><b><?= $table ?></b></p>
+		<p><b>Add <?= $table ?> to Custom Tables</b></p>
 
 		<p>To add this table to the list of custom tables in Zymurgy:CM, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use on the built-in management screens.</p>
 
@@ -296,7 +296,7 @@ function GetOptions()
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Couldn't load columns from $table.");
 ?>
-	<p><b><?= $table ?></b></p>
+	<p><b>Generate PHP Code for <?= $table ?> Table</b></p>
 
 	<p>To generate PHP code for this table, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use.</p>
 
