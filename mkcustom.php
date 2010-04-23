@@ -219,14 +219,13 @@ function GetCustomTableOptions()
 		{
 			case('char'):
 			case('varchar'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"input.$length.$length\" checked>Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"attachment\">File ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"image.600.400\">Image";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="input.{$length}.{$length}">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetVarcharSpecifiers());">
+HTML;
 				break;
 			case('longtext'):
 			case('text'):
-//				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"textarea.40.5\">Text ".
-//					"<input type=\"radio\" name=\"f$fld\" value=\"html.600.400\" checked>HTML";
 				$opts = <<<HTML
 	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
 	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
@@ -334,14 +333,13 @@ function GetOptions()
 		{
 			case('char'):
 			case('varchar'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\" checked>Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"file\">File ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"thumb\">Thumb";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="input.{$length}.{$length}">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetVarcharSpecifiers());">
+HTML;
 				break;
 			case('longtext'):
 			case('text'):
-//				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\">Text ".
-//					"<input type=\"radio\" name=\"f$fld\" value=\"html\" checked>HTML";
 				$opts = <<<HTML
 	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
 	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
@@ -553,23 +551,33 @@ function ShowCode()
 				$opts = $_GET[$optname];
 			else 
 				$opts = '';
+			$params = explode(".", $opts);
+
 			switch ($type)
 			{
 				case('char'):
 				case('varchar'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('file'): $dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; break;
-						case('thumb'): 
-							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
-							$dgc[count($dgc)-1] = "\$dg->AddThumbColumn('$name','$fld',100,100);";
+						case "input":
+							$dg[] = "\$dg->AddInput('$fld', '$name:', {$params[1]}, {$params[2]});";
 							break;
-						default: $dg[] = "\$dg->AddInput('$fld','$name:',$length,$length);"; break;
+
+						case('attachment'): 
+							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
+							break;
+
+						case('image'): 
+							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
+							$dgc[count($dgc)-1] = "\$dg->AddThumbColumn('$name', '$fld', {$params[1]}, {$params[2]});";
+							break;
+
+						default: 
+							die("Invalid inputspec $opts specified for $fld.");
+							break;
 					}
 					break;
 				case('text'):
-					$params = explode(".", $opts);
-
 					switch ($params[0])
 					{
 						case 'textarea': 
@@ -579,7 +587,7 @@ function ShowCode()
 							$dg[] = "\$dg->AddHtmlEditor('$fld','$name:', {$params[1]}, {$params[2]});"; 
 							break;
 						default:
-							die("Invalid inputspec specified for $fld.");
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
 
