@@ -23,3 +23,19 @@ function GetVarcharSpecifiers()
 	
 	return list;
 }
+
+function GetIntSpecifiers()
+{
+	var list = new Array();
+
+    specifier = GetSpecifier_ZIW_Input("numeric");
+    if(specifier) list.push(specifier);
+    specifier = GetSpecifier_ZIW_Money("money");
+    if(specifier) list.push(specifier);
+    specifier = GetSpecifier_ZIW_YuiUnixDate("unixdate");
+    if(specifier) list.push(specifier);
+    specifier = GetSpecifier_ZIW_Lookup("lookup");
+    if(specifier) list.push(specifier);
+
+	return list;
+}

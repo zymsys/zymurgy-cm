@@ -237,15 +237,14 @@ HTML;
 			case('int'):
 				if($row["Key"] == "PRI")
 				{
-					$opts = "<input type=\"radio\" name=\"f$fld\" value=\"pk\" CHECKED>Primary Key";
+					$opts = "<input type=\"hidden\" name=\"f$fld\" value=\"pk\">Primary Key";
 				}
 				else
 				{
-					$opts = "<input type=\"radio\" name=\"f$fld\" value=\"numeric.5.5\" checked>Number".
-						"<input type=\"radio\" name=\"f$fld\" value=\"unixdate\">UNIX Date ".
-						"<input type=\"radio\" name=\"f$fld\" value=\"currency\">Currency ".
-						"<input type=\"radio\" name=\"f$fld\" value=\"lookup\">Lookup:  ".
-						"<input type=\"text\" name=\"x$fld\" size=\"10\" value=\"\">";
+					$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetIntSpecifiers());">
+HTML;
 				}
 				break;
 			case('smallint'):
@@ -347,14 +346,14 @@ HTML;
 				break;
 
 			case('bigint'):
-			case('smallint'):
 			case('tinyint'):
 			case('int'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"date\" checked>UNIX Date ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"currency\">Currency ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"lookup\">Lookup ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetIntSpecifiers());">
+HTML;
 				break;
+
 			case('smallint'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
 					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
@@ -595,12 +594,22 @@ function ShowCode()
 				case('smallint'):
 				case('tinyint'):
 				case('int'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('currency'): $dg[] = "\$dg->AddMoneyEditor('$fld','$name');"; break;
-						case('lookup'): $dg[] = "\$dg->AddLookup('$fld','$name','lookuptable','id','name','disporder');"; break;
-						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
-						default: $dg[] = "\$dg->AddUnixDateEditor('$fld','$name');"; break;
+						case('money'): 
+							$dg[] = "\$dg->AddMoneyEditor('$fld','$name');"; 
+							break;
+						case('lookup'): 
+							$dg[] = "\$dg->AddLookup('$fld','$name', {$params[1]}, {$params[2]}, {$params[3]}, {$params[4]});"; 
+							break;
+						case('numeric'): 
+							$dg[] = "\$dg->AddInput('$fld', '$name', {$params[1]}, {$params[2]});"; 
+							break;
+						case "unixdate": 
+							$dg[] = "\$dg->AddUnixDateEditor('$fld','$name');"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
 				case('datetime'):

@@ -736,7 +736,161 @@ class ZIW_Lookup extends ZIW_Base
 
 	function GetInputSpecifier()
 	{
+		$yuiIncludes = "";
+
+		$includeYDE = strlen(Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js"));
+		$yuiIncludes .= $includeYDE > 0
+			? "includeJS('".Zymurgy::YUIBaseURL()."yahoo-dom-event/yahoo-dom-event.js"."');\n"
+			: "";
+
+		$includeConnection = strlen(Zymurgy::YUI("connection/connection-min.js"));
+		$yuiIncludes .= $includeConnection > 0
+			? "includeJS('".Zymurgy::YUIBaseURL()."connection/connection-min.js"."');\n"
+			: "";
+//		die("Includes: ".$includeYDE.", ".$includeConnection.": ".$yuiIncludes);
+
 		$output = "";
+		$output .= $yuiIncludes;
+
+		$output .= <<<SCRIPT
+	function includeJS(filename)
+	{
+		var head = document.getElementsByTagName("head")[0];
+		script = document.createElement("script");
+		script.src = filename;
+		script.type = "text/javascript";
+		head.appendChild(script);
+	}
+
+	var tableNameAjaxObject = {
+		handleSuccess:function(tableXML) {
+		 	var items = tableXML.responseXML.getElementsByTagName("table");
+			var list = document.getElementById("param_0");
+			var listDefault = document.getElementById("param_0_default").value;
+
+			list.options.length = 0;
+
+			for(var cntr = 0; cntr < items.length; cntr++)
+			{
+				var tableName = items[cntr].firstChild.nodeValue;
+
+				list.options[cntr] = new Option(tableName, tableName);
+
+				if(listDefault == tableName)
+					list.selectedIndex = cntr;
+			}
+
+			var valueColumn = document.getElementById("param_2");
+			var sortColumn = document.getElementById("param_3");
+
+			// clear the existing options
+			valueColumn.options.length = 0;
+			sortColumn.options.length = 0;
+
+			valueColumn.options[0] = new Option("Loading...", "Loading...");
+			sortColumn.options[0] = new Option("Loading...", "Loading...");
+
+			setTimeout("getColumnNames();", 100);
+		},
+
+		handleFailure:function(tableXML) {
+			alert("tableNameAjaxObject: Cannot retrieve XML data. " + tableXML.statusText);
+		},
+
+		startRequest:function() {
+			YAHOO.util.Connect.asyncRequest(
+				'GET',
+				'gettables.php',
+				tableNameCallback,
+				"");
+		}
+	};
+
+	var tableNameCallback = {
+		success:tableNameAjaxObject.handleSuccess,
+		failure:tableNameAjaxObject.handleFailure,
+		scope:tableNameAjaxObject
+	};
+
+	function getTableNames()
+	{
+		var tableNames = new Array();
+
+		tableNames.push("Loading...");
+
+		// setTimeout("loadTableNames()", 100);
+		setTimeout("tableNameAjaxObject.startRequest();", 100);
+
+		return tableNames;
+	}
+
+	var columnNameAjaxObject = {
+		handleSuccess:function(columnXML) {
+		 	var items = columnXML.responseXML.getElementsByTagName("field");
+
+			var valueColumn = document.getElementById("param_2");
+			var sortColumn = document.getElementById("param_3");
+
+			var valueDefault = document.getElementById("param_2_default").value;
+			var sortDefault = document.getElementById("param_3_default").value;
+
+			// clear the existing options
+			valueColumn.options.length = 0;
+			sortColumn.options.length = 0;
+
+			sortColumn.options[0] = new Option("(none)", "");
+
+			var hasDispOrder = items[0].firstChild.nodeValue;
+			var startIndex = 0;
+
+			if(hasDispOrder == "disporder")
+			{
+				sortColumn.options[1] = new Option("disporder", "disporder");
+				startIndex = 1;
+			}
+
+			for(var cntr = startIndex; cntr < items.length; cntr++)
+			{
+				var columnName = items[cntr].firstChild.nodeValue;
+
+	 			valueColumn.options[cntr - startIndex] = new Option(columnName, columnName);
+				sortColumn.options[cntr + 1] = new Option(columnName, columnName);
+
+				if(valueDefault == columnName)
+					valueColumn.selectedIndex = cntr - startIndex;
+
+				if(sortDefault == columnName)
+					sortColumn.selectedIndex = cntr + 1;
+			}
+		},
+
+		handleFailure:function(columnXML) {
+			alert("columnNameAjaxObject: Cannot retrieve XML data. " + columnXML.statusText);
+		},
+
+		startRequest:function() {
+			selectedTable = document.getElementById("param_0").options[
+			document.getElementById("param_0").selectedIndex].value;
+
+			YAHOO.util.Connect.asyncRequest(
+				'GET',
+				'getfields.php?tname=' + selectedTable,
+				columnNameCallback,
+				"");
+		}
+	};
+
+	var columnNameCallback = {
+		success:columnNameAjaxObject.handleSuccess,
+		failure:columnNameAjaxObject.handleFailure,
+		scope:columnNameAjaxObject
+	};
+
+	function getColumnNames()
+	{
+		setTimeout("columnNameAjaxObject.startRequest();", 100);
+	}
+SCRIPT;
 
 		$output .= "function GetSpecifier_ZIW_Lookup(inputspecName) {\n";
 		$output .= " var specifier = new InputSpecifier;\n";
