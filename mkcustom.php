@@ -248,12 +248,16 @@ HTML;
 				}
 				break;
 			case('smallint'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"numeric.5.5\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetSmallintSpecifiers());">
+HTML;
 				break;
 			case('enum'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"input.$length.$length\" checked>Drop List ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="drop.Value 1,Value 2,Value 3">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetEnumSpecifiers());">
+HTML;
 				break;
 			case('datetime'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date/Time";
@@ -355,12 +359,16 @@ HTML;
 				break;
 
 			case('smallint'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetSmallintSpecifiers());">
+HTML;
 				break;
 			case('enum'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"droplist\" checked>Drop List ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="drop.Value 1,Value 2,Value 3">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetEnumSpecifiers());">
+HTML;
 				break;
 			case('datetime'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date/Time";
@@ -591,7 +599,6 @@ function ShowCode()
 					break;
 
 				case('bigint'):
-				case('smallint'):
 				case('tinyint'):
 				case('int'):
 					switch ($params[0])
@@ -631,10 +638,16 @@ function ShowCode()
 					}
 					break;
 				case('smallint'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
-						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array('0'=>'No','1'=>'Yes'));";
+						case "radio": 
+							$dg[] = "\$dg->AddRadioEditor('$fld','$name',array('0'=>'No','1'=>'Yes'));";
+							break;
+						case'numeric':
+							$dg[] = "\$dg->AddInput('$fld','$name',3,3);"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
 				case('enum'):
@@ -643,12 +656,17 @@ function ShowCode()
 					{
 						$enumarray[] = "'$enumvalue'=>'$enumvalue'";
 					}
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('droplist'): $dg[] = "\$dg->AddDropListEditorLookup('$fld','$name',array(".implode(',',$enumarray)."));"; break;
-						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array(".implode(',',$enumarray)."));"; break;
+						case('droplist'):
+							$dg[] = "\$dg->AddDropListEditorLookup('$fld','$name',array(".implode(',',$enumarray)."));";
+							break;
+						case "radio": 
+							$dg[] = "\$dg->AddRadioEditor('$fld','$name',array(".implode(',',$enumarray)."));"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
-					break;
 					break;
 			}
 		}

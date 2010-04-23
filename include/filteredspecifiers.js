@@ -39,3 +39,26 @@ function GetIntSpecifiers()
 
 	return list;
 }
+
+function GetSmallintSpecifiers()
+{
+	var list = new Array();
+
+    specifier = GetSpecifier_ZIW_Input("numeric");
+    if(specifier) list.push(specifier);
+
+	return list;
+}
+
+function GetEnumSpecifiers()
+{
+	var list = new Array();
+
+    specifier = GetSpecifier_ZIW_Drop("drop");
+    if(specifier) list.push(specifier);
+    specifier = GetSpecifier_ZIW_Radio("radio");
+    if(specifier) list.push(specifier);
+
+	return list;
+}
+
