@@ -114,6 +114,7 @@ function InputSpecifier()
 	this.type = "";
 
 	this.inputparameters = new Array();
+	this.supportedSpecifiers = new Array();
 
 	this.tableoutput = function()
 	{
@@ -137,7 +138,8 @@ function InputSpecifier()
 		output = output + "<td>Parameter Type</td>";
 
 		output = output + "<td><select id=\"specifierType\" onchange=\"changeSpecifier('" + specifierElement + "')\">";
-		var specifiers = GetSupportedSpecifiers();
+		var specifiers = this.supportedSpecifiers; // GetSupportedSpecifiers();
+
 		for(var cntr = 0; cntr < specifiers.length; cntr++)
 		{
 			output = output + "<option value=\"" + specifiers[cntr].type +
@@ -314,12 +316,13 @@ YAHOO.util.Event.onDOMReady(initSpecifierDiv);
 
 var m_specifier;
 
-function editSpecifier(specifierElement)
+function editSpecifier(specifierElement, supportedSpecifiers)
 {
 	var specifierText = document.getElementById(specifierElement).value + ".";
 
 	m_specifier = GetSpecifierFromText(
 		document.getElementById(specifierElement).value);
+	m_specifier.supportedSpecifiers = supportedSpecifiers;
 
 	document.getElementById("specifiers").innerHTML = m_specifier.renderedit(
 		specifierElement,
@@ -374,13 +377,15 @@ function changeSpecifier(specifierElement)
 
 function changeSpecifierByText(specifierElement, specifierText)
 {
-	var specifiers = GetSupportedSpecifiers();
+//	alert(m_specifier.supportedSpecifiers.length);
+	var specifiers = m_specifier.supportedSpecifiers; //  GetSupportedSpecifiers();
 
 	for(var i = 0; i < specifiers.length; i++)
 	{
 		if(specifiers[i].type == specifierText)
 		{
 			m_specifier = specifiers[i].Clone();
+			m_specifier.supportedSpecifiers = specifiers;
 
 			document.getElementById("specifiers").innerHTML = m_specifier.renderedit(
 				specifierElement,
@@ -392,9 +397,9 @@ function changeSpecifierByText(specifierElement, specifierText)
 	}
 }
 
-function makeInputSpecifier(name, value) {
+function makeInputSpecifier(name, value, specifierMethod) {
 	document.write('<input type="text" id="'+name+'" name="'+name+'" value="'+value+'">'+
-		'<input type="button" id="'+name+'_edit" onClick="editSpecifier('+"'"+name+"'"+')" value="&raquo;">');
+		'<input type="button" id="'+name+'_edit" onClick="editSpecifier('+"'"+name+"'"+', '+specifierMethod+'());" value="&raquo;">');
 }
 
 function DefineCheckboxParameter(label, value)

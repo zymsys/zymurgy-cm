@@ -672,7 +672,7 @@ class ZIW_InputSpec extends ZIW_Base
 		require_once(Zymurgy::$root."/zymurgy/include/inputspec.php");
 		echo "<script>makeInputSpecifier('".
 			str_replace("'","\'",$name)."','".
-			str_replace("'","\'",$value)."');</script>";
+			str_replace("'","\'",$value)."', 'GetSupportedSpecifiers');</script>";
 	}
 }
 
