@@ -25,8 +25,7 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 
 include 'header.php';
 
-echo Zymurgy::YUI('yahoo/yahoo-min.js');
-echo Zymurgy::YUI('event/event-min.js');
+echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 echo Zymurgy::YUI('connection/connection-min.js');
 
 //The values array contains tablename.columnname keys with values from the row to be deleted.
