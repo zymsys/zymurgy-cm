@@ -178,31 +178,10 @@ function GetCustomTableOptions()
 			</tr>
 		</table>
 
-		<p><b>Lookups</b></p>
-
-		<p>To specify a look-up field, provide a dot-separated string with the following items:</p>
-		<ul>
-			<li>The name of the table the value is coming from (the table does not have to be specified as a Custom Table in Zymurgy:CM)</li>
-			<li>The name of the field the value is coming from</li>
-			<li>The name of the field containing the value to display in the drop-down list</li>
-			<li>The name of the field used to sort the values in the drop-down list</li>
-		</ul>
-		<p>For example, given a reference table named <b>issuestatus</b> with the following fields:</p>
-		<ul>
-			<li><b>id</b> - int(10) unsigned, auto_increment, primary key
-			<br>The primary key for the table</li>
-			<li><b>name</b> - varchar(50)
-			<br>The user-friendly name of the record</li>
-			<li><b>disporder</b> - int(10) unsigned
-			<br>The order index for the record</li>
-		</ul>
-		<p>You would enter the following string for the lookup:</p>
-		<blockquote>issuestatus.id.name.disporder</blockquote>
-
 		<input type="hidden" name="t" value="<?= $table ?>">
 		<input type="hidden" name="adding" value="1">
 
-		<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols">
+		<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols" style="margin-top: 20px;">
 			<tr class="DataGridHeader">
 				<td>Column</td>
 				<td>Data Type</td>
