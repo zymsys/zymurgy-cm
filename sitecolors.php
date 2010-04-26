@@ -330,12 +330,17 @@
 
 	function UpdatePreview()
 	{
-		preview = document.getElementById("preview").contentDocument;
-
-		if(preview == undefined || preview == null)
+		var frame = document.getElementById("preview").contentDocument;
+		var preview;
+		
+		//if(preview == undefined || preview == null)
+		if (!frame)
 		{
 			preview = document.getElementById("preview").contentWindow.document;
+			//preview = preview.document;
 		}
+		else
+			preview = frame;
 
 		if(!(preview == undefined || preview == null))
 		{
@@ -355,6 +360,7 @@
 				}
 			}
 
+			//TODO:  Fix in IE.  Causes about:blank popup window.
 			preview.open();
 			preview.write(newContent);
 			preview.close();

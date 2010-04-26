@@ -97,8 +97,8 @@ include('nlheader.php');
 <?
 if (isset($error)) echo "<tr><td colspan=\"2\" align=\"center\" style=\"background-color:#ffffff; padding:5px;\"><font color='red'>$error</font></td></tr>\r\n";
 ?>
-<tr><td align="right">User ID:</td><td><input type="text" name="userid" class="noborder"></td></tr>
-<tr><td align="right">Password:</td><td><input type="password" name="passwd" class="noborder"></td></tr>
+<tr><td align="right">User ID:</td><td><input type="text" name="userid" class="noborder" style="width:120px"></td></tr>
+<tr><td align="right">Password:</td><td><input type="password" name="passwd" class="noborder" style="width:120px"></td></tr>
 <tr><td colspan="2" align="center"><input type="submit" name="CMSLogin_Button" value="login"></td></tr>
 </table>
 </div>
