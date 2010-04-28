@@ -27,8 +27,11 @@ class ZymurgyTemplate
 	{
 		$nav = Zymurgy::getsitenav();
 		$item = $nav->items[$parent];
-		return array_key_exists($navpart,$item->childrenbynavname) ?
-			$nav->items[$item->childrenbynavname[$navpart]] : false;
+
+//		echo("Looking for ".$navpart." in ".print_r($item->childrenbynavname, true));
+
+		return array_key_exists(urlencode($navpart), $item->childrenbynavname) ?
+			$nav->items[$item->childrenbynavname[urlencode($navpart)]] : false;
 	}
 
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
