@@ -6,11 +6,11 @@
  */
 if ($_SERVER['REQUEST_METHOD']=='POST')
 {
-	$breadcrumbTrail = "<a href=\"configuration.php\">Site Config</a>";
+	$breadcrumbTrail = "<a href=\"configuration.php\">Appearance</a>";
 }
 else
 {
-	$breadcrumbTrail = "Site Config";
+	$breadcrumbTrail = "Appearance";
 }
 
 include('header.php');
