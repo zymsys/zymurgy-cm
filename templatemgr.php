@@ -4,6 +4,15 @@
  * @package Zymurgy
  * @subpackage backend-modules
  */
+if(isset($_GET["editkey"]))
+{
+	$breadcrumbTrail = "<a href=\"templatemgr.php\">Page Templates</a> &gt; Edit";
+}
+else
+{
+	$breadcrumbTrail = "Page Templates";
+}
+
 include 'header.php';
 include 'datagrid.php';
 
