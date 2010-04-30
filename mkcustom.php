@@ -97,6 +97,10 @@ function GetCustomTableOptions()
 	include_once("datagrid.php");
 	DumpDataGridCSS();
 
+	echo Zymurgy::RequireOnce("include/inputspec.js");
+	include_once("include/inputspec.php");
+	echo Zymurgy::RequireOnce("include/filteredspecifiers.js");
+
 	$sql = "SELECT `id`, `tname` FROM `zcm_customtable` ORDER BY `tname`";
 	$ri = Zymurgy::$db->query($sql)
 		or die("Could not retrieve list of custom tables: ".Zymurgy::$db->error().", $sql");
@@ -115,7 +119,7 @@ function GetCustomTableOptions()
 
 ?>
 	<form method="GET">
-		<p><b><?= $table ?></b></p>
+		<p><b>Add <?= $table ?> to Custom Tables</b></p>
 
 		<p>To add this table to the list of custom tables in Zymurgy:CM, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use on the built-in management screens.</p>
 
@@ -174,31 +178,10 @@ function GetCustomTableOptions()
 			</tr>
 		</table>
 
-		<p><b>Lookups</b></p>
-
-		<p>To specify a look-up field, provide a dot-separated string with the following items:</p>
-		<ul>
-			<li>The name of the table the value is coming from (the table does not have to be specified as a Custom Table in Zymurgy:CM)</li>
-			<li>The name of the field the value is coming from</li>
-			<li>The name of the field containing the value to display in the drop-down list</li>
-			<li>The name of the field used to sort the values in the drop-down list</li>
-		</ul>
-		<p>For example, given a reference table named <b>issuestatus</b> with the following fields:</p>
-		<ul>
-			<li><b>id</b> - int(10) unsigned, auto_increment, primary key
-			<br>The primary key for the table</li>
-			<li><b>name</b> - varchar(50)
-			<br>The user-friendly name of the record</li>
-			<li><b>disporder</b> - int(10) unsigned
-			<br>The order index for the record</li>
-		</ul>
-		<p>You would enter the following string for the lookup:</p>
-		<blockquote>issuestatus.id.name.disporder</blockquote>
-
 		<input type="hidden" name="t" value="<?= $table ?>">
 		<input type="hidden" name="adding" value="1">
 
-		<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols">
+		<table class="DataGrid" cellspacing="0" cellpadding="3" bordercolor="#999999" border="1" rules="cols" style="margin-top: 20px;">
 			<tr class="DataGridHeader">
 				<td>Column</td>
 				<td>Data Type</td>
@@ -215,14 +198,17 @@ function GetCustomTableOptions()
 		{
 			case('char'):
 			case('varchar'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"input.$length.$length\" checked>Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"attachment\">File ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"image.600.400\">Image";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="input.{$length}.{$length}">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetVarcharSpecifiers());">
+HTML;
 				break;
 			case('longtext'):
 			case('text'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"textarea.40.5\">Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"html.600.400\" checked>HTML";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
+HTML;
 				break;
 			case('bigint'):
 			case('smallint'):
@@ -230,24 +216,27 @@ function GetCustomTableOptions()
 			case('int'):
 				if($row["Key"] == "PRI")
 				{
-					$opts = "<input type=\"radio\" name=\"f$fld\" value=\"pk\" CHECKED>Primary Key";
+					$opts = "<input type=\"hidden\" name=\"f$fld\" value=\"pk\">Primary Key";
 				}
 				else
 				{
-					$opts = "<input type=\"radio\" name=\"f$fld\" value=\"numeric.5.5\" checked>Number".
-						"<input type=\"radio\" name=\"f$fld\" value=\"unixdate\">UNIX Date ".
-						"<input type=\"radio\" name=\"f$fld\" value=\"currency\">Currency ".
-						"<input type=\"radio\" name=\"f$fld\" value=\"lookup\">Lookup:  ".
-						"<input type=\"text\" name=\"x$fld\" size=\"10\" value=\"\">";
+					$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetIntSpecifiers());">
+HTML;
 				}
 				break;
 			case('smallint'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"numeric.5.5\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetSmallintSpecifiers());">
+HTML;
 				break;
 			case('enum'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"input.$length.$length\" checked>Drop List ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="drop.Value 1,Value 2,Value 3">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetEnumSpecifiers());">
+HTML;
 				break;
 			case('datetime'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date/Time";
@@ -288,6 +277,10 @@ function GetOptions()
 	include_once("datagrid.php");
 	DumpDataGridCSS();
 
+	echo Zymurgy::RequireOnce("include/inputspec.js");
+	include_once("include/inputspec.php");
+	echo Zymurgy::RequireOnce("include/filteredspecifiers.js");
+
 	global $dsevents,$noshow;
 	
 	$table = $_GET['t'];
@@ -296,7 +289,7 @@ function GetOptions()
 	$ri = Zymurgy::$db->query($sql);
 	if (!$ri) die("Couldn't load columns from $table.");
 ?>
-	<p><b><?= $table ?></b></p>
+	<p><b>Generate PHP Code for <?= $table ?> Table</b></p>
 
 	<p>To generate PHP code for this table, define the Field Type for each of the fields in the table. Zymurgy:CM uses the field type to determine which edit control to use.</p>
 
@@ -322,31 +315,39 @@ function GetOptions()
 		{
 			case('char'):
 			case('varchar'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\" checked>Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"file\">File ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"thumb\">Thumb";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="input.{$length}.{$length}">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetVarcharSpecifiers());">
+HTML;
 				break;
 			case('longtext'):
 			case('text'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"text\">Text ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"html\" checked>HTML";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="textarea.40.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetTextSpecifiers());">
+HTML;
 				break;
+
 			case('bigint'):
-			case('smallint'):
 			case('tinyint'):
 			case('int'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"date\" checked>UNIX Date ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"currency\">Currency ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"lookup\">Lookup ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetIntSpecifiers());">
+HTML;
 				break;
+
 			case('smallint'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"bool\" checked>Yes/No ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"number\">Number";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="numeric.5.5">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetSmallintSpecifiers());">
+HTML;
 				break;
 			case('enum'):
-				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"droplist\" checked>Drop List ".
-					"<input type=\"radio\" name=\"f$fld\" value=\"radio\">Radio";
+				$opts = <<<HTML
+	<input type="text" name="f{$fld}" id="f{$fld}" value="drop.Value 1,Value 2,Value 3">
+	<input type="button" value="&raquo;" onclick="editSpecifier('f{$fld}', GetEnumSpecifiers());">
+HTML;
 				break;
 			case('datetime'):
 				$opts = "<input type=\"radio\" name=\"f$fld\" value=\"datetime\" checked>MySQL Date/Time";
@@ -536,37 +537,65 @@ function ShowCode()
 				$opts = $_GET[$optname];
 			else 
 				$opts = '';
+			$params = explode(".", $opts);
+
 			switch ($type)
 			{
 				case('char'):
 				case('varchar'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('file'): $dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; break;
-						case('thumb'): 
-							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
-							$dgc[count($dgc)-1] = "\$dg->AddThumbColumn('$name','$fld',100,100);";
+						case "input":
+							$dg[] = "\$dg->AddInput('$fld', '$name:', {$params[1]}, {$params[2]});";
 							break;
-						default: $dg[] = "\$dg->AddInput('$fld','$name:',$length,$length);"; break;
+
+						case('attachment'): 
+							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
+							break;
+
+						case('image'): 
+							$dg[] = "\$dg->AddAttachmentEditor('$fld','$name:');"; 
+							$dgc[count($dgc)-1] = "\$dg->AddThumbColumn('$name', '$fld', {$params[1]}, {$params[2]});";
+							break;
+
+						default: 
+							die("Invalid inputspec $opts specified for $fld.");
+							break;
 					}
 					break;
 				case('text'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('text'): $dg[] = "\$dg->AddTextArea('$fld','$name:');"; break;
-						default: $dg[] = "\$dg->AddHtmlEditor('$fld','$name:');"; break;
+						case 'textarea': 
+							$dg[] = "\$dg->AddTextArea('$fld', '$name:', {$params[1]}, {$params[2]});"; 
+							break;
+						case 'html':
+							$dg[] = "\$dg->AddHtmlEditor('$fld','$name:', {$params[1]}, {$params[2]});"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
+
 				case('bigint'):
-				case('smallint'):
 				case('tinyint'):
 				case('int'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('currency'): $dg[] = "\$dg->AddMoneyEditor('$fld','$name');"; break;
-						case('lookup'): $dg[] = "\$dg->AddLookup('$fld','$name','lookuptable','id','name','disporder');"; break;
-						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
-						default: $dg[] = "\$dg->AddUnixDateEditor('$fld','$name');"; break;
+						case('money'): 
+							$dg[] = "\$dg->AddMoneyEditor('$fld','$name');"; 
+							break;
+						case('lookup'): 
+							$dg[] = "\$dg->AddLookup('$fld','$name', {$params[1]}, {$params[2]}, {$params[3]}, {$params[4]});"; 
+							break;
+						case('numeric'): 
+							$dg[] = "\$dg->AddInput('$fld', '$name', {$params[1]}, {$params[2]});"; 
+							break;
+						case "unixdate": 
+							$dg[] = "\$dg->AddUnixDateEditor('$fld','$name');"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
 				case('datetime'):
@@ -588,10 +617,16 @@ function ShowCode()
 					}
 					break;
 				case('smallint'):
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('number'): $dg[] = "\$dg->AddInput('$fld','$name',3,3);"; break;//TODO:  Numeric validator
-						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array('0'=>'No','1'=>'Yes'));";
+						case "radio": 
+							$dg[] = "\$dg->AddRadioEditor('$fld','$name',array('0'=>'No','1'=>'Yes'));";
+							break;
+						case'numeric':
+							$dg[] = "\$dg->AddInput('$fld','$name',3,3);"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
 					break;
 				case('enum'):
@@ -600,12 +635,17 @@ function ShowCode()
 					{
 						$enumarray[] = "'$enumvalue'=>'$enumvalue'";
 					}
-					switch ($opts)
+					switch ($params[0])
 					{
-						case('droplist'): $dg[] = "\$dg->AddDropListEditorLookup('$fld','$name',array(".implode(',',$enumarray)."));"; break;
-						default: $dg[] = "\$dg->AddRadioEditor('$fld','$name',array(".implode(',',$enumarray)."));"; break;
+						case('droplist'):
+							$dg[] = "\$dg->AddDropListEditorLookup('$fld','$name',array(".implode(',',$enumarray)."));";
+							break;
+						case "radio": 
+							$dg[] = "\$dg->AddRadioEditor('$fld','$name',array(".implode(',',$enumarray)."));"; 
+							break;
+						default:
+							die("Invalid inputspec $opts specified for $fld.");
 					}
-					break;
 					break;
 			}
 		}

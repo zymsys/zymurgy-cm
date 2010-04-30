@@ -321,7 +321,6 @@ SetNavigationFeature(22,  5, "--- Admin ---", "");
 SetNavigationFeature(4,   6, "- Members", "editmember.php");
 SetNavigationFeature(5,   7, "- Membership Groups", "editmember.php?action=list_groups");
 SetNavigationFeature(26,  8, "- Access Control Lists", "acl.php");
-SetNavigationFeature(10,  9, "- Help Editor", "helpeditor.php");
 SetNavigationFeature(23, 10, "--- Webmaster ---", "");
 SetNavigationFeature(11, 11, "- Navigation", "navigation.php");
 SetNavigationFeature(12, 12, "- Appearance Items", "configconfig.php");
@@ -332,6 +331,7 @@ SetNavigationFeature(15, 16, "- Custom Code Generator", "mkcustom.php");
 SetNavigationFeature(16, 17, "- Template Manager", "templatemgr.php");
 SetNavigationFeature(27, 18, "- Zymurgy:CM Config", "zcmconfig.php");
 SetNavigationFeature(29, 19, "- Migrate Data", "migrate.php");
+SetNavigationFeature(30, 20, "- Import Content", "import.php");
 SetNavigationFeature(24, 20, "--- Media Files ---", "");
 SetNavigationFeature(6,  21, "- Media Files", "media.php");
 SetNavigationFeature(7,  22, "- Media Packages", "media.php?action=list_media_packages");
@@ -340,7 +340,7 @@ SetNavigationFeature(9,  24, "- Media Relations", "media.php?action=list_relatio
 SetNavigationFeature(25, 25, "--- General ---", "");
 SetNavigationFeature(17, 26, "- Appearance", "configuration.php");
 SetNavigationFeature(18, 27, "- Profile", "profile.php");
-SetNavigationFeature(19, 28, "- Help", "help.php");
+SetNavigationFeature(19, 28, "- Help", "http://www.zymurgycm.com/userwiki/");
 SetNavigationFeature(20, 29, "- Logout", "logout.php");
 
 UpdateStatus("-- Zymurgy:CM Feature list configured");
@@ -363,7 +363,6 @@ if ($count==0)
 		(10, 12, 3, 1, 'Members',              'Zymurgy:CM Feature', '4'),
 		(11, 13, 3, 1, 'Membership Groups',    'Zymurgy:CM Feature', '5'),
 		(12, 14, 3, 1, 'Access Control Lists', 'Zymurgy:CM Feature', '26'),
-		(13, 15, 3, 1, 'Help Editor',          'Zymurgy:CM Feature', '10'),
 		(14, 13, 4, 2, 'Navigation',           'Zymurgy:CM Feature', '11'),
 		(15, 14, 4, 2, 'Appearance Items',     'Zymurgy:CM Feature', '12'),
 		(16, 15, 4, 2, 'Flavours',             'Zymurgy:CM Feature', '28'),
@@ -372,7 +371,7 @@ if ($count==0)
 		(19, 18, 4, 2, 'Custom Tables',        'Zymurgy:CM Feature', '14'),
 		(20, 19, 4, 2, 'Custom Code',          'Zymurgy:CM Feature', '15'),
 		(21, 20, 4, 2, 'Page Templates',       'Zymurgy:CM Feature', '16'),
-		(22, 21, 4, 2, 'Migrate Data',         'Zymurgy:CM Feature', '29'),
+		(22, 21, 4, 2, 'Import Content',       'Zymurgy:CM Feature', '30'),
 		(23,  5, 0, 0, 'Appearance',           'Zymurgy:CM Feature', '17'),
 		(24,  6, 1, 0, 'Pages',                'Zymurgy:CM Feature', '2')
 		;";

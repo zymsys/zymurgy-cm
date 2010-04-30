@@ -83,17 +83,17 @@ BLOCK;
 		$configItems["Validation Error Intro"] = array(
 			"name" => "Validation Error Intro",
 			"default" => "There were some problems processing your information:",
-			"inputspec" => "html.500.300",
+			"inputspec" => "html.600.200",
 			"authlevel" => 0);
 		$configItems["Footer"] = array(
 			"name" => "Footer",
 			"default" => "",
-			"inputspec" => "html.500.300",
+			"inputspec" => "html.600.200",
 			"authlevel" => 0);
 		$configItems["Thanks"] = array(
 			"name" => "Thanks",
 			"default" => "Thanks for your feedback!  We will get back to you shortly.",
-			"inputspec" => "html.500.300",
+			"inputspec" => "html.600.200",
 			"authlevel" => 0);
 
 		return $configItems;
@@ -1197,7 +1197,7 @@ class FormEmailConfirmation implements PluginExtension
 		$configItems[] = array(
 			"name" => "Confirmation Email Contents",
 			"default" => "",
-			"inputspec" => "html.500.300",
+			"inputspec" => "html.600.300",
 			"authlevel" => 0);
 
 		return $configItems;
