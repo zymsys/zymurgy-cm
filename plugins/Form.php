@@ -1197,7 +1197,7 @@ class FormEmailConfirmation implements PluginExtension
 		$configItems[] = array(
 			"name" => "Confirmation Email Contents",
 			"default" => "",
-			"inputspec" => "html.500.300",
+			"inputspec" => "html.600.300",
 			"authlevel" => 0);
 
 		return $configItems;
