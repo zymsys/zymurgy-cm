@@ -158,7 +158,7 @@
 
 	<p><b>Before Importing</b></p>
 
-	<ul style="margin-left: 120px;">
+	<ul>
 		<li>Make sure that all of the templates used for the content being imported are installed on this copy of Zymurgy:CM.</li>
 		<li>Make sure that all of the ACLs used for the content being imported are installed on this copy of Zymurgy:CM. The ACLs do not have to reference the same groups, but must have the same name.</li>
 	</ul>
