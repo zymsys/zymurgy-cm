@@ -182,10 +182,34 @@ $dg->AddColumn('Page Contents','id','<a href="sitepagetext.php?p={0}">Page Conte
 $dg->AddColumn("SEO", "id", "<a href=\"sitepageseo.php?p={0}\">SEO</a>");
 $dg->AddColumn('Gadgets','id','<a href="sitepageextra.php?p={0}">Gadgets</a>');
 $dg->AddColumn('Sub-Pages','id','<a href="sitepage.php?p={0}">Sub-Pages</a>');
-/*TODO: I'm not showing these in the grid, but I'd love to show a status column with 'Soft Launch', 'Live' or 'Retired'.  Need to extend the template feature to allow this, or some other stroke of genius.
-$dg->AddColumn('Retire','retire');
-$dg->AddColumn('Golive','golive');
-$dg->AddColumn('Softlaunch','softlaunch');*/
+
+//Use the softlaunch, golive, and retire columns to decide what the page's
+//status is.
+$dg->AddColumn('Launch Status','golive');
+function launchstatus($column, $values, $display)
+{
+    if ($column == "zcm_sitepage.golive")
+    {
+        $today = mktime();
+        $softlaunch_time = strtotime($values['zcm_sitepage.softlaunch']);
+        $golive_time = strtotime($values['zcm_sitepage.golive']);
+        $retired_time = strtotime($values['zcm_sitepage.retired']);
+        $soft = $today > $softlaunch_time || $softlaunch_time == 0;
+        $golive = $today > $golive_time || $golive_time == 0;
+        $retired = $today > $retired_time && $retired_time != 0;
+        $status = "<font color='red'>Not in use</font>";
+        if ($soft)
+            $status = "<font color='yellow'>Soft launched</font>";
+        if ($golive)
+            $status = "<font color='green'>Live</font>";
+        if ($retired)
+            $status = "<font color='red'>Retired</font>";
+        return $status;
+    }
+    else
+        return $display;
+}
+$dg->OnBeforeRenderCell = 'launchstatus';
 $dg->AddUpDownColumn('disporder');
 if ($templatecount > 1)
 {
