@@ -15,6 +15,9 @@ include 'customlib.php';
 
 $detailfor = array_key_exists('d',$_GET) ? (0 + $_GET['d']) : 0;
 $crumbs = array("customtable.php"=>"Custom Tables");
+
+$wikiArticleName = "Custom_Tables";
+
 if ($detailfor > 0)
 {
 	tablecrumbs($detailfor);
@@ -25,6 +28,7 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 	$tbl = Zymurgy::$db->get("select * from zcm_customtable where id=$ek");
 	$tblname = empty($tbl['navname']) ? $tbl['tname'] : $tbl['navname'];
 	$crumbs[''] = "Edit $tblname";
+	$wikiArticleName = "Custom_Tables#Adding_and_Editing_Custom_Tables";
 }
 
 include 'header.php';

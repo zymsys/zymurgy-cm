@@ -23,6 +23,8 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 	$crumbs[''] = 'Edit';
 }
 
+$wikiArticleName = "Custom_Tables#Adding_and_Editing_Fields";
+
 include 'header.php';
 
 echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
