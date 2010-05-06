@@ -47,6 +47,8 @@ if(array_key_exists("duplicatekey", $_POST))
 	}
 }
 
+$wikiArticleName = "Plugin_Management";
+
 $breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; ";
 if ($iid)
 {

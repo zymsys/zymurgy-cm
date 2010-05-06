@@ -15,6 +15,8 @@
 		$breadcrumbTrail = "Plugin Management";
 	}
 
+	$wikiArticleName = "Plugin_Management";
+
 	require_once('header.php');
 	require_once('datagrid.php');
 
