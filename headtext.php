@@ -16,10 +16,12 @@ if($adding)
 if ($editing | $adding)
 {
 	$breadcrumbTrail = "<a href=\"headtext.php\">Search Engines</a> &gt; Header Text";
+	$wikiArticleName = "Simple_Content_SEO#Editing_SEO_Settings";
 }
 else 
 {
 	$breadcrumbTrail = "Search Engines";	
+	$wikiArticleName = "Simple_Content_SEO";
 }
 
 include('header.php');
