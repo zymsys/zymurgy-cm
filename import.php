@@ -10,6 +10,7 @@
 //	die();
 	ini_set("display_errors", 1);
 	$breadcrumbTrail = "Import Content";
+	$wikiArticleName = "Import_Content";
 
 	include_once("header.php");
 	include_once("InputWidget.php");
