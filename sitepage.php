@@ -197,10 +197,12 @@ function launchstatus($column, $values, $display)
 {
     if ($column == "zcm_sitepage.golive")
     {
+//		echo("<pre>".print_r($values, true)."</pre>");
+
         $today = mktime();
         $softlaunch_time = strtotime($values['zcm_sitepage.softlaunch']);
         $golive_time = strtotime($values['zcm_sitepage.golive']);
-        $retired_time = strtotime($values['zcm_sitepage.retired']);
+        $retired_time = strtotime($values['zcm_sitepage.retire']);
         $soft = $today > $softlaunch_time || $softlaunch_time == 0;
         $golive = $today > $golive_time || $golive_time == 0;
         $retired = $today > $retired_time && $retired_time != 0;
