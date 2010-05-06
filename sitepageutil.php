@@ -46,4 +46,7 @@ if ($p > 0)
 {
 	pagecrumbs($p);
 }
+
+global $wikiArticleName;
+$wikiArticleName = "Pages";
 ?>

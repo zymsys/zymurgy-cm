@@ -212,6 +212,11 @@ if (isset($crumbs))
 if(isset($breadcrumbTrail)) {
 ?>
 	<div id="breadcrumbTrail" class="ZymurgyBreadcrumbs">
+		<? if(isset($wikiArticleName)) { ?>
+		<div style="float: right; text-align: right; width: 50px;">
+			<a target="_blank" href="<?= isset(Zymurgy::$config["userwikihome"]) ? Zymurgy::$config["userwikihome"] : "http://www.zymurgycm.com/userwiki/index.php/" ?><?= $wikiArticleName ?>">?</a>
+		</div>
+		<? } ?>
 		<?= $breadcrumbTrail ?>
 	</div>
 <?php } ?>
