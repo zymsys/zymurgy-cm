@@ -18,7 +18,7 @@ function Form2JSON(form) {
 	this.elvalues = new Array();
 	this.names = new Array();
 	this.keys = new Array();
-	this.walk = function(parent) {
+	var walk = function(parent) {
 		var el = parent.firstChild;
 		while (el !== null) {
 			//Ignore OPTION elements.  Keep SELECT elements instead.
@@ -38,6 +38,15 @@ function Form2JSON(form) {
 			for(var editorName in FCKeditorAPI.__Instances) {
 				var oEditor = FCKeditorAPI.__Instances[editorName];
 				var html = oEditor.GetHTML();
+				this.names[editorName] = html;
+				this.keys.push(editorName);
+			}
+		}
+		if (window.CKEDITOR) {
+			for (var editorName in CKEDITOR.instances)
+			{
+				var oEditor = CKEDITOR.instances[editorName];
+				var html = oEditor.getData();
 				this.names[editorName] = html;
 				this.keys.push(editorName);
 			}
@@ -72,7 +81,7 @@ function Form2JSON(form) {
 		var json = YAHOO.lang.JSON.stringify(newnames);
 		return json;
 	}
-	this.walk(this.form);
+	walk(this.form);
 	this.makeNameValuePairs();
 	this.getfckvalues();
 	return this;
