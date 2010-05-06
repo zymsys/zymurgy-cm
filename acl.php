@@ -6,6 +6,7 @@
  * @subpackage backend-modules
  */
 $breadcrumbTrail = "Access Control Lists";
+$wikiArticleName = "Access_Control_Lists";
 
 include 'header.php';
 include 'datagrid.php';

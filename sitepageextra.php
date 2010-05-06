@@ -29,6 +29,9 @@ else
 {
 	$crumbs[] = "Gadgets";
 }
+
+$wikiArticleName = "Pages#Gadgets";
+
 include 'header.php';
 include 'datagrid.php';
 

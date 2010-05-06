@@ -13,6 +13,8 @@ else
 	$breadcrumbTrail = "Appearance";
 }
 
+$wikiArticleName = "Appearance";
+
 include('header.php');
 include('datagrid.php');
 require_once('InputWidget.php');

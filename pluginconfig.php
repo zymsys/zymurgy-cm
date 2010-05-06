@@ -22,6 +22,7 @@
 		$plugin);
 	$breadcrumbTrail = GetBreadcrumbTrail(
 		$plugin);
+	$wikiArticleName = "Plugin_Management";
 	$message = "";
 
 	require_once('header.php');

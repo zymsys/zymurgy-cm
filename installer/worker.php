@@ -64,6 +64,7 @@ function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,
 \$ZymurgyConfig['defaulttitle'] = '$siteTitle';
 \$ZymurgyConfig['defaultdescription'] = '$siteDescription';
 \$ZymurgyConfig['defaultkeywords'] = '$siteKeywords';
+\$ZymurgyConfig['userwikihome'] = 'http://www.zymurgycm.com/userwiki/index.php/';
 
 //Tracking and privacy
 //Check your local privacy laws before turning on this feature.

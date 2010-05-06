@@ -802,6 +802,7 @@
 		public static function DisplayList($members, $groups, $groupID)
 		{
 			$breadcrumbTrail = "Members";
+			$wikiArticleName = "Members";
 
 			include("header.php");
 			include('datagrid.php');
@@ -915,6 +916,7 @@ BLOCK;
 				"Members".
 				"</a> &gt; ".
 				"Edit Member";
+			$wikiArticleName = "Members#Editing_Members";
 
 			include("header.php");
 			include('datagrid.php');
@@ -1080,6 +1082,7 @@ BLOCK;
 				"Members".
 				"</a> &gt; ".
 				"Delete Member";
+			$wikiArticleName = "Members#Deleting_Members";
 
 			include("header.php");
 
@@ -1129,6 +1132,7 @@ BLOCK;
 				"Edit Member".
 				"</a> &gt; ".
 				"Add Member to Membership Group";
+			$wikiArticleName = "Members#Adding_Members_to_Membership_Groups";
 
 			include("header.php");
 			include('datagrid.php');
@@ -1303,6 +1307,7 @@ BLOCK;
 		public static function DisplayList($groups)
 		{
 			$breadcrumbTrail = "Membership Groups";
+			$wikiArticleName = "Membership_Groups";
 
 			include("header.php");
 			include('datagrid.php');
@@ -1369,6 +1374,7 @@ BLOCK;
 				"Membership Groups".
 				"</a> &gt; ".
 				"Edit Membership Group";
+			$wikiArticleName = "Membership_Groups#Editing_Membership_Groups";
 
 			include("header.php");
 			include('datagrid.php');
@@ -1433,6 +1439,7 @@ BLOCK;
 				"Membership Groups".
 				"</a> &gt; ".
 				"Delete Membership Group";
+			$wikiArticleName = "Membership_Groups#Deleting_Membership_Groups";
 
 			include("header.php");
 

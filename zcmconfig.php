@@ -9,6 +9,7 @@
 	require_once('cmo.php');
 
 	$breadcrumbTrail = Zymurgy::GetLocaleString("Common.ProductName")." Configuration";
+	$wikiArticleName = "Zymurgy:CM_Config";
 
 	include_once("header.php");
 	include_once("InputWidget.php");

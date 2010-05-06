@@ -77,10 +77,12 @@ function showsearch()
 if (array_key_exists('editkey',$_GET))
 {
 	$breadcrumbTrail = "<a href=\"sitetext.php\">Simple Content</a> &gt; Edit";
+	$wikiArticleName = "Simple_Content#Edit";
 }
 else
 {
 	$breadcrumbTrail = "Simple Content";
+	$wikiArticleName = "Simple_Content";
 }
 
 include('header.php');

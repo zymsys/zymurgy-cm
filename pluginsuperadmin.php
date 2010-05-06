@@ -5,10 +5,27 @@
  * @subpackage backend-modules
  */
 
+require_once('cmo.php');
+
 $pid = 0+$_GET['plugin'];
 $iid = 0+$_GET['instance'];
 
 $adminlevel = 2;
+
+$title = Zymurgy::$db->get("select title from zcm_plugin where id=$pid");
+$pluginname = Zymurgy::$db->get("select name from zcm_plugin where id=$pid");
+
+$wikiArticleName = "Plugin_Management";
+
+$breadcrumbTrail = "<a href=\"plugin.php\">Plugin Management</a> &gt; ";
+if ($iid)
+{
+	$breadcrumbTrail .= "<a href=\"pluginadmin.php?pid=$pid\">$title</a> &gt; Advanced Settings";
+}
+else
+	$breadcrumbTrail .= "$title Instances";
+
+
 require_once('header.php');
 require_once('datagrid.php');
 

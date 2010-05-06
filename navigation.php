@@ -44,12 +44,16 @@ if ($detailfor > 0)
 {
 	navcrumbs($detailfor);
 }
+
+$wikiArticleName = "Navigation";
+
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
 	$ek = isset($_GET["editkey"]) ? 0 + $_GET['editkey'] : 0;
 	$nav = Zymurgy::$db->get("select * from zcm_nav where id=$ek");
 	$navname = isset($tbl['navname']) ? $tbl['navname'] : "";
 	$crumbs[''] = "Edit $navname";
+	$wikiArticleName = "Navigation#Adding_and_Editing_Navigation_Items";
 }
 
 include 'header.php';
