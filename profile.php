@@ -5,6 +5,8 @@
  * @subpackage backend-modules
  */
 $breadcrumbTrail = "My Profile";
+$wikiArticleName = "Profile";
+
 include("header.php");
 
 $message = "";
