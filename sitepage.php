@@ -4,7 +4,14 @@
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 include 'sitepageutil.php';
+
+if(isset($_GET["editkey"]))
+{
+	$wikiArticleName = "Pages#Editing_Pages";
+}
+
 include 'header.php';
 include 'datagrid.php';
 require_once('sitenav.php');

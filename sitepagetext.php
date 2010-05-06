@@ -7,6 +7,7 @@
 require_once('cmo.php');
 include 'sitepageutil.php';
 $crumbs[] = "Page Contents";
+$wikiArticleName = "Pages#Page_Contents";
 
 include 'header.php';
 include 'datagrid.php';

@@ -41,6 +41,7 @@
 	else
 	{
 		$crumbs[] = "SEO";
+		$wikiArticleName = "Pages#SEO";
 
 		include 'header.php';
 
