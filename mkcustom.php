@@ -10,10 +10,27 @@ $adminlevel = 2;
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
 	$breadcrumbTrail = "<a href=\"mkcustom.php\">Custom Code</a> &gt; Edit";
+
 }
 else 
 {
 	$breadcrumbTrail = "Generate Custom Code";	
+}
+
+if (array_key_exists('adding',$_GET))
+{
+	if($_GET["adding"] > 0)
+	{
+		$wikiArticleName = "Add_to_Custom_Tables";
+	}
+	else
+	{
+		$wikiArticleName = "Generate_PHP_Code";
+	}
+}
+else
+{
+	$wikiArticleName = "Custom_Code_Generator";
 }
 
 include('header.php');
