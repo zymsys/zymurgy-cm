@@ -5,6 +5,12 @@
  * @subpackage backend-modules
  */
 	$breadcrumbTrail = "Flavours";
+	$wikiArticleName = "Flavours";
+
+	if(isset($_GET["editkey"]))
+	{
+		$wikiArticleName = "Flavours#Adding_and_Editing_Flavours";
+	}
 
 	include 'header.php';
 	include 'datagrid.php';
