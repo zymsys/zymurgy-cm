@@ -7,10 +7,12 @@
 if(isset($_GET["editkey"]))
 {
 	$breadcrumbTrail = "<a href=\"templatemgr.php\">Page Templates</a> &gt; Edit";
+	$wikiArticleName = "Template_Manager#Adding_and_Editing_Templates";
 }
 else
 {
 	$breadcrumbTrail = "Page Templates";
+	$wikiArticleName = "Template_Manager";
 }
 
 include 'header.php';
