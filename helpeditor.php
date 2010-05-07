@@ -1,9 +1,15 @@
 <?
 /**
- * 
+ * Zymurgy:CM Help section. Has been replaced by the User and Development wikis at:
+ *   http://www.zymurgycm.com/userwiki/
+ *   http://www.zymurgycm.com/devwiki/
+ *
  * @package Zymurgy
- * @subpackage backend-modules
+ * @subpackage help
+ * @deprecrated
  */
+
+
 $adminlevel = 2;
 $p = array_key_exists('h',$_GET) ? 0 + $_GET['h'] : 0;
 

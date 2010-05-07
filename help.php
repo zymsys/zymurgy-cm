@@ -1,9 +1,17 @@
 <?php
 /**
- * 
+ * Zymurgy:CM Help section. Has been replaced by the User and Development wikis at:
+ *   http://www.zymurgycm.com/userwiki/
+ *   http://www.zymurgycm.com/devwiki/
+ *
  * @package Zymurgy
- * @subpackage backend-modules
+ * @subpackage help
+ * @deprecrated
  */
+
+	/**
+     * @deprecated
+	 */
 	class IndexEntry
 	{
 		public $helpid = array();
