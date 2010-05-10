@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for the Simple Content SEO.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
