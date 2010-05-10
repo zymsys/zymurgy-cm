@@ -1,9 +1,11 @@
 <?
 /**
+ * Management screen for Zymurgy:CM menu.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 /**
  * Should disable changing type from subnav to anything else.
  */
@@ -11,6 +13,12 @@ $adminlevel = 2;
 
 require_once('cmo.php');
 
+/**
+ * Retrieve a list of the parent nodes for a given leaf node.
+ *
+ * @param int $nid The ID of the leaf navigation element.
+ * @return mixed
+ */
 function navparents($nid)
 {
 	$r = array();
@@ -24,6 +32,12 @@ function navparents($nid)
 	return $r;
 }
 
+/**
+ * Retrieve a list of the breadcrumbs for a given leaf node.
+ *
+ * @param int $nid The ID of the leaf navigation element
+ * @return mixed
+ */
 function navcrumbs($nid)
 {
 	global $crumbs;
@@ -285,6 +299,17 @@ YAHOO.util.Event.onDOMReady(function() {
 
 $p = array_key_exists('p',$_GET) ? 0 + $_GET['p'] : 0;
 
+/**
+ * Render the link to edit sub-menu items. Only do this for items with the 
+ * "Sub-Menu" navigation type.
+ *
+ * @param string $column The column being rendered, in tablename.columnname
+ * format.
+ * @param mixed $values The values of the row being rendered. The keys are 
+ * in tablename.columnname format.
+ * @param string $display The output normally displayed by the cell.
+ * @return string The new output for the cell
+ */
 function OnBeforeRenderCell($column,$values,$display)
 {
 	if ($column=='zcm_nav.id')
