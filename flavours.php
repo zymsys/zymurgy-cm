@@ -1,9 +1,11 @@
 <?
-/**
- * 
- * @package Zymurgy
- * @subpackage backend-modules
- */
+	/**
+	 * Management screen for Flavours. 
+	 *
+	 * @package Zymurgy
+	 * @subpackage backend-modules
+	 */
+
 	$breadcrumbTrail = "Flavours";
 	$wikiArticleName = "Flavours";
 
@@ -15,8 +17,14 @@
 	include 'header.php';
 	include 'datagrid.php';
 	
+	/**
+	 * Lookup Input Widget for flavours.
+	 */
 	class FlavourLookup extends ZIW_Lookup 
 	{
+		/**
+		 * Configures the input widget to list Flavours.
+		 */
 		function PreRender()
 		{
 			parent::PreRender();
@@ -26,6 +34,14 @@
 		}
 	}
 	
+	/**
+	 * Insert Event Handler. Sets the content and template providers to the 
+	 * newly created Flavour (itself) if the user did not set them to a 
+	 * different flavour when creating this one.
+	 * 
+	 * @param $values mixed The values of the row to be inserted. Keys are in 
+	 * tablename.columname format.
+	 */
 	function OnInsert($values)
 	{
 		if ($values['zcm_flavour.contentprovider']==-1)
