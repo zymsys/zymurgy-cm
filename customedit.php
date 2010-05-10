@@ -1,5 +1,6 @@
 <?
 /**
+ * Standard management screen for editing the contents of Custom Tables.
  *
  * @package Zymurgy
  * @subpackage backend-modules
@@ -17,6 +18,11 @@ $detailfor = 0 + $tbl['detailfor'];
 $detailtbl = ($detailfor > 0) ? gettable($detailfor) : array();
 $wheredidicomefrom = array();
 
+/**
+ * Dataset Event handler for deleting records. Used to call DeleteChildren.
+ * 
+ * @param $values mixed
+ */
 function OnDelete($values)
 {
 	global $tbl;
@@ -31,6 +37,13 @@ function OnDelete($values)
 	// die();
 }
 
+/**
+ * Delete the records in any Detail Tables for the identified record.
+ * 
+ * @param tableID int
+ * @param tableName string
+ * @param baseRowID int
+ */
 function DeleteChildren(
 	$tableID,
 	$tableName,
@@ -92,6 +105,15 @@ function DeleteChildren(
 	}
 }
 
+/**
+ * Get the ID of the parent record associated with the ID of the child record
+ * being passed into the function. This is used to build the breadcrumb trail.
+ *
+ * @param $me int
+ * @param $parent int
+ * @param $myd int
+ * @return int
+ */
 function getdkey($me,$parent,$myd)
 {
 	/**
@@ -134,6 +156,13 @@ function getdkey($me,$parent,$myd)
 	}
 }
 
+/**
+ * Generate the link for the identified table/row combination for the 
+ * breadcrumb trail.
+ * 
+ * @param $tblrow mixed
+ * @param $dkey int
+ */
 function addhistory($tblrow,$dkey)
 {
 	global $wheredidicomefrom;
@@ -145,6 +174,12 @@ function addhistory($tblrow,$dkey)
 	$wheredidicomefrom[$key] = empty($tblrow['navname']) ? $tblrow['tname'] : $tblrow['navname'];
 }
 
+/**
+ * Generate the links for the parent tables for the breadcrumb trail.
+ *
+ * @param $tid int
+ * @param $dkey int
+ */
 function digdeeper($tid,$dkey)
 {
 	global $wheredidicomefrom;
@@ -186,6 +221,12 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 include 'header.php';
 include 'datagrid.php';
 
+/**
+ * Get the information on the Custom Table from the database.
+ *
+ * @param $t int The ID of the table, as assigned in the zcm_customtable table
+ * @return mixed The table information
+ */
 function gettable($t)
 {
 	$sql = "select * from zcm_customtable where id=$t";
