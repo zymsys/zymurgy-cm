@@ -1,9 +1,11 @@
 <?
 /**
+ * Management screen for Custom Tables.
  *
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 // Custom Table definitions may only be set by the webmaster
 $adminlevel = 2;
 
@@ -22,6 +24,7 @@ if ($detailfor > 0)
 {
 	tablecrumbs($detailfor);
 }
+
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
 	$ek = array_key_exists('editkey',$_GET) ? 0 + $_GET['editkey'] : 0;
@@ -33,6 +36,14 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 
 include 'header.php';
 
+/**
+ * Drop the custom table, and remove it from the list. Also drop any Detail
+ * Tables associated with this table.
+ *
+ * @param $table string The name of the table to DROP.
+ * @param $tid int The ID of the table to DROP, as defined in the 
+ * zcm_customtable table.
+ */
 function DropTable($table,$tid)
 {
 	Zymurgy::$db->run("drop table $table");
@@ -50,14 +61,25 @@ function DropTable($table,$tid)
 	}
 }
 
-//The values array contains tablename.columnname keys with values from the row to be deleted.
+/**
+ * Delete Event Handler. Performs the actual DROP operation on the Custom Table.
+ *
+ * @param $values mixed The values of the row to be deleted. Keys are in 
+ * tablename.columname format.
+ */
 function OnDelete($values)
 {
 	DropTable($values['zcm_customtable.tname'],$values['zcm_customtable.id']);
 	return true; //Return false to override delete.
 }
 
-//The values array contains tablename.columnname keys with the proposed new values for the updated row.
+/**
+ * Update Event Handler. Performs the actual ALTER TABLE operations on the 
+ * Custom Table.
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnBeforeUpdate($values)
 {
 	$okname = okname($values['zcm_customtable.tname']);
@@ -187,7 +209,13 @@ function OnBeforeUpdate($values)
 	return $values; // Change values you want to alter before the update occurs.
 }
 
-//The values array contains tablename.columnname keys with the proposed new values for the new row.
+/**
+ * INSERT Event Handler. Performs the actual ALTER TABLE operations on the 
+ * Custom Table.
+ * 
+ * @param $values mixed The values of the row to be inserted. Keys are in 
+ * tablename.columname format.
+ */
 function OnBeforeInsert($values)
 {
 	global $detailfor;
