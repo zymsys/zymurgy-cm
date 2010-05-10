@@ -1,10 +1,10 @@
 <?php
 /**
+ * Import bulk data into Custom Tables.
  *
  * @package Zymurgy
  * @subpackage backend-modules
  */
-// Import bulk data into custom tables
 $adminlevel = 2;
 
 ob_start();
@@ -21,7 +21,15 @@ $parentrow = array_key_exists('p',$_GET) ? 0 + $_GET['p'] : 0;
 
 if (!function_exists('str_getcsv'))
 {
-	// Thanks to e at osterman dot com (http://ca.php.net/manual/en/function.fgetcsv.php)
+	/**
+	 * Thanks to e at osterman dot com (http://ca.php.net/manual/en/function.fgetcsv.php)
+	 *
+	 * @param $str
+	 * @param $delimiter
+	 * @param $enclosure
+	 * @param $len
+	 * @return
+	 */
 	function str_getcsv($str, $delimiter = ',', $enclosure = '"', $len = 4096)
 	{
 	  $fh = fopen('php://memory', 'rw');
@@ -33,11 +41,30 @@ if (!function_exists('str_getcsv'))
 	}
 }
 
+/**
+ * Contains an instance of the InputWidget class matching the Input Spec 
+ * provided in the class' constructor.
+ *
+ */
 class ImportWidget
 {
+	/**
+	 * Instance of an InputWidget class matching the Input Spec provided in the 
+	 * constructor.
+	 */
 	public $widget;
+
+	/**
+	 * The Input Spec provided in the constructor.
+	 */
 	public $inputspec;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param $inputspec string The Input Spec of the Input Widget to 
+	 * instantiate.
+	 */
 	public function __construct($inputspec)
 	{
 		$this->widget = InputWidget::Get($inputspec);
@@ -45,6 +72,13 @@ class ImportWidget
 	}
 }
 
+/**
+ * Gets the list of fields and associated Input Widgets for the provided
+ * Custom Table, based on the Input Specs defined for the fields in the 
+ * database.
+ *
+ * @return mixed
+ */
 function getWidgets()
 {
 	global $t;
@@ -60,6 +94,12 @@ function getWidgets()
 	return $widgets;
 }
 
+/**
+ * Perform the actual import operation.
+ *
+ * @param rawdata The contents of the imported data file. Expects the data in 
+ * either CSV or tab-delimited format.
+ */
 function importData($rawdata)
 {
 	global $t;
