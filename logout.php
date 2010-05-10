@@ -1,5 +1,6 @@
 <?
 /**
+ * Logout screen.
  * 
  * @package Zymurgy
  * @subpackage backend-modules

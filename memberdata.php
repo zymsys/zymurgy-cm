@@ -1,5 +1,7 @@
 <?php
 /**
+ * Renders a member's profile page, based off a Custom Table. Renders Detail
+ * Tables as tabs within a YUI tabset.
  * 
  * @package Zymurgy
  * @subpackage auth
@@ -11,6 +13,9 @@
 
 	require_once("datagrid.php");
 
+	/**
+	 * Model and View class describing a member's data table.
+	 */
 	class ZymurgyMemberDataTable
 	{
 		/**

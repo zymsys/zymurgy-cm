@@ -1,7 +1,8 @@
 <?
 
 /**
- * 
+ * Login screen. 
+ *
  * @package Zymurgy
  * @subpackage auth
  */

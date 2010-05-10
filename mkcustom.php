@@ -1,9 +1,11 @@
 <?
 /**
+ * Custom Code Generator.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 // Code generation may only be performed by a webmaster
 $adminlevel = 2;
 
@@ -46,6 +48,10 @@ $dsevents = array(
 	
 $noshow = array('id','disporder');
 
+/**
+ * Display the list of tables that Custom Code can be generated for, and links
+ * to either add the table to the list of Custom Tables, or to generate PHP code.
+ */
 function GetTable()
 {
 	include_once("datagrid.php");
@@ -109,6 +115,10 @@ function GetTable()
 <?php
 }
 
+/**
+ * Get more information on the table structure from the user, in order to add 
+ * the table to the list of Custom Tables.
+ */
 function GetCustomTableOptions()
 {
 	include_once("datagrid.php");
@@ -289,6 +299,9 @@ HTML;
 	Zymurgy::$db->free_result($ri);
 }
 
+/**
+ * Get more information on the table, in order to generate PHP code for it.
+ */
 function GetOptions()
 {
 	include_once("datagrid.php");
@@ -495,6 +508,12 @@ function parsecsv($data, $delimiter = ',', $enclosure = '"', $newline = "\n"){
     return $return;
 }
 
+/**
+ * Parse the type information provided by the SHOW COLUMNS MySQL call.
+ *
+ * @param string $t The type provided by MySQL
+ * @return mixed An arrray contain the type, and any details on it.
+ */
 function ParseType($t)
 {
 	$typeinfo = explode('(',$t,2);
@@ -517,6 +536,10 @@ function ParseType($t)
 	return array($type,$typedata);
 }
 
+/**
+ * Generate the PHP code for the selected table, and display it inside a 
+ * TEXTAREA control, that the user can then copy-and-paste into a PHP file.
+ */
 function ShowCode()
 {
 	global $noshow, $dsevents;
@@ -690,6 +713,9 @@ include('../footer.php');
 	echo "<form action=\"{$_SERVER['REQUEST_URI']}\"><textarea rows=\"20\" cols=\"70\">$custom</textarea></form>";
 }
 
+/**
+ * Add the selected table to the list of Custom Tables.
+ */
 function AddToCustomTable()
 {
 	$idfieldname = array_search("pk", $_GET);

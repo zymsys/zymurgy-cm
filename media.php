@@ -1,10 +1,12 @@
 <?php
-/**
- * no references
- * 
- * @package Zymurgy
- * @subpackage orphanned
- */
+	/**
+	 * Wrapper for the Media File MVC.
+	 * 
+	 * @package Zymurgy
+	 * @subpackage backend-modules
+	 * @deprecated
+	 */
+
 	include("cmo.php");
 	include("include/media.php");
 	

@@ -1,5 +1,6 @@
 <?php
 /**
+ * Helper methods for handling membership.
  *
  * @package Zymurgy
  * @subpackage auth
@@ -7,9 +8,11 @@
 class ZymurgyMember
 {
 	/**
-	 * Is member authenticated?  If yes then loads auth info into global $member array.
+	 * Checks to see if the member has been previously authenticated. Also 
+	 * populates the Zymurgy::$member array by calling populatememberfromrow() 
+	 * if this has not already been done.
 	 *
-	 * @return boolean
+	 * @return boolean True, if the member has been authenticated
 	 */
 	public function memberauthenticate()
 	{
@@ -32,6 +35,12 @@ class ZymurgyMember
 		return false;
 	}
 
+	/**
+	 * Populates the Zymurgy::$member array with the contents of the provided
+	 * database row.
+	 *
+	 * @param $row Row from the zcm_member table
+	 */
 	public function populatememberfromrow($row)
 	{
 		Zymurgy::$member = array(
@@ -46,10 +55,11 @@ class ZymurgyMember
 	}
 
 	/**
-	 * Is member authorized (by group name) to view this page?
+	 * Checks to see if the member belongs to the provided Membership Group.
 	 *
-	 * @param string $groupname
-	 * @return boolean
+	 * @param string $groupname The name of the membership group the member 
+	 * should belong to
+	 * @return boolean True, if the member belongs to the group
 	 */
 	public function memberauthorize($groupname)
 	{
@@ -69,9 +79,9 @@ class ZymurgyMember
 	}
 
 	/**
-	 * Log member activity
+	 * Log member activity to the zcm_memberaudit table.
 	 *
-	 * @param unknown_type $activity
+	 * @param string $activity
 	 */
 	public function memberaudit($activity)
 	{
@@ -115,6 +125,14 @@ class ZymurgyMember
 		}
 	}
 
+	/**
+	 * Create the Authorization Key for the user, and potentially write a 
+	 * cookie for it. This authorization key is used in later requests to 
+	 * confirm that the user has logged in.
+	 *
+	 * @param int $id The ID of the member, as stored in the zcm_member table
+	 * @param boolean $writeCookie If true, writes the auth key to a cookie
+	 */
 	public function createauthkey($id, $writeCookie = true)
 	{
 		//Set up the authkey and last auth
@@ -367,6 +385,16 @@ class ZymurgyMember
 		}
 	}
 
+	/**
+	 * Validate the member sign-up form.
+	 *
+	 * @param string $userid The User ID provided by the form.
+	 * @param string $password The password provided by the form.
+	 * @param string $confirm The password confirmation provided by the form.
+	 * @param bool $authed If true, the user has already been authenticated 
+     * (this is a member profile form, not a member sign-up form)
+	 * @param Form $pi The instance of the sign-up form.
+	 */
 	public function membersignup_ValidateForm(
 		$userid,
 		$password,
@@ -385,6 +413,13 @@ class ZymurgyMember
 			$pi->ValidationErrors[] = 'Password is a required field.';
 	}
 
+	/**
+	 * Create the member in the zcm_member table.
+	 * 
+	 * @param string $userid The User ID provided by the form.
+	 * @param string $password The password provided by the form.
+	 * @param Form $pi The instance of the sign-up form.
+	 */
 	public function membersignup_CreateMember($userid,	$password, $pi)
 	{
 		// die("membersignup_CreateMember() Start");
@@ -444,6 +479,18 @@ class ZymurgyMember
 		return $ri;
 	}
 
+	/**
+	 * Log in the newly created member.
+	 *
+	 * @param string $userid The User ID provided by the form.
+	 * @param string $password The password provided by the form.
+	 * @param Form $pi The instance of the sign-up form.
+	 * @param string $rurl The URL to forward to once the sign-in is complete.
+	 * @param string $joinchar The separator between $rurl and the "new" 
+	 * monikor. If $rurl contains a query string, set this to an ampersand. 
+	 * Otherwise, set this to a question mark.
+	 * @params mixed $values Unused
+	 */
 	public function membersignup_AuthenticateNewMember($userid, $password, $pi, $rurl, $joinchar, $values)
 	{
 		if ($this->memberdologin($userid,$password))
@@ -474,6 +521,13 @@ class ZymurgyMember
 		}
 	}
 
+	/**
+	 * Update the user's ID if the user changed their ID when filling out a 
+	 * member profile form.
+	 *
+	 * @param string $userid The User ID provided by the form.
+	 * @param Form $pi The instance of the sign-up form.
+	 */
 	protected function membersignup_UpdateUserID($userid, &$pi)
 	{
 		//Is the new user id already in use?
@@ -494,6 +548,12 @@ class ZymurgyMember
 		}
 	}
 
+	/**
+	 * Update the user's password if the user changed it when filling out a 
+	 * member profile form.
+	 *
+	 * @param string $password The password provided by the form.
+	 */
 	protected function membersignup_UpdatePassword($password)
 	{
 		$sql = "update zcm_member set password='".Zymurgy::$db->escape_string($password)."' where id=".Zymurgy::$member['id'];
@@ -775,6 +835,10 @@ class ZymurgyMember
 		return implode("\r\n",$r);
 	}
 
+	/**
+	 * Retrieve the user's login name and password, given their e-mail
+	 * address.
+	 */
 	protected function RetrieveForgotPassword()
 	{
 		$sql = "SELECT `username`, `password` FROM `zcm_member` WHERE `email` = '".
