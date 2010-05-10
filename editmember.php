@@ -1,6 +1,7 @@
 <?php
 /**
- * 
+ * Wrapper for the Membership MVC. 
+ *
  * @package Zymurgy
  * @subpackage backend-modules
  */
@@ -9,7 +10,7 @@
 	include("cmo.php");
 	include("include/membership.zcm.php");
 
-	$mediaController = new MembershipController();
+	$memberController = new MembershipController();
 
 	$action = isset($_GET["action"])
 		? $_GET["action"] :
@@ -18,5 +19,5 @@
 		? $_POST["action"] :
 		$action;
 
-	$mediaController->Execute($action);
+	$memberController->Execute($action);
 ?>
