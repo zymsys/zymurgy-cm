@@ -1,9 +1,11 @@
 <?
 /**
+ * Screen for managing the list of fields in a Custom Table.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 // Custom field definitions may only be set by a webmaster
 $adminlevel = 2;
 
@@ -30,7 +32,12 @@ include 'header.php';
 echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 echo Zymurgy::YUI('connection/connection-min.js');
 
-//The values array contains tablename.columnname keys with values from the row to be deleted.
+/**
+ * Delete Event Handler. Performs the actual DROP operation on the Custom Table.
+ *
+ * @param $values mixed The values of the row to be deleted. Keys are in 
+ * tablename.columname format.
+ */
 function OnDelete($values)
 {
 	global $t;
@@ -40,7 +47,13 @@ function OnDelete($values)
 	return true; //Return false to override delete.
 }
 
-//The values array contains tablename.columnname keys with the proposed new values for the updated row.
+/**
+ * Update Event Handler. Performs the actual ALTER TABLE operations on the 
+ * Custom Table.
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnBeforeUpdate($values)
 {
 	$okname = okname($values['zcm_customfield.cname']);
@@ -92,7 +105,13 @@ function OnBeforeUpdate($values)
 	return $values; // Change values you want to alter before the update occurs.
 }
 
-//The values array contains tablename.columnname keys with the proposed new values for the new row.
+/**
+ * INSERT Event Handler. Performs the actual ALTER TABLE operations on the 
+ * Custom Table.
+ * 
+ * @param $values mixed The values of the row to be inserted. Keys are in 
+ * tablename.columname format.
+ */
 function OnBeforeInsert($values)
 {
 	$okname = okname($values['zcm_customfield.cname']);
