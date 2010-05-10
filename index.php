@@ -5,6 +5,12 @@
  * @subpackage backend-modules
  */
 
+/**
+ * Return the FQDN without the "www." on it
+ *
+ * @param $domain string The FQDN.
+ * @return string The normalized domain.
+ */
 function normalizedomain($domain)
 {
 	$domain = strtolower($domain);
