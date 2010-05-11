@@ -1,9 +1,51 @@
 <?
+/**
+ * Utility classes for building a Google Sitemap.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
+/**
+ * Class for defining a single URL within a Google Sitemap.
+ */
 class Zymurgy_SiteMapUrl
 {
-	var $loc,$lastmod,$changefreq,$priority; //Child entities of a Url
+	/**
+	 * The URL
+	 */
+	var $loc;
+
+	/**
+	 * The Last Modified date of the page.
+	 */
+	var $lastmod;
+
+	/**
+	 * How often the content is changed (i.e. how often Google should spider
+	 * this page
+	 */
+	var $changefreq;
+
+	/**
+	 * The importance of this page, relative to the other pages on the site.
+	 */
+	var $priority;
+
+	/**
+	 * The sitemap object the URL is being added to.
+	 */
 	var $SiteMap;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param Zymrugy_SiteMap $SiteMap
+	 * @param string $loc
+	 * @param string $lastmod
+	 * @param string $changefreq
+	 * @param string $priority
+	 */
 	function Zymurgy_SiteMapUrl($SiteMap,$loc,$lastmod='',$changefreq='',$priority='')
 	{
 		$this->SiteMap = &$SiteMap;
@@ -32,7 +74,14 @@ class Zymurgy_SiteMapUrl
 		$this->priority = $priority;
 	}
 
-	//Thanks to ungu at terong dot com for this.
+	/**
+	 * Get the ISO 8601 formatted date, given a UNIX Timestamp.
+	 *
+	 * Thanks to ungu at terong dot com for this.
+	 *
+	 * @param int $int_date The UNIX Timestamp
+	 * @return string
+	 */
 	function get_iso_8601_date($int_date) {
 	   //$int_date: current date in UNIX timestamp
 	   $date_mod = date('Y-m-d\TH:i:s', $int_date);
@@ -43,13 +92,40 @@ class Zymurgy_SiteMapUrl
 	}
 }
 
+/**
+ * Class for defining a Google Sitemap.
+ */
 class Zymurgy_SiteMap
 {
-	var $DefaultHome; // example: http://www.example.com/
-	var $DefaultPriority; // 0 to 1, defaults to .5
-	var $DefaultFrequency; // One of always hourly daily weekly monthly yearly or never; defaults to monthly.
+	/**
+	 * The home page of the site. Example: http://www.example.com/
+	 * @depcrecated
+	 */
+	var $DefaultHome;
+
+	/**
+	 * The default page priority. Floating point number between 0 and 1.
+	 */
+	var $DefaultPriority;
+
+	/**
+	 * The defaulte page change frequency.
+	 * One of always hourly, daily, weekly, monthly, yearly, or never. 
+	 */
+	var $DefaultFrequency;
+
+	/**
+	 * The list of URLs to include in the sitemap.
+	 */
 	var $urls;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $DefaultHome The home page of the site.
+	 * @param float $DefaultPriority The default page priority.
+	 * @param string $DefaultFrequency The default page change frequency.
+	 */
 	function Zymurgy_SiteMap($DefaultHome,$DefaultPriority = 0.5,$DefaultFrequency='monthly')
 	{
 		$this->DefaultHome = $DefaultHome;
@@ -58,12 +134,23 @@ class Zymurgy_SiteMap
 		$this->urls = array();
 	}
 
+	/**
+	 * Add a URL to the sitemap.
+	 *
+	 * @param string $loc
+	 * @param string $lastmod
+	 * @param string $changefreq
+	 * @param string $priority
+	 */
 	function AddUrl($loc,$lastmod='',$changefreq='',$priority='')
 	{
 		$url = new Zymurgy_SiteMapUrl($this,$loc,$lastmod,$changefreq,$priority);
 		$this->urls[$url->loc] = $url;
 	}
 
+	/**
+	 * Render the Google Sitemap XML doument.
+	 */
 	function Render()
 	{
 		header('Content-type: application/xml');

@@ -1,7 +1,11 @@
 <?
 /**
+ * Purchase screen. Note that Zymurgy:CM is no longer available for online 
+ * purchase.
+ *
  * @package Zymurgy
  * @subpackage orphanned
+ * @deprecated
  */
 if (empty($member))
 {

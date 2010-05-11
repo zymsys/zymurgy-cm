@@ -1,5 +1,6 @@
 <?php
 /**
+ * Helper methods for rendering a web site's navigation.
  *
  * @package Zymurgy
  * @subpackage frontend

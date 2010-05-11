@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for Zymurgy:CM user profile details.
  * 
  * @package Zymurgy
  * @subpackage backend-modules

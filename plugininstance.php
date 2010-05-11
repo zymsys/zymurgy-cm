@@ -1,8 +1,10 @@
 <?
 /**
+ * Management screen for plugin instances.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
+ * @deprecated
  */
 
 $adminlevel = 2;

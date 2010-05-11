@@ -1,5 +1,7 @@
 <?
 /**
+ * Management screen for administrative functionality of plugins that is only 
+ * supposed to be accessible by the Webmaster.
  *
  * @package Zymurgy
  * @subpackage backend-modules

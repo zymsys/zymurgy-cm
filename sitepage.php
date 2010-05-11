@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for the web site Page list.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
@@ -28,8 +29,13 @@ else if ($templatecount==1)
 	$defaulttemplate = Zymurgy::$db->get("select min(id) from zcm_template");
 }
 
-//The values array contains tablename.columnname keys with the proposed new values for the updated row.
-//TODO: If the nav name has changed, create a redirect from the old nav name to maintain links to the old address.
+/**
+ * Insert/Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ * @todo If the nav name has changed, create a redirect from the old nav name to maintain links to the old address.
+ */
 function OnBeforeInsertUpdate($values)
 {
 	/*$values['zcm_sitepage.linkurl_default'] = ZymurgySiteNav::linktext2linkpart($_POST['zcm_sitepage_linktext_default']);
@@ -44,6 +50,12 @@ function OnBeforeInsertUpdate($values)
 	return $values; // Change values you want to alter before the update occurs.
 }
 
+/**
+ * Insert Event Handler.
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnBeforeInsert($values)
 {
 	$values = OnBeforeInsertUpdate($values);
@@ -54,6 +66,13 @@ function OnBeforeInsert($values)
 	return $values;
 }
 
+/**
+ * Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ * @todo If the nav name has changed, create a redirect from the old nav name to maintain links to the old address.
+ */
 function OnBeforeUpdate($values)
 {
 	$values = OnBeforeInsertUpdate($values);
@@ -109,6 +128,14 @@ function GetFLValues()
 	return $flvalues;
 }
 
+/**
+ * Create a page redirect for when pages get renamed.
+ *
+ * @param int $page
+ * @param int $parent
+ * @param int $flavour
+ * #param string $linkurl
+ */
 function SetRedirect($page,$parent,$flavour,$linkurl)
 {
 	//Link has changed.  Save change so that we can redirect anyone who tries the old link.
@@ -128,6 +155,12 @@ function SetRedirect($page,$parent,$flavour,$linkurl)
 	}
 }
 
+/**
+ * Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnUpdate($values)
 {
 	$flvalues = GetFLValues(); //Gets new values from post
@@ -152,6 +185,12 @@ function OnUpdate($values)
 	OnInsertUpdate($values,$flvalues);
 }
 
+/**
+ * Insert/Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnInsertUpdate($values,$flvalues = null)
 {
 	if (is_null($flvalues))
@@ -164,6 +203,13 @@ function OnInsertUpdate($values,$flvalues = null)
 		$flvalues);
 	Zymurgy::$db->run("update zcm_sitepage set linkurl=$newfv where id=".$values['zcm_sitepage.id']);
 }
+
+/**
+ * Delete Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 
 function OnDelete($values)
 {
@@ -193,6 +239,17 @@ $dg->AddColumn('Sub-Pages','id','<a href="sitepage.php?p={0}">Sub-Pages</a>');
 //Use the softlaunch, golive, and retire columns to decide what the page's
 //status is.
 $dg->AddColumn('Launch Status','golive');
+
+/**
+ * OnBeforeRenderCell Handler. Display the launch status of a given page.
+ *
+ * @param string $column The column being rendered, in tablename.columnname
+ * format.
+ * @param mixed $values The values of the row being rendered. The keys are 
+ * in tablename.columnname format.
+ * @param string $display The output normally displayed by the cell.
+ * @return string The new output for the cell
+ */
 function launchstatus($column, $values, $display)
 {
     if ($column == "zcm_sitepage.golive")
