@@ -1,10 +1,10 @@
 <?
 /**
- * Not sure what this is used for.
+ * Lists the Zymurgy::sitetext() nodes detected on a PHP page. Used in the 
+ * Simple Content SEO section.
  *
  * @package Zymurgy
  * @subpackage backend-modules
- * @deprecated
  */
 
 $breadcrumbTrail = "<a href=\"headtext.php\">Search Engines</a> &gt; Page Text";

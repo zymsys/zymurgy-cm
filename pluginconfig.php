@@ -1,5 +1,6 @@
 <?php
 /**
+ * Management screen for the settings of a given plugin instance.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
@@ -141,6 +142,14 @@
 
 	require_once("footer.php");
 
+	/**
+	 * Get an instance of the plugin class, based on the ID of the plugin and
+	 * the instance, as stored in the database.
+	 *
+	 * @param int $pluginID
+	 * @param int $instanceID
+	 * @return PluginBase
+	 */
 	function GetPlugin(
 		$pluginID,
 		$instanceID)
@@ -166,6 +175,12 @@
 		return $po;
 	}
 
+	/**
+	 * Get the name of the instance, given its ID in the database.
+	 *
+	 * @param int $instanceID
+	 * @return string
+	 */
 	function GetInstanceName(
 		$instanceID)
 	{
@@ -180,6 +195,14 @@
 		return strlen($instanceName) > 0 ? $instanceName : $defaultInstance;
 	}
 
+	/**
+	 * Get the list of settings for the given plugin/extension combination.
+	 *
+	 * @param PluginBase $plugin
+	 * @param string $extensionName
+	 * @param string $descriptor
+	 * @return mixed
+	 */
 	function GetConfigItems(
 		$plugin,
 		$extensionName,
@@ -206,6 +229,12 @@
 		return $objectWithConfig->GetConfigItems($plugin);
 	}
 
+	/**
+	 * Retrieve the plugin instance's configuration.
+	 *
+	 * @param PluginBase $plugin
+	 * @return mixed
+	 */
 	function PopulateConfiguration(
 		$plugin)
 	{
@@ -228,6 +257,12 @@
 		return $configValues;
 	}
 
+	/**
+	 * Get the breadcrumb trail for the Edit Settings screen.
+	 *
+	 * @param string $plugin
+	 * @return string
+	 */
 	function GetBreadcrumbTrail(
 		$plugin)
 	{
@@ -253,6 +288,11 @@
 		return $breadcrumbTrail;
 	}
 
+	/**
+	 * Display the Edit Settings menu.
+	 *
+	 * @param PluginBase $plugin
+	 */
 	function DisplayMenu(
 		$plugin)
 	{
@@ -292,6 +332,15 @@
 		}
 	}
 
+	/**
+	 * Display the settings for the given plugin instance.
+	 *
+	 * @param PluginBase $plugin
+	 * @param mixed $configItems
+	 * @param mixed $configValues
+	 * @param string $descriptor
+	 * @param string $message
+	 */
 	function DisplayConfigurationPage(
 		$plugin,
 		$configItems,
@@ -341,12 +390,17 @@
 		echo "</form>";
 	}
 
-		function stripslashes_deep($value)
-		{
-			$value = is_array($value) ?
-				array_map('stripslashes_deep', $value) :
-				stripslashes($value);
-			return $value;
-		}
-
+	/**
+	 * Strip the slashes from both strings and arrays.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	function stripslashes_deep($value)
+	{
+		$value = is_array($value) ?
+			array_map('stripslashes_deep', $value) :
+			stripslashes($value);
+		return $value;
+	}
 ?>

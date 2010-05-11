@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for instances of a given plugin.
  *
  * @package Zymurgy
  * @subpackage backend-modules

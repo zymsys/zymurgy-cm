@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for installed plugins.
  *
  * @package Zymurgy
  * @subpackage backend-modules
@@ -53,8 +54,15 @@
 <?php
 	include('footer.php');
 
-	// To remove a plug-in outside the updater, use the following URL template:
-	// http://{website}/zymurgy/plugin.php?executeremove={plugin_name}
+	/**
+	 * Removes a plugin.
+	 *
+	 * To remove a plug-in outside the updater, use the following URL template:
+	 * http://{website}/zymurgy/plugin.php?executeremove={plugin_name}
+	 *
+	 * @param string $source The name of the plugin to remove
+	 * @deprecated
+	 */
 	function ExecuteRemove($source)
 	{
 		global $plugins;
@@ -75,8 +83,16 @@
 		exit;
 	}
 
-	// To add a plug-in outside the updater, use the following URL template:
-	// http://{website}/zymurgy/plugin.php?executeadd={plugin_name}
+
+	/**
+	 * Adds a plugin.
+	 *
+	 * To add a plug-in outside the updater, use the following URL template:
+	 * http://{website}/zymurgy/plugin.php?executeadd={plugin_name}
+	 *
+	 * @param string $source The name of the plugin to add
+	 * @deprecated
+	 */
 	function  ExecuteAdd($source)
 	{
 		global $plugins;
@@ -129,6 +145,11 @@
 		exit;
 	}
 
+	/**
+	 * Detects and acts on a plugin add/remove request.
+	 *
+	 * @deprecated
+	 */
 	function TakeAction()
 	{
 		if (array_key_exists('executeremove',$_GET))
