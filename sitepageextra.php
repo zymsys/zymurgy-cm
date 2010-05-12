@@ -1,10 +1,12 @@
 <?
 /**
+ * Management screen for Page Gadgets.
  *
  * @package Zymurgy
  * @subpackage backend-modules
  */
 require_once('cmo.php');
+
 if (array_key_exists('epi',$_GET))
 {
 	$epi = 0 + $_GET['epi'];

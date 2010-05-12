@@ -1,21 +1,34 @@
 <?
 /**
+ * Displays a Page in the assigned Template.
  *
  * @package Zymurgy
  * @subpackage frontend
  */
+
 ob_start();
 require_once('cmo.php');
 require_once('sitenav.php');
+
+/**
+ * Model class for a Page Template.
+ */
 class ZymurgyTemplate
 {
 	/**
 	 * ZymurgySiteNavItem for the current page
-	 *
 	 * @var ZymurgySiteNavItem
 	 */
 	public $sitepage;
+
+	/**
+	 * The navigation path for the current page.
+	 */
 	public $navpath;
+
+	/**
+	 * The template used to render the current page.
+	 */
 	public $template;
 
 	private $pagetextcache = array();
@@ -23,6 +36,15 @@ class ZymurgyTemplate
 	private $pagetextids = array();
 	private $pagetextacls = array();
 
+	/**
+ 	 * Get the navigation information for a page, given the parent ID and 
+	 * the page's texturl.
+	 *
+	 * @param int $parent The ID of the parent node
+	 * @param string $navpart the texturl of the leaf node
+	 * @return ZymurgySiteNavItem The navigation information for the page, if 
+	 * found. Otherwise, this returns False.
+ 	 */
 	static function GetNavInfo($parent,$navpart)
 	{
 		$nav = Zymurgy::getsitenav();
@@ -34,6 +56,15 @@ class ZymurgyTemplate
 			$nav->items[$item->childrenbynavname[urlencode($navpart)]] : false;
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $navpath The navigation path of the page to render.
+	 * @param string $hrefroot The root path used to access the pages system. Used 
+	 * system. Used to determine the Flavour of the page content.
+	 * @param int $id The ID of the page. Provide if the $navpath and $hrefroot
+	 * are not known. Used primarily by the View link in the Pages edit screen.
+	 */
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
 		//echo $navpath;
@@ -185,6 +216,16 @@ class ZymurgyTemplate
 		return $sitepage;
 	}
 
+	/**
+	 * Display a 404 error message.
+	 *
+	 * @param string $navpart The texturl of the leaf node that could not 
+	 * be found.
+	 * @param string $navpath The navigation path of the leaf node that could 
+	 * not be found.
+	 * @param string $newpath
+	 * @param string $msg The reason why the leaf node could not be found.
+	 */
 	public function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
 	{
 		header("HTTP/1.0 404 Not Found");
@@ -214,10 +255,19 @@ class ZymurgyTemplate
 			echo("</html>\n");
 		}
 
-
 		exit;
 	}
 
+	/**
+	 * Display a 403 error message.
+	 *
+	 * @param string $navpart The texturl of the leaf node that could not 
+	 * be found.
+	 * @param string $navpath The navigation path of the leaf node that could 
+	 * not be found.
+	 * @param string $newpath
+	 * @param string $msg The reason why the leaf node could not be found.
+	 */
 	private function DisplayForbidden($navpart, $navpath, $newpath, $msg = "")
 	{
 		header("HTTP/1.0 403 Forbidden");
@@ -264,8 +314,8 @@ class ZymurgyTemplate
 	}
 
 	/**
-	 * Parse get parameters out of REQUEST_URI into $_GET so that things which expect $_GET parameters see them normally.
-	 *
+	 * Parse get parameters out of REQUEST_URI into $_GET so that things which 
+	 * expect $_GET parameters see them normally.
 	 */
 	public static function LoadParams()
 	{
@@ -386,11 +436,24 @@ class ZymurgyTemplate
 		}
 	}
 
+	/**
+	 * Override the contents of the page text cache. This can be used by 
+	 * instances of the IncludeCodeFile plugin to update the contents of 
+	 * the page.
+	 */
 	public function overridepagetextcache($tag, $content)
 	{
-			$this->pagetextcache[$tag] = $content;
+		$this->pagetextcache[$tag] = $content;
 	}
 
+	/**
+	 * Return the contents of a body content item.
+	 *
+	 * @param string $tag The identifier for the body content item.
+	 * @param string $type The Input Spec to use to display/edit the body 
+	 * content item.
+	 * @return string
+	 */
 	public function pagetext($tag,$type='html.600.400')
 	{
 		require_once(Zymurgy::$root.'/zymurgy/InputWidget.php');
@@ -401,12 +464,30 @@ class ZymurgyTemplate
 		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
 	}
 
+	/**
+	 * Return the contents of a body content item without transforming it 
+	 * using the input spec's display method.
+	 *
+	 * @param string $tag The identifier for the body content item.
+	 * @param string $type The Input Spec to use to display/edit the body 
+	 * content item.
+	 * @return string
+	 */
 	public function pagetextraw($tag,$type='html.600.400')
 	{
 		$this->populatepagetextcache($tag,$type);
 		return $this->pagetextcache[$tag];
 	}
 
+	/**
+	 * Return the contents of ai Image body content item.
+	 *
+	 * @param string $tag The identifier for the body content item.
+	 * @param int $width The width of the item, in pixels.
+	 * @param int $height The height of the item, in pixels.
+	 * @param string $alt The ALT text to apply to the image.
+	 * @return string
+	 */
 	public function pageimage($tag,$width,$height,$alt='')
 	{
 		$img = $this->pagetext($tag,"image.$width.$height");
@@ -416,6 +497,13 @@ class ZymurgyTemplate
 		return $img;
 	}
 
+	/**
+	 * Return the contents of the gadgets attached to the page.
+	 *
+	 * @param string $alignFilter If provided, only render the gadgets 
+	 * assigned to the specified alignment.
+	 * @return string
+	 */
 	function pagegadgets(
 		$alignFilter = "")
 	{
@@ -486,6 +574,15 @@ class ZymurgyTemplate
 
 	private $m_pluginCount = array();
 
+	/**
+	 * Return the contents of a specific plugin assigned to the template. An 
+	 * instance of the plugin will be created for each page that uses this 
+	 * template.
+	 *
+	 * @param string $pluginName The name of the plugin
+	 * @param string $configName The name of the plugin's configuraton
+	 * @return string
+	 */
 	public function pagegadget($pluginName, $configName)
 	{
 		// ----------
@@ -571,6 +668,9 @@ class ZymurgyTemplate
 		return Zymurgy::plugin($pluginName, $instanceName);
 	}
 
+	/**
+	 * Track the user's visit to this page.
+	 */
 	public function Track()
 	{
 		//Log the pageview

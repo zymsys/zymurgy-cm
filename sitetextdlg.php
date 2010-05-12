@@ -1,4 +1,11 @@
 <?
+/**
+ * Pop-up window for editing Zymurgy::sitetext() elements in-place.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules
+ */
+
 include('header.php');
 ob_clean();
 include('datagrid.php');
@@ -31,6 +38,12 @@ if (array_key_exists('action',$_GET))
 	}
 }
 
+/**
+ * Update Event Handler. 
+ * 
+ * @param $dsr mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnUpdate($dsr)
 {
 	//Load list of related pages

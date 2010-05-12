@@ -1,5 +1,6 @@
 <?php
 /**
+ * Management screen for the Zymurgy:CM Configuration File
  *
  * @package Zymurgy
  * @subpackage backend-modules

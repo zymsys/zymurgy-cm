@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for Templates.
  * 
  * @package Zymurgy
  * @subpackage backend-modules

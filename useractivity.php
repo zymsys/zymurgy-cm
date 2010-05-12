@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for the Zymurgy:CM member activity log.
  * 
  * @package Zymurgy
  * @subpackage auth

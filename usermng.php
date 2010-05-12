@@ -1,8 +1,11 @@
 <?
 /**
+ * Management screen for Zymurgy:CM users. Note that this has been replaced 
+ * by the membership system.
  * 
  * @package Zymurgy
  * @subpackage auth
+ * @deprecated
  */
 $adminlevel = 1;
 

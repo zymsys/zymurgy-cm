@@ -1,9 +1,11 @@
 <?
 /**
+ * Management screen for site text categories.
  * 
  * @package Zymurgy
  * @subpackage backend-modules
  */
+
 // Categories may only be edited by the administrator
 $adminlevel = 2;
 
@@ -22,7 +24,12 @@ else
 include 'header.php';
 include 'datagrid.php';
 
-//The values array contains tablename.columnname keys with values from the row to be deleted.
+/**
+ * Delete Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnDelete($values)
 {
 	$sql = "update zcm_sitetext set category=0 where category={$_GET['deletekey']}";

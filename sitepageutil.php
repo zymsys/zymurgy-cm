@@ -1,6 +1,18 @@
 <?
+/**
+ * Utility functions for working with Pages.
+ *
+ * @package Zymurgy
+ * @subpackage backend-modules 
+ */
+
 require_once('cmo.php');
 
+/**
+ * Get the name of the script actually being accessed by the user.
+ *
+ * @return string The name of the PHP file currently being accessed.
+ */
 function whoami()
 {
 	$up = explode('/',$_SERVER['REQUEST_URI']);
@@ -10,6 +22,12 @@ function whoami()
 
 $thisscript = whoami();
 
+/**
+ * Return a list of the parent pages. Used to populate the breadcrumb trail.
+ * 
+ * @param int $pid The ID of the leaf node
+ * @return mixed
+ */
 function pageparents($pid)
 {
 	global $thisscript;
@@ -25,6 +43,12 @@ function pageparents($pid)
 	return $r;
 }
 
+/**
+ * Return a list of the breadcrumb trail items.
+ *
+ * @param int $pid The ID of the leaf node
+ * @return mixed
+ */
 function pagecrumbs($pid)
 {
 	global $crumbs;

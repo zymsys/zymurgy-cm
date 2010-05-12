@@ -1,4 +1,11 @@
 <?php
+/**
+ * User tracking module.
+ *
+ * @package Zymurgy
+ * @subpackage frontend
+ */
+
 require_once 'cmo.php';
 
 if (array_key_exists('clear',$_GET))
@@ -23,6 +30,11 @@ if (Zymurgy::memberauthenticate())
 else 
 	$memberid = 0;
 
+/**
+ * Add the page to the list of tracked pages.
+ *
+ * $param int $trkid The current user's tracking ID
+ */
 function addTracking($trkid)
 {
 	global $memberid;

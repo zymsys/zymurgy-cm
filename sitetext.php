@@ -1,8 +1,17 @@
 <?
 /**
+ * Management screen for Zymurgy::sitetext() elements
  * 
  * @package Zymurgy
  * @subpackage backend-modules
+ */
+
+
+/**
+ * Update Event Handler. 
+ * 
+ * @param $dsr mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
  */
 function OnBeforeUpdate($dsr)
 {
@@ -10,6 +19,12 @@ function OnBeforeUpdate($dsr)
 	return $dsr;
 }
 
+/**
+ * Update Event Handler. 
+ * 
+ * @param $dsr mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnUpdate($dsr)
 {
 	//Load list of related pages
@@ -34,6 +49,9 @@ function OnUpdate($dsr)
 	}
 }
 
+/**
+ * Display the list of site text categories.
+ */
 function showcategories()
 {
 	global $c,$zauth;
@@ -64,6 +82,9 @@ function showcategories()
 	}
 }
 
+/**
+ * Show the FTS search widget.
+ */
 function showsearch()
 {
 	global $c;

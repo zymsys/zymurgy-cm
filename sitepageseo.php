@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for Page SEO settings
  * 
  * @package Zymurgy
  * @subpackage backend-modules

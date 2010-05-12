@@ -1,5 +1,6 @@
 <?
 /**
+ * Management screen for Page body content.
  *
  * @package Zymurgy
  * @subpackage backend-modules
@@ -87,6 +88,12 @@ else
 	exit;
 }
 
+/**
+ * Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnUpdate($dsr)
 {
 	$sql = "UPDATE `zcm_sitepageseo` SET `mtime` = UNIX_TIMESTAMP() WHERE `zcm_sitepage` = '".
@@ -96,7 +103,12 @@ function OnUpdate($dsr)
 		or die("Could not update SEO information for page: ".Zymurgy::$db->error().", $sql");
 }
 
-//The values array contains tablename.columnname keys with values from the row to be deleted.
+/**
+ * Update Event Handler. 
+ * 
+ * @param $values mixed The values of the row to be updated. Keys are in 
+ * tablename.columname format.
+ */
 function OnDelete($values)
 {
 	$t = Zymurgy::$db->get("select template from zcm_sitepage where id={$values['zcm_pagetext.sitepage']}");
