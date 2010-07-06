@@ -20,7 +20,7 @@
 	 *     <string id="key">value</string>
 	 * </locale>
 	 */
-	class Locale
+	class ZymurgyLocale
 	{
 		private $m_cache = array();
 		private $m_languageCode;
@@ -29,7 +29,7 @@
 		private $m_localeFilepath;
 		private $m_customFilepath;
 
-		public function Locale(
+		public function ZymurgyLocale(
 			$languageCode,
 			$filepath,
 			$customfilepath,
@@ -155,7 +155,7 @@
 		{
 			$locales = array();
 
-			$defaultLocale = new Locale(
+			$defaultLocale = new ZymurgyLocale(
 				"en",
 				Zymurgy::$root."/zymurgy/include/locale.en.xml",
 				Zymurgy::$root."/zymurgy/custom/locale.en.xml",
@@ -171,7 +171,7 @@
 
 					if($languageCode !== "en")
 					{
-						$locale = new Locale(
+						$locale = new ZymurgyLocale(
 							$languageCode,
 							Zymurgy::$root."/zymurgy/include/".$entry,
 							Zymurgy::$root."/zymurgy/custom/".$entry,

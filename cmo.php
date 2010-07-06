@@ -1759,6 +1759,15 @@ if (!class_exists('Zymurgy'))
 	Zymurgy::$config = $ZymurgyConfig;
 	unset($ZymurgyConfig);
 	
+	if (!array_key_exists('DefaultTimeZone',Zymurgy::$config))
+	{ //See http://ca.php.net/manual/en/timezones.php for supported values
+		Zymurgy::$config['DefaultTimeZone'] = 'America/New_York';
+	}
+	if (date_default_timezone_set(Zymurgy::$config['DefaultTimeZone']) === false)
+	{
+		die("Invalid default time zone: ".Zymurgy::$config['DefaultTimeZone']);
+	}
+        
 	Zymurgy::$catalogue['vendors'] = array();
 	Zymurgy::$catalogue['implementation'] = array();
 
