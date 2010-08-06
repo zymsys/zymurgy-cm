@@ -52,8 +52,8 @@ class ZymurgyTemplate
 
 //		echo("Looking for ".$navpart." in ".print_r($item->childrenbynavname, true));
 
-		return array_key_exists(urlencode($navpart), $item->childrenbynavname) ?
-			$nav->items[$item->childrenbynavname[urlencode($navpart)]] : false;
+		return array_key_exists($navpart, $item->childrenbynavname) ?
+			$nav->items[$item->childrenbynavname[$navpart]] : false;
 	}
 
 	/**
