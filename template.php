@@ -52,8 +52,8 @@ class ZymurgyTemplate
 
 //		echo("Looking for ".$navpart." in ".print_r($item->childrenbynavname, true));
 
-		return array_key_exists($navpart, $item->childrenbynavname) ?
-			$nav->items[$item->childrenbynavname[$navpart]] : false;
+		return array_key_exists(urlencode($navpart), $item->childrenbynavname) ?
+			$nav->items[$item->childrenbynavname[urlencode($navpart)]] : false;
 	}
 
 	/**
@@ -89,6 +89,7 @@ class ZymurgyTemplate
 			$doredirect = false;
 			foreach ($np as $navpart)
 			{
+                                $navpart = urldecode($navpart);
 				$navpart = Zymurgy::$db->escape_string($navpart);
 				$navpage = ZymurgyTemplate::GetNavInfo($parent,$navpart);
 				if ($navpage === false)
