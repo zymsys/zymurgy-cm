@@ -170,6 +170,25 @@ if (count($errors)>0)
 }
 ?>
   <tr>
+    <td colspan="2">&nbsp;<br /><b>First User Info:</b></td>
+    </tr>
+  <tr>
+    <th scope="row"><label for="userID">User ID:</label></th>
+    <td><input type="text" name="userID" id="userID" value="<?=$_POST['userID']?>" /></td>
+  </tr>
+  <tr>
+    <th scope="row"><label for="userPassword">Password:</label></th>
+    <td><input type="password" name="userPassword" id="userPassword" value="<?=$_POST['userPassword']?>" /></td>
+  </tr>
+  <tr>
+    <th scope="row"><label for="userName">Full Name:</label></th>
+    <td><input name="userName" type="text" id="userName" size="30" value="<?=$_POST['userName']?>" /></td>
+  </tr>
+  <tr>
+    <th scope="row"><label for="userAddress">Email Address:</label></th>
+    <td><input name="userAddress" type="text" id="userAddress" size="30" value="<?=$_POST['userAddress']?>" /></td>
+  </tr>
+  <tr>
     <td colspan="2"><b>MySQL Setup</b></td>    </tr>
   <tr>
     <th scope="row"><label for="mysqlServer">MySQL Server:</label></th>
@@ -207,28 +226,9 @@ if (count($errors)>0)
     <td><input name="siteKeywords" type="text" id="siteKeywords" size="50" value="<?=$_POST['siteKeywords']?>" /></td>
   </tr>
   <tr>
-    <td colspan="2">&nbsp;<br /><b>First User Info:</b></td>
-    </tr>
-  <tr>
-    <th scope="row"><label for="userID">User ID:</label></th>
-    <td><input type="text" name="userID" id="userID" value="<?=$_POST['userID']?>" /></td>
-  </tr>
-  <tr>
-    <th scope="row"><label for="userPassword">Password:</label></th>
-    <td><input type="password" name="userPassword" id="userPassword" value="<?=$_POST['userPassword']?>" /></td>
-  </tr>
-  <tr>
-    <th scope="row"><label for="userName">Full Name:</label></th>
-    <td><input name="userName" type="text" id="userName" size="30" value="<?=$_POST['userName']?>" /></td>
-  </tr>
-  <tr>
-    <th scope="row"><label for="userAddress">Email Address:</label></th>
-    <td><input name="userAddress" type="text" id="userAddress" size="30" value="<?=$_POST['userAddress']?>" /></td>
-  </tr>
-  <tr>
     <th colspan="2" scope="row">&nbsp;<br />
-        <input type="submit" name="Submit" value="Save Site Configuration &amp; Log In" id="Submit" />      </th>
-    </tr>
+    <input type="submit" name="Submit" value="Save Site Configuration &amp; Log In" id="Submit" />      </th>
+  </tr>
 </table>
 </div>
 </form>

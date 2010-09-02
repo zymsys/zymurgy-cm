@@ -12,6 +12,8 @@
  * @subpackage backend-base
 */
 
+//TODO: a replcement datagrid.php using http://wiki.github.com/mleibman/SlickGrid/
+
 $datagridexpertmode = false;
 
 $ZymurgyRoot = Zymurgy::$root;

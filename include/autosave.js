@@ -18,15 +18,16 @@ function Form2JSON(form) {
 	this.elvalues = new Array();
 	this.names = new Array();
 	this.keys = new Array();
+	var me = this;
 	var walk = function(parent) {
 		var el = parent.firstChild;
 		while (el !== null) {
 			//Ignore OPTION elements.  Keep SELECT elements instead.
 			if (el.tagName!='OPTION') {
 				//Check what to do with el - add it to values? Recurse to children?
-				if (el.firstChild !== null) this.walk(el);
+				if (el.firstChild !== null) me.walk(el);
 				if (el.value)
-					this.elvalues[this.elvalues.length] = el;
+					me.elvalues[me.elvalues.length] = el;
 			}
 			el = el.nextSibling;
 		}
@@ -38,8 +39,8 @@ function Form2JSON(form) {
 			for(var editorName in FCKeditorAPI.__Instances) {
 				var oEditor = FCKeditorAPI.__Instances[editorName];
 				var html = oEditor.GetHTML();
-				this.names[editorName] = html;
-				this.keys.push(editorName);
+				me.names[editorName] = html;
+				me.keys.push(editorName);
 			}
 		}
 		if (window.CKEDITOR) {
@@ -47,41 +48,41 @@ function Form2JSON(form) {
 			{
 				var oEditor = CKEDITOR.instances[editorName];
 				var html = oEditor.getData();
-				this.names[editorName] = html;
-				this.keys.push(editorName);
+				me.names[editorName] = html;
+				me.keys.push(editorName);
 			}
 		}
 	}
 	this.makeNameValuePairs = function() {
-		var l = this.elvalues.length;
+		var l = me.elvalues.length;
 		for (var n = 0; n < l; n++) {
 			var el = this.elvalues[n];
 			switch (el.type) {
 				case "checkbox":
 				case "radio":
 					if (el.checked) {
-						this.names[el.name] = el.value;
+						me.names[el.name] = el.value;
 					}
 					break;
 				default:
-					this.names[el.name] = el.value;
+					me.names[el.name] = el.value;
 			}
-			this.keys.push(el.name);
+			me.keys.push(el.name);
 		}
 	}
 	this.getJSON = function() {
-		this.keys.sort( function (a, b){return (a > b) - (a < b);} );
+		me.keys.sort( function (a, b){return (a > b) - (a < b);} );
 		var newnames = new Object();
-		for (var i = 0; i < this.keys.length; i++) {
-			var keyname = this.keys[i];
+		for (var i = 0; i < me.keys.length; i++) {
+			var keyname = me.keys[i];
 			if (keyname != '') {
-				newnames[keyname] = this.names[keyname];
+				newnames[keyname] = me.names[keyname];
 			}
 		}
 		var json = YAHOO.lang.JSON.stringify(newnames);
 		return json;
 	}
-	walk(this.form);
+	walk.call(this,this.form);
 	this.makeNameValuePairs();
 	this.getfckvalues();
 	return this;

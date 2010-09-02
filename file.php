@@ -141,15 +141,29 @@ else
 			}
 			require_once('ZymurgyAuth.php');
 			$zauth = new ZymurgyAuth();
-			if ($zauth->IsAuthenticated()) //Avoid expensive DoS attacks if we can.
+			$ontheflyok = false; //Default to no on the fly image resizing to avoid expensive DoS attacks
+			if ($zauth->IsAuthenticated())
 			{
-				Thumb::MakeFixedThumb($w,$h,$rawimage,$thumbName);
-				$mime = "image/jpeg"; //Resized images are all image/jpeg
+				$ontheflyok = true;
 			}
 			else
 			{
-				echo "noauth";
-				exit;
+				//We're not authed, but if any other image has been resized to this size before, this image probably needs resizing too - lets do it.
+				$sizes = Thumb::GetThumbSizes($dataset.'.'.$datacolumn);
+				if (array_search("{$w}x{$h}",$sizes) !== false)
+				{
+					$ontheflyok = true;
+				}
+				else 
+				{
+					echo "noauth";
+					exit;
+				}
+			}
+			if ($ontheflyok)
+			{
+				Thumb::MakeFixedThumb($w,$h,$rawimage,$thumbName);
+				$mime = "image/jpeg"; //Resized images are all image/jpeg
 			}
 		}
 	}

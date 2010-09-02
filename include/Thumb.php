@@ -15,10 +15,13 @@ class Thumb
 		}
 	}
 	
-	function ThumbFolder($galleryname)
+	function ThumbFolder($galleryname,$createifnew=true)
 	{
 		$thumbs = Zymurgy::$root.'/UserFiles/DataGrid';
-		@mkdir($thumbs);
+		if ($createifnew)
+		{
+			@mkdir($thumbs);
+		}
 		$oldgn = false;
 		while ($galleryname != $oldgn)
 		{
@@ -28,8 +31,33 @@ class Thumb
 				array('', '.', '', '',  '_'),$galleryname);
 		}
 		$thumbs .= '/'.$galleryname;
-		@mkdir($thumbs);
+		if ($createifnew)
+		{
+			@mkdir($thumbs);
+		}
 		return $thumbs;
+	}
+	
+	function GetThumbSizes($galleryname)
+	{
+		$sizes = array();
+		$folder = Thumb::ThumbFolder($galleryname,false);
+		//Zymurgy::Dbg($folder);
+		if (file_exists($folder))
+		{
+			$files = glob("$folder/*thumb*.sh");
+			//Zymurgy::Dbg($files);
+			foreach ($files as $filename)
+			{
+				$matches = array();
+				if (preg_match('/([\d]*)thumb([\d]*)x([\d]*)[\.]([a-z]*)/',$filename,$matches))
+				{
+					//Zymurgy::Dbg($matches);
+					$sizes[] = $matches[2]."x".$matches[3];
+				}
+			}
+		}
+		return $sizes;
 	}
 
 	function MakeThumb($sx,$sy,$sw,$sh,$dw,$dh,$srcfile,$destfile)
