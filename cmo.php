@@ -901,11 +901,16 @@ if (!class_exists('Zymurgy'))
 		public static function mkplugin($plugin,$instance,$extra='',$private=0)
 		{
 			require_once(Zymurgy::$root."/zymurgy/PluginBase.php");
-			$pluginsrc=Zymurgy::$root."/zymurgy/plugins/$plugin.php";
-			if (!file_exists($pluginsrc))
+			$pluginsrc_core=Zymurgy::$root."/zymurgy/plugins/$plugin.php";
+			if (!file_exists($pluginsrc_core))
 			{
-				die("No such plugin: $pluginsrc");
+				$pluginsrc_custom = Zymurgy::$root."/zymurgy/custom/plugins/$plugin.php";
+				if (!file_exists($pluginsrc_custom))
+					die("No such plugin: $pluginsrc_core or $pluginsrc_custom");
+				$pluginsrc = $pluginsrc_custom;
 			}
+			else 
+				$pluginsrc = $pluginsrc_core;
 			require_once($pluginsrc);
 			$private = 0 + $private;
 			$pif = "{$plugin}Factory";

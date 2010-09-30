@@ -409,6 +409,7 @@ abstract class ZymurgySiteNavRenderer{
 		$this->startpath = $startpath;
 
 		$this->sitenav = Zymurgy::getsitenav();
+		$this->hrefroot = Zymurgy::$template->hrefroot;
 	}
 
 	########################################
@@ -679,6 +680,53 @@ class ZymurgySiteNavRender_TXT extends ZymurgySiteNavRenderer{
 					$this->renderpart($key, $depth+1);
 			}
 		}
+	}
+}
+
+class ZymurgySiteNavRender_UL extends ZymurgySiteNavRenderer
+{
+
+	// no headtags necessary
+	public function headtags()
+	{
+
+	}
+
+	// show it
+	public function render()
+	{
+		// this does some setup: call it at the start of your renderer.
+		$this->initialize_data();
+
+		// actually start rendering.
+		$this->renderpart($this->rootnode, 0);
+	}
+
+	/**
+	 * Render a part of the navigation menu
+	 *
+	 * @param int $node The id of the node to start from.
+	 * @param int $depth we are currently this many levels deep.
+	 */
+	private function renderpart($node, $depth)
+	{
+		echo "<ul>";
+		// for each child of the current node
+		foreach ($this->sitenav->items[$node]->children as $key)
+		{
+			// if the user can see it
+			if ($this->sitenav->haspermission($key))
+			{
+				// display list entry
+				echo "<li><a href=\"".$this->geturl($key)."\">".$this->getname($key)."</a>";
+
+				// if we want to show children and the node has any, recurse
+				if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
+					$this->renderpart($key, $depth+1);
+				echo "</li>";
+			}
+		}
+		echo "</ul>";
 	}
 }
 ?>

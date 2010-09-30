@@ -30,6 +30,13 @@ class ZymurgyTemplate
 	 * The template used to render the current page.
 	 */
 	public $template;
+	
+	/**
+	 * Flavour name - defaults to 'pages'
+	 *
+	 * @var string
+	 */
+	public $hrefroot;
 
 	private $pagetextcache = array();
 	private $inputspeccache = array();
@@ -60,15 +67,13 @@ class ZymurgyTemplate
 	 * Constructor.
 	 *
 	 * @param string $navpath The navigation path of the page to render.
-	 * @param string $hrefroot The root path used to access the pages system. Used 
-	 * system. Used to determine the Flavour of the page content.
+	 * @param string $hrefroot The root path used to access the pages system. Used to determine the Flavour of the page content.
 	 * @param int $id The ID of the page. Provide if the $navpath and $hrefroot
 	 * are not known. Used primarily by the View link in the Pages edit screen.
 	 */
 	function __construct($navpath, $hrefroot = 'pages', $id = 0)
 	{
-		//echo $navpath;
-		//$this->LoadParams();
+		$this->hrefroot = $hrefroot;
 		if($id > 0)
 		{
 			$this->sitepage = $this->GetSitePage("`id` = '".
