@@ -1755,9 +1755,17 @@ if (!class_exists('Zymurgy'))
 		Zymurgy::$root = $_SERVER['DOCUMENT_ROOT'];
 
 	Zymurgy::$build = 1987;
+	if (ini_get('date.timezone') == '') 
+	{
+		date_default_timezone_set('America/New_York');
+	}
 	include(Zymurgy::$root."/zymurgy/config/config.php");
 	Zymurgy::$config = $ZymurgyConfig;
 	unset($ZymurgyConfig);
+	if (array_key_exists('Default Timezone', Zymurgy::$config))
+	{
+		date_default_timezone_set(Zymurgy::$config['Default Timezone']);
+	}
 	
 	if (!array_key_exists('DefaultTimeZone',Zymurgy::$config))
 	{ //See http://ca.php.net/manual/en/timezones.php for supported values
