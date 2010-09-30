@@ -128,7 +128,7 @@ function getdkey($me,$parent,$myd)
 	 * $parent = 1 = Images, id = 1 (d)
 	 */
 	//echo "<div>[{$parent['tname']}: {$parent['detailfor']}]</div>";
-	if ($parent['detailfor'] > 0 && strlen($myd) > 0)
+	if (array_key_exists('detailForField',$parent) && ($parent['detailfor'] > 0) && (strlen($myd) > 0))
 	{
 		$detailForField = $parent["detailForField"];
 		if(strlen($detailForField) <= 0) 

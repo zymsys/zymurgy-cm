@@ -13,6 +13,7 @@
 */
 
 //TODO: a replcement datagrid.php using http://wiki.github.com/mleibman/SlickGrid/
+// Also see: http://jquery.malsup.com/block/#demos
 
 $datagridexpertmode = false;
 
