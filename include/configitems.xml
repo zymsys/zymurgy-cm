@@ -67,6 +67,13 @@
 			<label>User Wiki Location:</label>
 			<inputspec>input.50.200</inputspec>
 		</item>
+		<item>
+			<code>Default Timezone</code>
+			<label><![CDATA[
+				Default Time Zone (<a href="http://ca.php.net/manual/en/timezones.php" target="_blank">See Supported</a>):
+			]]></label>
+			<inputspec>input.50.100</inputspec>
+		</item>
 	</group>
 	<group>
 		<name>SEO</name>
@@ -279,6 +286,11 @@
 				<p>Set <b>Process POST Silently</b> to <b>No</b> during site development if you are having issues interacting with the payment provider. This will allow you to view the form sent to the payment provider for debugging purposes.</p>
 			]]>
 		</description>
+		<item>
+			<code>Payment Gateway</code>
+			<label>Payment Gateway:</label>
+			<inputspec>drop.Paypal IPN,Moneris eSELECT Plus,Authorize.NET,Google Checkout</inputspec>
+		</item>
 		<item>
 			<code>PaymentProcessor.SilentPost</code>
 			<label>Process POST Silently:</label>

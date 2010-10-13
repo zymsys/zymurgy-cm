@@ -18,8 +18,22 @@
 	$groupIndex = isset($_GET["group"]) ? 0 + $_GET["group"] : 0;
 	$cntr = 0;
 
+	//Thanks to comment at http://php.net/manual/en/language.variables.external.php
+	function getRealPOST() {
+	    $pairs = explode("&", file_get_contents("php://input"));
+	    $vars = array();
+	    foreach ($pairs as $pair) {
+	        $nv = explode("=", $pair);
+	        $name = urldecode($nv[0]);
+	        $value = urldecode($nv[1]);
+	        $vars[$name] = $value;
+	    }
+	    return $vars;
+	}
+
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
+		$_POST = getRealPOST();
 		foreach($_POST as $key => $value)
 		{
 			Zymurgy::$config[$key] = $value;

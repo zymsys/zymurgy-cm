@@ -303,8 +303,7 @@ abstract class PluginBase implements ZymurgyPlugin
 	 */
 	function GetConfigValue($key,$default='')
 	{
-//		print_r($this->config);
-
+		//Zymurgy::DbgAndDie($this->config);
 		if (array_key_exists($key,$this->config))
 			return $this->config[$key]->value;
 		else
@@ -408,8 +407,8 @@ abstract class PluginBase implements ZymurgyPlugin
 		{
 			if($extension->IsEnabled($this) && method_exists($extension, $methodName))
 			{
-				//call_user_func($methodName, $extension, $this);
-				$result = call_user_method($methodName, $extension, $this);
+				$result = call_user_func(array(&$extension,$methodName), $this);
+				//$result = call_user_method($methodName, $extension, $this);
 
 				if($result !== null)
 				{
