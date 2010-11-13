@@ -1565,6 +1565,35 @@ if (!class_exists('Zymurgy'))
 			}
 			echo "<hr />\r\n";
 		}
+		
+		static function DbgLog()
+		{
+			$fd = fopen(Zymurgy::$root."/UserFiles/zcmdebug.log",'a+');
+			fwrite($fd,"----- ".date('r')." -----\n");
+			$args = func_get_args();
+			$n = 1;
+			$out = '';
+			foreach($args as $arg)
+			{
+				$out .= "Argument $n: ";
+				$n++;
+				if (is_array($arg) || is_object($arg))
+				{
+					$out .= print_r($arg,true);
+				}
+				elseif (is_bool($arg))
+				{
+					$out .= $arg ? 'TRUE' : 'FALSE';
+				}
+				else
+				{
+					$out .= $arg;
+				}
+				$out .= "\n";
+			}
+			fwrite($fd,$out);
+			fclose($fd);
+		}
 
 		/**
 		 * Echo debug arguments and then exit.  Format arrays and objects with print_r.

@@ -65,6 +65,7 @@ function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,
 \$ZymurgyConfig['defaultdescription'] = '$siteDescription';
 \$ZymurgyConfig['defaultkeywords'] = '$siteKeywords';
 \$ZymurgyConfig['userwikihome'] = 'http://www.zymurgycm.com/userwiki/index.php/';
+\$ZymurgyConfig['Default Timezone'] = 'America/New_York';
 
 //Tracking and privacy
 //Check your local privacy laws before turning on this feature.

@@ -86,6 +86,7 @@
 		protected $m_billingInformation;
 		protected $m_paymentTransaction;
 		protected $m_invoiceID;
+		protected $m_invoiceNumber;
 		protected $m_returnURL;
 		protected $m_cancelURL;
 		protected $m_notifyURL;
@@ -123,6 +124,16 @@
 		public function SetInvoiceID($newValue)
 		{
 			$this->m_invoiceID = $newValue;
+		}
+
+		public function GetInvoiceNumber()
+		{
+			return $this->m_invoiceNumber;
+		}
+
+		public function SetInvoiceNumber($newValue)
+		{
+			$this->m_invoiceNumber = $newValue;
 		}
 
 		public function GetReturnURL()
@@ -313,6 +324,7 @@
 			$output .= $this->RenderHiddenInput("page_style", Zymurgy::$config["PaypalIPN.PageStyle"]);
 			$output .= $this->RenderHiddenInput("business", Zymurgy::$config["PaypalIPN.Business"]);
 			$output .= $this->RenderHiddenInput("item_name", $this->m_invoiceID);
+			$output .= $this->RenderHiddenInput("item_number", $this->m_invoiceNumber);
 			$output .= $this->RenderHiddenInput("currency_code", Zymurgy::$config["PaypalIPN.CurrencyCode"]);
 			$output .= $this->RenderCmdInformation();
 			$output .= $this->RenderBillingInformation();
@@ -368,12 +380,6 @@
 
 		public function Callback()
 		{
-			$this->m_paymentTransaction->processor = $this->GetPaymentProcessorName();
-			$this->m_paymentTransaction->invoice_id = $_POST["transaction_subject"];
-			$this->m_paymentTransaction->status_code = "UNCONFIRMED";
-			$this->m_paymentTransaction->postback_variables = $_POST;
-			return;
-
 			$req = "cmd=_notify-validate";
 
 			foreach($_POST as $key => $value)
@@ -382,43 +388,28 @@
 				$req .= "&$key=$value";
 			}
 
-			$header = "";
-			$header .= "POST /cgi-bin/webscr HTTP/1.0\r\n";
-			$header .= "Host: ".str_replace("ssl://", "", Zymurgy::$config["PaypalIPN.CallbackServer"])."\r\n";
-			$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
-			$header .= "Content-Length: ".strlen($req)."\r\n\r\n";
+			$url=(!isset($_POST['test_ipn'])) ? 'https://www.paypal.com/cgi-bin/webscr' : 'https://www.sandbox.paypal.com/cgi-bin/webscr';
 
-			$fp = fsockopen(
-				Zymurgy::$config["PaypalIPN.CallbackServer"],
-				Zymurgy::$config["PaypalIPN.CallbackPort"],
-				$errno,
-				$errstr,
-				30);
-
-			if(!$fp)
-			{
-				$this->m_paymentTransaction->status_code = "NORESPONSE";
-
-				$err = array();
-				$err["Err#".$errno] = $errstr;
-
-				$this->m_paymentTransaction->postback_variables = $err;
-			}
-			else
-			{
-				fputs($fp, $header, $req);
-
-				$res = "";
-				$cntr = 0;
-				while(!feof($fp) && $cntr < 100)
-				{
-					$res .= fgets($fp, 1024);
-					$cntr++;
-				}
-
-				$this->m_paymentTransaction->status_code = $res;
-				$this->m_paymentTransaction->postback_variables = $_POST;
-			}
+			$curl_result=$curl_err='';
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL,$url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/x-www-form-urlencoded", "Content-Length: " . strlen($req)));
+			curl_setopt($ch, CURLOPT_HEADER , 0);   
+			curl_setopt($ch, CURLOPT_VERBOSE, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+			
+			$curl_result = @curl_exec($ch);
+			$curl_err = curl_error($ch);
+			curl_close($ch);
+			
+			$this->m_paymentTransaction->status_code = $curl_result;
+			$this->m_paymentTransaction->postback_variables = $_POST;
+			$this->m_paymentTransaction->invoice_id = $_POST['item_number'];
+			Zymurgy::DbgLog($curl_result,$_POST);
 		}
 
 		public function IsReportedPostVar($var)

@@ -8,6 +8,7 @@
 	class PaymentForm extends Form
 	{
 		private $m_invoiceID;
+		private $m_invoiceNumber;
 
 		function GetTitle()
 		{
@@ -67,6 +68,16 @@
 				"default" => "",
 				"inputspec" => "input.10.9",
 				"authlevel" => 0);
+			$configItems["Amount Lookup Field"] = array(
+				"name" => "Amount Lookup Field",
+				"default" => "",
+				"inputspec" => "input.20.50",
+				"authlevel" => 0);
+			$configItems["Amount Lookup Column"] = array(
+				"name" => "Amount Lookup Column",
+				"default" => "",
+				"inputspec" => "input.20.50",
+				"authlevel" => 0);
 			$configItems["Invoice Prefix"] = array(
 				"name" => "Invoice Prefix",
 				"default" => "Invoice",
@@ -95,6 +106,16 @@
 				"Item Amount",
 				"",
 				"input.10.9");
+			$this->BuildConfig(
+				$r,
+				"Amount Lookup Field",
+				"",
+				"input.20.50");
+			$this->BuildConfig(
+				$r,
+				"Amount Lookup Column",
+				"",
+				"input.20.50");
 			$this->BuildConfig(
 				$r,
 				"Invoice Prefix",
@@ -194,6 +215,29 @@
 				return parent::RenderSubmitButton();
 			}
 		}
+		
+		function getAmount()
+		{
+			$amt = $this->GetConfigValue("Item Amount");
+			$ilf = $this->GetConfigValue("Amount Lookup Field");
+			$ilc = $this->GetConfigValue("Amount Lookup Column");
+			if (!empty($ilf) && !empty($ilc))
+			{
+				$ir = $this->InputRows[$ilf];
+				$is = $ir['specifier'];
+				$sp = explode('.',$is);
+				if ($sp[0] == 'lookup')
+				{
+					$table = $sp[1];
+					$idcol = $sp[2];
+					$id = $_POST["Field{$ir['fid']}"];
+					$sql = "SELECT `$ilc` FROM `$table` WHERE ID='".
+						Zymurgy::$db->escape_string($id)."'";
+					$amt = Zymurgy::$db->get($sql);
+				}
+			}
+			return $amt;
+		}
 
 		function RenderPaymentForm()
 		{
@@ -214,15 +258,15 @@
 			// print_r($values);
 			// echo "</pre>";
 
-			$paymentProcessor->SetAmount(
-				$this->GetConfigValue("Item Amount"));
+			$paymentProcessor->SetAmount($this->getAmount());
 
 			// ZK: Removing - Invoice ID now based on capture record's ID
 			// if(!isset($this->m_invoiceID)) $this->SetInvoiceID();
 			$this->m_invoiceID = $this->GetConfigValue("Invoice Prefix") . $id;
+			$this->m_invoiceNumber = $id;
 
-			$paymentProcessor->SetInvoiceID(
-				$this->m_invoiceID);
+			$paymentProcessor->SetInvoiceID($this->m_invoiceID);
+			$paymentProcessor->SetInvoiceNumber($this->m_invoiceNumber);
 
 			$billing = $paymentProcessor->GetBillingInformation();
 
@@ -278,6 +322,10 @@
 			if($processorName == '')
 			{
 				$processorName = $this->GetConfigValue("Payment Gateway");
+				if (array_key_exists("Payment Gateway",Zymurgy::$config) && ($processorName == ''))
+				{
+					$processorName = Zymurgy::$config["Payment Gateway"];
+				}
 			}
 
 			switch(trim($processorName))
@@ -382,6 +430,7 @@
 
 			$invoiceID = $transaction->invoice_id;
 
+			Zymurgy::DbgLog($transaction,$postVarString,$invoiceID);
 			if(strpos($invoiceID, $this->GetConfigValue("Invoice Prefix")) === FALSE)
 			{
 				$sql = "SELECT `invoice_id` FROM `zcm_form_paymentresponse` WHERE `post_vars` LIKE ".
@@ -402,7 +451,7 @@
 			}
 
 			$sql = "INSERT INTO `zcm_form_paymentresponse` ( `instance`, `invoice_id`, ".
-				"`capture_id`, `response_date`, `processor`, `status_code`, `post_vars` ) VALUES ( '".
+				"`capture_id`, `responsedate`, `processor`, `status_code`, `post_vars` ) VALUES ( '".
 				mysql_escape_string($this->iid).
 				"', '".
 				mysql_escape_string($transaction->invoice_id).
@@ -418,9 +467,10 @@
 				"', '".
 				mysql_escape_string($transaction->status_code).
 				"', '".
-				mysql_escape_string($transaction->postback_variables).
+				mysql_escape_string(print_r($transaction->postback_variables,true)).
 				"' )";
 			//throw(new Exception($sql));
+			Zymurgy::DbgLog($sql);
 			Zymurgy::$db->query($sql)
 				or die("Could not insert payment response: ".mysql_error().", $sql");
 		}
@@ -480,22 +530,33 @@
 			&$rows)
 		{
 			$sql = "SELECT `invoice_id`, `capture_id`, `processor`, `status_code`, ".
-				"`response_date`, `post_vars` FROM `zcm_form_paymentresponse` ".
+				"`responsedate`, `post_vars` FROM `zcm_form_paymentresponse` ".
 				"INNER JOIN `zcm_form_capture` ON `zcm_form_capture`.`id` = `zcm_form_paymentresponse`.`capture_id` ".
 				"WHERE `zcm_form_capture`.`instance` = ".
 				mysql_escape_string($this->iid);
 
 			// die($sql);
 
-			$ri = Zymurgy::$db->query($sql)
-				or die("Could not retrieve payment responses: ".mysql_error().", $sql");
+			$ri = Zymurgy::$db->query($sql);
+			if (!$ri)
+			{
+				if (Zymurgy::$db->errno() == 1146)
+				{
+					$this->CreatePaymentResponseTable();
+					$ri = Zymurgy::$db->query($sql);
+				}
+				if (!$ri)
+				{
+					die("Could not retrieve payment responses: ".mysql_error().", $sql");
+				}
+			}
 
 			if(Zymurgy::$db->num_rows($ri) > 0)
 			{
 				$headers[] = "invoice_id";
 				$headers[] = "payment_processor";
 				$headers[] = "status_code";
-				$headers[] = "response_date";
+				$headers[] = "responsedate";
 
 				while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 				{
@@ -506,7 +567,7 @@
 						$baseRow["invoice_id"] = $row["invoice_id"];
 						$baseRow["payment_processor"] = $row["processor"];
 						$baseRow["status_code"] = $row["status_code"];
-						$baseRow["response_date"] = $row["response_date"];
+						$baseRow["responsedate"] = $row["responsedate"];
 
 						$paymentProcessor = $this->GetPaymentProcessor($row["processor"]);
 

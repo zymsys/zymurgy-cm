@@ -81,7 +81,7 @@ class Zymurgy_DB
 	}
 
 	/**
-	 * Get a single row from a query.
+	 * Get a single row or value from a query.
 	 *
 	 * Run a query and throw an error if there's a problem.  Return the first row as an array or
 	 * the value if only one column is returned.  Returns false if no data is returned.
