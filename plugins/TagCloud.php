@@ -342,26 +342,29 @@ class PIW_CloudTagCloud extends ZIW_Base
 
 		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloud.js");
 
-		$startTags = explode(",", $value);
 		$startTagsParam = "";
-
-		if(count($startTags) > 0)
+		if (!empty($value))
 		{
-			for($cntr = 0; $cntr < count($startTags); $cntr++)
+			$startTags = explode(",", $value);
+	
+			if(count($startTags) > 0)
 			{
-				$startTags[$cntr] = "s".$cntr."=".$startTags[$cntr];
+				for($cntr = 0; $cntr < count($startTags); $cntr++)
+				{
+					$startTags[$cntr] = "s".$cntr."=".$startTags[$cntr];
+				}
+	
+				$startTagsParam = implode("&", $startTags);
+				$startTagsParam = "&".$startTagsParam;
 			}
-
-			$startTagsParam = implode("&", $startTags);
-			$startTagsParam = "&".$startTagsParam;
 		}
-
+		
 		$output = <<<BLOCK
 <input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
 <div id="tc{$jsName}"></div>
 <script type="text/javascript">
 	YAHOO.util.Event.onDOMReady(function() {
-		tag{$jsName} = ZymurgyTagCloud(
+		tag{$jsName} = new ZymurgyTagCloud(
 			'tc{$jsName}',
 			'/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}{$startTagsParam}',
 			'{$jsName}');

@@ -34,6 +34,23 @@ class ZymurgyMember
 		}
 		return false;
 	}
+	
+	public function getDefaultMemberPage()
+	{
+		if (array_key_exists('MemberDefaultPage',Zymurgy::$config))
+			$rurl = Zymurgy::$config['MemberDefaultPage'];
+		else
+		{
+			$rp = explode('/',$_SERVER['REQUEST_URI']);
+			array_pop($rp); //Remove document name;
+			$rurl = implode('/',$rp);
+		}
+		if (substr($rurl,0,7) == '/pages/')
+		{
+			$rurl = '/'.Zymurgy::GetActiveFlavourCode().'/'.substr($rurl,7);
+		}
+		return $rurl;
+	}
 
 	/**
 	 * Populates the Zymurgy::$member array with the contents of the provided
@@ -620,14 +637,7 @@ class ZymurgyMember
 											$rurl = $_GET['rurl'];
 										else
 										{
-											if (array_key_exists('MemberDefaultPage',Zymurgy::$config))
-												$rurl = Zymurgy::$config['MemberDefaultPage'];
-											else
-											{
-												$rp = explode('/',$_SERVER['REQUEST_URI']);
-												array_pop($rp); //Remove document name;
-												$rurl = implode('/',$rp);
-											}
+											$rurl = $this->getDefaultMemberPage();
 										}
 										Zymurgy::JSRedirect($rurl);
 									}
@@ -742,7 +752,7 @@ class ZymurgyMember
 					if (array_key_exists('rurl',$_GET))
 						$rurl = $_GET['rurl'];
 					else
-						$rurl = Zymurgy::$config['MemberDefaultPage'];
+						$rurl = $this->getDefaultMemberPage();
 					Zymurgy::JSRedirect($rurl);
 				}
 				else

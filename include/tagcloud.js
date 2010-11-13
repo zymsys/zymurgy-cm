@@ -1,43 +1,51 @@
 function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
-	elTarget = YAHOO.util.Dom.get(elTarget);
-	var elHd;
-	var elBd;
-	var elSelected;
-	var elNotice;
-	var tags = new Array(); //Tags in the cloud
-	var selected = new Array(); //Tags on the selected list
-	var maxmag = 5;
-	var DataTableRefresh; //Function to refresh the table view
+	this.elTarget = YAHOO.util.Dom.get(elTarget);
+	this.elHd = undefined;
+	this.elBd = undefined;
+	this.elSelected = undefined;
+	this.elNotice = undefined;
+	this.tags = new Array(); //Tags in the cloud
+	this.selected = new Array(); //Tags on the selected list
+	this.maxmag = 5;
+	this.DataTableRefresh = undefined; //Function to refresh the table view
+	this.selectTagsCallback = undefined; //Function to select tags after a load
+	this.CloudDataSource = tagsUrl + "&"; // + "?";
+	this.dsTags = new YAHOO.util.XHRDataSource(this.CloudDataSource);
+	this.dsTags.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
+	this.dsTags.responseSchema = {
+		resultNode: "tag",
+		fields: [ {key: "name"}, {key: "hits", parser: "number"} ]
+	};
 
 	this.buildUI = function() {
-		elHd = document.createElement("div");
-		elHd.setAttribute("class","ZymurgyTagCloudHd");
-		elHd.appendChild(document.createTextNode("Selected: "));
-		elSelected = document.createElement("span");
-		elSelected.innerHTML = "<i>None</i>";
-		elHd.appendChild(elSelected);
-		elTarget.appendChild(elHd);
-		elBd = document.createElement("div");
-		elBd.setAttribute("class","ZymurgyTagCloudBd");
-		elTarget.appendChild(elBd);
+		this.elHd = document.createElement("div");
+		this.elHd.setAttribute("class","ZymurgyTagCloudHd");
+		this.elHd.appendChild(document.createTextNode("Selected: "));
+		this.elSelected = document.createElement("span");
+		this.elSelected.innerHTML = "<i>None</i>";
+		this.elHd.appendChild(this.elSelected);
+		this.elTarget.appendChild(this.elHd);
+		this.elBd = document.createElement("div");
+		this.elBd.setAttribute("class","ZymurgyTagCloudBd");
+		this.elTarget.appendChild(this.elBd);
 	};
 
 	this.createTags = function (tagData) {
 		for (var i in tagData.results) {
 			var tag = tagData.results[i];
-			tags.push(tag);
+			this.tags.push(tag);
 		}
-		var count = tags.length;
-		tags.sort(function (a,b) {
+		var count = this.tags.length;
+		this.tags.sort(function (a,b) {
 			return (b.hits - a.hits);
 		});
-		var ms = 1/maxmag; //Size of a magnitude step
+		var ms = 1/this.maxmag; //Size of a magnitude step
 		var cs = 1/count; //Size of a tag interation step
 		var l = 0; //Current level
 		var mt = ms; //Magnitude threshold before next step up
 		var m = 1; //Current magnitude (maxmag is smallest, 1 is biggest - think header tags)
-		for (var i in tags) {
-			tags[i].magnitude = m;
+		for (var i in this.tags) {
+			this.tags[i].magnitude = m;
 			l += cs;
 			if (l > mt) {
 				m++;
@@ -45,7 +53,7 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 			}
 		}
 		//Finally randomize the sort order
-		tags.sort(function () {
+		this.tags.sort(function () {
 			return Math.random() - 0.5;
 		});
 	};
@@ -62,13 +70,13 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 
 	this.onCloseSelectedClick = function (e, oTagCloud) {
 		var elTag = e.currentTarget.parentNode;
-		var oTag = selected[elTag.zymurgy_idx];
-		selected.splice(elTag.zymurgy_idx,1);
+		var oTag = oTagCloud.selected[elTag.zymurgy_idx];
+		oTagCloud.selected.splice(elTag.zymurgy_idx,1);
 		//Re-do zymurgy_idx's in selected el's after splice
-		for (var i in selected) {
-			selected[i].el.zymurgy_idx = i;
+		for (var i in oTagCloud.selected) {
+			oTagCloud.selected[i].el.zymurgy_idx = i;
 		}
-		elSelected.removeChild(elTag);
+		oTagCloud.elSelected.removeChild(elTag);
 
 		if(document.getElementById("tcr" + cloudID))
 		{
@@ -92,19 +100,18 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 
 	this.getQueryString = function () {
 		var query = new Array();
-		for (var i in selected) {
-			query.push('s'+i+'='+escape(selected[i].name));
+		for (var i in this.selected) {
+			query.push('s'+i+'='+escape(this.selected[i].name));
 		}
 		return query.join('&');
 	}
-
-	this.onTagClick = function (e, oTagCloud) {
-		var elTag = e.currentTarget;
-		var oTag = tags[elTag.zymurgy_idx];
-		tags.splice(elTag.zymurgy_idx,1); //Remove tag from cloud list
-		elBd.removeChild(elTag); //Remove element from cloud body
-		if (selected.length == 0) {
-			elSelected.innerHTML = ''; //Clear "none" placeholder
+	
+	this.selectTag = function (elTag, oTagCloud) {
+		var oTag = this.tags[elTag.zymurgy_idx];
+		this.tags.splice(elTag.zymurgy_idx,1); //Remove tag from cloud list
+		this.elBd.removeChild(elTag); //Remove element from cloud body
+		if (this.selected.length == 0) {
+			this.elSelected.innerHTML = ''; //Clear "none" placeholder
 		}
 		elTag = oTagCloud.createTagElement(oTag);
 		elTag.setAttribute("class","ZymurgyTagCloudSelectedTag");
@@ -112,9 +119,9 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 		elClose.setAttribute("class","ZymurgyTagCloudSelectedCloseTag");
 		elClose.appendChild(document.createTextNode('[x]'));
 		elTag.appendChild(elClose);
-		elSelected.appendChild(elTag);
+		this.elSelected.appendChild(elTag);
 		oTag.el = elTag;
-		elTag.zymurgy_idx = selected.push(oTag)-1;
+		elTag.zymurgy_idx = this.selected.push(oTag)-1;
 		YAHOO.util.Event.addListener(elClose,'click', oTagCloud.onCloseSelectedClick, oTagCloud);
 
 		if(document.getElementById("tcr" + cloudID))
@@ -122,8 +129,8 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 			// For some reason I can't call getQueryString() from here,
 			// so I'll just copy that code block instead.
 			var query = new Array();
-			for (var i in selected) {
-				query.push('s'+i+'='+escape(selected[i].name));
+			for (var i in this.selected) {
+				query.push('s'+i+'='+escape(this.selected[i].name));
 			}
 			// return query.join('&');
 
@@ -137,100 +144,68 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 		oTagCloud.loadTags();
 	};
 
+	this.onTagClick = function (e, oTagCloud) {
+		var elTag = e.currentTarget;
+		oTagCloud.selectTag(elTag,oTagCloud);
+	};
+
 	this.renderTags = function () {
-		if(tags.length <= 0)
+		if(this.tags.length <= 0)
 		{
 //			alert("No related tags");
-			elNotice = document.createTextNode("No related tags");
-			elBd.appendChild(elNotice);
+			this.elNotice = document.createTextNode("No related tags");
+			this.elBd.appendChild(this.elNotice);
 		}
 		else
 		{
-			for (var i in tags) {
-				var oTag = tags[i];
+			for (var i in this.tags) {
+				var oTag = this.tags[i];
 				var elTag = this.createTagElement(oTag);
 				var ndWhiteSpace = document.createTextNode(" ");
 				elTag.zymurgy_idx = i;
 				elTag.setAttribute("id", cloudID + "_" + oTag.name);
 				elTag.setAttribute("class","ZymurgyTagCloudTag ZymurgyTagCloudTag"+oTag.magnitude);
-				elBd.appendChild(elTag);
-				elBd.appendChild(ndWhiteSpace);
+				this.elBd.appendChild(elTag);
+				this.elBd.appendChild(ndWhiteSpace);
 				YAHOO.util.Event.addListener(elTag,'click', this.onTagClick, this);
-				tags[i].el = elTag;
+				this.tags[i].el = elTag;
 			}
 		}
 	};
 
 	this.loadTags = function() {
-		if(elNotice)
+		if(this.elNotice)
 		{
-			elBd.removeChild(elNotice);
-			elNotice = null;
+			this.elBd.removeChild(this.elNotice);
+			this.elNotice = undefined;
 		}
 
-		for (var i in tags) {
-			elBd.removeChild(tags[i].el);
+		for (var i in this.tags) {
+			this.elBd.removeChild(this.tags[i].el);
 		}
-		tags = new Array();
+		this.tags = new Array();
 		var qs = this.getQueryString();
-		dsTags.sendRequest(qs+'&what=tags',{
+		this.dsTags.sendRequest(qs+'&what=tags',{
 			scope: this,
 			success: function (oResponse, oParsedResponse) {
 				this.createTags(oParsedResponse);
 				this.renderTags();
+				if (this.selectTagsCallback) {
+					this.selectTagsCallback(this);
+				}
 			},
 			failure: function () {
 				alert('Failed to load tag cloud data.');
 			}
 
 		});
-		if (DataTableRefresh) {
-			DataTableRefresh(qs);
+		if (this.DataTableRefresh) {
+			this.DataTableRefresh(qs);
 		}
 	};
 
-	var CloudDataSource = tagsUrl + "&"; // + "?";
-	var dsTags = new YAHOO.util.XHRDataSource(CloudDataSource);
-	dsTags.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
-	dsTags.responseSchema = {
-		resultNode: "tag",
-		fields: [ {key: "name"}, {key: "hits", parser: "number"} ]
-	};
 	this.buildUI();
 	this.loadTags();
-	/*
-    var dt = function() {
-        var myColumnDefs = [ {key:"name", label:"Name"} ];
-        var dsTable = new YAHOO.util.XHRDataSource(CloudDataSource);
-        dsTable.responseType = YAHOO.util.XHRDataSource.TYPE_XML;
-        dsTable.connXhrMode = "queueRequests";
-        dsTable.responseSchema = { resultNode: "hit", fields: [ {key: "name"}, {key: "tag"} ] };
-
-        var myDataTable = new YAHOO.widget.DataTable(elTarget.id+"Table", myColumnDefs, dsTable,
-        	{initialRequest:"what=results"});
-
-        var mySuccessHandler = function() {
-            this.set("sortedBy", null);
-            this.onDataReturnAppendRows.apply(this,arguments);
-        };
-        var myFailureHandler = function() {
-            this.showTableMessage(YAHOO.widget.DataTable.MSG_ERROR, YAHOO.widget.DataTable.CLASS_ERROR);
-            this.onDataReturnAppendRows.apply(this,arguments);
-        };
-        var callbackObj = {
-            success : mySuccessHandler,
-            failure : myFailureHandler,
-            scope : myDataTable
-        };
-
-        DataTableRefresh = function(queryString) {
-			myDataTable.deleteRows(myDataTable.getRecordSet().getLength() - 1, -1 * myDataTable.getRecordSet().getLength());
-			myDataTable.initializeTable();
-			myDataTable.render();
-        	dsTable.sendRequest(queryString+'&what=results', callbackObj);
-        }
-    }();
-    */
 
     return this;
 }

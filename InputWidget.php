@@ -691,19 +691,37 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
+		$this->initCache($ep);
+		$this->PreRender();
+		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
+			$name,
+			$value,
+			count($ep) >= 6 && $ep[5] == "checked");
+	}
+	
+	function initCache($ep)
+	{
+		if (!array_key_exists('lookupsf',$this->extra))
+		{
+			$this->extra['lookupsf'] = array();
+		}
 		if (!array_key_exists($ep[1],$this->extra['lookups']))
 		{
 			include_once("datagrid.php");
 
 			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
 		}
-
-		$this->PreRender();
-
-		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
-			$name,
-			$value,
-			count($ep) >= 6 && $ep[5] == "checked");
+		if (!array_key_exists($ep[1],$this->extra['lookupsf']))
+		{
+			$this->extra['lookupsf'][$ep[1]] = $this->extra['lookups'][$ep[1]];
+			if ($this->isItFlavoured($ep))
+			{
+				foreach ($this->extra['lookups'][$ep[1]]->values as $key=>$value)
+				{
+					$this->extra['lookupsf'][$ep[1]]->values[$key] = $this->GetFlavouredValue($value);
+				}
+			}
+		}
 	}
 
 	function PreRender()
@@ -720,15 +738,8 @@ class ZIW_Lookup extends ZIW_Base
 	 */
 	function Display($ep,$display,$shell)
 	{
-		if (!array_key_exists($ep[1],$this->extra['lookups']))
-		{
-			include_once("datagrid.php");
-
-			$this->extra['lookups'][$ep[1]] = new DataGridLookup($ep[1],$ep[2],$ep[3],$ep[4]);
-		}
-
+		$this->initCache($ep);
 		$values = $this->extra['lookups'][$ep[1]]->values;
-
 		return array_key_exists($display, $values)
 			? $values[$display]
 			: "";
@@ -917,6 +928,23 @@ SCRIPT;
 	function GetDatabaseType($inputspecName, $parameters)
 	{
 		return "VARCHAR(20) NULL";
+	}
+	
+	function isItFlavoured($ep)
+	{
+		$inputspec = Zymurgy::$db->get("select inputspec from zcm_customtable left join zcm_customfield on zcm_customtable.id=zcm_customfield.tableid where tname='".
+			Zymurgy::$db->escape_string($ep[1])."' and cname='".
+			Zymurgy::$db->escape_string($ep[3])."'");
+		if ($inputspec)
+		{
+			$ip = explode('.',$inputspec);
+			if (array_key_exists($ip[0],InputWidget::$widgets))
+			{
+				$iw = InputWidget::$widgets[$ip[0]];
+				return $iw->SupportsFlavours();
+			}
+		}
+		return false;
 	}
 }
 
@@ -2843,10 +2871,42 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 	 * @param string $name
 	 * @param string $value
 	 */
+	function oRender($ep,$name,$value)
+	{
+		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+
+		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
+
+		$config = array();
+		$config["width"] = $ep[1];
+		$config["height"] = $ep[2];
+		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
+			? $this->extra["fckeditorcss"]
+			: $sitecss;
+
+		$ck = new CKEditor();
+		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->editor($name, $value, $config);
+	}
+
+	/**
+	 * Render the actual input interface to the user.
+	 *
+	 * @param array $ep Input-spec exploded parts, broken up by .'s
+	 * @param string $name
+	 * @param string $value
+	 */
 	function Render($ep,$name,$value)
 	{
 		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
 
+		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
+		$config = array();
+		$config["width"] = $ep[1];
+		$config["height"] = $ep[2];
+		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
+			? $this->extra["fckeditorcss"]
+			: $sitecss;
 ?>
 		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
 		<table>
@@ -2854,16 +2914,9 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 				<td>Default:</td>
 				<td>
 <?
-		$config = array();
-		$config["width"] = $ep[1];
-		$config["height"] = $ep[2];
-		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
-			? $this->extra["fckeditorcss"]
-			: Zymurgy::$config["sitecss"];
-
 		$ck = new CKEditor();
 		$ck->basePath = "/zymurgy/ckeditor/";
-		$ck->editor($name, $value, $config);
+		$ck->editor($name.'_default', $this->GetFlavouredValue($value), $config);
 ?>
 				</td>
 			</tr>
@@ -2877,13 +2930,6 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 				<td><?= $flavour['label'] ?>:</td>
 				<td>
 <?
-		$config = array();
-		$config["width"] = $ep[1];
-		$config["height"] = $ep[2];
-		$config["contentsCss"] = array_key_exists("fckeditorcss", $this->extra)
-			? $this->extra["fckeditorcss"]
-			: Zymurgy::$config["sitecss"];
-
 		$ck = new CKEditor();
 		$ck->basePath = "/zymurgy/ckeditor/";
 		$ck->editor(
@@ -3287,15 +3333,15 @@ class ZIW_Page extends ZIW_Base
 		{
 			$page = array(
 				"id" => $row["id"],
-				"path" => $row["linkurl"],
-				"caption" => $row["linktext"],
+				"path" => ZIW_Base::GetFlavouredValue($row["linkurl"]),
+				"caption" => ZIW_Base::GetFlavouredValue($row["linktext"]),
 				"parent" => $row["parent"]);
 
 			$parent = $page["parent"];
 
 			if($parent > 0)
 			{
-				$page["path"] = $pages[$parent]["path"].
+				$page["path"] = $pages[$parent]["path"].'/'.
 					$page["path"];
 				$page["caption"] = $pages[$parent]["caption"].
 					" &raquo; ".
@@ -3314,14 +3360,14 @@ class ZIW_Page extends ZIW_Base
 
 		foreach($pages as $page)
 		{
-			$pageValue = $ep[1] == "id" ? $page["id"] : "/pages/".ZIW_Base::GetFlavouredValue($page["path"]);
+			$pageValue = $ep[1] == "id" ? $page["id"] : "/pages/".$page["path"];
 
 			$output .= "<option value=\"".
 				$pageValue.
 				"\"".
 				($value == $pageValue ? " SELECTED" : "").
 				">".
-				ZIW_Base::GetFlavouredValue($page["caption"]).
+				$page["caption"].
 				"</option>\n";
 		}
 
@@ -3341,17 +3387,23 @@ class ZIW_Page extends ZIW_Base
 	{
 		if($ep[1] == "id")
 		{
-			$sql = "SELECT `linktext` FROM `zcm_sitepage` WHERE `id` = '".
-				Zymurgy::$db->escape_string($display).
-				"'";
-			$linktext = Zymurgy::$db->get($sql);
-
-			return "<a href=\"/zymurgy/template.php?id=$display\">$linktext</a>";
+			$display = $this->PathFromID($display);
 		}
-		else
+		return $display;
+	}
+	
+	public static function PathFromID($id)
+	{
+		$pp = array();
+		$id = intval($id);
+		while ($id > 0)
 		{
-			return $display;
+			$row = Zymurgy::$db->get("SELECT `parent`,`linkurl` FROM `zcm_sitepage` WHERE `id`='$id'");
+			array_unshift($pp,ZIW_Base::GetFlavouredValue($row["linkurl"]));
+			$id = intval($row['parent']);
 		}
+		array_unshift($pp,Zymurgy::GetActiveFlavourCode());
+		return '/'.implode('/',$pp);
 	}
 }
 
@@ -3536,7 +3588,7 @@ InputWidget::Register('html',InputWidget::Get(
 InputWidget::Register("fckhtmlf", new ZIW_FlavouredHtml());
 InputWidget::Register("ckhtmlf", new ZIW_FlavouredCKHtml());
 InputWidget::Register("htmlf", InputWidget::Get(
-	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor']."f" : 'fckhtmlf'));
+	array_key_exists('richtexteditor',Zymurgy::$config) ? Zymurgy::$config['richtexteditor']."f" : 'ckhtmlf'));
 
 InputWidget::Register('attachment',new ZIW_Attachment());
 InputWidget::Register('plugin',new ZIW_Plugin()); //Ugly, needs tweaking

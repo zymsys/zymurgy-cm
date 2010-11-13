@@ -467,7 +467,18 @@ class ZymurgyTemplate
 		$w = new InputWidget();
 		$w->datacolumn = 'zcm_pagetext.body';
 		$w->editkey = $this->pagetextids[$tag];
-		return $w->Display($type,'{0}',$this->pagetextcache[$tag]);
+		$r = $w->Display($type,'{0}',$this->pagetextcache[$tag]);
+		$realwidget = InputWidget::Get(array_shift(explode('.',$type,2)));
+		if ($realwidget->SupportsFlavours() && (!is_numeric($this->pagetextcache[$tag])))
+		{
+			//This is a flavoured item, so $value should be numeric - since this isn't it needs to be converted.
+			$r = $this->pagetextcache[$tag];
+			Zymurgy::$db->run("INSERT into `zcm_flavourtext` (`default`) VALUES ('".
+				Zymurgy::$db->escape_string($r)."')");
+			$ftid = Zymurgy::$db->insert_id();
+			Zymurgy::$db->run("UPDATE `zcm_pagetext` SET `body`=$ftid WHERE `id`={$w->editkey}");
+		}
+		return $r;
 	}
 
 	/**

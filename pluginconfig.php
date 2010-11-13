@@ -162,7 +162,10 @@
 		$plugin = Zymurgy::$db->get($sql)
 			or die("Could not get plugin information: ".mysql_error().", $sql");
 
-		require_once("plugins/{$plugin["name"]}.php");
+		if (file_exists("plugins/{$plugin['name']}.php"))
+			require_once("plugins/{$plugin['name']}.php");
+		else
+			require_once("custom/plugins/{$plugin['name']}.php"); 
 		$factory = "{$plugin["name"]}Factory";
 		$po = $factory();
 

@@ -120,7 +120,7 @@ class ZymurgySiteNav
 	 * Create a new navigation tree and fill it from the database.
 	 *
 	 */
-	function __construct()
+	function __construct($forflavour = NULL)
 	{
 		Zymurgy::memberauthenticate();
 		Zymurgy::memberauthorize("");
@@ -177,8 +177,8 @@ class ZymurgySiteNav
 
 			$this->items[$row['id']] = new ZymurgySiteNavItem(
 				$row['id'],
-				ZIW_Base::GetFlavouredValue($row['linktext']),
-				ZIW_Base::GetFlavouredValue($row['linkurl']),
+				ZIW_Base::GetFlavouredValue($row['linktext'],$forflavour),
+				ZIW_Base::GetFlavouredValue($row['linkurl'],$forflavour),
 				$row['parent'],
 				$row['golive'],
 				$row['softlaunch'],

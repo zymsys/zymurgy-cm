@@ -11,6 +11,6 @@
 if (!class_exists('Zymurgy'))
 	require_once('../cmo.php');
 Zymurgy::headtags();
-$link = Zymurgy::pagetext('Link URL','input.60.255');
+$link = Zymurgy::pagetext('Link URL','inputf.60.255');
 header('Location: '.$link);
 ?>

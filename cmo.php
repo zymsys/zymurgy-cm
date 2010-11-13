@@ -1720,7 +1720,25 @@ if (!class_exists('Zymurgy'))
 
 		static function GetActiveFlavourCode()
 		{
-			return Zymurgy::$m_activeFlavour;
+			if (isset(Zymurgy::$m_activeFlavour))
+				return Zymurgy::$m_activeFlavour;
+			else 
+				return 'pages';
+		}
+		
+		static function flavourMyLink($link)
+		{
+			$lp = explode('/',substr($link,1)); //Drop first char - should be / always
+			$flavour = array_shift($lp); //Get flavour to convert from
+			if ($flavour == Zymurgy::GetActiveFlavourCode()) return $link; //No conversion required
+			$l = array(Zymurgy::GetActiveFlavourCode());
+			while ($lp)
+			{
+				$linkpart = array_shift($lp);
+				//Change flavour here
+				$l[] = $linkpart;
+			}
+			return '/'.implode('/',$l);
 		}
 
 		static function GetActiveFlavour()

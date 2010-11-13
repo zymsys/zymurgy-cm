@@ -119,7 +119,10 @@ if (($pid > 0) && ($iid > 0))
 	if ($plugin===false) die("No plugin with that pid available.");
 
 	require_once('PluginBase.php');
-	require_once("plugins/{$plugin['name']}.php");
+	if (file_exists("plugins/{$plugin['name']}.php"))
+		require_once("plugins/{$plugin['name']}.php");
+	else
+		require_once("custom/plugins/{$plugin['name']}.php"); 
 	$fn = "{$plugin['name']}Factory";
 	$pi = $fn();
 	$pi->pid = $pid;
