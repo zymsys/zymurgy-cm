@@ -213,6 +213,11 @@ class ZIW_Input extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
+		if ($ep[0] == 'decimal')
+		{ //Change display length to fit precision + decimal
+			$ep[1] = $ep[1] + 1;
+			$ep[2] = 100; //Large enough for most fixed precision decimals; larger numbers use floats.
+		}
 		echo "<input type=\"text\" size=\"{$ep[1]}\" maxlength=\"{$ep[2]}\" id=\"$name\" name=\"".
 			"$name\" value=\"$value\" />";
 	}
@@ -226,7 +231,8 @@ class ZIW_Input extends ZIW_Base
 
 		$output .= " switch(inputspecName) {\n";
 		$output .= "  case \"input\": description = \"Text - one line\"; break;\n";
-		$output .= "  case \"float\": description = \"Numeric (with decimals)\"; break;\n";
+		$output .= "  case \"float\": description = \"Floating Point (with decimals)\"; break;\n";
+		$output .= "  case \"decimal\": description = \"Numeric (with decimals)\"; break;\n";
 		$output .= "  case \"numeric\": description = \"Numeric (no decimals)\"; break;\n";
 		$output .= "  default: description = inputspecName;\n";
 		$output .= " }\n";
@@ -234,12 +240,18 @@ class ZIW_Input extends ZIW_Base
 		$output .= " var specifier = new InputSpecifier;\n";
 		$output .= " specifier.description = description;\n";
 		$output .= " specifier.type = inputspecName;\n";
-
-		$output .= " specifier.inputparameters.push(".
+		$output .= " if (inputspecName == 'decimal') {\n";
+		$output .= "  specifier.inputparameters.push(".
+			"DefineTextParameter(\"Precision (significant digits)\", 3, 5, 15));\n";
+		$output .= "  specifier.inputparameters.push(".
+			"DefineTextParameter(\"Scale (digits after decimal)\", 3, 5, 2));\n";
+		$output .= " } else {\n";
+		$output .= "  specifier.inputparameters.push(".
 			"DefineTextParameter(\"Size\", 3, 5, 20));\n";
-		$output .= " specifier.inputparameters.push(".
+		$output .= "  specifier.inputparameters.push(".
 			"DefineTextParameter(\"Maximum Length\", 3, 5, 50));\n";
-
+		$output .= " }\n";
+		
 		$output .= " return specifier;\n";
 		$output .= "}\n";
 
@@ -255,6 +267,9 @@ class ZIW_Input extends ZIW_Base
 				break;
 			case "float":
 				return "FLOAT";
+				break;
+			case "decimal":
+				return "DECIMAL(".$parameters[0].",".$parameters[1].")";
 				break;
 			case "input":
 				return "VARCHAR(".$parameters[1].")";
@@ -650,7 +665,7 @@ class ZIW_Money extends ZIW_Base
 
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		return "INT UNSIGNED";
+		return "DECIMAL(15,2) UNSIGNED";
 	}
 }
 
@@ -1919,7 +1934,7 @@ class ZIW_YuiUnixDate extends ZIW_UnixDate
 {
 	public function Render($ep,$name,$value)
 	{
-        super::Render($ep,$name,$value);
+	        parent::Render($ep,$name,$value);
 	}
 
 	function GetInputSpecifier()
@@ -3597,6 +3612,7 @@ InputWidget::Register('hip',new ZIW_HIP());
 InputWidget::Register('default',new ZIW_Base());
 InputWidget::Register('password',new ZIW_Password());
 InputWidget::Register('numeric',new ZIW_Input());
+InputWidget::Register('decimal',new ZIW_Input());
 InputWidget::Register('float',new ZIW_Input());
 InputWidget::Register('checkbox',new ZIW_CheckBox());
 InputWidget::Register('money',new ZIW_Money()); //Rounding problem (3.14 -> 3.00!)
