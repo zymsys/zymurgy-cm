@@ -704,6 +704,9 @@ if (!class_exists('Zymurgy'))
 				if(Zymurgy::$db->num_rows($ri) > 0)
 				{
 					$row = Zymurgy::$db->fetch_array($ri);
+					$row['title'] = ZIW_Base::GetFlavouredValue($row['title']);
+					$row['description'] = ZIW_Base::GetFlavouredValue($row['description']);
+					$row['keywords'] = ZIW_Base::GetFlavouredValue($row['keywords']);
 				}
 				else
 				{
@@ -1784,6 +1787,7 @@ if (!class_exists('Zymurgy'))
 
 		static function GetFlavourByCode($code)
 		{
+			Zymurgy::GetAllFlavours();
 			return array_key_exists($code,Zymurgy::$m_flavoursbycode) ? Zymurgy::$m_flavoursbycode[$code] : false;
 		}
 

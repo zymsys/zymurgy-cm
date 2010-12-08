@@ -487,11 +487,8 @@ class DataSetRow
 			{
 				$inputspec = explode(".", $column->editor);
 
-				$sql = "SELECT `id` FROM `zcm_plugininstance` WHERE `name` = '".
-					Zymurgy::$db->escape_string($inputspec[1]).
-					"' AND EXISTS( SELECT 1 FROM  `zcm_plugin` WHERE `zcm_plugin`.`id` = `zcm_plugininstance`.`plugin` AND `name` = 'TagCloud')";
-//				die($sql);
-				$instanceID = Zymurgy::$db->get($sql);
+				$pi = Zymurgy::mkplugin('TagCloud', $inputspec[1],'',0);
+				$instanceID = $pi->iid;
 //				die($instanceID);
 
 				$sql = "DELETE FROM `zcm_tagcloudrelatedrow` WHERE `instance` = '".
@@ -502,9 +499,20 @@ class DataSetRow
 				Zymurgy::$db->query($sql)
 					or die("Could not clear old tag list: ".Zymurgy::$db->error().", $sql");
 
+
 //				die("$tname.$cname: ".$column->editor);
 //				die(print_r($this->values, true));
-				$tags = explode(",", $this->values[$column->datacolumn]);
+				$tagstrings = explode(",", $this->values[$column->datacolumn]);
+				$tags = array();
+				foreach ($tagstrings as $tag)
+				{
+					$flavourid = $pi->TagNameToFlavourID($tag);
+					if (!$flavourid)
+					{
+						$flavourid = ZIW_Base::StoreFlavouredValue(0, $tag, array());
+					}
+					$tags[$tag] = $flavourid;
+				}
 
 				foreach($tags as $tag)
 				{

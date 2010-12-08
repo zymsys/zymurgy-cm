@@ -49,8 +49,16 @@ function ZymurgyTagCloudWidget(widgetId, elTarget, tagsUrl, startValue) {
 	};
 
 	this.removeTag = function(e) {
-		var elClose = e.currentTarget;
-		var elTxtName = elClose.previousElementSibling;
+		var elClose;
+		if (e.currentTarget)
+			elClose = e.currentTarget;
+		else
+			elClose = e.srcElement;
+		var elTxtName;
+		if (elClose.previousElementSibling)
+			elTxtName = elClose.previousElementSibling;
+		else
+			elTxtName = elClose.previousSibling;
 		var tag = elTxtName.innerHTML;
 //		alert(tag);
 		elClose.parentNode.parentNode.removeChild(elClose.parentNode);

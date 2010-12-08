@@ -291,7 +291,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 		<table>
 			<tr>
 				<td>Default:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value='<?= $this->GetFlavouredValue($value, '') ?>'></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_default" name="<?= $name ?>_default" value="<?= htmlspecialchars($this->GetFlavouredValue($value, '')) ?>"></td>
 			</tr>
 <?
 		$flavours = Zymurgy::GetAllFlavours();
@@ -301,7 +301,7 @@ class ZIW_InputFlavoured extends ZIW_Base
 ?>
 			<tr>
 				<td><?= $flavour['label'] ?>:</td>
-				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" value='<?= $this->GetFlavouredValue($value, $flavour['code']) ?>'></td>
+				<td><input type="text" size="<?= $ep[1] ?>" maxlength="<?= $ep[2] ?>" id="<?= $name ?>_<?= $flavour['code'] ?>" name="<?= $name ?>_<?= $flavour['code'] ?>" value="<?= htmlspecialchars($this->GetFlavouredValue($value, $flavour['code'])) ?>"></td>
 			</tr>
 <?
 		}

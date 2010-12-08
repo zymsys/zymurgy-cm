@@ -605,9 +605,9 @@
 				"columns" => array(
 					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("zcm_sitepage", "BIGINT(20)", "DEFAULT NULL"),
-					DefineTableField("description", "TEXT", "NOT NULL"),
-					DefineTableField("keywords", "TEXT", "NOT NULL"),
-					DefineTableField("title", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
+					DefineTableField("description", "FLAVOURED", ""),
+					DefineTableField("keywords", "FLAVOURED", ""),
+					DefineTableField("title", "FLAVOURED", ""),
 					DefineTableField("mtime", "BIGINT(20)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("changefreq", "VARCHAR(10)", "DEFAULT 'monthly'"),
 					DefineTableField("priority", "TINYINT(4)", "DEFAULT '5'")
@@ -688,6 +688,19 @@
 				"indexes" => array(
 					array("columns" => "sitepage", "unique" => FALSE, "type" => ""),
 					array("columns" => "parent", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_quicklink",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "UNSIGNED NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(100)", "DEFAULT NULL"),
+					DefineTableField("targeturl", "VARCHAR(100)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "name", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"

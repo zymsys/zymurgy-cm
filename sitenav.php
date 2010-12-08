@@ -450,9 +450,13 @@ abstract class ZymurgySiteNavRenderer{
 	 * @return string
 	 */
 	protected function geturl($key){
-		if ($key == 0) return '/'.$this->hrefroot;
-
-		return $this->geturl($this->sitenav->items[$key]->parent).'/'.$this->sitenav->items[$key]->linkurl;
+		$up = array();
+		while ($key > 0)
+		{
+			array_unshift($up, $this->sitenav->items[$key]->linkurl);
+			$key = $this->sitenav->items[$key]->parent;
+		}
+		return '/'.$this->hrefroot.'/'.implode('/', $up);
 	}
 
 	/**

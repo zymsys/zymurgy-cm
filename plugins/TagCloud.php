@@ -15,6 +15,20 @@ if (!class_exists('PluginBase'))
 
 class TagCloud extends PluginBase
 {
+	/**
+	 * Array of all system tags
+	 * Keys are tag IDs, values are flavoured text strings
+	 * @var array
+	 */
+	private $alltags;
+	
+	/**
+	 * Array of all system tags
+	 * Keys are tag IDs, values are flavour text IDs.
+	 * @var array
+	 */
+	private $alltagsraw;
+	
 	function GetTitle()
 	{
 		return 'Tag Cloud Plugin';
@@ -73,7 +87,7 @@ BLOCK;
 				"columns" => array(
 					DefineTableField("id", "BIGINT", "UNSIGNED NOT NULL AUTO_INCREMENT"),
 					DefineTableField("instance", "BIGINT", "UNSIGNED NOT NULL"),
-					DefineTableField("name", "VARCHAR(100)", "DEFAULT NULL")
+					DefineTableField("name", "FLAVOURED", "")
 				),
 				"indexes" => array(
 					array("columns" => "instance", "unique" => "false", "type" => "")
@@ -117,6 +131,12 @@ BLOCK;
 
 		ProcessTableDefinitions($tableDefinitions);
 	}
+	
+	function Upgrade()
+	{
+		parent::Upgrade();
+		$this->VerifyTableDefinitions();
+	}
 
 	function Initialize()
 	{
@@ -141,6 +161,61 @@ BLOCK;
 		return $r;
 	}
 
+	function LoadTags()
+	{
+		if (isset($this->alltags)) return $this->alltags;
+		
+		//Get ID #'s of tags, and their flavoured text ID #'s.
+		$ri = Zymurgy::$db->run("SELECT `id`,`name` FROM `zcm_tagcloudtag` WHERE `instance`=".$this->iid);
+		$tags = array();
+		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+		{
+			$tags[$row['id']] = $row['name'];
+		}
+		Zymurgy::$db->free_result($ri);
+		$this->alltagsraw = $tags;
+		
+		//Get flavoured text ID #'s and default values for all required flavoured text
+		$flavoured = array();
+		if ($tags)
+		{
+			$ri = Zymurgy::$db->run("SELECT `id`,`default` FROM `zcm_flavourtext` WHERE `id` IN (".implode(',', $tags).")");
+			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			{
+				$flavoured[$row['id']] = $row['default'];
+			}
+			Zymurgy::$db->free_result($ri);
+		}
+		
+		//Override default values with flavoured values where possible
+		if ($flavoured)
+		{
+			$flavourcode = array_key_exists('flavour', $_GET) ? $_GET['flavour'] : 'pages';
+			if ($flavourcode != 'pages')
+			{
+				$flavour = Zymurgy::GetFlavourByCode($flavourcode);
+				$ri = Zymurgy::$db->run("SELECT `zcm_flavourtext`,`text` FROM `zcm_flavourtextitem` WHERE `flavour`=".
+					$flavour['id']." AND `zcm_flavourtext` IN (".
+					implode(',', $tags).")");
+				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+				{
+					$flavoured[$row['zcm_flavourtext']] = $row['text'];
+				}
+				Zymurgy::$db->free_result($ri);
+			}
+		}
+		//Zymurgy::DbgAndDie($flavoured);
+		
+		$tagids = array_keys($tags);
+		foreach ($tagids as $id)
+		{
+			if (array_key_exists($tags[$id], $flavoured))
+				$tags[$id] = $flavoured[$tags[$id]];
+		}
+		$this->alltags = $tags;
+		return $tags;
+	}
+	
 	function RenderHTML()
 	{
 		require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
@@ -151,9 +226,27 @@ BLOCK;
 			"cloud".$this->iid,
 			$this->extra);
 	}
+	
+	function TagNameToFlavourID($tagname)
+	{
+		$this->LoadTags();
+		$tagid = array_search($tagname, $this->alltags);
+		if ($tagid === false) return FALSE;
+		return array_key_exists($tagid, $this->alltagsraw) ? $this->alltagsraw[$tagid] : FALSE;
+	}
 
+	function BogoRenderXML()
+	{
+		$this->LoadTags();
+		Zymurgy::DbgAndDie($this->alltags,$this->alltagsraw);
+	}
+	
+	//Not sure why this renders XML to do with selected tags, etc.
+	//Starting over with flavour aware version, then I'll add stuff as needed, and try to make it easy to understand.
 	function RenderXML()
 	{
+		$this->LoadTags();
+		
 		$selected = array();
 		foreach ($_GET as $key=>$value)
 		{
@@ -161,28 +254,51 @@ BLOCK;
 			{
 				if (is_numeric(substr($key,1)))
 				{
-					$selected[] = $value;
+					$selected[] = $this->TagNameToFlavourID($value);
 				}
 			}
 		}
+		
+		//Zymurgy::DbgAndDie($this->alltags,$this->alltagsraw,$selected);
 
 		if(count($selected) > 0)
 		{
+			//$selected contains the flavoured text ID's for each of the keywords selected in the tag cloud.
+			//$innersql is the select statement which grabs all of the items which contain any one of the selected tags
+			$innersql = "SELECT `relatedrow` FROM `zcm_tagcloudrelatedrow` row2 INNER JOIN `zcm_tagcloudtag` tag2 ON tag2.`id` = row2.`tag` WHERE tag2.`name` IN ( '".
+				implode("','", $selected)."' )";
 			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) as `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` row1 ON `zcm_tagcloudtag`.`id` = row1.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
 				Zymurgy::$db->escape_string($this->iid).
-				"' AND `relatedrow` IN ( SELECT `relatedrow` FROM `zcm_tagcloudrelatedrow` row2 INNER JOIN `zcm_tagcloudtag` tag2 ON tag2.`id` = row2.`tag` WHERE tag2.`name` IN ( '".
-				implode("','", $selected).
-				"' ) ) AND `zcm_tagcloudtag`.`name` NOT IN ( '".
+				"' AND `relatedrow` IN ( $innersql ) AND `zcm_tagcloudtag`.`name` NOT IN ( '".
 				implode("','", $selected).
 				"' ) GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		}
 		else
 		{
+			$hits = array();
+			$needle = trim(strtolower($_GET['q']));
+			if (!empty($needle))
+			{
+				foreach ($this->alltags as $tagid=>$tagtext)
+				{
+					if (strpos(strtolower($tagtext), $needle) !== false)
+					{
+						$hits[] = $tagid;
+					}
+				}
+				if (!$hits)
+				{
+					//No hits - make sure no records are found.  An empty array means return all tags for an empty query.
+					$hits[] = -1;
+				}
+			}
 			$sql = "SELECT `zcm_tagcloudtag`.`id`, `name`, COUNT(*) AS `count` FROM `zcm_tagcloudtag` INNER JOIN `zcm_tagcloudrelatedrow` ON `zcm_tagcloudtag`.`id` = `zcm_tagcloudrelatedrow`.`tag` WHERE  `zcm_tagcloudtag`.`instance` = '".
-				Zymurgy::$db->escape_string($this->iid).
-				"' AND `name` LIKE '%".
-				Zymurgy::$db->escape_string(isset($_GET["q"]) ? $_GET["q"] : "").
-				"%' GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
+				Zymurgy::$db->escape_string($this->iid)."' ";
+			if ($hits)
+			{
+				$sql .= "AND (`zcm_tagcloudtag`.`id` IN (".implode(',', $hits).")) ";
+			}
+			$sql .= "GROUP BY `zcm_tagcloudtag`.`id`, `name` ORDER BY `zcm_tagcloudtag`.`id`, `name`";
 		}
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of related rows: ".Zymurgy::$db->error().", $sql");
@@ -193,7 +309,8 @@ BLOCK;
 		echo "<results>\r\n";
 
 		$magicTags = explode(",", $this->GetConfigValue("Magic/Hidden Tags"));
-
+		$flavourcode = array_key_exists('flavour', $_GET) ? $_GET['flavour'] : 'pages';
+		
 		while(($row = Zymurgy::$db->fetch_array($ri)) !== FALSE)
 		{
 			if(count($selected) > 0)
@@ -206,7 +323,7 @@ BLOCK;
 				echo("<tag><id>".
 					$row["id"].
 					"</id><name>".
-					htmlentities($row["name"]).
+					htmlentities(ZIW_Base::GetFlavouredValue($row["name"],$flavourcode)).
 					"</name><hits>".
 					$row["count"].
 					"</hits></tag>\r\n");

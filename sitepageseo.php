@@ -10,8 +10,6 @@
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
-		$sql = "";
-
 		if($_POST["id"] <= 0)
 		{
 			$sql = "INSERT INTO `zcm_sitepageseo` ( `zcm_sitepage`, `title`, `description`, `keywords`, `changefreq`, `priority` ) VALUES ( '{0}', '{1}', '{2}', '{3}', '{4}', '{5}' )";
@@ -21,10 +19,14 @@
 			$sql = "UPDATE `zcm_sitepageseo` SET `title` = '{1}', `description` = '{2}', `keywords` = '{3}', `changefreq` = '{4}', `priority` = '{5}' WHERE `id` = '{6}'";
 		}
 
+		$title = ZIW_Base::StoreFlavouredValueFromPost("title",$_POST["title"]);
+		$description = ZIW_Base::StoreFlavouredValueFromPost("description",$_POST["description"]);
+		$keywords = ZIW_Base::StoreFlavouredValueFromPost("keywords",$_POST["keywords"]);
+
 		$sql = str_replace("{0}", Zymurgy::$db->escape_string($_POST["zcm_sitepage"]), $sql);
-		$sql = str_replace("{1}", Zymurgy::$db->escape_string($_POST["title"]), $sql);
-		$sql = str_replace("{2}", Zymurgy::$db->escape_string($_POST["description"]), $sql);
-		$sql = str_replace("{3}", Zymurgy::$db->escape_string($_POST["keywords"]), $sql);
+		$sql = str_replace("{1}", Zymurgy::$db->escape_string($title), $sql);
+		$sql = str_replace("{2}", Zymurgy::$db->escape_string($description), $sql);
+		$sql = str_replace("{3}", Zymurgy::$db->escape_string($keywords), $sql);
 		$sql = str_replace("{4}", Zymurgy::$db->escape_string($_POST["changefreq"]), $sql);
 		$sql = str_replace("{5}", Zymurgy::$db->escape_string($_POST["priority"]), $sql);
 		$sql = str_replace("{6}", Zymurgy::$db->escape_string($_POST["id"]), $sql);
@@ -80,15 +82,15 @@
 			<table>
 				<tr>
 					<td>Page Title:</td>
-					<td><?= $widget->Render("input.40.80", "title", $row["title"]) ?></td>
+					<td><?= $widget->Render("inputf.40.80", "title", $row["title"]) ?></td>
 				</tr>
 				<tr>
 					<td valign="top">Description:</td>
-					<td><?= $widget->Render("textarea.60.5", "description", $row["description"]) ?></td>
+					<td><?= $widget->Render("textareaf.60.5", "description", $row["description"]) ?></td>
 				</tr>
 				<tr>
 					<td valign="top">Keywords:</td>
-					<td><?= $widget->Render("textarea.60.3", "keywords", $row["keywords"]) ?></td>
+					<td><?= $widget->Render("textareaf.60.3", "keywords", $row["keywords"]) ?></td>
 				</tr>
 				<tr>
 					<td>Change Frequency:<br><i>Estimating how frequently the content<br>on this page will be updated helps Google<br>to index your site more effectively.</i></td>

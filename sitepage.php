@@ -286,7 +286,7 @@ else
 	$dg->AddConstant('template',$defaulttemplate);
 }
 //$dg->AddInput('linktext','Menu Text:',40,40);
-$dg->AddEditor('linktext','Menu Text','inputf.40.40');
+$dg->AddEditor('linktext','Menu Text','inputf.60.4096');
 $dg->AddEditor('retire','Retire After:','datetime');
 $dg->AddEditor('golive','Go Live:','datetime');
 $dg->AddEditor('softlaunch','Soft Launch:','datetime');

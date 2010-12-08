@@ -185,7 +185,9 @@ function ZymurgyTagCloud(elTarget, tagsUrl, cloudID) {
 		}
 		this.tags = new Array();
 		var qs = this.getQueryString();
-		this.dsTags.sendRequest(qs+'&what=tags',{
+		var urlp = location.href.split('/');
+		var flavour = (urlp.length >3) ? urlp[3] : 'pages'; //Default flavour if none in URL
+		this.dsTags.sendRequest(qs+'&what=tags&flavour='+flavour,{
 			scope: this,
 			success: function (oResponse, oParsedResponse) {
 				this.createTags(oParsedResponse);

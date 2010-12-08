@@ -10,6 +10,21 @@ ob_start();
 require_once('cmo.php');
 require_once('sitenav.php');
 
+if (array_key_exists('ql', $_GET))
+{
+	$target = Zymurgy::$db->get("SELECT `targeturl` FROM `zcm_quicklink` WHERE `name`='".
+		Zymurgy::$db->escape_string($_GET['ql'])."'");
+	if ($target)
+	{
+		header('Location: '.$target);
+		exit;
+	}
+	else 
+	{
+		ZymurgyTemplate::DisplayFileNotFound($_GET['ql'], 'Quick Links', '');
+	}
+}
+
 /**
  * Model class for a Page Template.
  */
@@ -92,16 +107,17 @@ class ZymurgyTemplate
 			$newpath = array();
 			$do404 = false;
 			$doredirect = false;
+			$flavour = Zymurgy::GetActiveFlavour();
+			$flavourid = $flavour ? $flavour['contentprovider'] : 0;
+			//Zymurgy::DbgAndDie($flavourid,$flavour);
 			foreach ($np as $navpart)
 			{
-                                $navpart = urldecode($navpart);
-				$navpart = Zymurgy::$db->escape_string($navpart);
+				$navpart = urldecode($navpart);
 				$navpage = ZymurgyTemplate::GetNavInfo($parent,$navpart);
+				$navpart = Zymurgy::$db->escape_string($navpart);
 				if ($navpage === false)
 				{
 					// Is there a redirect available for this navpart?
-					$flavour = Zymurgy::GetActiveFlavour();
-					$flavourid = $flavour ? $flavour['id'] : 0;
 					$sql = "select * from zcm_sitepageredirect where parent=$parent and flavour=$flavourid and linkurl='$navpart'";
 					$redirect = Zymurgy::$db->get($sql);
 					if ($redirect)
@@ -232,8 +248,10 @@ class ZymurgyTemplate
 	 * @param string $newpath
 	 * @param string $msg The reason why the leaf node could not be found.
 	 */
-	public function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
+	static public function DisplayFileNotFound($navpart, $navpath, $newpath, $msg = "")
 	{
+		//Zymurgy::DbgAndDie($msg,debug_backtrace());
+		
 		header("HTTP/1.0 404 Not Found");
 
 		if (array_key_exists("PagesError404", Zymurgy::$config) && (!empty(Zymurgy::$config["PagesError404"])))
