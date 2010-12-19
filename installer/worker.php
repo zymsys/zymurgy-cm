@@ -72,8 +72,8 @@ function CreateConfigFile($mysqlServer,$mysqlUser,$mysqlPassword,$mysqlDatabase,
 \$ZymurgyConfig['tracking'] = FALSE;
 
 //Membership
-\$ZymurgyConfig['MemberLoginPage'] = '/login.php';
-\$ZymurgyConfig['MemberDefaultPage'] = '/members/';
+\$ZymurgyConfig['MemberLoginPage'] = '/zymurgy/memberlogin.php';
+\$ZymurgyConfig['MemberDefaultPage'] = '/pages/members';
 
 //Branding Information
 \$ZymurgyConfig['headerbackground'] = '#666698';

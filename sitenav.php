@@ -280,6 +280,7 @@ class ZymurgySiteNav
 	 */
 	public function haspermission($key){
 		// is this a page (not root)
+		//Zymurgy::DbgAndDie($key,$this->items[$key]->aclitems,Zymurgy::$member["groups"]);
 		while ($key > 0){
 			// does the current node have an ACL
 			if(array_key_exists($key, $this->items)	&& count($this->items[$key]->aclitems) > 0){

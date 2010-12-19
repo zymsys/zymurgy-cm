@@ -542,6 +542,11 @@ class ZymurgyTemplate
 	function pagegadgets(
 		$alignFilter = "")
 	{
+		$wrapdiv = $alignFilter;
+		if ($alignFilter === false)
+		{
+			$alignFilter = '';
+		}
 		$alignFilterCriteria = "1 = 1";
 
 		if(strlen($alignFilter) > 0)
@@ -596,11 +601,19 @@ class ZymurgyTemplate
 				$instance = urldecode($pp[1]);
 
 				if ($instance == "Page Navigation Name")
+				{
 					$instance = $navpart;
-
-				echo "<div align=\"{$row['align']}\">";
+				}
+				
+				if ($wrapdiv !== false)
+				{
+					echo "<div align=\"{$row['align']}\">";
+				}
 				echo Zymurgy::plugin(urldecode($pp[0]),$instance);
-				echo "</div>";
+				if ($wrapdiv !== false)
+				{
+					echo "</div>";
+				}
 			}
 		}
 

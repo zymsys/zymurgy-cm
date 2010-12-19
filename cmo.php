@@ -366,6 +366,26 @@ if (!class_exists('Zymurgy'))
 			else
 				return "http://yui.yahooapis.com/2.8.0r4/build/";
 		}
+		
+		/**
+		 * Includes jQuery from the Google CDN
+		 * @param string $version jQuery version requested 
+		 */
+		public static function jQuery($version = "1.4.2")
+		{
+			return Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.min.js");
+		}
+
+		/**
+		 * Includes jQueryUI from the Google CDN
+		 * @param string $version jQueryUI version requested 
+		 */
+		public static function jQueryUI($version = "1.8")
+		{
+			return
+				Zymurgy::RequireOnceCore(false, "http://ajax.googleapis.com/ajax/libs/jqueryui/$version/themes/base/jquery-ui.css"). 
+				Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jqueryui/$version/jquery-ui.min.js");
+		}
 
 		/**
 		 * Given a table name from Custom Tables, output XML for the table's
@@ -1460,7 +1480,7 @@ if (!class_exists('Zymurgy'))
 		 * Render the plugins assigned to the page. If the alignFilter parameter
 		 * is provided, only render the plugins assigned to that alignment.
 		 *
-		 * @param string $alignFilter Optional. If provided, must be one of "left", "center", or "right".
+		 * @param string $alignFilter Optional. If provided, must be one of "left", "center", "right" or false to suppress the wrapper DIV.
 		 * @return The rendered plugin output.
 		 */
 		public static function pagegadgets(

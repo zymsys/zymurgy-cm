@@ -197,7 +197,7 @@ class ZymurgyMember
 			"' ) AND `password` = '".
 			Zymurgy::$db->escape_string($password).
 			"'";
-		// echo "<div>$sql</div>";
+		//echo "<div>$sql</div>";
 		// $sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
 		//	"' and password='".Zymurgy::$db->escape_string($password)."'";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
@@ -667,14 +667,18 @@ class ZymurgyMember
 								$body,
 								"From: webmaster@".str_replace("www.", "", Zymurgy::$config["sitehome"]));
 
-							echo("<p>Your username and password have been sent to ".$_POST["email"]."</p>");
+							$e[] = "Your username and password have been sent to ".$_POST["email"];
+							//echo("<p>Your username and password have been sent to ".$_POST["email"]."</p>");
 						}
 						else
 						{
-							echo("<p>There are no members with that e-mail address on this site.</p>");
+							$e[] = 'There are no members with that e-mail address on this site.';
+							//echo("<p>There are no members with that e-mail address on this site.</p>");
 						}
 
-						return "";
+						//return "";
+						unset($_GET['reg']);
+						$reg = '';
 
 						break;
 
@@ -771,7 +775,7 @@ class ZymurgyMember
 			switch ($reg)
 			{
 				case 'username':
-					if (array_key_exists('MembershipUsernameForm',Zymurgy::$config))
+					if (array_key_exists('MembershipUsernameForm',Zymurgy::$config) && !empty(Zymurgy::$config['MembershipUsernameForm']))
 						$r[] = Zymurgy::$config['MembershipUsernameForm'];
 					else
 						$r[] = '<form class="MemberForm" method="post"><table>
@@ -783,7 +787,7 @@ class ZymurgyMember
 					return implode("\r\n",$r);
 
 				case "forgotpassword":
-					$r[] = isset(Zymurgy::$config["MembershipForgotPassword"]) ?
+					$r[] = isset(Zymurgy::$config["MembershipForgotPassword"]) && !empty(Zymurgy::$config['MembershipForgotPassword']) ?
 						Zymurgy::$config["MembershipForgotPassword"] :
 						'<form class="MemberForm" method="post">'.
 						'<table>'.
@@ -834,7 +838,7 @@ class ZymurgyMember
 			}
 			//None of the above?  Fall through to login.
 		}
-		if (array_key_exists('MembershipLoginForm',Zymurgy::$config))
+		if (array_key_exists('MembershipLoginForm',Zymurgy::$config) && !empty(Zymurgy::$config['MembershipLoginForm']))
 			$r[] = Zymurgy::$config['MembershipLoginForm'];
 		else
 			$r[] = '<form class="MemberLogin" method="post"><table>
@@ -854,6 +858,7 @@ class ZymurgyMember
 		$sql = "SELECT `username`, `password` FROM `zcm_member` WHERE `email` = '".
 			Zymurgy::$db->escape_string($_POST["email"]).
 			"' LIMIT 0, 1";
+		//Zymurgy::Dbg($sql);
 		$row = Zymurgy::$db->get($sql);
 
 		return $row;
