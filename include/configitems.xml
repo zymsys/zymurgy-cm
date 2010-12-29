@@ -192,7 +192,7 @@
 		<item>
 			<code>MemberProvider</code>
 			<label>Membership Provider:</label>
-			<inputspec>drop.(none),infusionsoftMember,oscommerceMember,vtigerMember</inputspec>
+			<inputspec>drop.(none),httpMember,infusionsoftMember,oscommerceMember,vtigerMember</inputspec>
 		</item>
 		<item>
 			<code>MemberLoginPage</code>
@@ -223,6 +223,19 @@
 			<code>CreateMemberGroup</code>
 			<label>Create group for member automatically on signup</label>
 			<inputspec>checkbox</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- HTTP</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you have selected <b>httpMember</b> as the <b>Membership Provider</b>. If you are using another membership provider, or are not using membership functionality on your site, you can leave all of these settings blank.</p>
+			]]>
+		</description>
+		<item>
+			<code>Membership Auth URL</code>
+			<label>URL to use for HTTP Authentication:</label>
+			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
 	<group>

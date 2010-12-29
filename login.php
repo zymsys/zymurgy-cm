@@ -69,7 +69,7 @@ if (isset($_POST['userid']))
 		{
 			$authAdminLevel = 0;
 		}
-
+		
 		$authData = array(
 			"username" => $row["email"],
 			"email" => $row["email"],

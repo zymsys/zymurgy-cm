@@ -125,6 +125,7 @@ class ZymurgyMember
 	 */
 	public function memberpage($groupname='Registered User')
 	{
+		Zymurgy::DbgAndDie('mp');
 		if (!array_key_exists('MemberLoginPage',Zymurgy::$config))
 		{
 			die("Please define \$ZymurgyConfig['MemberLoginPage'] before using membership functions.");
