@@ -74,8 +74,12 @@ class Zymurgy_DB
 		$ri = $this->query($sql);
 		if (!$ri)
 		{
-			$bt = array_shift(debug_backtrace());
-			die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']);
+			$backtrace = debug_backtrace();
+			do 
+			{
+				$bt = array_shift($backtrace);
+			} while ($bt && (substr($bt['file'], -21) == '/zymurgy/db/mysql.php'));
+			die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n".print_r(debug_backtrace(),true)."\n-->");
 		}
 		return $ri;
 	}
