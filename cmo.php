@@ -1,4 +1,11 @@
 <?
+/**
+ * Zymurgy class and initialization code
+ *
+ * @package Zymurgy
+ * @subpackage base
+ */
+
 // ==========
 // ZK: 2009.10.20
 //
@@ -13,12 +20,6 @@ if (version_compare('5.0.0',PHP_VERSION) > 0)
 		"upgrade your hosting.");
 }
 
-/**
- * Zymurgy class and initialization code
- *
- * @package Zymurgy
- * @subpackage base
- */
 require_once("include/payment.php");
 require_once("include/l10n.php");
 
@@ -293,6 +294,8 @@ if (!class_exists('Zymurgy'))
 					return "    <script type=\"text/javascript\" src=\"".$baseurl."$src\"></script>\r\n";
 				case 'css':
 					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
+				case 'less':
+					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/zymurgy/lesscss.php?src=".urlencode($baseurl.$src)."\" />\r\n";
 				default:
 					return "    <!-- Request for non supported resource: $src -->\r\n";
 			}
