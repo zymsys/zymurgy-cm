@@ -67,7 +67,7 @@ class ZymurgyMember
 			'password'=>$row['password'],
 			'formdata'=>$row['formdata'],
 			'orgunit'=>$row['orgunit'],
-			'groups'=>array() // 'Registered User')
+			'groups'=>array('4'=>'Registered User') // 'Registered User')
 		);
 	}
 
@@ -226,7 +226,15 @@ class ZymurgyMember
 		{
 			$sql = "update zcm_member set authkey=null where id=".Zymurgy::$member['id'];
 			Zymurgy::$db->query($sql) or die("Unable to logout ($sql): ".Zymurgy::$db->error());
-
+			if (array_key_exists('SingleSignon', Zymurgy::$config))
+			{
+				//We auth through an SSO server - send it a notification.
+				$ch = curl_init(Zymurgy::$config['SingleSignon'].'zymurgy/sso.php?type=signout&authkey='.
+					urlencode($_COOKIE['ZymurgyAuth'])."&app=".Zymurgy::$config['SingleSignonAppID']);
+				curl_setopt($ch, CURLOPT_HEADER, 0);
+				curl_exec($ch);
+				curl_close($ch);
+			}
 			if(!headers_sent())
 			{
 				setcookie('ZymurgyAuth', '', 0, '/');
