@@ -291,18 +291,24 @@ UpdateStatus("");
 
 UpdateStatus("Updating Zymurgy:CM navigation");
 
-function SetNavigationFeature($id, $disporder, $label, $url)
+function SetNavigationFeature($id, $label, $url)
 {
+	global $zcmfeatureorder;
+	
+	if (!isset($zcmfeatureorder)) $zcmfeatureorder = 0;
+	
+	$zcmfeatureorder++;
+	
 	$sql = "INSERT INTO `zcm_features` ( `id`, `disporder`, `label`, `url` ) VALUES ( '".
 		mysql_escape_string($id).
 		"', '".
-		mysql_escape_string($disporder).
+		mysql_escape_string($zcmfeatureorder).
 		"', '".
 		mysql_escape_string($label).
 		"', '".
 		mysql_escape_string($url).
 		"') ON DUPLICATE KEY UPDATE `disporder` = '".
-		mysql_escape_string($disporder).
+		mysql_escape_string($zcmfeatureorder).
 		"', `label` = '".
 		mysql_escape_string($label).
 		"', `url` = '".
@@ -313,37 +319,41 @@ function SetNavigationFeature($id, $disporder, $label, $url)
 		or die("Could not update $label feature: ".mysql_error().", $sql");
 }
 
-SetNavigationFeature(21,  1, "--- Content ---", "");
-SetNavigationFeature(2,   2, "- Pages", "sitepage.php");
-SetNavigationFeature(1,   3, "- Simple Content", "sitetext.php");
-SetNavigationFeature(3,   4, "- SEO", "headtext.php");
-SetNavigationFeature(31,  5, "- Tag Manager", "tagmgr.php");
-SetNavigationFeature(32,  6, "- Quick Links", "quicklink.php");
-SetNavigationFeature(22,  7, "--- Admin ---", "");
-SetNavigationFeature(4,   8, "- Members", "editmember.php");
-SetNavigationFeature(5,   9, "- Membership Groups", "editmember.php?action=list_groups");
-SetNavigationFeature(26, 10, "- Access Control Lists", "acl.php");
-SetNavigationFeature(23, 11, "--- Webmaster ---", "");
-SetNavigationFeature(11, 12, "- Navigation", "navigation.php");
-SetNavigationFeature(12, 13, "- Appearance Items", "configconfig.php");
-SetNavigationFeature(28, 14, "- Flavours", "flavours.php");
-SetNavigationFeature(13, 15, "- Plugin Management", "plugin.php");
-SetNavigationFeature(14, 16, "- Custom Tables", "customtable.php");
-SetNavigationFeature(15, 17, "- Custom Code Generator", "mkcustom.php");
-SetNavigationFeature(16, 18, "- Template Manager", "templatemgr.php");
-SetNavigationFeature(27, 19, "- Zymurgy:CM Config", "zcmconfig.php");
-SetNavigationFeature(29, 20, "- Migrate Data", "migrate.php");
-SetNavigationFeature(30, 21, "- Import Content", "import.php");
-SetNavigationFeature(24, 22, "--- Media Files ---", "");
-SetNavigationFeature(6,  23, "- Media Files", "media.php");
-SetNavigationFeature(7,  24, "- Media Packages", "media.php?action=list_media_packages");
-SetNavigationFeature(8,  25, "- Media Package Types", "media.php?action=list_media_package_types");
-SetNavigationFeature(9,  26, "- Media Relations", "media.php?action=list_relations");
-SetNavigationFeature(25, 27, "--- General ---", "");
-SetNavigationFeature(17, 28, "- Appearance", "configuration.php");
-SetNavigationFeature(18, 29, "- Profile", "profile.php");
-SetNavigationFeature(19, 30, "- Help", "http://www.zymurgycm.com/userwiki/");
-SetNavigationFeature(20, 31, "- Logout", "logout.php");
+/* Display order is set by the order added.
+ * UPDATE THIS MAX ID COUNTER WHEN ADDING ITEMS TO MAKE LIFE EASIER: 32 (SSOAPP.PHP)
+ */
+SetNavigationFeature(21, "--- Content ---", "");
+SetNavigationFeature(2,  "- Pages", "sitepage.php");
+SetNavigationFeature(1,  "- Simple Content", "sitetext.php");
+SetNavigationFeature(3,  "- SEO", "headtext.php");
+SetNavigationFeature(31, "- Tag Manager", "tagmgr.php");
+SetNavigationFeature(32, "- Quick Links", "quicklink.php");
+SetNavigationFeature(22, "--- Admin ---", "");
+SetNavigationFeature(4,  "- Members", "editmember.php");
+SetNavigationFeature(5,  "- Membership Groups", "editmember.php?action=list_groups");
+SetNavigationFeature(26, "- Access Control Lists", "acl.php");
+SetNavigationFeature(32, "- Single Sign On Apps", "ssoapp.php");
+SetNavigationFeature(23, "--- Webmaster ---", "");
+SetNavigationFeature(11, "- Navigation", "navigation.php");
+SetNavigationFeature(12, "- Appearance Items", "configconfig.php");
+SetNavigationFeature(28, "- Flavours", "flavours.php");
+SetNavigationFeature(13, "- Plugin Management", "plugin.php");
+SetNavigationFeature(14, "- Custom Tables", "customtable.php");
+SetNavigationFeature(15, "- Custom Code Generator", "mkcustom.php");
+SetNavigationFeature(16, "- Template Manager", "templatemgr.php");
+SetNavigationFeature(27, "- Zymurgy:CM Config", "zcmconfig.php");
+SetNavigationFeature(29, "- Migrate Data", "migrate.php");
+SetNavigationFeature(30, "- Import Content", "import.php");
+SetNavigationFeature(24, "--- Media Files ---", "");
+SetNavigationFeature(6,  "- Media Files", "media.php");
+SetNavigationFeature(7,  "- Media Packages", "media.php?action=list_media_packages");
+SetNavigationFeature(8,  "- Media Package Types", "media.php?action=list_media_package_types");
+SetNavigationFeature(9,  "- Media Relations", "media.php?action=list_relations");
+SetNavigationFeature(25, "--- General ---", "");
+SetNavigationFeature(17, "- Appearance", "configuration.php");
+SetNavigationFeature(18, "- Profile", "profile.php");
+SetNavigationFeature(19, "- Help", "http://www.zymurgycm.com/userwiki/");
+SetNavigationFeature(20, "- Logout", "logout.php");
 
 UpdateStatus("-- Zymurgy:CM Feature list configured");
 

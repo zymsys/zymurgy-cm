@@ -125,7 +125,6 @@ class ZymurgyMember
 	 */
 	public function memberpage($groupname='Registered User')
 	{
-		Zymurgy::DbgAndDie('mp');
 		if (!array_key_exists('MemberLoginPage',Zymurgy::$config))
 		{
 			die("Please define \$ZymurgyConfig['MemberLoginPage'] before using membership functions.");
@@ -842,11 +841,16 @@ class ZymurgyMember
 		if (array_key_exists('MembershipLoginForm',Zymurgy::$config) && !empty(Zymurgy::$config['MembershipLoginForm']))
 			$r[] = Zymurgy::$config['MembershipLoginForm'];
 		else
-			$r[] = '<form class="MemberLogin" method="post"><table>
-        <tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>
-        <tr><td align="right">Password:</td><td><input type="password" name="pass" id="pass"></td></tr>
-        <tr><td align="center" colspan="2"><input type="Submit" value="Login"></td></tr>
-        </table></form>';
+		{
+			$myurl = strtolower(array_shift(explode('/',$_SERVER['SERVER_PROTOCOL'],2)));
+			$myurl .= '://'.$_SERVER['SERVER_NAME'].'/'.$_SERVER['REQUEST_URI'];
+			$r[] = '<form class="MemberLogin" method="post" action="'.$myurl.'">
+				<table>
+		        <tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>
+		        <tr><td align="right">Password:</td><td><input type="password" name="pass" id="pass"></td></tr>
+		        <tr><td align="center" colspan="2"><input type="Submit" value="Login"></td></tr>
+		        </table></form>';
+		}
 		return implode("\r\n",$r);
 	}
 

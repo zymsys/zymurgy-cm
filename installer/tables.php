@@ -20,7 +20,8 @@
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetVisitTrackingTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetACLTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPageTableDefinitions());
-
+	$baseTableDefinitions = array_merge($baseTableDefinitions, GetMiscTableDefinitions());
+	
 	function GetFlavourDefinitions()
 	{
 		return array(
@@ -568,6 +569,38 @@
 					array("columns" => "zcm_acl", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
+				"engine" => "MyISAM"
+			)
+		);
+	}
+
+	function GetMiscTableDefinitions()
+	{
+		return array(
+			array(
+				"name" => "zcm_ssoapp",
+				"columns" => array(
+					DefineTableField("id", "BIGINT(20)", "NOT NULL AUTO_INCREMENT"),
+					DefineTableField("name", "VARCHAR(100)", "DEFAULT NULL"),
+					DefineTableField("link", "VARCHAR(100)", "DEFAULT NULL")
+				),
+				"indexes" => array(
+				),
+				"primarykey" => "id",
+				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_ssoauth",
+				"columns" => array(
+					DefineTableField("app", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("member", "BIGINT(20)", "NOT NULL"),
+					DefineTableField("authed", "TINYINT", "DEFAULT 0"),
+					DefineTableField("lastauth", "DATETIME", "NOT NULL")
+				),
+				"indexes" => array(
+					array("columns" => "authed", "unique" => FALSE, "type" => "")
+				),
+				"primarykey" => "app,member",
 				"engine" => "MyISAM"
 			)
 		);
