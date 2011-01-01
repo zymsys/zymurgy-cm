@@ -291,7 +291,7 @@ if (!class_exists('Zymurgy'))
 				case 'js':
 					if ($isYUI && Zymurgy::$yuitest)
 						$src = str_replace('-min.js','-debug.js',$src); //Scrub -min for testing YUI
-					return "    <script type=\"text/javascript\" src=\"".$baseurl."$src\"></script>\r\n";
+					return "    <script src=\"".$baseurl."$src\"></script>\r\n";
 				case 'css':
 					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
 				case 'less':
@@ -338,7 +338,7 @@ if (!class_exists('Zymurgy'))
 			if (Zymurgy::$yuitest)
 			{
 				?>
-				<script type="text/javascript">
+				<script>
 				var myLogReader = new YAHOO.widget.LogReader();
 				</script>
 				<?
@@ -663,7 +663,7 @@ if (!class_exists('Zymurgy'))
 						$urltag = urlencode($jstag);
 						$tag = htmlspecialchars($tag);
 						$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
-						$t = "<span id=\"ST$tag\">$t</span><script type=\"text/javascript\">
+						$t = "<span id=\"ST$tag\">$t</span><script>
 			YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
 													{ context:\"ST$jstag\",
 													  hidedelay: 10000,
@@ -1007,7 +1007,7 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js").
 				Zymurgy::YUI("animation/animation-min.js").
 				Zymurgy::YUI("container/container-min.js")."
-		<script type=\"text/javascript\">
+		<script>
 		function ShowEditWindow(link)
 		{
 			var editWindow = window.open(link,'cmsEditor','width=630,height=450,dependent');
@@ -1027,7 +1027,7 @@ if (!class_exists('Zymurgy'))
 		static function JSRedirect($url)
 		{
 			//Redirect and die.
-			echo "<script type=\"text/JavaScript\">
+			echo "<script>
 			<!--
 			window.location.href=\"$url\";
 			//-->
@@ -1044,7 +1044,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function JSInnerHtml($id,$html)
 		{
-			echo "<script type=\"text/JavaScript\">
+			echo "<script>
 			var Zymurgy_InnerHTML = document.getElementById('".addslashes($id)."');
 			Zymurgy_InnerHTML.innerHTML = '".addslashes($html)."';
 			</script>";
