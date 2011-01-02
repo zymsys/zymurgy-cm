@@ -91,7 +91,18 @@ $mime = $_GET['mime'];
 $dataset = safeparam($_GET['dataset']);
 $datacolumn = safeparam($_GET['datacolumn']);
 $id = 0 + $_GET['id'];
+if ($mime == 'auto')
+{
+	$mime = getmime("$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.*");
+}
 $thumbName = "";
+
+function getmime($fn)
+{
+	$info = `file -i $fn`;
+	$ip = explode(': ',$info);
+	return trim(array_pop($ip));
+}
 
 if ($mime == '')
 {
@@ -106,8 +117,8 @@ else
 		$requestedSize = "{$w}x$h";
 		require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
 		$ext = Thumb::mime2ext($mime);
-		$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}thumb$requestedSize.$ext";
 		$rawimage = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.$ext";
+		$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}thumb$requestedSize.$ext";
 
 		$makethumb = false;
 		if (file_exists($thumbName))
@@ -188,8 +199,8 @@ else
     	else
     	{
     		//Last ditch effort to supply a valid file...  See if there's a raw thumb.
-			$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.jpg";
-//			die($thumbName);
+    		$ext = Thumb::mime2ext($mime);
+			$thumbName = "$root/UserFiles/DataGrid/$dataset.$datacolumn/{$id}raw.$ext";
 	    	if (file_exists($thumbName))
 	    		$safefn = $thumbName;
 	    	else

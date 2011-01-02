@@ -3497,6 +3497,7 @@ class InputWidget
 		$widget = InputWidget::Get($ep[0]);
 		$this->SetExtras($widget);
 		$value = $widget->Display($ep,$value,$this);
+		
 		return str_replace(array("{0}","{ID}"),array($value,$masterkey),$template);
 	}
 

@@ -1127,7 +1127,7 @@ class DataGrid
 			$theight = $maxh;
 		}
 		list($ds,$dc) = explode('.',$datacolumn,2);
-		$imgsrc = "/zymurgy/file.php?mime=image/jpeg&dataset=".urlencode($ds)."&datacolumn=".
+		$imgsrc = "/zymurgy/file.php?mime=auto&dataset=".urlencode($ds)."&datacolumn=".
 			urlencode($dc)."&id={ID}&w=$twidth&h=$theight";
 		//$returnurl = urlencode($this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection')));
 		if ($fixedratio)
