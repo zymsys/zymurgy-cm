@@ -295,9 +295,10 @@ if (!empty($tbl['selfref']))
 	$ds->AddDataFilter('selfref',$selfref);
 }
 
-if(file_exists(Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php"))
+$customfn = Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php";
+if(file_exists($customfn))
 {
-	include_once(Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php");
+	include_once($customfn);
 }
 
 $dg = new DataGrid($ds);
@@ -356,9 +357,16 @@ if (!empty($tbl['selfref']))
 	$dg->AddColumn($tbl['selfref'],$idfieldname,"<a href=\"customedit.php?t=$t&s={0}\">{$tbl['selfref']}</a>");
 }
 
+if($tbl["ismember"])
+{
+	$dg->AddEditor("member","Member:", "lookup.zcm_member.id.username.username.", "member");
+}
 foreach($cols as $col=>$inputspec)
 {
-	$dg->AddEditor($col,$capts[$col],$inputspec);
+	if (!empty($capts[$col]))
+	{
+		$dg->AddEditor($col,$capts[$col],$inputspec);
+	}
 }
 
 $dg->AddEditColumn();

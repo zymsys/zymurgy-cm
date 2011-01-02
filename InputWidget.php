@@ -694,6 +694,8 @@ class ZIW_InputSpec extends ZIW_Base
 /**
  * @package Zymurgy
  * @subpackage inputwidgets
+ * 
+ * Dotted parameters are: table name, id column, value column, sort column, allow nulls
  */
 class ZIW_Lookup extends ZIW_Base
 {
@@ -942,7 +944,7 @@ SCRIPT;
 
 	function GetDatabaseType($inputspecName, $parameters)
 	{
-		return "VARCHAR(20) NULL";
+		return "VARCHAR(70) NULL"; //Big enough for GUIDs and other largish primary keys
 	}
 	
 	function isItFlavoured($ep)
