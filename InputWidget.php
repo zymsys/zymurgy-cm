@@ -3356,7 +3356,7 @@ class ZIW_Page extends ZIW_Base
 
 			$parent = $page["parent"];
 
-			if($parent > 0)
+			if (($parent > 0) && (array_key_exists($parent, $pages)))
 			{
 				$page["path"] = $pages[$parent]["path"].'/'.
 					$page["path"];

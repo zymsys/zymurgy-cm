@@ -75,7 +75,7 @@ function OnBeforeUpdate($values)
 		if ($oldiw->SupportsFlavours() && !$newiw->SupportsFlavours())
 		{
 			//Moving from flavoured to vanilla
-			Zymurgy::ConvertFlavouredToVanilla($tbl['tname'],$old['cname']);
+			Zymurgy::ConvertFlavouredToVanilla($tbl['tname'],$old['cname'],$values['zcm_customfield.inputspec']);
 		}
 		elseif (!$oldiw->SupportsFlavours() && $newiw->SupportsFlavours())
 		{

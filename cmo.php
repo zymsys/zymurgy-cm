@@ -1763,6 +1763,7 @@ if (!class_exists('Zymurgy'))
 			//Delete flavour data while we're at it.
 			foreach ($map as $id=>$fid)
 			{
+				$fid = intval($fid); //Zero out empty/null values
 				$content = Zymurgy::$db->get("SELECT `default` from `zcm_flavourtext` where `id`=$fid");
 				Zymurgy::$db->run("UPDATE `$table` set `$column` = '".
 					Zymurgy::$db->escape_string($content)."' where `id`=$id");
