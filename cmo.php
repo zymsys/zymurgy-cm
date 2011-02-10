@@ -374,7 +374,7 @@ if (!class_exists('Zymurgy'))
 		 * Includes jQuery from the Google CDN
 		 * @param string $version jQuery version requested 
 		 */
-		public static function jQuery($version = "1.4.2")
+		public static function jQuery($version = "1.5")
 		{
 			return Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.min.js");
 		}
@@ -517,6 +517,90 @@ if (!class_exists('Zymurgy'))
 				stripslashes($value);
 
 			return $value;
+		}
+		
+		/**
+		 * Look for $name in $source.  If not found then either throw an exception
+		 * or return $default if it has been provided.
+		 * 
+		 * @param string $name
+		 * @param array $source
+		 * @param string $sourcename
+		 * @param mixed $default
+		 * @throws Exception
+		 */
+		private static function request_core($name,$source,$sourcename,$default = false)
+		{
+			if (array_key_exists($name, $source))
+			{
+				return $source[$name];
+			}
+			else 
+			{
+				if ($default === false)
+				{
+					throw new Exception("$name not found in $sourcename", 0);
+				}
+				else 
+				{
+					return $default;
+				}
+			}
+		}
+		
+		/**
+		 * Look for $name in POST.  Throw an exception or return $default if provided.
+		 * 
+		 * @param string $name
+		 * @param mixed $default
+		 */
+		public static function post($name,$default = false)
+		{
+			return Zymurgy::request_core($name,$_POST,'POST', $default);
+		}
+		
+		/**
+		 * Look for $name in GET.  Throw an exception or return $default if provided.
+		 * 
+		 * @param string $name
+		 * @param mixed $default
+		 */
+		public static function get($name,$default = false)
+		{
+			return Zymurgy::request_core($name, $_GET, 'GET', $default);
+		}
+		
+		/**
+		 * Look for $name in COOKIEs.  Throw an exception or return $default if provided.
+		 * 
+		 * @param string $name
+		 * @param mixed $default
+		 */
+		public static function cookie($name,$default = false)
+		{
+			return Zymurgy::request_core($name, $_COOKIE, 'cookies', $default);
+		}
+		
+		/**
+		 * Look for $name in SESSION.  Throw an exception or return $default if provided.
+		 * 
+		 * @param string $name
+		 * @param mixed $default
+		 */
+		public static function session($name,$default = false)
+		{
+			return Zymurgy::request_core($name, $_SESSION, 'session', $default);
+		}
+		
+		/**
+		 * Look for $name in POST, GET or COOKIEs.  Throw an exception or return $default if provided.
+		 * 
+		 * @param string $name
+		 * @param mixed $default
+		 */
+		public static function request($name,$default = false)
+		{
+			return Zymurgy::request_core($name, $_REQUEST, 'REQUEST', $default);
 		}
 
 		//@{
@@ -757,7 +841,7 @@ if (!class_exists('Zymurgy'))
 					$row = Zymurgy::$db->fetch_array($ri);
 				}
 			}
-
+//Zymurgy::DbgAndDie($row,Zymurgy::$template);
 			Zymurgy::$title = $row['title'];
 			Zymurgy::$pageid = $row['id'];
 			$r = array();

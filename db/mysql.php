@@ -65,7 +65,7 @@ class Zymurgy_DB
 	 * @see query()
 	 *
 	 * @param string $sql The query to run
-	 * @param string $errormsg The error message to show in case of error.
+	 * @param string $errormsg The error message to show in case of error, or false to throw an exception.
 	 * @return resource MySQL result set
 	 */
 	public function run($sql, $errormsg = 'Unable to run query')
@@ -79,9 +79,65 @@ class Zymurgy_DB
 			{
 				$bt = array_shift($backtrace);
 			} while ($bt && (substr($bt['file'], -21) == '/zymurgy/db/mysql.php'));
-			die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n".print_r(debug_backtrace(),true)."\n-->");
+			if ($errormsg === false)
+			{
+				throw new Exception($this->error()." in ".$bt['file']." on line ".$bt['line'], 0);
+			}
+			else 
+			{
+				die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n".print_r(debug_backtrace(),true)."\n-->");
+			}
 		}
 		return $ri;
+	}
+	
+	/**
+	 * Return value of request named $name, escaped for the character set of the current connection.
+	 * If $name isn't in the request then either throw an exception or return the escaped value of
+	 * $default if it was provided.
+	 * 
+	 * @param string $name
+	 * @param string $default
+	 * @return string
+	 * @throws Exception
+	 */
+	public function request($name, $default = false)
+	{
+		if (array_key_exists($name, $_REQUEST))
+		{
+			return $this->escape_string($_REQUEST[$name]);
+		}
+		else 
+		{
+			if ($default === false)
+			{
+				throw new Exception("Can't find $name in request.", 0);
+			}
+			else 
+			{
+				return $this->escape_string($default);
+			}
+		}
+	}
+	
+	/**
+	 * Take an SQL template and replace values from $_REQUEST; values are escaped according to the current 
+	 * connection's character set.  All values are quoted.
+	 * Example: example.php?id=5&name=Foo
+	 * sql_template: UPDATE `bar` SET `name`=[name] WHERE `id`=[id]
+	 * returns: UPDATE `bar` SET `name`='Foo' WHERE `id`='5'
+	 * 
+	 * @param string $sql_template
+	 * @return string
+	 */
+	public function requestsql($sql_template)
+	{
+		$replmap = array();
+		foreach(array_keys($_REQUEST) as $key)
+		{
+			$replmap["[$key]"] = "'".$this->escape_string($_REQUEST[$key])."'";
+		}
+		return str_replace(array_keys($replmap), array_values($replmap), $sql_template);
 	}
 
 	/**
@@ -170,6 +226,19 @@ class Zymurgy_DB
 	public function fetch_row($result)
 	{
 		return mysql_fetch_row($result);
+	}
+
+	/**
+	 * Fetch the next row from a result set and return an object.
+	 *
+	 * @see PHP_MANUAL#mysql_fetch_object
+	 *
+	 * @param resource $result MySQL result set
+	 * @return object
+	 */
+	public function fetch_object($result)
+	{
+		return mysql_fetch_object($result);
 	}
 
 	/**

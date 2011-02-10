@@ -192,7 +192,7 @@
 		<item>
 			<code>MemberProvider</code>
 			<label>Membership Provider:</label>
-			<inputspec>drop.(none),httpMember,infusionsoftMember,oscommerceMember,vtigerMember</inputspec>
+			<inputspec>drop.(none),httpMember,infusionsoftMember,oscommerceMember,salesforceMember,vtigerMember</inputspec>
 		</item>
 		<item>
 			<code>MemberLoginPage</code>
@@ -266,6 +266,29 @@
 		<item>
 			<code>oscommerce Server Path</code>
 			<label>oscommerce Server URL:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+	</group>
+	<group>
+		<name>- salesforce</name>
+		<description>
+			<![CDATA[
+				<p>These settings only need to be configured if you have selected <b>salesforceMember</b> as the <b>Membership Provider</b>. If you are using another membership provider, or are not using membership functionality on your site, you can leave all of these settings blank.</p>
+			]]>
+		</description>
+		<item>
+			<code>WSDL Path</code>
+			<label>WSDL Path:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>salesforce Login</code>
+			<label>Salesforce Login:</label>
+			<inputspec>input.50.200</inputspec>
+		</item>
+		<item>
+			<code>salesforce Token</code>
+			<label>Salesforce Security Token:</label>
 			<inputspec>input.50.200</inputspec>
 		</item>
 	</group>
