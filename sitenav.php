@@ -208,7 +208,7 @@ class ZymurgySiteNav
 			}
 		}
 
-		$sql = "SELECT `zcm_acl`, `group`, `permission` FROM `zcm_aclitem`";
+		$sql = "SELECT `zcm_acl`, `group` FROM `zcm_aclitem`";
 		$ri = Zymurgy::$db->query($sql)
 			or die("Could not retrieve list of ACLs: ".Zymrugy::$db->error().", $sql");
 
@@ -222,8 +222,7 @@ class ZymurgySiteNav
 				{
 					if($item->acl == $row["zcm_acl"])
 						$item->aclitems[] = array(
-							"group" => $row["group"],
-							"permission" => $row["permission"]
+							"group" => $row["group"]
 						);
 				}
 			}
@@ -284,7 +283,8 @@ class ZymurgySiteNav
 		while ($key > 0){
 			// does the current node have an ACL
 			if(array_key_exists($key, $this->items)	&& count($this->items[$key]->aclitems) > 0){
-				foreach($this->items[$key]->aclitems as $aclitem){
+				if ($this->items[$key]->aclitems) return true;
+				/*foreach($this->items[$key]->aclitems as $aclitem){
 					if($aclitem["permission"] == "Read"){
 						if(is_array(Zymurgy::$member["groups"]) &&
 								array_key_exists($aclitem["group"], Zymurgy::$member["groups"])){
@@ -292,7 +292,7 @@ class ZymurgySiteNav
 							return true;
 						}
 					}
-				}
+				}*/
 				// user's groups are not in ACL, no permission
 				return false;
 			}

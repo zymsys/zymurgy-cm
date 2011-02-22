@@ -2,6 +2,10 @@
 Javascript helper functions for Zymurgy:CM (www.zymurgycm.com).
 */
 function ZymurgyFactory() {
+	/**
+	 * AJAX URL and a callback function.
+	 * If you set onComplete to false then the request will be syncronous and will return when it has the result.
+	 */
 	this.lightAJAX = function(url,onComplete) {
 		var req;
 		if (window.XMLHttpRequest) {
@@ -14,12 +18,14 @@ function ZymurgyFactory() {
 			//No AJAX available...
 			return;
 		}
-		req.open('get',url,true);
 		req.onreadystatechange = function() {
 			if (onComplete)
 				onComplete(req);
 		};
+		var async = (onComplete !== false);
+		req.open('get',url,async);
 		req.send(null);
+		return req.responseText;
 	};
 	
 	this.getparam = function (name)
@@ -60,6 +66,20 @@ function ZymurgyFactory() {
 			this.lightAJAX(url);
 		}
 	};
+	
+	this.sitetext = function(tag,defaulttext,inputspec) {
+		if (this.sitetextcache) {
+			if (this.sitetextcache[tag]) return this.sitetextcache[tag];
+		} //If not already provided by Z:CM, set it here via ajax to the default value, and then return that.
+		var url = "/zymurgy/include/sitetext.php?t=" +
+			escape(tag) + "&d=" +
+			escape(defaulttext) + "&pt=" + Zymurgy.pagetype + "&pi=" + Zymurgy.pageid;
+		if (inputspec) {
+			url += "&i=" + escape(inputspec);
+		}
+		this.lightAJAX(url);
+		return defaulttext;
+	}
 	
 	this.toggleText = function(el, a, b) {
 		if (el.value == a)
@@ -114,4 +134,4 @@ function ZymurgyFactory() {
 	return this;
 };
 
-var Zymurgy = ZymurgyFactory();
+var Zymurgy = new ZymurgyFactory();

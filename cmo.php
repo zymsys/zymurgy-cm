@@ -189,6 +189,13 @@ if (!class_exists('Zymurgy'))
 		private static $MemberProvider = null;
 
 		/**
+		 * Cache of ACL permissions for authenticated user
+		 * 
+		 * @var array
+		 */
+		private static $acl;
+		
+		/**
 		 * ID of the page in the zcm_meta table.
 		 *
 		 * Member made public to allow Zymurgy::sitetext() to be called without
@@ -374,7 +381,7 @@ if (!class_exists('Zymurgy'))
 		 * Includes jQuery from the Google CDN
 		 * @param string $version jQuery version requested 
 		 */
-		public static function jQuery($version = "1.5")
+		public static function jQuery($version = "1.4.2")
 		{
 			return Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.min.js");
 		}
@@ -520,90 +527,134 @@ if (!class_exists('Zymurgy'))
 		}
 		
 		/**
-		 * Look for $name in $source.  If not found then either throw an exception
-		 * or return $default if it has been provided.
+		 * Check the ACL for a permission for the logged in user.  Return the provided
+		 * default permission if the user doesn't have the ACL at all, or if the user is
+		 * not logged in.
 		 * 
-		 * @param string $name
-		 * @param array $source
-		 * @param string $sourcename
-		 * @param mixed $default
-		 * @throws Exception
+		 * @param string $bywhat (id or name)
+		 * @param mixed $acl (int if bywhat is id, string if bywhat is name)
+		 * @param string $permission (Read, Write or Delete)
+		 * @param boolean $default
 		 */
-		private static function request_core($name,$source,$sourcename,$default = false)
+		private static function checkaclby($bywhat, $acl, $permission, $default = null)
 		{
-			if (array_key_exists($name, $source))
-			{
-				return $source[$name];
+			if ($default === null)
+			{ //Set default default for permission type
+				$default = ($permission == 'Read'); //Read permission defaults to true, everything else defaults to false.
 			}
-			else 
-			{
-				if ($default === false)
-				{
-					throw new Exception("$name not found in $sourcename", 0);
-				}
-				else 
-				{
-					return $default;
-				}
+			if (($acl === 0) || empty($acl)) 
+			{ //Either we have no ACL or no authenticated member, so just return the default permission for this request.
+				return $default;
 			}
+			//Ensure $member is initialized if possible
+			Zymurgy::memberauthenticate();
+			Zymurgy::memberauthorize("");
+			if (!isset(Zymurgy::$member))
+			{ //An ACL was specified but the user is not logged in.  Always return false.
+				return false;
+			}
+			if (!isset(Zymurgy::$acl))
+			{ //Build ACL cache for this user
+				Zymurgy::$acl = array(
+					'byname' => array(),
+					'byid' => array()
+				);
+				$ri = Zymurgy::$db->run("SELECT `zcm_acl`.`id` AS `aclid`, `zcm_acl`.`name`, `zcm_aclitem`.`permission` FROM `zcm_acl` LEFT JOIN `zcm_aclitem` ON `zcm_acl`.`id` = `zcm_aclitem`.`zcm_acl` WHERE `group` IN (".
+					implode(',', array_keys(Zymurgy::$member['groups'])).")");
+				while (($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
+				{
+					if (!array_key_exists($row['aclid'], Zymurgy::$acl['byid']))
+					{
+						Zymurgy::$acl['byname'][$row['name']] = array();
+						Zymurgy::$acl['byid'][$row['aclid']] = array();
+					}
+					Zymurgy::$acl['byname'][$row['name']][$row['permission']] = true;
+					Zymurgy::$acl['byid'][$row['aclid']][$row['permission']] = true;
+				}
+				Zymurgy::$db->free_result($ri);
+			}
+			if (array_key_exists($acl, Zymurgy::$acl["by$bywhat"]))
+			{ //We have an entry for this ACL
+				if (array_key_exists($permission, Zymurgy::$acl["by$bywhat"][$acl]))
+					return true; //We have the requested permission
+			}
+			return $default;
+		}
+		
+		
+		/**
+		 * Read from a table, honoring any ACL checks that have been defined for that table.
+		 * If the table doesn't have an ACL then no rights are allowed. 
+		 * 
+		 * @param string $table
+		 * @param mixed $rowid
+		 * @return array (or false on error)
+		 */
+		public static function table_read($table,$rowid = false)
+		{
+			require_once Zymurgy::$root."/zymurgy/model.php";
+			$m = ZymurgyModel::factory($table);
+			return $m->read($rowid);
 		}
 		
 		/**
-		 * Look for $name in POST.  Throw an exception or return $default if provided.
+		 * Write to a $rowdata row honoring the table's ACL.  If no ACL is defined then access
+		 * will be denied.  $rowdata is an array of column names and values.
 		 * 
-		 * @param string $name
-		 * @param mixed $default
+		 * @param string $table
+		 * @param array $rowdata
+		 * @return boolean
 		 */
-		public static function post($name,$default = false)
+		public static function table_write($table,$rowdata)
 		{
-			return Zymurgy::request_core($name,$_POST,'POST', $default);
+			require_once Zymurgy::$root."/zymurgy/model.php";
+			$m = ZymurgyModel::factory($table);
+			return $m->write($rowdata);
 		}
 		
 		/**
-		 * Look for $name in GET.  Throw an exception or return $default if provided.
+		 * Delete a row from a table, honoring the table's ACL.  If the table has no ACL then access
+		 * is always denied.
 		 * 
-		 * @param string $name
-		 * @param mixed $default
+		 * @param string $table
+		 * @param mixed $rowid
+		 * @return boolean
 		 */
-		public static function get($name,$default = false)
+		public static function table_delete($table,$rowid)
 		{
-			return Zymurgy::request_core($name, $_GET, 'GET', $default);
+			require_once Zymurgy::$root."/zymurgy/model.php";
+			$m = ZymurgyModel::factory($table);
+			return $m->delete($rowid);
 		}
 		
 		/**
-		 * Look for $name in COOKIEs.  Throw an exception or return $default if provided.
+		 * Check the ACL for a permission for the logged in user.  Return the provided
+		 * default permission if the user doesn't have the ACL at all, or if the user is
+		 * not logged in.
 		 * 
-		 * @param string $name
-		 * @param mixed $default
+		 * @param int $aclname
+		 * @param string $permission (Read, Write or Delete)
+		 * @param boolean $default
 		 */
-		public static function cookie($name,$default = false)
+		public static function checkaclbyid($aclid, $permission, $default = null)
 		{
-			return Zymurgy::request_core($name, $_COOKIE, 'cookies', $default);
+			return Zymurgy::checkaclby('id', intval($aclid), $permission, $default);
 		}
 		
 		/**
-		 * Look for $name in SESSION.  Throw an exception or return $default if provided.
+		 * Check the ACL for a permission for the logged in user.  Return the provided
+		 * default permission if the user doesn't have the ACL at all, or if the user is
+		 * not logged in.
 		 * 
-		 * @param string $name
-		 * @param mixed $default
+		 * @param string $aclname
+		 * @param string $permission (Read, Write or Delete)
+		 * @param boolean $default
 		 */
-		public static function session($name,$default = false)
+		public static function checkaclbyname($aclname, $permission, $default = null)
 		{
-			return Zymurgy::request_core($name, $_SESSION, 'session', $default);
+			return Zymurgy::checkaclby('name', $aclname, $permission, $default);
 		}
 		
-		/**
-		 * Look for $name in POST, GET or COOKIEs.  Throw an exception or return $default if provided.
-		 * 
-		 * @param string $name
-		 * @param mixed $default
-		 */
-		public static function request($name,$default = false)
-		{
-			return Zymurgy::request_core($name, $_REQUEST, 'REQUEST', $default);
-		}
-
-		//@{
 		/**
 		 * Get general site content.  Create new tag if this one doesn't exist.
 		 *
@@ -664,36 +715,9 @@ if (!class_exists('Zymurgy'))
 
 				// -----
 				// Check to see if the user has access to this block of site text
-				if($row["acl"] > 0)
+				if (!Zymurgy::checkaclbyid($row['acl'], 'Read', true))
 				{
-					$mayView = false;
-
-					Zymurgy::memberauthenticate();
-					Zymurgy::memberauthorize("");
-
-					$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
-						Zymurgy::$db->escape_string($row["acl"]).
-						"' AND `permission` = 'Read'";
-					$aclri = Zymurgy::$db->query($aclsql)
-						or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
-
-					while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
-					{
-						if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
-						{
-							$mayView = true;
-							break;
-						}
-					}
-
-					Zymurgy::$db->free_result($aclri);
-				}
-
-				// -----
-				// Has the inputspec changed?
-				if(!$mayView)
-				{
-					$t = "";
+					$t = '';
 				}
 				else
 				{
@@ -732,8 +756,8 @@ if (!class_exists('Zymurgy'))
 					$_GET['editkey'] = $widget->editkey = $row['id'];
 					$widget->datacolumn = 'zcm_sitetext.body';
 					$t = $widget->Display("$type","{0}",$row['body']);
-					if (((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
-						(array_key_exists('zymurgy',$_COOKIE) && $adminui))
+					if ($adminui && ((!array_key_exists('inlineeditor',Zymurgy::$config)) || (array_key_exists('inlineeditor',Zymurgy::$config) && Zymurgy::$config['inlineeditor'])) &&
+						(array_key_exists('zymurgy',$_COOKIE)))
 					{
 						//Render extra goop to allow in place editing.
 						global $Zymurgy_tooltipcount;
@@ -1918,7 +1942,8 @@ if (!class_exists('Zymurgy'))
 	else
 		Zymurgy::$root = $_SERVER['DOCUMENT_ROOT'];
 
-	Zymurgy::$build = 1987;
+	Zymurgy::$build = 1987; //Historical; no longer used.
+	
 	if (ini_get('date.timezone') == '') 
 	{
 		date_default_timezone_set('America/New_York');

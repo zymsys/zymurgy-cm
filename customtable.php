@@ -284,7 +284,7 @@ function OnBeforeInsert($values)
 }
 
 $ds = new DataSet('zcm_customtable','id');
-$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref','idfieldname','detailforfield');
+$ds->AddColumns('id','disporder','tname','detailfor','hasdisporder','ismember','navname','selfref','idfieldname','detailforfield','acl');
 $ds->AddDataFilter('detailfor',$detailfor);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnBeforeInsert = 'OnBeforeInsert';
@@ -295,6 +295,7 @@ $dg->AddConstant('detailfor',$detailfor);
 $dg->AddColumn('Table','tname');
 $dg->AddColumn('Display Order?','hasdisporder');
 $dg->AddColumn('Member Data?','ismember');
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddUpDownColumn('disporder');
 
 $dg->AddColumn(
@@ -310,6 +311,7 @@ $dg->AddInput('navname','Link Name:',30,30);
 $dg->AddInput('selfref','Self Reference:',30,30);
 $dg->AddDropListEditor('hasdisporder','Display Order?',array(0=>'No',1=>'Yes'));
 $dg->AddDropListEditor('ismember','Member Data?',array(0=>'No',1=>'Yes'));
+$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddInput("idfieldname", "Primary Key:", 30, 30, "id");
 
 if($detailfor > 0)

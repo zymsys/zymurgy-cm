@@ -386,36 +386,7 @@ class ZymurgyTemplate
 			$this->pagetextids[$row['tag']] = $row['id'];
 			$this->pagetextacls[$row["tag"]] = $row["acl"];
 
-			$mayView = true;
-
-			// -----
-			// Check to see if the user has access to this block of site text
-			if($row["acl"] > 0)
-			{
-				$mayView = false;
-
-				Zymurgy::memberauthenticate();
-				Zymurgy::memberauthorize("");
-
-				$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
-					Zymurgy::$db->escape_string($row["acl"]).
-					"' AND `permission` = 'Read'";
-				$aclri = Zymurgy::$db->query($aclsql)
-					or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
-
-				while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
-				{
-					if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
-					{
-						$mayView = true;
-						break;
-					}
-				}
-
-				Zymurgy::$db->free_result($aclri);
-			}
-
-			if($mayView)
+			if (Zymurgy::checkaclbyid($row['acl'], 'Read'))
 			{
 				$this->pagetextcache[$row['tag']] = $row['body'];
 			}
@@ -566,36 +537,7 @@ class ZymurgyTemplate
 
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
-			$mayView = true;
-
-			// -----
-			// Check to see if the user has access to this block of site text
-			if($row["acl"] > 0)
-			{
-				$mayView = false;
-
-				Zymurgy::memberauthenticate();
-				Zymurgy::memberauthorize("");
-
-				$aclsql = "SELECT `group` FROM `zcm_aclitem` WHERE `zcm_acl` = '".
-					Zymurgy::$db->escape_string($row["acl"]).
-					"' AND `permission` = 'Read'";
-				$aclri = Zymurgy::$db->query($aclsql)
-					or die("Could not confirm ACL: ".Zymurgy::$db->error().", $aclsql");
-
-				while(($aclRow = Zymurgy::$db->fetch_array($aclri)) !== FALSE)
-				{
-					if(array_key_exists($aclRow["group"], Zymurgy::$member["groups"]))
-					{
-						$mayView = true;
-						break;
-					}
-				}
-
-				Zymurgy::$db->free_result($aclri);
-			}
-
-			if($mayView)
+			if (Zymurgy::checkaclbyid($row['acl'], 'Read'))
 			{
 				$pp = explode('&',$row['plugin']);
 				$instance = urldecode($pp[1]);

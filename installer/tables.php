@@ -166,13 +166,17 @@
 				"name" => "zcm_textpage",
 				"columns" => array(
 					DefineTableField("metaid", "INT(11)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("sitetextid", "INT(11)", "NOT NULL DEFAULT '0'")
+					DefineTableField("sitetextid", "INT(11)", "NOT NULL DEFAULT '0'"),
+					DefineTableField("metatype","ENUM('Simple','Template')", "NOT NULL DEFAULT 'Simple'"),
+					DefineTableField("js", "TINYINT","NOT NULL DEFAULT '0'")
 				),
 				"indexes" => array(
 					array("columns" => "metaid", "unique" => FALSE, "type" => ""),
-					array("columns" => "sitetextid", "unique" => FALSE, "type" => "")
+					array("columns" => "sitetextid", "unique" => FALSE, "type" => ""),
+					array("columns" => "metatype", "unique" => FALSE, "type" => ""),
+					array("columns" => "js", "unique" => FALSE, "type" => "")
 				),
-				"primarykey" => "metaid, sitetextid",
+				"primarykey" => "metaid, sitetextid, metatype",
 				"engine" => "MyISAM"
 			)
 		);
@@ -332,7 +336,8 @@
 					DefineTableField("ismember", "TINYINT", "DEFAULT NULL"),
 					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL"),
-					DefineTableField("idfieldname", "VARCHAR(30)", "DEFAULT 'id'")
+					DefineTableField("idfieldname", "VARCHAR(30)", "DEFAULT 'id'"),
+					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "detailfor", "unique" => FALSE, "type" => ""),
@@ -352,7 +357,8 @@
 					DefineTableField("inputspec", "TEXT", ""),
 					DefineTableField("caption", "TEXT", ""),
 					DefineTableField("indexed", "VARCHAR(1)", "DEFAULT NULL"),
-					DefineTableField("gridheader", "VARCHAR(30)", "DEFAULT NULL")
+					DefineTableField("gridheader", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => "")
@@ -563,7 +569,7 @@
 					DefineTableField("zcm_acl", "BIGINT(20)", "NOT NULL"),
 					DefineTableField("disporder", "BIGINT(20)", "NOT NULL"),
 					DefineTableField("group", "BIGINT(20)", "NOT NULL"),
-					DefineTableField("permission", "VARCHAR(30)", "NOT NULL")
+					DefineTableField("permission", "ENUM('Read','Write','Delete')", "NOT NULL DEFAULT 'Read'")
 				),
 				"indexes" => array(
 					array("columns" => "zcm_acl", "unique" => FALSE, "type" => "")
