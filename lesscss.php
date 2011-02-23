@@ -25,7 +25,7 @@ if (substr($out,-5)=='.less')
 }
 
 //Ensure the output path exists:
-mkdir(dirname($out),0777,true);
+@mkdir(dirname($out),0777,true);
 
 //Build CSS if needed:
 try {
