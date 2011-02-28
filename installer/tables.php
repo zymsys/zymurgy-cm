@@ -337,6 +337,7 @@
 					DefineTableField("navname", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("selfref", "VARCHAR(30)", "DEFAULT NULL"),
 					DefineTableField("idfieldname", "VARCHAR(30)", "DEFAULT 'id'"),
+					DefineTableField("globalacl", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
@@ -358,6 +359,7 @@
 					DefineTableField("caption", "TEXT", ""),
 					DefineTableField("indexed", "VARCHAR(1)", "DEFAULT NULL"),
 					DefineTableField("gridheader", "VARCHAR(30)", "DEFAULT NULL"),
+					DefineTableField("globalacl", "BIGINT(20)", "DEFAULT NULL"),
 					DefineTableField("acl", "BIGINT(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(

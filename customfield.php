@@ -132,7 +132,7 @@ function OnBeforeInsert($values)
 }
 
 $ds = new DataSet('zcm_customfield','id');
-$ds->AddColumns('id','disporder','tableid','cname','inputspec','caption','indexed','gridheader','acl');
+$ds->AddColumns('id','disporder','tableid','cname','inputspec','caption','indexed','gridheader','globalacl','acl');
 $ds->AddDataFilter('tableid',$t);
 $ds->OnBeforeUpdate = 'OnBeforeUpdate';
 $ds->OnBeforeInsert = 'OnBeforeInsert';
@@ -149,7 +149,8 @@ $dg->AddDropListEditor('indexed','Indexed?',array('N'=>'No','Y'=>'Yes'));
 $dg->AddInput('gridheader','Grid Header:',30,30);
 $dg->AddEditor('inputspec','Input Spec:','inputspec');
 $dg->AddInput('caption','Caption:',4096,40);
-$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
+$dg->AddLookup("globalacl", "Global ACL:", "zcm_acl", "id", "name", "name", true);
+$dg->AddLookup("acl", "Member Data ACL:", "zcm_acl", "id", "name", "name", true);
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 $dg->insertlabel = 'Add New Field';

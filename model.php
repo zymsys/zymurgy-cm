@@ -1,4 +1,11 @@
 <?php 
+/**
+ * Warning: This feature is still under development and the ZymurgyModelInterface is
+ * likely to change.  Use at your own risk - updates are likely to break your own
+ * implemtations of ZymurgyModelInterface classes.
+ * 
+ * @author Vic Metcalfe
+ */ 
 interface ZymurgyModelInterface
 {
 	public function read($rowid = false);
@@ -6,8 +13,17 @@ interface ZymurgyModelInterface
 	public function delete($rowid);
 	public function getTableName();
 	public function getTableId();
+	public function getTableData();
 	public function getMemberTableName();
 	public function getColumns($permission);
+}
+
+class ZymurgyModelException extends Exception
+{
+	public static $NO_ACL = 1;
+	public static $MEMBER_MISMATCH = 2;
+	public static $MISSING_COLUMN = 3;
+	public static $ORPHAN = 4;
 }
 
 class ZymurgyModel implements ZymurgyModelInterface
@@ -23,9 +39,9 @@ class ZymurgyModel implements ZymurgyModelInterface
 	 * You can define your own models as TablenameCustomModel and the factory will generate those instead.
 	 * For example, if the table was 'foo' the custom model would be called FooCustomModel, and it would
 	 * still take its table name (foo) as a parameter.  Generally custom models should decend from
-	 * ZymurgyModel but as long as they implement 
+	 * ZymurgyModel but as long as they implement ZymurgyModelInterface they should work.
 	 * 
-	 * @param unknown_type $table
+	 * @param string $table
 	 */
 	public static function factory($table)
 	{
@@ -48,9 +64,16 @@ class ZymurgyModel implements ZymurgyModelInterface
 	function __construct($table)
 	{
 		$this->columns = array(
-			'Read'=>array(),
-			'Write'=>array(),
-			'Delete'=>array()
+			'globalacl'=>array(
+				'Read'=>array(),
+				'Write'=>array(),
+				'Delete'=>array()
+			),
+			'acl'=>array(//Member ACL
+				'Read'=>array(),
+				'Write'=>array(),
+				'Delete'=>array()
+			)
 		);
 		$this->filter = array();
 		$this->tabledata = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `tname`='".
@@ -76,8 +99,8 @@ class ZymurgyModel implements ZymurgyModelInterface
 			//The request is for member data.  Only allow it to be filled if a member is logged in.
 			if (!Zymurgy::memberauthenticate())
 			{
-				throw new Exception("Table [$table] is member data through [".$this->membertable['tname'].
-					"] but no member has authenticated.", 0);
+				throw new ZymurgyModelException("Table [$table] is member data through [".$this->membertable['tname'].
+					"] but no member has authenticated.", ZymurgyModelException::$MEMBER_MISMATCH);
 			}
 			$filterparts = array("SELECT `$table`.`".$this->tabledata['idfieldname']."` FROM `$table`");
 			$lasttable = $this->tabledata;
@@ -99,7 +122,10 @@ class ZymurgyModel implements ZymurgyModelInterface
 			Zymurgy::$db->free_result($ri);
 			if (!$ids)
 			{//None found, build a filter that returns no rows assuming no nulls in the primary key column
-				$this->filter[] = "`".$this->tabledata['tname']."`.`".$this->tabledata['idfieldname']."` IS NULL";
+				//Somehow the following returns results in ways so strange I can only imagine there's a bug somewhere in either php or mysql, 
+				//so I went i went with the more obviously non matching 1 = 2 filter.  I only observed this problem under phpunit.
+				//$this->filter[] = "`".$this->tabledata['tname']."`.`".$this->tabledata['idfieldname']."` IS NULL";
+				$this->filter[] = "1 = 2";
 			}
 			else 
 			{
@@ -108,58 +134,171 @@ class ZymurgyModel implements ZymurgyModelInterface
 			}
 		}
 		//Remove access to all permission types which do not have ACL's defined.
-		foreach (array_keys($this->columns) as $permission)
+		foreach (array_keys($this->columns) as $permtype)
 		{
-			if (Zymurgy::checkaclbyid($this->tabledata['acl'], $permission, false) === false)
+			foreach (array_keys($this->columns[$permtype]) as $permission)
 			{
-				unset($this->columns[$permission]);
+				if (Zymurgy::checkaclbyid($this->tabledata[$permtype], $permission, false) === false)
+				{
+					unset($this->columns[$permtype][$permission]);
+				}
+			}
+			if (!$this->columns[$permtype])
+			{
+				unset($this->columns[$permtype]);
 			}
 		}
 		if ($this->columns)
 		{ //We have access to at least some permission types
 			$ri = Zymurgy::$db->run("SELECT * FROM `zcm_customfield` WHERE `tableid`=".$this->tabledata['id']);
 			$usefieldacl = false;
+			$usefieldglobalacl = false;
 			while (($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 			{
 				if ($row['acl'] > 0) $usefieldacl = true; //Turn on field level ACL's if any fields have an ACL
-				foreach (array_keys($this->columns) as $permission)
+				if ($row['globalacl'] > 0) $usefieldglobalacl = true; //Same for global perms
+				foreach (array_keys($this->columns) as $permtype)
 				{
-					$this->columns[$permission][$row['cname']] = Zymurgy::checkaclbyid($row['acl'], $permission, false);
+					foreach (array_keys($this->columns[$permtype]) as $permission)
+					{
+						$this->columns[$permtype][$permission][$row['cname']] = Zymurgy::checkaclbyid($row[$permtype], $permission, false);
+					}
 				}
 			}
 			Zymurgy::$db->free_result($ri);
 			if ($usefieldacl)
 			{
 				//Remove all array values that didn't pass the column ACL check
-				foreach ($this->columns as $permission=>$permacl)
+				foreach (array_keys($this->columns) as $permtype)
 				{
-					foreach($permacl as $cname=>$passedacl)
+					foreach ($this->columns[$permtype] as $permission=>$permacl)
 					{
-						if (!$passedacl) unset($this->columns[$permission][$cname]);
+						foreach($permacl as $cname=>$passedacl)
+						{
+							if (!$passedacl) unset($this->columns[$permtype][$permission][$cname]);
+						}
 					}
 				}
 			}
 			//Always allow read of table ID's if we have any read perms at all
-			if (array_key_exists('Read', $this->columns))
+			foreach (array_keys($this->columns) as $permtype)
 			{
-				$this->columns['Read'][$this->tabledata['idfieldname']] = true;
+				if (array_key_exists('Read', $this->columns[$permtype]))
+				{
+					$this->columns[$permtype]['Read'][$this->tabledata['idfieldname']] = true;
+				}
 			}
 		}
 		else 
 		{
-			throw new Exception("This table has no ACL, so data services are not available.", 0);
+			throw new ZymurgyModelException("This table has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
 		}
+	}
+	
+	public function getownership($rowdata)
+	{
+		if ($this->tablechain)
+		{
+			$chain = $this->tablechain;
+			while ($chain)
+			{
+				$chkparent = array_shift($chain);
+				$sql = "SELECT * FROM `".$chkparent['tname']."` WHERE `".
+					$chkparent['idfieldname']."` = '".Zymurgy::$db->escape_string($rowdata[$chkparent['tname']])."'";
+				$rowdata = Zymurgy::$db->get($sql);
+				if ($chkrow === false)
+				{
+					throw new ZymurgyModelException("Can't validate orphaned row.", ZymurgyModelException::$ORPHAN);
+				}
+				if (array_key_exists('member', $rowdata))
+				{
+					break; //Stop following the chain back - this row is the one with the member info.
+				}
+			}
+		}
+		if (!array_key_exists('member', $rowdata))
+		{
+			throw new ZymurgyModelException("Can't get owner of non-member row", ZymurgyModelException::$MEMBER_MISMATCH);
+		}
+		return $rowdata['member'];
+	}
+	
+	public function validateownership($rowdata)
+	{
+		$owner = $this->getownership($rowdata);
+		$supergroups = array(1,2,3); //ZCM groups with access to CP get super user access to all member data
+		$mysuper = array_intersect(array_keys(Zymurgy::$member['groups']), $supergroups);
+		if ($mysuper || ($owner == Zymurgy::$member['id']))
+		{
+			return $owner;
+		}
+		throw new ZymurgyModelException("Member #".Zymurgy::$member['id']." can't access row owned by member #$owner.", ZymurgyModelException::$MEMBER_MISMATCH);
+	}
+	
+	public function validaterow($rowdata)
+	{
+		if ($this->tablechain)
+		{//This belongs to another data table; require that the parent column reference is set
+			$chain = $this->tablechain;
+			$chkparent = $chain[0];
+			$chkrow = $rowdata;
+			if (!array_key_exists($chkparent['tname'], $chkrow))
+			{
+				throw new ZymurgyModelException("Can't find required column ".$chkparent['tname']." in row data.", ZymurgyModelException::$MISSING_COLUMN);
+			}
+			else 
+			{//Set the col/val pair
+				$this->columns['Write'][$chkparent['tname']] = true;
+			}
+			//Now make sure that our liniage goes back to a row that we own.
+			while ($chain)
+			{
+				$chkparent = array_shift($chain);
+				$sql = "SELECT * FROM `".$chkparent['tname']."` WHERE `".
+					$chkparent['idfieldname']."` = '".Zymurgy::$db->escape_string($chkrow[$chkparent['tname']])."'";
+				$chkrow = Zymurgy::$db->get($sql);
+				if ($chkrow === false)
+				{
+					throw new ZymurgyModelException("Can't insert for orphaned row.", ZymurgyModelException::$ORPHAN);
+				}
+			}
+			if (array_key_exists('member', $chkrow) && ($chkrow['member'] != Zymurgy::$member['id']))
+			{
+				throw new ZymurgyModelException("Can't insert for row owned by member #".$chkrow['member'], ZymurgyModelException::$MEMBER_MISMATCH);
+			}
+		}
+		return $rowdata;
+	}
+	
+	public function checkacl($perm)
+	{
+		$table = $this->tabledata['tname'];
+		$allowedcols = array();
+		if ($this->membertable)
+		{
+			if (array_key_exists('acl',$this->columns) && array_key_exists($perm, $this->columns['acl']))
+			{ //This table is member data, and the member ACL allows the requested priv.
+				$allowedcols = $this->columns['acl'][$perm];
+			}
+		}
+		if (array_key_exists('globalacl',$this->columns) && array_key_exists($perm, $this->columns['globalacl']))
+		{ //The global ACL allows the requested priv.
+			$allowedcols = array_merge($allowedcols, $this->columns['globalacl'][$perm]);
+		}
+		if (!$allowedcols)
+		{
+			throw new ZymurgyModelException("No $perm permission for $table, check the access control list for this table and its columns.", 
+				ZymurgyModelException::$NO_ACL);
+		}
+		return $allowedcols;
 	}
 	
 	public function read($rowid = false)
 	{
+		$aclcols = $this->checkacl('Read');
 		$table = $this->tabledata['tname'];
-		if (!array_key_exists('Read', $this->columns))
-		{
-			throw new Exception("No read permission for $table, check ACL.", 0);
-		}
 		$sqlcols = array();
-		foreach ($this->columns['Read'] as $cname=>$permission) 
+		foreach ($aclcols as $cname=>$permission) 
 		{
 			$sqlcols[] = "`$cname`";
 		}
@@ -188,55 +327,17 @@ class ZymurgyModel implements ZymurgyModelInterface
 		return $rows;
 	}
 	
-	public function validate($rowdata)
-	{
-		if ($this->tablechain)
-		{//This belongs to another data table; require that the parent column reference is set
-			$chain = $this->tablechain;
-			$chkparent = $chain[0];
-			$chkrow = $rowdata;
-			if (!array_key_exists($chkparent['tname'], $chkrow))
-			{
-				throw new Exception("Can't find required column ".$chkparent['tname']." in row data.", 0);
-			}
-			else 
-			{//Set the col/val pair
-				$this->columns['Write'][$chkparent['tname']] = true;
-			}
-			//Now make sure that our liniage goes back to a row that we own.
-			while ($chain)
-			{
-				$chkparent = array_shift($chain);
-				$sql = "SELECT * FROM `".$chkparent['tname']."` WHERE `".
-					$chkparent['idfieldname']."` = '".Zymurgy::$db->escape_string($chkrow[$chkparent['tname']])."'";
-				$chkrow = Zymurgy::$db->get($sql);
-				if ($chkrow === false)
-				{
-					throw new Exception("Can't insert for orphaned row.", 0);
-				}
-			}
-			if (array_key_exists('member', $chkrow) && ($chkrow['member'] != Zymurgy::$member['id']))
-			{
-				throw new Exception("Can't insert for row owned by member #".$chkrow['member'], 0);
-			}
-		}
-		return $rowdata;
-	}
-	
 	// curl --cookie "ZymurgyAuth=bobotea" -d "eggs=green&spam=vikings" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar
 	
 	public function write($rowdata)
 	{
+		$aclcols = $this->checkacl('Write');
 		$table = $this->tabledata['tname'];
-		if (!array_key_exists('Write', $this->columns))
-		{
-			throw new Exception("No write permission for $table, check ACL.", 0);
-		}
-		$rowdata = $this->validate($rowdata);
+		$rowdata = $this->validaterow($rowdata);
 		if (array_key_exists($this->tabledata['idfieldname'], $rowdata))
 		{//Update
 			$sets = array();
-			foreach ($this->columns['Write'] as $cname=>$permission)
+			foreach ($aclcols as $cname=>$permission)
 			{
 				if (array_key_exists($cname, $rowdata))
 				{
@@ -245,7 +346,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 			}
 			if (!$sets) 
 			{
-				throw new Exception("Update failed: no row data for any allowed/known columns", 0);
+				throw new ZymurgyModelException("Update failed: no row data for any allowed/known columns", ZymurgyModelException::$MISSING_COLUMN);
 			}
 			$sql = "UPDATE `$table` SET ".implode(',', $sets)." WHERE `".
 				Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
@@ -259,7 +360,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 		{//Create
 			$cols = array();
 			$vals = array();
-			foreach ($this->columns['Write'] as $cname=>$permission)
+			foreach ($aclcols as $cname=>$permission)
 			{
 				if (array_key_exists($cname, $rowdata))
 				{
@@ -269,7 +370,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 			}
 			if (!$cols) 
 			{
-				throw new Exception("Insert failed: no row data for any allowed/known columns", 0);
+				throw new ZymurgyModelException("Insert failed: no row data for any allowed/known columns", ZymurgyModelException::$MISSING_COLUMN);
 			}
 			if ($this->tabledata['tname'] == $this->membertable['tname'])
 			{//This is a member data table; set the member column.
@@ -286,11 +387,8 @@ class ZymurgyModel implements ZymurgyModelInterface
 	//curl -X DELETE --cookie "ZymurgyAuth=bobotea" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar&id=3
 	public function delete($rowid)
 	{
+		$this->checkacl('Delete');
 		$table = $this->tabledata['tname'];
-		if (!array_key_exists('Delete', $this->columns))
-		{
-			throw new Exception("No delete permission for $table, check ACL.", 0);
-		}
 		$sql = "DELETE FROM `$table` WHERE (`".
 			Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
 			Zymurgy::$db->escape_string($rowid)."')";
@@ -314,6 +412,11 @@ class ZymurgyModel implements ZymurgyModelInterface
 	public function getMemberTableName()
 	{
 		return $this->membertable ? $this->membertable['tname'] : false;
+	}
+	
+	public function getTableData()
+	{
+		return $this->tabledata;
 	}
 	
 	public function getColumns($permission)

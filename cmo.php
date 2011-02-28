@@ -626,6 +626,37 @@ if (!class_exists('Zymurgy'))
 			$m = ZymurgyModel::factory($table);
 			return $m->delete($rowid);
 		}
+
+		/**
+		 * View a row in a form/table with captions and edit controls.  Wires to data.php to handle posts.
+		 * 
+		 * @param string $table
+		 * @param int $rowid
+		 * @param string $returnURL
+		 * @param string $submitValue
+		 */
+		public static function table_view($table,$rowid = 0,$returnURL,$submitValue='Save')
+		{
+			require_once Zymurgy::$root."/zymurgy/view.php";
+			require_once Zymurgy::$root."/zymurgy/model.php";
+			$m = ZymurgyModel::factory($table);
+			$v = ZymurgyView::factory($m);
+			$params = array('table'=>$table,'rurl'=>$returnURL);
+			if ($rowid)
+			{
+				$rows = $m->read($rowid);
+				if (array_key_exists($rowid, $rows))
+				{
+					$data = $rows[$rowid];
+					$params['id'] = $rowid;
+				}
+			}
+			if (!isset($data))
+			{
+				$data = array();
+			}
+			$v->showform('/zymurgy/data.php',$params,$submitValue,$data);
+		}
 		
 		/**
 		 * Check the ACL for a permission for the logged in user.  Return the provided

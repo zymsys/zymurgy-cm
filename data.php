@@ -39,5 +39,14 @@ try {
 catch (Exception $e) {
 	$result->errormsg = $e->getMessage();
 }
-echo json_encode($result)."\n";
+
+if (array_key_exists('rurl', $_REQUEST))
+{
+	$rurl = str_replace(array("\r","\n"), '', $_REQUEST['rurl']);
+	header('Location: '.$rurl);
+}
+else 
+{
+	echo json_encode($result)."\n";
+}
 ?>
