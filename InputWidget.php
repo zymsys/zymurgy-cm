@@ -3452,7 +3452,7 @@ class InputWidget
 	 * @param string $type
 	 * @param ZIW_Base $widget
 	 */
-	function Register($type,$widget)
+	static function Register($type,$widget)
 	{
 		InputWidget::$widgets[$type] = $widget;
 	}
@@ -3463,7 +3463,7 @@ class InputWidget
 	 * @param string $type
 	 * @return ZIW_Base
 	 */
-	function &Get($type)
+	static function &Get($type)
 	{
 		if (!array_key_exists($type, InputWidget::$widgets))
 			$type = 'default';

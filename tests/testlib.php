@@ -3,6 +3,13 @@
  * To be included at the top of PHPUnit test files to get Z:CM going, etc.
  */
 
+if (!class_exists('PHPUnit_Framework_TestCase'))
+{//Allow tests to be run manually through debugger
+	class PHPUnit_Framework_TestCase {
+		
+	}
+}
+
 class TestHelper
 {
 	/**
@@ -45,10 +52,19 @@ class TestHelper
 	
 	function getcmo()
 	{
-		$pp = explode('/', getcwd());
-		array_pop($pp); //zymurgy
-		$_SERVER["APPL_PHYSICAL_PATH"] = implode('/', $pp);
-		require_once 'cmo.php';
+		if (class_exists('Zymurgy')) return;
+		if (file_exists('cmo.php'))
+		{ //Run from command line from zymurgy folder
+			$pp = explode('/', getcwd());
+			array_pop($pp); //zymurgy
+			$_SERVER["APPL_PHYSICAL_PATH"] = implode('/', $pp);
+			require_once 'cmo.php';
+		}
+		else
+		{ //Run from Zend Studio/Dubugger
+			//echo "<pre>"; print_r($_SERVER);
+			require_once '../cmo.php';
+		}
 	}
 	
 	function backupdb()
@@ -57,7 +73,7 @@ class TestHelper
 		@mkdir($dumppath,0777,true);
 		$this->backupfile = "$dumppath/".date('YmdHisu').".sql";
 		 
-		$cmd = "mysqldump -h".Zymurgy::$config['mysqlhost'].
+		$cmd = "/usr/local/zend/mysql/bin/mysqldump -h".Zymurgy::$config['mysqlhost'].
 			" -u".Zymurgy::$config['mysqluser'].
 			" -p".Zymurgy::$config['mysqlpass'].
 			" ".Zymurgy::$config['mysqldb'].
@@ -100,23 +116,26 @@ class TestHelper
 		$this->cleanupsql = array();
 	}
 	
-	function buildtable($tname,$acl,$ismember,$parentid,$parentname)
+	function buildtable($tname,$memberacl,$globalacl,$ismember,$parentid,$parentname)
 	{
 		$ismember = $ismember ? 1 : 0;
 		//First the table entry:
 		Zymurgy::$db->run("INSERT INTO `zcm_customtable` (`tname`,`detailfor`,`hasdisporder`,`ismember`,`idfieldname`,`acl`,`globalacl`) ".
-			"VALUES ('$tname',$parentid,0,$ismember,'id',$acl,0)");
+			"VALUES ('$tname',$parentid,0,$ismember,'id',$memberacl,$globalacl)");
 		$ct_id = Zymurgy::$db->insert_id();
 		$this->remembertablekey('zcm_customtable', $ct_id);
 		//Then the field entires:
 		$testfields = array('a','b','c');
 		foreach ($testfields as $field)
 		{
+			//Resist the urge to set column ACL's here - do them for specific columns with
+			//another helper function when you need that feature.
 			Zymurgy::$db->run("INSERT INTO zcm_customfield (tableid,cname,inputspec,caption,indexed,gridheader,acl,globalacl) ".
-				"VALUES ($ct_id,'$field','input.20.20','$field:','N','$field',$acl,0)");
+				"VALUES ($ct_id,'$field','input.20.20','$field:','N','$field',0,0)");
 			$this->remembertablekey('zcm_customfield', Zymurgy::$db->insert_id());
 		}
 		//Finally we actually create the table:
+		Zymurgy::$db->run("DROP TABLE IF EXISTS `$tname`");
 		$sql = "CREATE TABLE `$tname` (`id` bigint(20) NOT NULL AUTO_INCREMENT,";
 		if (!empty($parentname))
 		{
@@ -196,7 +215,6 @@ class TestHelper
 		//Test ACLs
 		$this->acl_member = $this->buildACL('zcm_unittest_member');
 		$this->acl_global = $this->buildACL('zcm_unittest_global');
-		Zymurgy::Dbg($this->acl_global);
 		//Add ACL items
 		//Member Data:
 		$this->addACLPerms($this->acl_member, 3, array('Read','Write','Delete')); //3 == Webmaster
@@ -207,13 +225,13 @@ class TestHelper
 		$this->addACLPerms($this->acl_global, $this->group_priv, array('Read','Write'));
 		$this->addACLPerms($this->acl_global, 4, array('Read')); //4 == Registered User
 		//Build test custom tables
-		$this->ct_mroot = $this->buildtable('zcm_unittest_mroot', $this->acl_member, true, 0, '');
-		$this->ct_msec = $this->buildtable('zcm_unittest_msec', $this->acl_member, false, $this->ct_mroot, 'zcm_unittest_mroot');
-		$this->ct_mter = $this->buildtable('zcm_unittest_mter', $this->acl_member, false, $this->ct_msec, 'zcm_unittest_msec');
-		$this->ct_root = $this->buildtable('zcm_unittest_root', $this->acl_global, false, 0, '');
-		$this->ct_sec = $this->buildtable('zcm_unittest_sec', $this->acl_global, false, $this->ct_mroot, 'zcm_unittest_root');
-		$this->ct_ter = $this->buildtable('zcm_unittest_ter', $this->acl_global, false, $this->ct_msec, 'zcm_unittest_sec');
-		$this->ct_noacl = $this->buildtable('zcm_unittest_noacl', 0, false, 0, '');
+		$this->ct_mroot = $this->buildtable('zcm_unittest_mroot', $this->acl_member,0, true, 0, '');
+		$this->ct_msec = $this->buildtable('zcm_unittest_msec', $this->acl_member,0, false, $this->ct_mroot, 'zcm_unittest_mroot');
+		$this->ct_mter = $this->buildtable('zcm_unittest_mter', $this->acl_member,0, false, $this->ct_msec, 'zcm_unittest_msec');
+		$this->ct_root = $this->buildtable('zcm_unittest_root', 0,$this->acl_global, false, 0, '');
+		$this->ct_sec = $this->buildtable('zcm_unittest_sec', 0,$this->acl_global, false, $this->ct_mroot, 'zcm_unittest_root');
+		$this->ct_ter = $this->buildtable('zcm_unittest_ter', 0,$this->acl_global, false, $this->ct_msec, 'zcm_unittest_sec');
+		$this->ct_noacl = $this->buildtable('zcm_unittest_noacl', 0, 0, false, 0, '');
 	}
 	
 	function dumptable($tname)
@@ -240,6 +258,10 @@ class TestHelper
 	
 	function __construct()
 	{
+		if (class_exists('PHPUnit_Framework_Error_Warning'))
+		{
+			PHPUnit_Framework_Error_Warning::$enabled = FALSE;
+		}
 		$this->getcmo();
 		$this->backupdb();
 		$this->buildtestdata();

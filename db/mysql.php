@@ -85,7 +85,10 @@ class Zymurgy_DB
 			}
 			else 
 			{
-				die ("$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n".print_r(debug_backtrace(),true)."\n-->");
+				echo "$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n";
+				debug_print_backtrace();
+				echo "\n-->";
+				die;
 			}
 		}
 		return $ri;

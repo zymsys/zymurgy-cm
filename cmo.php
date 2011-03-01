@@ -1194,7 +1194,7 @@ if (!class_exists('Zymurgy'))
 		 * Load membership subsystem and any configured membership provider
 		 *
 		 */
-		function initializemembership()
+		static public function initializemembership()
 		{
 			if (Zymurgy::$MemberProvider == null)
 			{
@@ -1964,15 +1964,20 @@ if (!class_exists('Zymurgy'))
 			}
 			return false;
 		}
+		
+		static function getAppRoot() 
+		{
+			$r = dirname(__FILE__);
+			$rp = explode('/', $r);
+			array_pop($rp);
+			return implode('/', $rp);
+		}
 	} // End Zymurgy Class definition
 
 	//The following runs only the first time cmo.php is included...
 
-	if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
-		Zymurgy::$root = $_SERVER["APPL_PHYSICAL_PATH"];
-	else
-		Zymurgy::$root = $_SERVER['DOCUMENT_ROOT'];
-
+	
+	Zymurgy::$root = Zymurgy::getAppRoot();
 	Zymurgy::$build = 1987; //Historical; no longer used.
 	
 	if (ini_get('date.timezone') == '') 
