@@ -83,7 +83,7 @@ class ZymurgyView implements ZymurgyViewInterface
 			echo '<input type="hidden" name="'.htmlspecialchars($table['idfieldname']).
 				'" value="'.htmlspecialchars($data[$table['idfieldname']]).'">';
 		}
-		echo '<table class="zv_table_'.htmlspecialchars($table['tname']).'">';
+		echo '<table class="zv_inputtable_'.htmlspecialchars($table['tname']).'">';
 		$iw = new InputWidget();
 		$ri = Zymurgy::$db->run("SELECT * FROM `zcm_customfield` WHERE `tableid`=".intval($this->model->getTableId()));
 		$iseven = false;
@@ -101,9 +101,45 @@ class ZymurgyView implements ZymurgyViewInterface
 		echo '</table></form>';
 	}
 	
-	function gettable()
+	function showtable($beforecols,$aftercols,$memberonly = false)
 	{
-		
+		if ($memberonly)
+		{
+			$rows = $this->model->read();
+		}
+		else 
+		{
+			$rows = $this->model->readall();
+		}
+		$table = $this->model->getTableData();
+		echo "<table class=\"zv_table_".htmlspecialchars($table['tname'])."\">";
+		$iseven = false;
+		foreach ($rows as $row)
+		{
+			$subst = array('{0}',$row[$table['idfieldname']]);
+			$trow = array();
+			foreach ($beforecols as $key=>$value)
+			{
+				$trow['bc_'.$key] = str_replace(array_keys($subst), array_values($subst), $value);
+			}
+			foreach ($row as $key=>$value)
+			{
+				$trow['td_'.$key] = htmlspecialchars($value);
+			}
+			foreach ($aftercols as $key=>$value)
+			{
+				$trow['ac_'.$key] = str_replace(array_keys($subst), array_values($subst), $value);
+			}
+			echo "<tr id=\"zvr_{$table['tname']}_{$row[$table['idfieldname']]}\" class=\"zvr_{$table['tname']} ";
+			echo "zvr_".($iseven ? 'even' : 'odd')."\">";
+			foreach ($trow as $key=>$value)
+			{
+				echo "<td class=\"$key\">$value</td>";
+			}
+			echo "</tr>\n";
+			$iseven = !$iseven;
+		}
+		echo "</table>";
 	}
 }
 ?>

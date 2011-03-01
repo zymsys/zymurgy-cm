@@ -8,13 +8,73 @@
  */ 
 interface ZymurgyModelInterface
 {
+	/**
+	 * Read row data.  If the model is member data read only rows for that member.
+	 * If $rowid is supplied then only read the row with that primary key value.
+	 * 
+	 * @param string $rowid
+	 */
 	public function read($rowid = false);
+	
+	/**
+	 * Read row data.  Access all data regardless of ownership, but subject to the global acl.
+	 * If $rowid is supplied then only read the row with that primary key value.
+	 * 
+	 * @param string $rowid
+	 */
+	public function readall($rowid = false);
+	
+	/**
+	 * Write $rowdata to the table behind the model.  If $rowdata contains a value for the
+	 * model's primary key then update the row, otherwise do an insert.
+	 * 
+	 * @param array $rowdata
+	 */
 	public function write($rowdata);
+	
+	/**
+	 * Delete a row from the table behind the model.  $rowid is the primary key for the
+	 * row to be deleted.
+	 * 
+	 * @param string $rowid
+	 */
 	public function delete($rowid);
+	
+	/**
+	 * Get the name of the table behind this model.
+	 * 
+	 * @return string
+	 */
 	public function getTableName();
+	
+	/**
+	 * Get the ID# from the custom table table for this model.
+	 * 
+	 * @return int
+	 */
 	public function getTableId();
+	
+	/**
+	 * Get the row from the custom table table for this model.
+	 * 
+	 * @return array
+	 */
 	public function getTableData();
+	
+	/**
+	 * Get the name of the member table which givies this model member ownership (if any).
+	 * Ownership is inherited from parent tables from master/detail relationships.
+	 * 
+	 * @return string
+	 */
 	public function getMemberTableName();
+	
+	/**
+	 * Get a list of columns which the user has permissions for of the supplied type
+	 * (Read/Write/Delete)
+	 * 
+	 * @param string $permission
+	 */
 	public function getColumns($permission);
 }
 
@@ -30,6 +90,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 {
 	protected $tabledata;
 	protected $filter;
+	protected $memberfilter;
 	protected $membertable;
 	protected $tablechain;
 	protected $columns;
@@ -76,6 +137,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 			)
 		);
 		$this->filter = array();
+		$this->memberfilter = array();
 		$this->tabledata = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `tname`='".
 			Zymurgy::$db->escape_string($table)."'");
 		$this->membertable = $this->tabledata;
@@ -125,11 +187,11 @@ class ZymurgyModel implements ZymurgyModelInterface
 				//Somehow the following returns results in ways so strange I can only imagine there's a bug somewhere in either php or mysql, 
 				//so I went i went with the more obviously non matching 1 = 2 filter.  I only observed this problem under phpunit.
 				//$this->filter[] = "`".$this->tabledata['tname']."`.`".$this->tabledata['idfieldname']."` IS NULL";
-				$this->filter[] = "1 = 2";
+				$this->memberfilter[] = "1 = 2";
 			}
 			else 
 			{
-				$this->filter[] = "`".$this->tabledata['tname']."`.`".$this->tabledata['idfieldname']."` IN ('".
+				$this->memberfilter[] = "`".$this->tabledata['tname']."`.`".$this->tabledata['idfieldname']."` IN ('".
 					implode("','", $ids)."')";
 			}
 		}
@@ -270,18 +332,27 @@ class ZymurgyModel implements ZymurgyModelInterface
 		return $rowdata;
 	}
 	
-	public function checkacl($perm)
+	/**
+	 * Check the user's permission to interact with a model.  $perm is Read, Write or Delete
+	 * and $oftype is any, acl or globalacl.
+	 * 
+	 * @param string $perm
+	 * @param string $oftype
+	 * @throws ZymurgyModelException
+	 */
+	public function checkacl($perm,$oftype = 'any')
 	{
 		$table = $this->tabledata['tname'];
 		$allowedcols = array();
-		if ($this->membertable)
+		if ($this->membertable && (($oftype == 'any') || ($oftype == 'acl')))
 		{
 			if (array_key_exists('acl',$this->columns) && array_key_exists($perm, $this->columns['acl']))
 			{ //This table is member data, and the member ACL allows the requested priv.
 				$allowedcols = $this->columns['acl'][$perm];
 			}
 		}
-		if (array_key_exists('globalacl',$this->columns) && array_key_exists($perm, $this->columns['globalacl']))
+		if (array_key_exists('globalacl',$this->columns) && array_key_exists($perm, $this->columns['globalacl']) 
+			&& (($oftype == 'any') || ($oftype == 'globalacl')))
 		{ //The global ACL allows the requested priv.
 			$allowedcols = array_merge($allowedcols, $this->columns['globalacl'][$perm]);
 		}
@@ -293,16 +364,23 @@ class ZymurgyModel implements ZymurgyModelInterface
 		return $allowedcols;
 	}
 	
-	public function read($rowid = false)
+	public function readcore($aclname, $rowid = false)
 	{
-		$aclcols = $this->checkacl('Read');
+		$aclcols = $this->checkacl('Read','acl');
 		$table = $this->tabledata['tname'];
 		$sqlcols = array();
 		foreach ($aclcols as $cname=>$permission) 
 		{
 			$sqlcols[] = "`$cname`";
 		}
-		$filter = $this->filter;
+		if ($aclname == 'acl')
+		{
+			$filter = array_merge($this->filter,$this->memberfilter);
+		}
+		else 
+		{
+			$filter = $this->filter;
+		}
 		$sql = "SELECT ".implode(',', $sqlcols)." FROM `$table`";
 		if ($rowid)
 		{
@@ -325,6 +403,16 @@ class ZymurgyModel implements ZymurgyModelInterface
 		}
 		Zymurgy::$db->free_result($ri);
 		return $rows;
+	}
+	
+	public function read($rowid = false)
+	{
+		return $this->readcore('acl',$rowid);
+	}
+	
+	public function readall($rowid = false)
+	{
+		return $this->readcore('globalacl',$rowid);
 	}
 	
 	// curl --cookie "ZymurgyAuth=bobotea" -d "eggs=green&spam=vikings" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar
@@ -351,9 +439,9 @@ class ZymurgyModel implements ZymurgyModelInterface
 			$sql = "UPDATE `$table` SET ".implode(',', $sets)." WHERE `".
 				Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
 				Zymurgy::$db->escape_string($rowdata[$this->tabledata['idfieldname']])."'";
-			if ($this->filter)
+			if ($this->memberfilter)
 			{
-				$sql .= ' AND ('.implode(') AND (', $this->filter).')';
+				$sql .= ' AND ('.implode(') AND (', $this->memberfilter).')';
 			}
 		}
 		else 
@@ -392,9 +480,9 @@ class ZymurgyModel implements ZymurgyModelInterface
 		$sql = "DELETE FROM `$table` WHERE (`".
 			Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
 			Zymurgy::$db->escape_string($rowid)."')";
-		if ($this->filter)
+		if ($this->memberfilter)
 		{
-			$sql .= ' AND ('.implode(') AND (', $this->filter).')';
+			$sql .= ' AND ('.implode(') AND (', $this->memberfilter).')';
 		}
 		return Zymurgy::$db->run($sql);
 	}
