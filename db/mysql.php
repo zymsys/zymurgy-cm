@@ -25,6 +25,7 @@ define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
 class Zymurgy_DB
 {
 	var $link;
+	var $trace = false;
 
 	/**
 	 * Create a new connection.
@@ -51,8 +52,24 @@ class Zymurgy_DB
 	 */
 	public function query($sql)
 	{
-		//echo "<div>[$sql]</div>";
-		return mysql_query($sql,$this->link);
+		$trace = array(
+			'sql'=>$sql,
+			'start'=>microtime()
+		);
+		$r = mysql_query($sql,$this->link);
+		if (is_array($this->trace))
+		{
+			$trace['finish'] = microtime();
+			$trace['uticks'] = $trace['finish'] - $trace['start'];
+			$trace['result'] = $r;
+			$info = mysql_info($this->link);
+			if (!empty($info))
+			{
+				$trace['info'] = $info;
+			}
+			$this->trace[] = $trace;
+		}
+		return $r;
 	}
 
 	/**

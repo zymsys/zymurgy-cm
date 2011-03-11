@@ -272,12 +272,41 @@ class ZymurgySiteNav
 	}
 
 	/**
-	 * Check if the user has permission to viey the page with the ID $key.
+	 * Check if the user has permission to view the page with the ID $key.
 	 *
 	 * @param int $key
 	 * @return bool
 	 */
-	public function haspermission($key){
+	public function haspermission($key)
+	{
+		while ($key > 0)
+		{
+			if(array_key_exists($key, $this->items)	&& count($this->items[$key]->aclitems) > 0)
+			{ //This node has an ACL.  If it doesn't allow access then reject this request / return false.
+				if (!Zymurgy::memberauthenticate())
+				{ //If the user has not authenticated and this page has an ACL we're automatically not allowed.
+					return false;
+				}
+				$allowed = false;
+				foreach ($this->items[$key]->aclitems as $aclitem)
+				{
+					if (array_key_exists($aclitem['group'],Zymurgy::$member['groups']))
+					{ //We've got this group, allow access.
+						$allowed = true;
+						break;
+					}
+				}
+				if (!$allowed)
+				{
+					return false;
+				}
+			}
+			$key = $this->items[$key]->parent;
+		}
+		return true; //If we've worked our way back to the root and found no ACL denying read access, then provide read access.
+	}
+	
+	public function x_haspermission($key){
 		// is this a page (not root)
 		//Zymurgy::DbgAndDie($key,$this->items[$key]->aclitems,Zymurgy::$member["groups"]);
 		while ($key > 0){

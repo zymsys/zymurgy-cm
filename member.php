@@ -84,11 +84,16 @@ class ZymurgyMember
 		if (Zymurgy::memberauthenticate())
 		{
 			if ($groupname == 'Registered User') return true;
-			$sql = "select id, name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
-			$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
-			while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			if (!array_key_exists('groupsloaded', Zymurgy::$member))
 			{
-				Zymurgy::$member['groups'][$row["id"]] = $row['name'];
+				$sql = "select id, name from zcm_groups,zcm_membergroup where (zcm_membergroup.memberid=".Zymurgy::$member['id'].") and (zcm_membergroup.groupid=zcm_groups.id)";
+				$ri = Zymurgy::$db->query($sql) or die("Unable to authorize ($sql): ".Zymurgy::$db->error());
+				while (($row = Zymurgy::$db->fetch_array($ri))!==false)
+				{
+					Zymurgy::$member['groups'][$row["id"]] = $row['name'];
+				}
+				Zymurgy::$db->free_result($ri);
+				Zymurgy::$member['groupsloaded'] = true;
 			}
 			return in_array($groupname,Zymurgy::$member['groups']);
 		}

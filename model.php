@@ -227,6 +227,25 @@ class ZymurgyModel implements ZymurgyModelInterface
 					}
 				}
 			}
+			$builtinfields = array();
+			if (!empty($this->tabledata['detailforfield']))
+			{
+				$builtinfields[] = $this->tabledata['detailforfield'];
+			}
+			if ($this->membertable)
+			{
+				$builtinfields[] = 'member';
+			}
+			foreach ($builtinfields as $builtinfield)
+			{
+				foreach (array_keys($this->columns) as $permtype)
+				{
+					foreach (array_keys($this->columns[$permtype]) as $permission)
+					{
+						$this->columns[$permtype][$permission][$builtinfield] = true;
+					}
+				}
+			}
 			Zymurgy::$db->free_result($ri);
 			if ($usefieldacl)
 			{
@@ -340,12 +359,14 @@ class ZymurgyModel implements ZymurgyModelInterface
 	 * @param string $oftype
 	 * @throws ZymurgyModelException
 	 */
-	public function checkacl($perm,$oftype = 'any')
+	public function checkacl($perm,$oftype = 'any',$dump = false)
 	{
 		$table = $this->tabledata['tname'];
+if ($dump) Zymurgy::Dbg($table);		
 		$allowedcols = array();
 		if ($this->membertable && (($oftype == 'any') || ($oftype == 'acl')))
 		{
+if ($dump) Zymurgy::Dbg('member and any or acl');		
 			if (array_key_exists('acl',$this->columns) && array_key_exists($perm, $this->columns['acl']))
 			{ //This table is member data, and the member ACL allows the requested priv.
 				$allowedcols = $this->columns['acl'][$perm];
@@ -354,6 +375,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 		if (array_key_exists('globalacl',$this->columns) && array_key_exists($perm, $this->columns['globalacl']) 
 			&& (($oftype == 'any') || ($oftype == 'globalacl')))
 		{ //The global ACL allows the requested priv.
+if ($dump) Zymurgy::Dbg('global');		
 			$allowedcols = array_merge($allowedcols, $this->columns['globalacl'][$perm]);
 		}
 		if (!$allowedcols)
@@ -361,6 +383,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 			throw new ZymurgyModelException("No $perm permission for $table, check the access control list for this table and its columns.", 
 				ZymurgyModelException::$NO_ACL);
 		}
+if ($dump) Zymurgy::Dbg($allowedcols);		
 		return $allowedcols;
 	}
 	
