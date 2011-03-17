@@ -26,7 +26,8 @@ class ZymurgyMember
 			$authkey = $_COOKIE['ZymurgyAuth'];
 			$sql = "select * from zcm_member where authkey='".Zymurgy::$db->escape_string($authkey)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Unable to authenticate ($sql): ".Zymurgy::$db->error());
-			if (($row = Zymurgy::$db->fetch_array($ri))!==false)
+			$row = Zymurgy::$db->fetch_array($ri);
+			if ($row !== false)
 			{
 				$this->populatememberfromrow($row);
 				return true;
@@ -65,6 +66,7 @@ class ZymurgyMember
 			'username'=>$row["username"],
 			'email'=>$row['email'],
 			'password'=>$row['password'],
+			'fullname'=>$row['fullname'],
 			'formdata'=>$row['formdata'],
 			'orgunit'=>$row['orgunit'],
 			'groups'=>array('4'=>'Registered User') // 'Registered User')

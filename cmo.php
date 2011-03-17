@@ -1404,6 +1404,19 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::$remotelookupcache[$table][$field][$value] = $r;
 			return $r;
 		}
+		
+		/**
+		 * Get the client's IP address from either REMOTE_ADDR or X_FORWARDED_FOR
+		 */
+		static function RemoteHost()
+		{
+			$ip = $_SERVER['REMOTE_ADDR'];
+			if (array_key_exists('X_FORWARDED_FOR',$_SERVER))
+			{
+				$ip .= " forwarding for ".$_SERVER['X_FORWARDED_FOR'];
+			}
+			return $ip;
+		}	
 
 		/**
 		 * Get PHPMailer object pre-configured with settings from the Zymurgy:CM config file.
@@ -1419,11 +1432,7 @@ if (!class_exists('Zymurgy'))
 			{
 				$mail->Host = Zymurgy::$config['Mailer SMTP Hosts'];
 			}
-			$ip = $_SERVER['REMOTE_ADDR'];
-			if (array_key_exists('X_FORWARDED_FOR',$_SERVER))
-			{
-				$ip .= " forwarding for ".$_SERVER['X_FORWARDED_FOR'];
-			}
+			$ip = Zymurgy::RemoteHost();
 			$mail->AddCustomHeader("X-WebmailSrc: $ip");
 			return $mail;
 		}
@@ -1698,6 +1707,11 @@ if (!class_exists('Zymurgy'))
 
 			return Zymurgy::$Locales["en"]->GetString($key);
 		}
+		
+		protected static function IsDebugHost()
+		{
+			return (!array_key_exists('DebugHost',Zymurgy::$config) || (Zymurgy::RemoteHost() == Zymurgy::$config['DebugHost']));
+		}
 
 		/**
 		 * Echo debug arguments.  Format arrays and objects with print_r.
@@ -1707,57 +1721,63 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function Dbg()
 		{
-			$args = func_get_args();
-			echo "<hr />\r\n";
-			$n = 1;
-			foreach($args as $arg)
+			if (Zymurgy::IsDebugHost())
 			{
-				echo "<div class=\"ZymurgyDebug\">$n: ";
-				$n++;
-				if (is_array($arg) || is_object($arg))
+				$args = func_get_args();
+				echo "<hr />\r\n";
+				$n = 1;
+				foreach($args as $arg)
 				{
-					echo "<pre>"; print_r($arg); echo "</pre>";
+					echo "<div class=\"ZymurgyDebug\">$n: ";
+					$n++;
+					if (is_array($arg) || is_object($arg))
+					{
+						echo "<pre>"; print_r($arg); echo "</pre>";
+					}
+					elseif (is_bool($arg))
+					{
+						echo $arg ? 'TRUE' : 'FALSE';
+					}
+					else
+					{
+						echo $arg;
+					}
+					echo "</div>\r\n";
 				}
-				elseif (is_bool($arg))
-				{
-					echo $arg ? 'TRUE' : 'FALSE';
-				}
-				else
-				{
-					echo $arg;
-				}
-				echo "</div>\r\n";
+				echo "<hr />\r\n";
 			}
-			echo "<hr />\r\n";
 		}
 		
 		static function DbgLog()
 		{
-			$fd = fopen(Zymurgy::$root."/UserFiles/zcmdebug.log",'a+');
-			fwrite($fd,"----- ".date('r')." -----\n");
-			$args = func_get_args();
-			$n = 1;
-			$out = '';
-			foreach($args as $arg)
+			if (Zymurgy::IsDebugHost())
 			{
-				$out .= "Argument $n: ";
-				$n++;
-				if (is_array($arg) || is_object($arg))
+				$fd = fopen(Zymurgy::$root."/UserFiles/zcmdebug.log",'a+');
+				fwrite($fd,"----- ".date('r')." -----\n");
+				$args = func_get_args();
+				$n = 1;
+				$out = '';
+				foreach($args as $arg)
 				{
-					$out .= print_r($arg,true);
+					$out .= "Argument $n: ";
+					$n++;
+					if (is_array($arg) || is_object($arg))
+					{
+						$out .= print_r($arg,true);
+					}
+					elseif (is_bool($arg))
+					{
+						$out .= $arg ? 'TRUE' : 'FALSE';
+					}
+					else
+					{
+						$out .= $arg;
+					}
+					$out .= "\n";
 				}
-				elseif (is_bool($arg))
-				{
-					$out .= $arg ? 'TRUE' : 'FALSE';
-				}
-				else
-				{
-					$out .= $arg;
-				}
-				$out .= "\n";
-			}
-			fwrite($fd,$out);
+				fwrite($fd,$out);
 			fclose($fd);
+			}
 		}
 
 		/**
@@ -1768,9 +1788,12 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function DbgAndDie()
 		{
-			$args = func_get_args();
-			call_user_func_array(array('Zymurgy','Dbg'),$args);
-			exit;
+			if (Zymurgy::IsDebugHost())
+			{
+				$args = func_get_args();
+				call_user_func_array(array('Zymurgy','Dbg'),$args);
+				exit;
+			}
 		}
 
 		private static $m_flavours = array();
