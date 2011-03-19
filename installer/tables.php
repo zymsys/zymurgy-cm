@@ -8,7 +8,6 @@
 
 	$baseTableDefinitions = array();
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetFlavourDefinitions());
-	$baseTableDefinitions = array_merge($baseTableDefinitions, GetAuthenticationTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetConfigurationTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetSimpleContentTableDefinitions());
 	$baseTableDefinitions = array_merge($baseTableDefinitions, GetPluginTableDefinitions());
@@ -61,29 +60,6 @@
 				),
 				"indexes" => array(),
 				"primarykey" => "zcm_flavourtext, flavour",
-				"engine" => "MyISAM"
-			)
-		);
-	}
-
-	function GetAuthenticationTableDefinitions()
-	{
-		return array(
-			array(
-				"name" => "zcm_passwd",
-				"columns" => array(
-					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
-					DefineTableField("username", "VARCHAR(20)", "NOT NULL DEFAULT ''"),
-					DefineTableField("password", "VARCHAR(20)", "NOT NULL DEFAULT ''"),
-					DefineTableField("email", "VARCHAR(80)", "NOT NULL DEFAULT ''"),
-					DefineTableField("fullname", "VARCHAR(60)", "NOT NULL DEFAULT ''"),
-					DefineTableField("admin", "TINYINT(4)", "NOT NULL DEFAULT '0'"),
-					DefineTableField("eula", "TINYINT(4)", "NOT NULL DEFAULT '0'")
-				),
-				"indexes" => array(
-					array("columns" => "username, password", "unique" => FALSE, "type" => "")
-				),
-				"primarykey" => "id",
 				"engine" => "MyISAM"
 			)
 		);
@@ -253,7 +229,7 @@
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("username", "VARCHAR(80)", "DEFAULT NULL"),
 					DefineTableField("email", "VARCHAR(80)", "DEFAULT NULL"),
-					DefineTableField("password", "VARCHAR(32)", "DEFAULT NULL"),
+					DefineTableField("password", "VARCHAR(45)", "DEFAULT NULL"), //Room for 32 byte md5 + 13 uniqid salt
 					DefineTableField("fullname", "VARCHAR(100)", "NOT NULL DEFAULT ''"),
 					DefineTableField("regtime", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("lastauth", "DATETIME", "DEFAULT NULL"),

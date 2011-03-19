@@ -51,43 +51,9 @@ if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
 else
 	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
 
-require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
 require_once("$ZymurgyRoot/zymurgy/cmo.php");
-
-global $zauth;
-$zauth = new ZymurgyAuth();
-$zauth->Authenticate("/zymurgy/login.php");
-$zp = explode(',',$zauth->authinfo['extra']);
-if (count($zp)<6)
-{
-	echo $zauth->authinfo['extra']; exit;
-	header("Location: logout.php");
-	exit;
-}
-$zauth->authinfo['email'] = $zp[1];
-$zauth->authinfo['fullname'] = $zp[2];
-$zauth->authinfo['admin'] = $zp[3];
-$zauth->authinfo['id'] = $zp[4];
-$zauth->authinfo['eula'] = $zp[5];
-//echo "Need $adminlevel, have {$zauth->authinfo['admin']}."; exit;
-if ((isset($adminlevel)) && ($zauth->authinfo['admin']<$adminlevel))
-{
-	header("Location: login.php");
-	exit;
-}
-
-$enableEula = !isset(Zymurgy::$config["EnableEULA"]) || !(Zymurgy::$config["EnableEULA"] == "no");
-
-if ($enableEula && $zauth->authinfo['eula'] != 1)
-{
-	header("Location: eula.php");
-	exit;
-}
-
-if (!array_key_exists("zymurgy",$_COOKIE))
-{
-	setcookie("zymurgy",$zauth->authinfo['admin'],null,'/');
-}
+$adminlevel = isset($adminlevel) ? $adminlevel : 1;
+Zymurgy::memberrequirezcmauth($adminlevel);
 
 ob_start();
 
@@ -96,18 +62,15 @@ include("header_html.php");
 
 function renderZCMNav($parent)
 {
-	global $donefirstzcmnav, $zauth;
+	global $donefirstzcmnav;
 
-	// echo("zauth: ");
-	//print_r($zauth);
-	// print_r(Zymurgy::$member);
-
+	$authlevel = Zymurgy::memberzcmauth();
 	$sql = "SELECT `zcm_nav`.`id`, `navname`, `navtype`, `navto`, `zcm_features`.`url` ".
 		"FROM `zcm_nav` LEFT JOIN `zcm_features` ON `zcm_features`.`id` = `zcm_nav`.`navto` ".
 		"WHERE `parent` = '".
 		Zymurgy::$db->escape_string($parent).
 		"' AND ( `authlevel` <= '".
-		Zymurgy::$db->escape_string($zauth->authinfo["admin"]).
+		Zymurgy::$db->escape_string($authlevel).
 		"' OR `authlevel` IS NULL ) ORDER BY `zcm_nav`.`disporder`";
 	//echo "<div>$sql</div>";
 	$ri = Zymurgy::$db->run($sql);
@@ -172,7 +135,7 @@ function renderZCMNav($parent)
 ?>
 <div id="zcmnavContent" class="yuimenu" style="float:left; margin-right: 5px">
 	<div class="ZymurgyLoginName">
-		<?= $zauth->authinfo['fullname'] ?>
+		<?= Zymurgy::$member['fullname'] ?>
 	</div>
 	<div id="zcmnavContentNav" class="bd" style="border-style: none">
     	<ul class="first-of-type" style="padding: 0px">

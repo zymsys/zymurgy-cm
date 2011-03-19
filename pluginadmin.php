@@ -174,7 +174,7 @@ else
 			<td><?= $title ?> Instance</td>
 			<td>&nbsp;</td>
 <?php
-	if($zauth->authinfo['admin'] >= 2)
+	if(Zymurgy::memberzcmauth() >= 2)
 	{
 ?>
 			<td>&nbsp;</td>
@@ -195,7 +195,7 @@ else
 			<td><?= $row['name'] ?></td>
 			<td><a href="pluginadmin.php?pid=<?= $pid ?>&amp;iid=<?= $row['id'] ?>&amp;name=<?= urlencode($row['name']) ?>">Edit</a></td>
 <?php
-	if($zauth->authinfo['admin'] >= 2)
+	if(Zymurgy::memberzcmauth() >= 2)
 	{
 ?>
 			<td><a href="pluginadmin.php?pid=<?= $pid ?>&amp;delkey=<?= $row['id'] ?>" onclick="return confirm_delete();">Delete</a></td>
@@ -211,7 +211,7 @@ else
 <?php
 	}
 
-	if($zauth->authinfo['admin'] >= 1)
+	if(Zymurgy::memberzcmauth() >= 1)
 	{
 ?>
 

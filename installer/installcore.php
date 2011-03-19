@@ -95,9 +95,9 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			$_POST['siteKeywords']);
 		if (count($errors)==0)
 		{ //Still no trouble?
-			require_once('../ZymurgyAuth.php');
-			$zauth = new ZymurgyAuth();
-			$zauth->SetAuth(0,$_POST['userID'],$_POST['userPassword'],"{$_POST['userID']},{$_POST['userAddress']},{$_POST['userName']},2,1,0","upgrade.php");
+			require_once '../cmo.php';
+			Zymurgy::memberdologin($_POST['userID'], $_POST['userPassword']);
+			Zymurgy::JSRedirect('/zymurgy/installer/upgrade.php'); //Continue with upgrade to make sure we cross our t's and dot our i's.
 			exit;
 		}
 	}
@@ -144,7 +144,7 @@ ul {
 <title>Zymurgy:CM Configuration</title>
 </head>
 
-<body onload="document.getElementById('mysqlUser').focus()">
+<body onload="document.getElementById('userID').focus()">
 <div class="ZymurgyHeader">
 	<div class="ZymurgyLogo" title="Content Authoring and Search Engine Optimization">
 		Zymurgy:CM

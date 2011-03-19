@@ -101,6 +101,48 @@ class ZymurgyMember
 		}
 		return $authorized;
 	}
+	
+	/**
+	 * Authenticate for Z:CM features as Zymurgy:CM - User (1), Zymurgy:CM - Administrator (2) or
+	 * Zymurgy:CM - Webmaster (3).  Corresponding authlevels in parenthesis.
+	 * 
+	 * If the user doesn't have the required priveledge then redirect to /zymurgy/login.php
+	 * 
+	 * @param int $level
+	 */
+	public static function memberrequirezcmauth($level)
+	{
+		if (!Zymurgy::memberzcmauth($level))
+		{
+			Zymurgy::JSRedirect('/zymurgy/login.php');
+		}
+	}
+	
+	public static function memberzcmauth($level = false)
+	{
+		Zymurgy::memberauthenticate();
+		$userlevel = 0;
+		if (Zymurgy::memberauthorize('Zymurgy:CM - User'))
+		{
+			$userlevel = 1;
+		}
+		if (Zymurgy::memberauthorize('Zymurgy:CM - Administrator'))
+		{
+			$userlevel = 2;
+		}
+		if (Zymurgy::memberauthorize('Zymurgy:CM - Webmaster'))
+		{
+			$userlevel = 3;
+		}
+		if ($level)
+		{
+			return ($userlevel >= $level);
+		}
+		else 
+		{
+			return $userlevel;
+		}
+	}
 
 	/**
 	 * Log member activity to the zcm_memberaudit table.
@@ -197,28 +239,37 @@ class ZymurgyMember
 	 */
 	public function memberdologin($userid, $password, $writeCookie = true)
 	{
-		// die("memberdologin called");
-
-		$sql = "SELECT `id` FROM `zcm_member` WHERE ( `username` = '".
+		$authed = false;
+		$sql = "SELECT `id`,`password` FROM `zcm_member` WHERE ( `username` = '".
 			Zymurgy::$db->escape_string($userid).
-			"' ) AND `password` = '".
-			Zymurgy::$db->escape_string($password).
-			"'";
-		//echo "<div>$sql</div>";
-		// $sql = "select * from zcm_member where email='".Zymurgy::$db->escape_string($userid).
-		//	"' and password='".Zymurgy::$db->escape_string($password)."'";
+			"' )";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
 
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
+			$salt = substr($row['password'],0,13);
+			$hash = substr($row['password'],13);
+			if (md5($salt.$password) == $hash)
+			{
+				$authed = true;
+			}
+			else if ($row['password'] == $password)
+			{ //Maybe this password is plaintext?  If so fix it for next time.
+				$authed = true;
+				$salt = uniqid();
+				Zymurgy::$db->run("UPDATE `zcm_member` SET `password`='".
+					Zymurgy::$db->escape_string($salt.md5($salt.$password))."' WHERE `id`=".$row['id']);
+			}
+		}
+		if ($authed)
+		{
 			$this->createauthkey($row['id'], $writeCookie);
-			return true;
 		}
 		else
 		{
 			$this->memberaudit("Failed login attempt for [$userid]");
-			return false;
 		}
+		return $authed;
 	}
 
 	/**

@@ -14,9 +14,7 @@ $column = $_GET['c'];
 $query = $_GET['q'];
 
 require_once('../cmo.php');
-require_once("../ZymurgyAuth.php");
-$zauth = new ZymurgyAuth();
-$zauth->Authenticate("/zymurgy/login.php");
+Zymurgy::memberrequirezcmauth(1);
 
 $oktables = explode(',',array_key_exists('AutocompleteTables',Zymurgy::$config) ? Zymurgy::$config['AutocompleteTables'] : '');
 

@@ -49,7 +49,7 @@ $dg->AddColumn('','keywords','');
 $dg->AddColumn('','changefreq','');
 $dg->AddColumn('','priority','');
 $dg->AddEditColumn();
-if ($zauth->authinfo['admin']<2)
+if (Zymurgy::memberzcmauth()<2)
 {
 	$dg->insertlabel = '';
 }

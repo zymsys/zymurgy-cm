@@ -372,7 +372,7 @@ foreach($cols as $col=>$inputspec)
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();
 
-if ($zauth->authinfo['admin']>=2)
+if (Zymurgy::memberzcmauth()>=2)
 {
 	$dg->insertlabel = "Insert a new Item</font></a> <font color=\"white\">|</font> <a href=\"customimport.php?t=$t&d=$detailfor&s=$selfref&p=$parentrow\"><font color=\"white\">Bulk Import";
 }

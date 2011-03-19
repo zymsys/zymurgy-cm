@@ -10,12 +10,9 @@
 $maxauto = 10;
 $maxsaved = 10;
 
-//Authenticate requests to work with auto-save data
-require_once("../ZymurgyAuth.php");
-$zauth = new ZymurgyAuth();
-$zauth->Authenticate("../login.php"); //Ok, I can't really direct users to the login script through json, but it should send a message to hackers to piss off.
-
 require_once('../cmo.php');
+Zymurgy::memberrequirezcmauth(1);
+
 /**
  * If this is a post, save the draft information for the form.  Remove old drafts.
  * If there is a get variable called listdrafts, return JSON for each available draft for the form name provided.

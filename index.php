@@ -28,7 +28,6 @@ $breadcrumbTrail = "Home";
 
 include('header.php');
 
-//echo "<script src=\"https://www.zymurgy2.com/cmf/lservjs.php?build=$build&auth={$zauth->authinfo['admin']}&host=".urlencode($host)."\"></script>\r\n";
 ?>
 <script type="text/JavaScript" language="JavaScript">
  var mine = window.open('','','width=1,height=1,left=0,top=0,scrollbars=no');

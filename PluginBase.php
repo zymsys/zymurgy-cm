@@ -211,15 +211,8 @@ abstract class PluginBase implements ZymurgyPlugin
 	 */
 	function RenderCommandMenu()
 	{
-		global $zauth;
-
+		$authlevel = Zymurgy::memberzcmauth();
 		$menuItems = $this->GetCommandMenuItems();
-
-		// echo("menuItems: [ ");
-		// print_r($menuItems);
-		// echo(" ] ");
-		// die();
-
 		if(sizeof($menuItems) > 0)
 		{
 			echo("<br><br><table class=\"DataGrid\">");
@@ -229,7 +222,7 @@ abstract class PluginBase implements ZymurgyPlugin
 			{
 				$menuItem = $menuItems[$commandIndex];
 
-				if($menuItem->authlevel <= $zauth->authinfo['admin'])
+				if($menuItem->authlevel <= $authlevel)
 				{
 					$rowClass = $commandIndex % 2 == 0 ? "DataGridRow" : "DataGridRowAlternate";
 					$url = str_replace(

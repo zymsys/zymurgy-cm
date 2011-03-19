@@ -1236,7 +1236,37 @@ if (!class_exists('Zymurgy'))
 			Zymurgy::initializemembership();
 			return Zymurgy::$MemberProvider->memberauthorize($groupname);
 		}
+		
+		/**
+		 * Authenticate for Z:CM features as Zymurgy:CM - User (1), Zymurgy:CM - Administrator (2) or
+		 * Zymurgy:CM - Webmaster (3).  Corresponding authlevels in parenthesis.
+		 * 
+		 * If the user doesn't have the required priveledge then redirect to /zymurgy/login.php
+		 * 
+		 * @param int $level
+		 */
+		public static function memberrequirezcmauth($level)
+		{
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberrequirezcmauth($level);
+		}		
 
+		/**
+		 * Authenticate for Z:CM features as Zymurgy:CM - User (1), Zymurgy:CM - Administrator (2) or
+		 * Zymurgy:CM - Webmaster (3).  Corresponding authlevels in parenthesis.
+		 * 
+		 * If the required level is supplied then true/false is returned to indicate whether or not the
+		 * user has that level or better.  If it is not supplied then the user's auth level is returned.
+		 * 
+		 * @param int $level
+		 * @return boolean or int
+		 */
+		public static function memberzcmauth($level = false)
+		{
+			Zymurgy::initializemembership();
+			return Zymurgy::$MemberProvider->memberzcmauth($level);
+		}
+				
 		/**
 		 * Log member activity
 		 *

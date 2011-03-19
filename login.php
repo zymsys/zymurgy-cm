@@ -33,57 +33,13 @@ if (isset($_POST['userid']))
 	if (Zymurgy::$db->num_rows($ri)>0)*/
 	if (Zymurgy::memberdologin($userid,$passwd))
 	{
-		Zymurgy::memberauthenticate();
+		Zymurgy::memberrequirezcmauth(1);
 
-		include_once("ZymurgyAuth.php");
-		$zauth = new ZymurgyAuth();
-		//$row=Zymurgy::$db->fetch_array($ri);
-		$row = Zymurgy::$db->get("select * from zcm_member where id=".
-			Zymurgy::$member["id"]);
 		$landing = array_key_exists('defaultpage',Zymurgy::$config)
 			? Zymurgy::$config['defaultpage']
 			: 'index.php';
-		/*Zymurgy::memberdologin(
-			$userid,
-			$passwd);*/
 
-		//Zymurgy::memberauthenticate();
-		// dummy call to memberauthorize to populate the group
-		// listing properly
-
-		$isWebmaster = intval(Zymurgy::memberauthorize("Zymurgy:CM - Webmaster"));
-		$isAdministrator = Zymurgy::memberauthorize("Zymurgy:CM - Administrator");
-		$isUser = Zymurgy::memberauthorize("Zymurgy:CM - User");
-
-		$authAdminLevel = -1;
-
-		if($isWebmaster)
-		{
-			$authAdminLevel = 2;
-		}
-		else if($isAdministrator)
-		{
-			$authAdminLevel = 1;
-		}
-		else if($isUser)
-		{
-			$authAdminLevel = 0;
-		}
-		
-		$authData = array(
-			"username" => $row["email"],
-			"email" => $row["email"],
-			"fullname" => $row["fullname"],
-			"adminlevel" => $authAdminLevel,
-			"id" => $row["id"],
-			"eula" => "1");
-
-		$zauth->SetAuth(
-			0,
-			$userid,
-			$passwd,
-			implode(",", $authData),
-			$landing);
+		Zymurgy::JSRedirect($landing);
 	}
 
 	$error = 'Your username or password are incorrect.';

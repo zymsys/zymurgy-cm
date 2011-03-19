@@ -33,8 +33,8 @@ function RenameOldTables()
 {
 	global $etables,$tables;
 
-	/* If we don't have zcm_passwd and we're trying to upgrade, we probably need to rename all the old tables. */
-	if (!array_key_exists('zcm_passwd',$etables))
+	/* If we don't have zcm_sitetext and we're trying to upgrade, we probably need to rename all the old tables. */
+	if (!array_key_exists('zcm_sitetext',$etables))
 	{
 		$map = array(
 			'passwd'=>'zcm_passwd',

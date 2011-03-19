@@ -9,13 +9,7 @@
 
 require_once('cms.php');
 require_once('include/Thumb.php');
-//Zymurgy::$yuitest = true;
-if (!Zymurgy::memberauthenticate())
-{
-	require_once("$ZymurgyRoot/zymurgy/ZymurgyAuth.php");
-	$zauth = new ZymurgyAuth();
-	$zauth->Authenticate("login.php");
-}
+Zymurgy::memberrequirezcmauth(1);
 
 if (array_key_exists('fixedar',$_GET))
 	$fixedar = ($_GET['fixedar'] == 1);

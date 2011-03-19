@@ -130,14 +130,14 @@ $ds->OnUpdate = "OnUpdate";
 $dg = new DataGrid($ds);
 $dg->AddConstant('sitepage',$p);
 $dg->AddColumn('Tag','tag');
-if ($zauth->authinfo['admin']>=2)
+if (Zymurgy::memberzcmauth()>=2)
 {
 	$dg->AddInput('tag','Tag:',35,35);
 }
 $dg->AddEditor('body',$editcaption,$inputspec);
 $dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
 $dg->AddEditColumn();
-if ($zauth->authinfo['admin']>=2)
+if (Zymurgy::memberzcmauth()>=2)
 {
 	$dg->AddDeleteColumn();
 }

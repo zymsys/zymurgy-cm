@@ -150,10 +150,8 @@ else
 			{
 				returnblankgif();
 			}
-			require_once('ZymurgyAuth.php');
-			$zauth = new ZymurgyAuth();
 			$ontheflyok = false; //Default to no on the fly image resizing to avoid expensive DoS attacks
-			if ($zauth->IsAuthenticated())
+			if (Zymurgy::memberzcmauth(1))
 			{
 				$ontheflyok = true;
 			}

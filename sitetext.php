@@ -54,7 +54,7 @@ function OnUpdate($dsr)
  */
 function showcategories()
 {
-	global $c,$zauth;
+	global $c;
 
 	$sql = "select * from zcm_stcategory where id>0 order by name";
 	$ri = Zymurgy::$db->query($sql) or die("Unable to load site text categories ($sql): ".Zymurgy::$db->error());
@@ -76,7 +76,7 @@ function showcategories()
 		}
 		echo "</select>";
 	}
-	if ($zauth->authinfo['admin']>=2)
+	if (Zymurgy::memberzcmauth()>=2)
 	{
 		echo " <a href=\"stcategory.php\">Edit Categories</a>";
 	}
@@ -161,7 +161,7 @@ $dg = new DataGrid($ds);
 $dg->AddColumn('Text Block Name','tag');
 $dg->AddColumn('','body','');
 $dg->AddEditColumn();
-if ($zauth->authinfo['admin']>=2)
+if (Zymurgy::memberzcmauth()>=2)
 {
 	$dg->AddInput('tag','Text Block Name:',35,35);
 	$dg->AddLookup('category','Category','zcm_stcategory','id','name','name');

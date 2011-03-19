@@ -12,13 +12,15 @@ function CreateSQL($webmasterLogin,$webmasterPassword,$webmasterName,$webmasterE
 	global $baseTableDefinitions;
 	ProcessTableDefinitions($baseTableDefinitions);
 
+	$salt = uniqid();
+	$webmasterPassword = $salt.md5($salt.$webmasterPassword);
 	$tables = array();
-	$tables['ipasswd'] = "insert into zcm_passwd (username,password,fullname,email,admin) values ('".
+	$tables['ipasswd'] = "insert into zcm_member (username,password,fullname,email) values ('".
 		mysql_escape_string($webmasterLogin)."','".
 		mysql_escape_string($webmasterPassword)."','".
 		mysql_escape_string($webmasterName)."','".
-		mysql_escape_string($webmasterEmail)."'".
-		",2)";
+		mysql_escape_string($webmasterEmail)."')";
+	$tables['igroup'] = "INSERT INTO `zcm_membergroup` (`memberid`,`groupid`) VALUES (1,3)";
 	$tables['istcategory'] = "insert into zcm_stcategory (id,name) values (0,'Uncategorized Content')";
 
 	foreach($tables as $sql)

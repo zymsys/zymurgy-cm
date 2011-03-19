@@ -80,7 +80,7 @@
 		}
 
 		/**
-		 * Get the member's password.
+		 * Get the member's salted and hashed password.
 		 *
 		 * @return string
 		 */
@@ -90,7 +90,18 @@
 		}
 
 		/**
-		 * Set the member's password.
+		 * Set the member's password from plain text.
+		 *
+		 * @param string $newValue
+		 */
+		public function set_passwordplain($newValue)
+		{
+			$salt = uniqid();
+			$this->m_password = $salt.md5($salt.$newValue);
+		}
+
+		/**
+		 * Set the member's salted and hashed password.
 		 *
 		 * @param string $newValue
 		 */
@@ -244,13 +255,16 @@
 				$this->m_errors[] = "E-mail Address is required.";
 				$isValid = false;
 			}
-
-			if(strlen($this->m_password) <= 0)
+			
+			if ($this->m_id <= 0)
 			{
-				$this->m_errors[] = "Password is required.";
-				$isValid = false;
+				if(strlen($this->m_email) <= 0)
+				{
+					$this->m_errors[] = "Password is required.";
+					$isValid = false;
+				}
 			}
-
+						
 			return $isValid;
 		}
 	}
@@ -365,7 +379,10 @@
 			$member->set_id($_POST["id"]);
 			$member->set_username($_POST["username"]);
 			$member->set_email($_POST["email"]);
-			$member->set_password($_POST["password"]);
+			if (!empty($_POST['password']))
+			{
+				$member->set_passwordplain($_POST["password"]);
+			}
 			$member->set_fullname($_POST["fullname"]);
 
 			return $member;
@@ -403,9 +420,14 @@
 					Zymurgy::$db->escape_string($member->get_username()).
 					"', `email` = '".
 					Zymurgy::$db->escape_string($member->get_email()).
-					"', `password` = '".
-					Zymurgy::$db->escape_string($member->get_password()).
-					"', `fullname` = '".
+					"', ";
+				$passwd = $member->get_password();
+				if (!empty($passwd)) 
+				{
+					$sql .= "`password` = '".
+						Zymurgy::$db->escape_string($passwd)."', ";
+				}
+				$sql .=	"`fullname` = '".
 					Zymurgy::$db->escape_string($member->get_fullname()).
 					"' WHERE `id` = '".
 					Zymurgy::$db->escape_string($member->get_id()).
@@ -971,7 +993,7 @@ BLOCK;
 			echo("<tr>\n");
 			echo("<td>Password:</td>\n");
 			echo("<td>");
-			$widget->Render("password.20.32", "password", $member->get_password());
+			$widget->Render("password.20.32", "password", '');
 			echo("</td>\n");
 			echo("</tr>\n");
 
@@ -1220,6 +1242,7 @@ BLOCK;
 		 */
 		public static function DisplayCommands($member)
 		{
+			return; //No more send password - need password reset email feature instead.
 			echo("<table class=\"DataGrid\" rules=\"cols\" cellspacing=\"0\" cellpadding=\"3\" bordercolor=\"#000000\" border=\"1\">");
 
 			echo("<tr class=\"DataGridHeader\"><td>Commands</td></tr>\n");
@@ -1233,6 +1256,7 @@ BLOCK;
 		/**
 		 * E-mail the member's password to them.
 		 *
+		 * @deprecated
 		 * @param Member $member The member to send the password to
 		 */
 		public static function SendPassword($member)
@@ -1268,6 +1292,7 @@ BLOCK;
 		 * Display the "Send Password" message to the user that clicked on the
 		 * "Send Password" menu command in Zymurgy:CM.
 		 *
+		 * @deprecated
 		 * @param Member $member The member the password was sent to
 		 */
 		public static function DisplayPasswordSentMessage($member)
@@ -1673,7 +1698,7 @@ BLOCK;
 
 		/**
 		 * Send the member's password to them.
-		 *
+		 * @deprecated
 		 */
 		private function send_password()
 		{
