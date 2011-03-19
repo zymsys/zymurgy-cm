@@ -26,7 +26,142 @@ require_once("include/l10n.php");
 // include guard
 if (!class_exists('Zymurgy'))
 {
-
+	class ZymurgyRouter
+	{
+		private $gets = array();
+		private $posts = array();
+		private $puts = array();
+		private $deletes = array();
+		public $continueprocessing = false;
+		
+		private function addroute(&$to,$uri,$action)
+		{
+			if (strlen($uri) == 0)
+			{
+				throw new Exception("Route URI can't be empty.", 0);
+			}
+			$uri = '/^'.preg_quote($uri,'/').'$/';
+			$to[$uri] = $action;
+		}
+		
+		private function addrouteregex(&$to,$pattern,$action)
+		{
+			if (strlen($pattern) == 0)
+			{
+				throw new Exception("Route regex can't be empty.", 0);
+			}
+			$to[$pattern] = $action;
+		}
+		
+		/**
+		 * Register a new action for GET requests.
+		 * Actions are only taken when directed through template.php via mod_rewrite, and may
+		 * supercede flavour/page content that would otherwise be delivered.
+		 * 
+		 * @param string $uri
+		 * @param callback $action
+		 */
+		public function get($uri,$action) { $this->addroute($this->gets, $uri, $action); }
+		
+		/**
+		 * Register a new action for POST requests.
+		 * Actions are only taken when directed through template.php via mod_rewrite, and may
+		 * supercede flavour/page content that would otherwise be delivered.
+		 * 
+		 * @param string $uri
+		 * @param callback $action
+		 */
+		public function post($uri,$action) { $this->addroute($this->posts, $uri, $action); }
+		
+		/**
+		 * Register a new action for PUT requests.
+		 * Actions are only taken when directed through template.php via mod_rewrite, and may
+		 * supercede flavour/page content that would otherwise be delivered.
+		 * 
+		 * @param string $uri
+		 * @param callback $action
+		 */
+		public function put($uri,$action) { $this->addroute($this->puts, $uri, $action); }
+		
+		/**
+		 * Register a new action for DELETE requests.
+		 * Actions are only taken when directed through template.php via mod_rewrite, and may
+		 * supercede flavour/page content that would otherwise be delivered.
+		 * 
+		 * @param string $uri
+		 * @param callback $action
+		 */
+		public function delete($uri,$action) { $this->addroute($this->deletes, $uri, $action); }
+		
+		/**
+		 * Like get but takes a regex pattern
+		 * 
+		 * @param string $pattern
+		 * @param callback $action
+		 */
+		public function getregex($pattern,$action) { $this->addrouteregex($this->gets, $pattern, $action); }
+		
+		/**
+		 * Like post but takes a regex pattern
+		 * 
+		 * @param string $pattern
+		 * @param callback $action
+		 */
+		public function postregex($pattern,$action) { $this->addrouteregex($this->posts, $pattern, $action); }
+		
+		/**
+		 * Like put but takes a regex pattern
+		 * 
+		 * @param string $pattern
+		 * @param callback $action
+		 */
+		public function putregex($pattern,$action) { $this->addrouteregex($this->puts, $pattern, $action); }
+		
+		/**
+		 * Like delete but takes a regex pattern
+		 * 
+		 * @param string $pattern
+		 * @param callback $action
+		 */
+		public function deleteregex($pattern,$action) { $this->addrouteregex($this->deletes, $pattern, $action); }
+		
+		/**
+		 * Search known routes for the current request and take action if an action
+		 * is specified.  Returns true no futher processing of the URI is required.
+		 */
+		function route()
+		{
+			switch ($_SERVER['REQUEST_METHOD'])
+			{
+				case 'POST':
+					$routes = $this->posts;
+					break;
+				case 'PUT':
+					$routes = $this->puts;
+					break;
+				case 'DELETE':
+					$routes = $this->deletes;
+					break;
+				default:
+					$routes = $this->gets;
+			}
+			
+			$uri = $_SERVER['REQUEST_URI'];
+			foreach ($routes as $pattern=>$action)
+			{
+				if (preg_match($pattern, $uri))
+				{
+					call_user_func($action);
+					if (!$this->continueprocessing)
+					{ //We're done
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	}
+	
 	/**
 	 * This class provides the basic entry point for integrating Zymurgy:CM
  	 * functionality into your application.
@@ -62,6 +197,13 @@ if (!class_exists('Zymurgy'))
 		 * @link config/config.php
 		 */
 		public static $db;
+		
+		/**
+		 * Instance of ZymurgyRouter used to redirect requests for MVC architectures
+		 * 
+		 * @var ZymurgyRouter
+		 */
+		public static $router;
 
 		/**
 		 * Array of config values from the config/config.php file.
@@ -2104,6 +2246,7 @@ if (!class_exists('Zymurgy'))
 
 	require_once("InputWidget.php");
 	Zymurgy::$Locales = LocaleFactory::GetLocales();
+	Zymurgy::$router = new ZymurgyRouter();
 
 // end include guard
 }

@@ -696,6 +696,20 @@ class ZymurgyTemplate
 }
 
 $do404 = false;
+if (file_exists(Zymurgy::$root."/zymurgy/custom/controller.php"))
+{
+	require_once Zymurgy::$root."/zymurgy/custom/controller.php";
+}
+if (Zymurgy::$router->route())
+{
+	//Route was handled via router - don't process any further.
+	exit;
+}
+if (!array_key_exists('p', $_GET))
+{
+	//No page from mod_rewrite, and no completion from router.  404.
+	ZymurgyTemplate::DisplayFileNotFound($_SERVER['REQUEST_URI'], 'controller', '');
+}
 
 ZymurgyTemplate::LoadParams();
 
