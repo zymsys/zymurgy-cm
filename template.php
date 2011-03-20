@@ -705,7 +705,8 @@ if (Zymurgy::$router->route())
 	//Route was handled via router - don't process any further.
 	exit;
 }
-if (!array_key_exists('p', $_GET))
+
+if (!array_key_exists('p', $_GET) && (!array_key_exists('pageid', $_GET)))
 {
 	//No page from mod_rewrite, and no completion from router.  404.
 	ZymurgyTemplate::DisplayFileNotFound($_SERVER['REQUEST_URI'], 'controller', '');

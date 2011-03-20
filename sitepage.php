@@ -18,6 +18,7 @@ include 'datagrid.php';
 require_once('sitenav.php');
 
 $templatecount = Zymurgy::$db->get("select count(*) from zcm_template");
+$aclcount = Zymurgy::$db->get("SELECT COUNT(*) FROM `zcm_acl`");
 if ($templatecount == 0)
 {
 	//Create default template
@@ -222,7 +223,7 @@ function OnDelete($values)
 }
 
 $ds = new DataSet('zcm_sitepage','id');
-$ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template','acl');
+$ds->AddColumns('id','disporder','linktext','linkurl','parent','retire','golive','softlaunch','template','acl','bookmark');
 $ds->OnInsert = 'OnInsertUpdate';
 $ds->OnUpdate = 'OnUpdate';
 $ds->OnDelete = 'OnDelete';
@@ -277,6 +278,11 @@ function launchstatus($column, $values, $display)
 }
 $dg->OnBeforeRenderCell = 'launchstatus';
 $dg->AddUpDownColumn('disporder');
+//$dg->AddInput('linktext','Menu Text:',40,40);
+$dg->AddEditor('linktext','Menu Text','inputf.60.4096');
+$dg->AddEditor('retire','Retire After:','datetime');
+$dg->AddEditor('golive','Go Live:','datetime');
+$dg->AddEditor('softlaunch','Soft Launch:','datetime');
 if ($templatecount > 1)
 {
 	$dg->AddEditor('template','Template:','lookup.zcm_template.id.name.name');
@@ -285,12 +291,14 @@ else
 {
 	$dg->AddConstant('template',$defaulttemplate);
 }
-//$dg->AddInput('linktext','Menu Text:',40,40);
-$dg->AddEditor('linktext','Menu Text','inputf.60.4096');
-$dg->AddEditor('retire','Retire After:','datetime');
-$dg->AddEditor('golive','Go Live:','datetime');
-$dg->AddEditor('softlaunch','Soft Launch:','datetime');
-$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
+if ($aclcount > 0)
+{
+	$dg->AddLookup("acl", "Access Control List:", "zcm_acl", "id", "name", "name", true);
+}
+if (Zymurgy::memberzcmauth(3))
+{
+	$dg->AddEditor('bookmark', "Bookmark:", 'input.20.20');
+}
 $dg->AddColumn('View', 'id', '<a href="template.php?pageid={0}">View</a>');
 $dg->AddEditColumn();
 $dg->AddDeleteColumn();

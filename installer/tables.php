@@ -605,14 +605,16 @@
 					DefineTableField("golive", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("softlaunch", "DATETIME", "DEFAULT NULL"),
 					DefineTableField("template", "BIGINT", "DEFAULT 1"),
-					DefineTableField("acl", "BIGINT", "DEFAULT NULL")
+					DefineTableField("acl", "BIGINT", "DEFAULT NULL"),
+					DefineTableField("bookmark", "VARCHAR(20)", "DEFAULT NULL")
 				),
 				"indexes" => array(
 					array("columns" => "disporder", "unique" => FALSE, "type" => ""),
 					array("columns" => "parent", "unique" => FALSE, "type" => ""),
 					array("columns" => "retire", "unique" => FALSE, "type" => ""),
 					array("columns" => "parent, linktext", "unique" => FALSE, "type" => ""),
-					array("columns" => "template", "unique" => FALSE, "type" => "")
+					array("columns" => "template", "unique" => FALSE, "type" => ""),
+					array("columns" => "bookmark", "unique" => FALSE, "type" => "")
 				),
 				"primarykey" => "id",
 				"engine" => "MyISAM"

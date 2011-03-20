@@ -204,6 +204,13 @@ if (!class_exists('Zymurgy'))
 		 * @var ZymurgyRouter
 		 */
 		public static $router;
+		
+		/**
+		 * Cache for bookmark information
+		 * 
+		 * @var array
+		 */
+		private static $bookmarks = array();
 
 		/**
 		 * Array of config values from the config/config.php file.
@@ -537,6 +544,38 @@ if (!class_exists('Zymurgy'))
 			return
 				Zymurgy::RequireOnceCore(false, "http://ajax.googleapis.com/ajax/libs/jqueryui/$version/themes/base/jquery-ui.css"). 
 				Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jqueryui/$version/jquery-ui.min.js");
+		}
+		
+		/**
+		 * Look up a bookmark and return the URI to it.  Bookmarks are so that if your users change the names of
+		 * links (and the URI with them) you're app can still get the current valid URI for that page.  Because
+		 * the flavour is part of the URI the calling script must know its flavour to use this function.
+		 * 
+		 * @param string $name
+		 */
+		public static function bookmark($name)
+		{
+			if (!array_key_exists($name, Zymurgy::$bookmarks))
+			{
+				Zymurgy::$bookmarks[$name] = false;
+				$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `bookmark`='".
+					Zymurgy::$db->escape_string($name)."'");
+				if ($page !== false)
+				{
+					$parts = array(Zymurgy::GetActiveFlavourCode(),ZIW_Base::GetFlavouredValue($page['linkurl']));
+					while ($page['parent'] > 0) 
+					{
+						$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `id`=".$page['parent']);
+						if ($page === false)
+						{ //Orphaned bookmark!  Shouldn't happen.  Return false as if the bookmark doesn't exist.
+							return false;
+						}
+						$parts[] = ZIW_Base::GetFlavouredValue($page['linkurl']);
+					}
+					Zymurgy::$bookmarks[$name] = implode('/', $parts);
+				}
+			}
+			return Zymurgy::$bookmarks[$name];
 		}
 
 		/**
