@@ -145,11 +145,11 @@ if (!class_exists('Zymurgy'))
 				default:
 					$routes = $this->gets;
 			}
-			
 			$uri = $_SERVER['REQUEST_URI'];
+			$uirnq = array_shift(explode('?', $uri, 2));
 			foreach ($routes as $pattern=>$action)
 			{
-				if (preg_match($pattern, $uri))
+				if (preg_match($pattern, $uri) || preg_match($pattern, $uirnq))
 				{
 					call_user_func($action);
 					if (!$this->continueprocessing)
@@ -363,6 +363,21 @@ if (!class_exists('Zymurgy'))
 		 * @var string
 		 */
 		private static $title;
+		
+		/**
+		 * Allows controllers to poke values into sitetext() and pagetext()
+		 * by calling settext()
+		 * 
+		 * @var array
+		 */
+		private static $controllertext = array();
+		
+		/**
+		 * Allows controllers to add fake gadget output
+		 * 
+		 * @var array
+		 */
+		private static $gadgettext = array('left'=>array(), 'center'=>array(), 'right'=>array());
 
 		/**
 		 * List of user friendly names for the various color indices in the
@@ -778,6 +793,14 @@ if (!class_exists('Zymurgy'))
 			return $m->read($rowid);
 		}
 		
+		public static function table_read_filtered($table,$filter)
+		{
+			require_once Zymurgy::$root."/zymurgy/model.php";
+			$m = ZymurgyModel::factory($table);
+			$m->addFilter($filter);
+			return $m->read(false);
+		}
+		
 		/**
 		 * Write to a $rowdata row honoring the table's ACL.  If no ACL is defined then access
 		 * will be denied.  $rowdata is an array of column names and values.
@@ -884,6 +907,11 @@ if (!class_exists('Zymurgy'))
 			$type='html.600.400',
 			$adminui = true)
 		{
+			if (array_key_exists($tag, Zymurgy::$controllertext))
+			{
+				return Zymurgy::$controllertext[$tag];
+			}
+			
 			if (strlen($tag)>35)
 			{
 				die("Unable to create new site text.  Tag names must be 35 characters or less.");
@@ -1779,6 +1807,18 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
+		 * Tag values can be set using this function, and later calls to sitetext()
+		 * or pagetext() will return these instead of those from the content editor.
+		 * 
+		 * @param string $tag
+		 * @param string $value
+		 */
+		public static function settext($tag,$value)
+		{
+			Zymurgy::$controllertext[$tag] = $value;
+		}
+		
+		/**
 		 * Render the page content, based on its tag within the Pages system.
 		 *
 		 * @param string $tag The tag/ID of the page content to display
@@ -1787,6 +1827,10 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function pagetext($tag,$type='html.600.400')
 		{
+			if (array_key_exists($tag, Zymurgy::$controllertext))
+			{
+				return Zymurgy::$controllertext[$tag];
+			}
 			if (isset(Zymurgy::$template))
 			{
 				return Zymurgy::$template->pagetext($tag,$type);
@@ -1837,6 +1881,18 @@ if (!class_exists('Zymurgy'))
 				return "<div>This page is not linked to a template, so pageimage() can't be used here.</div>";
 			}
 		}
+		
+		/**
+		 * Add text to the output of the pagegadgets() area(s)
+		 * $align should be one of 'left', 'center' or 'right'
+		 * 
+		 * @param string $align
+		 * @param string $text
+		 */
+		public static function addgadgettext($align,$text)
+		{
+			Zymurgy::$gadgettext[$align][] = $text;
+		}
 
 		/**
 		 * Render the plugins assigned to the page. If the alignFilter parameter
@@ -1848,6 +1904,24 @@ if (!class_exists('Zymurgy'))
 		public static function pagegadgets(
 			$alignFilter = "")
 		{
+			foreach (Zymurgy::$gadgettext as $align=>$values)
+			{
+				if (($alignFilter == '') || ($alignFilter === false) || ($alignFilter == $align))
+				{
+					foreach ($values as $text)
+					{
+						if ($alignFilter !== false)
+						{
+							echo "<div align=\"$align\">";
+						}
+						echo $text;
+						if ($alignFilter !== false)
+						{
+							echo "</div>";
+						}
+					}
+				}
+			}
 			if (isset(Zymurgy::$template))
 			{
 				return Zymurgy::$template->pagegadgets($alignFilter);

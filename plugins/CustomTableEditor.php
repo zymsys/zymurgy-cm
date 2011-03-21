@@ -105,18 +105,18 @@ BLOCK;
 
 		private function RenderHTML()
 		{
-			global $validationerrors;
 			if (array_key_exists('validationerrors',$GLOBALS))
 			{
 				echo $GLOBALS['validationerrors'];
 			}
+			$tname = Zymurgy::$db->get("SELECT `tname` FROM `zcm_customtable` WHERE `id`=".$this->GetConfigValue("Custom Table"));
 			if ($_SERVER['REQUEST_METHOD'] == 'POST')
 			{
 				$formvalues = $_POST;
 			}
 			else if (array_key_exists('id', $_GET))
 			{
-				$formvalues = Zymurgy::$db->get("SELECT * FROM `".$this->GetConfigValue("Custom Table").
+				$formvalues = Zymurgy::$db->get("SELECT * FROM `".$tname.
 					"` WHERE `id` = ".intval($_GET['id']));
 			}
 			else 
@@ -130,14 +130,11 @@ BLOCK;
 				htmlspecialchars($uri)."\">";
 			foreach ($_GET as $key=>$value)
 			{
-				if ($key != 'id')
-				{
-					echo "<input type=\"hidden\" name=\"".
-						htmlspecialchars($key)."\" value=\"".
-						htmlspecialchars($value)."\">";
-				}
+				echo "<input type=\"hidden\" name=\"".
+					htmlspecialchars($key)."\" value=\"".
+					htmlspecialchars($value)."\">";
 			}
-			echo "<table class=\"CustomTableEditor CustomTableEditor".$this->GetConfigValue("Custom Table")."\">";
+			echo "<table class=\"CustomTableEditor CustomTableEditor".$tname."\">";
 			$iw = new InputWidget();
 			foreach ($fields as $fieldname=>$fielddata)
 			{

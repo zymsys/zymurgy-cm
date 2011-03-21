@@ -909,7 +909,7 @@ class ZymurgyMember
 		else
 		{
 			$myurl = strtolower(array_shift(explode('/',$_SERVER['SERVER_PROTOCOL'],2)));
-			$myurl .= '://'.$_SERVER['SERVER_NAME'].'/'.$_SERVER['REQUEST_URI'];
+			$myurl .= '://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 			$r[] = '<form class="MemberLogin" method="post" action="'.$myurl.'">
 				<table>
 		        <tr><td align="right">Email Address:</td><td><input type="text" name="email" id="email"></td></tr>

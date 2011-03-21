@@ -232,7 +232,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 			{
 				$builtinfields[] = $this->tabledata['detailforfield'];
 			}
-			if ($this->membertable)
+			if ($this->tabledata['ismember'] == 1)
 			{
 				$builtinfields[] = 'member';
 			}
@@ -536,6 +536,11 @@ if ($dump) Zymurgy::Dbg($allowedcols);
 			return array_keys($this->columns[$permission]);
 		else
 			return false;
+	}
+	
+	public function addFilter($filter)
+	{
+		$this->filter[] = $filter;
 	}
 }
 ?>
