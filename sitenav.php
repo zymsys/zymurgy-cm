@@ -512,6 +512,29 @@ abstract class ZymurgySiteNavRenderer{
 
 		$this->crumbs = $this->sitenav->getanscestors(Zymurgy::$pageid);
 	}
+	
+	/**
+	 * Given a key returns either 'show', 'hide' or 'disable'
+	 * 
+	 * @param int $key
+	 */
+	protected function getVisibility($key)
+	{
+		$hasPermission = $this->sitenav->haspermission($key);
+		$enableItem = true;
+
+		if(!$hasPermission)
+		{
+			if (isset(Zymurgy::$config["PagesOnACLFailure"]))
+			{
+				if (Zymurgy::$config["PagesOnACLFailure"] == "hide")
+					return 'hide';
+				if (Zymurgy::$config["PagesOnACLFailure"] == "disable")
+					return 'disable';
+			}
+		}
+		return 'show';
+	}
 
 	########################################
 
@@ -621,25 +644,9 @@ YAHOO.util.Event.onDOMReady(function(){
 		echo ">\n";
 		foreach ($this->sitenav->items[$node]->children as $key)
 		{
-			$hasPermission = $this->sitenav->haspermission($key);
-			//echo "<div>$key: $hasPermission</div>";
-			$enableItem = true;
-
-			if(!$hasPermission)
-			{
-				if (isset(Zymurgy::$config["PagesOnACLFailure"]))
-				{
-					if (Zymurgy::$config["PagesOnACLFailure"] == "hide")
-						continue;
-					if (Zymurgy::$config["PagesOnACLFailure"] == "disable")
-						$enableItem = false;
-					// Default to fail
-				}
-				else
-				{
-					// Default to fail
-				}
-			}
+			$visibility = $this->getVisibility($key);
+			if ($visibility == 'hide') continue;
+			$enableItem = ($visibility != 'disable');
 
 			echo "$tabs    <li class=\"yuimenuitem";
 			if ($fot)
@@ -748,17 +755,26 @@ class ZymurgySiteNavRender_UL extends ZymurgySiteNavRenderer
 		// for each child of the current node
 		foreach ($this->sitenav->items[$node]->children as $key)
 		{
-			// if the user can see it
-			if ($this->sitenav->haspermission($key))
-			{
-				// display list entry
-				echo "<li><a href=\"".$this->geturl($key)."\">".$this->getname($key)."</a>";
+			$visibility = $this->getVisibility($key);
+			if ($visibility == 'hide') continue;
+			$enableItem = ($visibility != 'disable');
 
-				// if we want to show children and the node has any, recurse
-				if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
-					$this->renderpart($key, $depth+1);
-				echo "</li>";
+			// display list entry
+			echo "<li>";
+			if ($enableItem)
+			{
+				echo "<a href=\"".$this->geturl($key)."\">";
 			}
+			echo $this->getname($key);
+			if ($enableItem)
+			{
+				echo "</a>";
+			}
+			
+			// if we want to show children and the node has any, recurse
+			if ($this->maxdepth - $depth != 1 && $this->sitenav->items[$key]->children)
+				$this->renderpart($key, $depth+1);
+			echo "</li>";
 		}
 		echo "</ul>";
 	}

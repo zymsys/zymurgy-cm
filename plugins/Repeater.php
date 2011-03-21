@@ -120,21 +120,23 @@ BLOCK;
 
 //			die("Length: ".strlen($this->GetConfigValue("Order By")));
 
+			$filter = $this->AddHeaderValues($this->GetConfigValue("Filter"),0,0);
+			
 			$sql = "SELECT COUNT(*) FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
 				"` ".
-				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$this->GetConfigValue("Filter") : "").
+				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$filter : "").
 				" ".
 				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : ""));
 //			die($sql);
-			$rowCount = Zymurgy::$db->get($sql);
-
+			$rowCount = Zymurgy::$db->get($sql);			
+			
 			$sql = "SELECT `id`, ".
 				$this->GetConfigValue("Fields (comma separated)").
 				" FROM `".
 				Zymurgy::$db->escape_string($table["tname"]).
 				"` ".
-				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$this->GetConfigValue("Filter") : "").
+				(strlen($this->GetConfigValue("Filter")) > 0 ? "WHERE ".$filter : "").
 				" ".
 				(strlen($this->GetConfigValue("Order By")) > 0 ? " ORDER BY ".$this->GetConfigValue("Order By") : ($table["hasdisporder"] == 1 ? " ORDER BY `disporder`" : "")).
 				" LIMIT ".
@@ -147,7 +149,10 @@ BLOCK;
 
 			if(Zymurgy::$db->num_rows($ri) <= 0)
 			{
-				echo($this->GetConfigValue("Message for no records"));
+				echo($this->AddHeaderValues(
+					$this->GetConfigValue("Message for no records"),
+					(isset($_GET["start".$this->iid]) ? $_GET["start".$this->iid] : 0),
+					$rowCount));
 			}
 			else
 			{
@@ -184,9 +189,12 @@ BLOCK;
 					}
 
 					$output = $this->GetConfigValue("Repeater Item Layout");
-
+					$output = str_replace("{id}", $row['id'], $output);
 					foreach($fieldNames as $fieldName)
 					{
+						/**
+						 * Vic doens't understand what ENDAS is.
+						 */
 						if(strpos($fieldName, "ENDAS") !== FALSE)
 						{
 							$fieldName = substr($fieldName, strpos($fieldName, "ENDAS") + 5);
@@ -263,6 +271,13 @@ BLOCK;
 			{
 				$text = str_replace("{next}", "javascript:;\"  style=\"visibility: hidden;\"", $text);
 			}
+			
+			$getrepl = array();
+			foreach ($_GET as $key=>$value)
+			{
+				$getrepl['{'.$key.'}']=$value;
+			}
+			$text = str_replace(array_keys($getrepl), array_values($getrepl), $text);
 
 			return $text;
 		}

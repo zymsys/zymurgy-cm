@@ -562,7 +562,7 @@ if (!class_exists('Zymurgy'))
 					Zymurgy::$db->escape_string($name)."'");
 				if ($page !== false)
 				{
-					$parts = array(Zymurgy::GetActiveFlavourCode(),ZIW_Base::GetFlavouredValue($page['linkurl']));
+					$parts = array(ZIW_Base::GetFlavouredValue($page['linkurl']));
 					while ($page['parent'] > 0) 
 					{
 						$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `id`=".$page['parent']);
@@ -570,9 +570,9 @@ if (!class_exists('Zymurgy'))
 						{ //Orphaned bookmark!  Shouldn't happen.  Return false as if the bookmark doesn't exist.
 							return false;
 						}
-						$parts[] = ZIW_Base::GetFlavouredValue($page['linkurl']);
+						array_unshift($parts, ZIW_Base::GetFlavouredValue($page['linkurl']));
 					}
-					Zymurgy::$bookmarks[$name] = implode('/', $parts);
+					Zymurgy::$bookmarks[$name] = '/'.Zymurgy::GetActiveFlavourCode().'/'.implode('/', $parts);
 				}
 			}
 			return Zymurgy::$bookmarks[$name];
