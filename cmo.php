@@ -545,7 +545,7 @@ if (!class_exists('Zymurgy'))
 		 * Includes jQuery from the Google CDN
 		 * @param string $version jQuery version requested 
 		 */
-		public static function jQuery($version = "1.4.2")
+		public static function jQuery($version = "1.5")
 		{
 			return Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.min.js");
 		}
