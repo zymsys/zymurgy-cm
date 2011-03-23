@@ -18,7 +18,9 @@ if (!array_key_exists('t', $_GET) || !array_key_exists('d', $_GET) || !array_key
 }
 else 
 {
-	Zymurgy::$pagetype = ($_GET['pt'] == 'Template') ? 'Template' : 'Simple';
+	//This get passed in by cmo.js but I don't see it used after that.  Puts an error in the error log since
+	//Zymurgy has no static $pagetype - needs fixing if it is to be put back in.
+	//Zymurgy::$pagetype = ($_GET['pt'] == 'Template') ? 'Template' : 'Simple';
 	Zymurgy::$pageid = intval($_GET['pi']);
 	if (array_key_exists('i', $_GET))
 	{

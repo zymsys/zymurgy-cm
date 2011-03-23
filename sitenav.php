@@ -279,6 +279,7 @@ class ZymurgySiteNav
 	 */
 	public function haspermission($key)
 	{
+		//Zymurgy::DbgAndDie($key,$this->items[$key]->aclitems,Zymurgy::$member["groups"]);
 		while ($key > 0)
 		{
 			if(array_key_exists($key, $this->items)	&& count($this->items[$key]->aclitems) > 0)

@@ -256,7 +256,8 @@ class ZymurgyTemplate
 
 		if (array_key_exists("PagesError404", Zymurgy::$config) && (!empty(Zymurgy::$config["PagesError404"])))
 		{
-			header("Location: ".Zymurgy::$config["PagesError404"]);
+			$redirect = Zymurgy::$config["PagesError404"];
+			header("Location: ".Zymurgy::flavourMyLink($redirect));
 		}
 		else
 		{
