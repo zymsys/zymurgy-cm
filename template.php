@@ -701,11 +701,8 @@ if (file_exists(Zymurgy::$root."/zymurgy/custom/controller.php"))
 {
 	require_once Zymurgy::$root."/zymurgy/custom/controller.php";
 }
-if (Zymurgy::$router->route())
-{
-	//Route was handled via router - don't process any further.
-	exit;
-}
+
+Zymurgy::$router->route();
 
 if (!array_key_exists('p', $_GET) && (!array_key_exists('pageid', $_GET)))
 {

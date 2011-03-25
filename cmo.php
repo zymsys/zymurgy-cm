@@ -32,7 +32,6 @@ if (!class_exists('Zymurgy'))
 		private $posts = array();
 		private $puts = array();
 		private $deletes = array();
-		public $continueprocessing = false;
 		
 		private function addroute(&$to,$uri,$action)
 		{
@@ -152,13 +151,8 @@ if (!class_exists('Zymurgy'))
 				if (preg_match($pattern, $uri) || preg_match($pattern, $uirnq))
 				{
 					call_user_func($action);
-					if (!$this->continueprocessing)
-					{ //We're done
-						return true;
-					}
 				}
 			}
-			return false;
 		}
 	}
 	
