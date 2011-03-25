@@ -528,22 +528,26 @@
 
 			foreach($table->rows as $rowXML)
 			{
-				$row = $rowXML->row;
-				$fields = array();
-
-				foreach($row->children() as $child)
+				foreach ($rowXML as $row)
 				{
-					$fields[$child->getName()] = Zymurgy::$db->escape_string((string) $child);
+					$fields = array();
+					$updates = array();
+	
+					foreach($row->children() as $child)
+					{
+						$fields[$child->getName()] = Zymurgy::$db->escape_string((string) $child);
+						$updates[] = "`".$child->getName()."`='".Zymurgy::$db->escape_string((string) $child)."'";
+					}
+	
+					$sql = "INSERT INTO `{$table->name}` ( `".
+						implode("`, `", array_keys($fields)).
+						"` ) VALUES ( '".
+						implode("', '", $fields).
+						"' ) ON DUPLICATE KEY UPDATE ".implode(', ', $updates);
+					echo($sql."<br>");
+					Zymurgy::$db->query($sql)
+						or die("Could not insert data: ".Zymurgy::$db->error().", $sql");
 				}
-
-				$sql = "INSERT INTO `{$table->name}` ( `".
-					implode("`, `", array_keys($fields)).
-					"` ) VALUES ( '".
-					implode("', '", $fields).
-					"' ) ON DUPLICATE KEY UPDATE id = id";
-//				echo($sql."<br>");
-				Zymurgy::$db->query($sql)
-					or die("Could not insert data: ".Zymurgy::$db->error().", $sql");
 			}
 		}
 	}

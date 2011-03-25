@@ -261,6 +261,7 @@ SetNavigationFeature(16, "- Template Manager", "templatemgr.php");
 SetNavigationFeature(27, "- Zymurgy:CM Config", "zcmconfig.php");
 SetNavigationFeature(29, "- Migrate Data", "migrate.php");
 SetNavigationFeature(30, "- Import Content", "import.php");
+SetNavigationFeature(33, "- Import Full Database", "importcontents.php");
 SetNavigationFeature(24, "--- Media Files ---", "");
 SetNavigationFeature(6,  "- Media Files", "media.php");
 SetNavigationFeature(7,  "- Media Packages", "media.php?action=list_media_packages");
