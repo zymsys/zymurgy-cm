@@ -1,6 +1,6 @@
 <?php
 /**
- * regerenced from include/media.php (orphanned)
+ * referenced from include/media.php (orphanned)
  *
  * @package Zymurgy
  * @access private
