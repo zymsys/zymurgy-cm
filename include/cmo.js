@@ -28,8 +28,7 @@ function ZymurgyFactory() {
 		return req.responseText;
 	};
 	
-	this.getparam = function (name)
-	{
+	this.getparam = function (name) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
 		var regexS = "[\\?&]"+name+"=([^&#]*)";
 		var regex = new RegExp( regexS );
@@ -38,7 +37,15 @@ function ZymurgyFactory() {
 			return false;
 		else
 			return results[1];
-	}
+	};
+	
+	this.getactiveflavourcode = function () {
+		var pp = window.location.href.split('/');
+		pp.shift(); //Throw away protocol
+		pp.shift(); //Throw away blank
+		pp.shift(); //Throw away host name
+		return pp.shift();
+	};
 	
 	this.track = function(userid) {
 		var url = "/zymurgy/tracking.php?r="+escape(document.referrer)+"&u="+userid;
