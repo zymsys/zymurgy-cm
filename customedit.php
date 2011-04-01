@@ -109,12 +109,11 @@ function DeleteChildren(
  * Get the ID of the parent record associated with the ID of the child record
  * being passed into the function. This is used to build the breadcrumb trail.
  *
- * @param $me int
- * @param $parent int
- * @param $myd int
+ * @param $parent array from zcm_customtable - What table are we getting a key from?
+ * @param $myd string - My primary key value
  * @return int
  */
-function getdkey($me,$parent,$myd)
+function getdkey($parent,$myd)
 {
 	/**
 	 * http://www.zymurgy.ca/zymurgy/customedit.php?t=3&d=1
@@ -127,10 +126,10 @@ function getdkey($me,$parent,$myd)
 	 * $me = t = 2 = First Detail
 	 * $parent = 1 = Images, id = 1 (d)
 	 */
-	//echo "<div>[{$parent['tname']}: {$parent['detailfor']}]</div>";
-	if (array_key_exists('detailForField',$parent) && ($parent['detailfor'] > 0) && (strlen($myd) > 0))
+	//echo "<div>[DKEY:detailfor:{$parent['detailfor']},myd:$myd],ake:".array_key_exists('detailforfield',$parent)."</div>";
+	if (array_key_exists('detailforfield',$parent) && ($parent['detailfor'] > 0) && (strlen($myd) > 0))
 	{
-		$detailForField = $parent["detailForField"];
+		$detailForField = $parent["detailforfield"];
 		if(strlen($detailForField) <= 0) 
 		{
 			$grandparent = gettable($parent['detailfor']);
@@ -146,6 +145,7 @@ function getdkey($me,$parent,$myd)
 			"` = '".
 			Zymurgy::$db->escape_string($myd).
 			"'";
+		//echo "<div>[{$parent['tname']}: {$parent['detailfor']}]: $sql</div>";
 		$dkey = Zymurgy::$db->get($sql);
 
 		return $dkey;
@@ -174,34 +174,18 @@ function addhistory($tblrow,$dkey)
 	$wheredidicomefrom[$key] = empty($tblrow['navname']) ? $tblrow['tname'] : $tblrow['navname'];
 }
 
-/**
- * Generate the links for the parent tables for the breadcrumb trail.
- *
- * @param $tid int
- * @param $dkey int
- */
-function digdeeper($tid,$dkey)
+//$tbl is a row from zcm_customtable representing the table who's data we're editing
+//$parentrow is the primary key value of the parent row this view belongs to
+$crumbtbl = $tbl;
+$crumbrow = $parentrow;
+while ($crumbtbl)
 {
-	global $wheredidicomefrom;
-	$tblrow = gettable($tid);
-	$key = 'customedit.php?t='.$tblrow['id'];
-	$parentdkey = getdkey(null,$tblrow,$dkey);
-	if ($parentdkey > 0)
+	addhistory($crumbtbl,$crumbrow);
+	$crumbtbl = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `id`=".$crumbtbl['detailfor']);
+	if ($crumbtbl)
 	{
-		$key .= "&d=$parentdkey";
+		$crumbrow = getdkey($crumbtbl,$crumbrow);
 	}
-	$wheredidicomefrom[$key] = empty($tblrow['navname']) ? $tblrow['tname'] : $tblrow['navname'];
-	if ($tblrow['detailfor'] > 0)
-		digdeeper($tblrow['detailfor'],$parentdkey);
-}
-
-addhistory($tbl,$parentrow);
-if ($detailfor > 0)
-{
-	$parentdkey = getdkey($tbl,$detailtbl,$parentrow);
-	addhistory($detailtbl,$parentdkey);
-	if ($detailtbl['detailfor'] > 0)
-		digdeeper($detailtbl['detailfor'],$parentdkey);
 }
 
 $wdicfkeys = array_keys($wheredidicomefrom);
