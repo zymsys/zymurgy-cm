@@ -266,6 +266,10 @@ class ZIW_Input extends ZIW_Base
 				return "BIGINT";
 				break;
 			case "float":
+				if (count($parameters)==2)
+				{
+					return "FLOAT(".intval($parameters[0]).",".intval($parameters[1]).")";
+				}
 				return "FLOAT";
 				break;
 			case "decimal":
