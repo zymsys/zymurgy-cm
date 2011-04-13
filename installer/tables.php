@@ -586,6 +586,17 @@
 				),
 				"primarykey" => "app,member",
 				"engine" => "MyISAM"
+			),
+			array(
+				"name" => "zcm_longcache",
+				"columns" => array(
+					DefineTableField("ckey", "VARCHAR(255)", "NOT NULL"),
+					DefineTableField("value", "LONGTEXT","DEFAULT NULL"),
+					DefineTableField("created", "DATETIME", "NOT NULL")
+				),
+				"indexes" => array(),
+				"primarykey" => "ckey",
+				"engine" => "MyISAM"
 			)
 		);
 	}

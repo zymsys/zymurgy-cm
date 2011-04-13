@@ -75,9 +75,11 @@ function ZymurgyFactory() {
 	};
 	
 	this.sitetext = function(tag,defaulttext,inputspec) {
-		if (this.sitetextcache) {
-			if (this.sitetextcache[tag]) return this.sitetextcache[tag];
-		} //If not already provided by Z:CM, set it here via ajax to the default value, and then return that.
+		if (typeof this.sitetextcache === 'undefined') {
+			this.sitetextcache = [];
+		}
+		if (this.sitetextcache[tag]) return this.sitetextcache[tag];
+		this.sitetextcache[tag] = defaulttext;
 		var url = "/zymurgy/include/sitetext.php?t=" +
 			escape(tag) + "&d=" +
 			escape(defaulttext) + "&pt=" + Zymurgy.pagetype + "&pi=" + Zymurgy.pageid;

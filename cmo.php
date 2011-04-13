@@ -1140,6 +1140,34 @@ if (!class_exists('Zymurgy'))
 			$r = implode("\n",$r)."\n";
 			return $r;
 		}
+		
+		/**
+		 * Returns HTML/JavaScript to initialize the site text cache used for javascript sitetext.
+		 * Pass each tag needed for the page.
+		 * 
+		 * @param string $varargs
+		 */
+		static function cachesitetext($varargs)
+		{
+			$args = func_get_args();
+			$in = array();
+			foreach ($args as $arg)
+			{
+				$in[] = Zymurgy::$db->escape_string($arg);
+			}
+			$cache = array();
+			$ri = Zymurgy::$db->run("SELECT * FROM `zcm_sitetext` WHERE `tag` IN ('".
+				implode("','", $in)."')");
+			$widget = new InputWidget();
+			while (($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
+			{
+				$_GET['editkey'] = $widget->editkey = $row['id'];
+				$widget->datacolumn = 'zcm_sitetext.body';
+				$t = $widget->Display($row['inputspec'],"{0}",$row['body']);
+				$cache[$row['tag']] = $t;
+			}
+			return "<script>\r\nZymurgy.sitetextcache = ".json_encode($cache).";\r\n</script>\r\n";
+		}
 
 		/**
 		 * Render an image at the specified resolution, as set in a Simple
@@ -2273,6 +2301,30 @@ if (!class_exists('Zymurgy'))
 			$rp = explode('/', $r);
 			array_pop($rp);
 			return implode('/', $rp);
+		}
+		
+		static function longcache_write($key, $value)
+		{
+			Zymurgy::$db->run("INSERT INTO `zcm_longcache` (`ckey`,`value`,`created`) VALUES ('".
+				Zymurgy::$db->escape_string($key)."', '".Zymurgy::$db->escape_string($value).
+				"',NOW()) ON DUPLICATE KEY UPDATE `value`='".Zymurgy::$db->escape_string($value)."'");
+		}
+		
+		static function longcache_read($key,$maxage = 0)
+		{
+			$sql = "SELECT `value` FROM `zcm_longcache` WHERE `ckey`='".
+				Zymurgy::$db->escape_string($key)."'";
+			if ($maxage)
+			{
+				$sql .= " AND (DATE_SUB(NOW(),'SECONDS ".
+					intval($maxage)."') > `created`";
+			}
+			$result = Zymurgy::$db->get($sql);
+			if (is_null($result))
+			{
+				$result = false;
+			}
+			return $result;
 		}
 	} // End Zymurgy Class definition
 
