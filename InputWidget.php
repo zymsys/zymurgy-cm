@@ -145,7 +145,12 @@ class ZIW_Base
 		{
 			$flavour = $codes[$code];
 			$value = Zymurgy::$db->escape_string($value);
+			
+			$sql = "INSERT INTO `zcm_flavourtextitem` (`zcm_flavourtext`,`flavour`,`text`) VALUES (".
+				"$flavourID,{$flavour['id']},'$value') ON DUPLICATE KEY UPDATE `text`='$value'";
+			Zymurgy::$db->run($sql);
 
+			/*
 			$sql = "SELECT `id` FROM `zcm_flavourtextitem` WHERE `flavour` = '".
 				Zymurgy::$db->escape_string($flavour["id"]).
 				"' AND `zcm_flavourtext` = '".
@@ -168,6 +173,7 @@ class ZIW_Base
 					Zymurgy::$db->escape_string($flavourID).
 					"'");
 			}
+			*/
 		}
 		return $flavourID;
 	}

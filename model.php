@@ -316,6 +316,11 @@ class ZymurgyModel implements ZymurgyModelInterface
 		throw new ZymurgyModelException("Member #".Zymurgy::$member['id']." can't access row owned by member #$owner.", ZymurgyModelException::$MEMBER_MISMATCH);
 	}
 	
+	public function memberOwnsRow($row)
+	{
+		return (array_key_exists('member', $row) && ($row['member'] == Zymurgy::$member['id']));
+	}
+	
 	public function validaterow($rowdata)
 	{
 		if ($this->tablechain)
@@ -343,7 +348,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 					throw new ZymurgyModelException("Can't insert for orphaned row.", ZymurgyModelException::$ORPHAN);
 				}
 			}
-			if (array_key_exists('member', $chkrow) && ($chkrow['member'] != Zymurgy::$member['id']))
+			if (!$this->memberOwnsRow($chkrow))
 			{
 				throw new ZymurgyModelException("Can't insert for row owned by member #".$chkrow['member'], ZymurgyModelException::$MEMBER_MISMATCH);
 			}

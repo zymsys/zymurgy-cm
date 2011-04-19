@@ -36,7 +36,7 @@
 					{
 						ImportPage($file);
 					}
-					else if(strpos($file, "<customtable>") > 0)
+					else if(strpos($file, "<table>") > 0)
 					{
 						ImportCustomTable($file);
 					}
@@ -496,11 +496,10 @@
 
 			$tableIDMap[intval($table->id)] = $newTableID;
 			$fieldIndex = 1;
-
-			foreach($table->fields as $fieldXML)
+			foreach($table->fields->field as $field)
 			{
-//				echo("<pre>".print_r($fieldXML->field, true)."</pre>");
-				$field = $fieldXML->field;
+				//echo("<pre>".print_r($fieldXML->field, true)."</pre>");
+				//$field = $fieldXML->field;
 
 				echo("---- Field: ".$field->name."<br>");
 
@@ -519,7 +518,7 @@
 						$field->gridheader,
 						$field->caption,
 						$field->inputspec,
-						$field->indexed,
+						$field->index,
 						$fieldIndex);
 				}
 
