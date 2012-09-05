@@ -261,8 +261,7 @@ while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 	$cols[$row['cname']] = $row['inputspec'];
 	$capts[$row['cname']] = $row['caption'];
 
-	if (!empty($row['gridheader']))
-		$ingrid[$row['cname']] = $row['gridheader'];
+	$ingrid[$row['cname']] = $row['gridheader'];
 
 	$ds->AddColumn($row['cname'],true);
 }
@@ -309,6 +308,11 @@ if($tbl["ismember"])
 
 foreach($ingrid as $col=>$header)
 {
+    if (empty($header))
+    {
+        $dg->AddColumn($header, $col, '');
+        continue;
+    }
 	if (array_key_exists($col,$thumbs))
 	{
 		list($width,$height) = $thumbs[$col];
