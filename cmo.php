@@ -2007,7 +2007,7 @@ if (!class_exists('Zymurgy'))
 		 * @return string
 		 * @access private
 		 */
-		function GetLocaleString($key)
+		static function GetLocaleString($key)
 		{
 			// ZK: The locale is hard-coded to English for now, as it's the only
 			// language Zymurgy:CM currently supports on the back-end.
