@@ -458,7 +458,8 @@ class ZymurgyTemplate
 		$w->datacolumn = 'zcm_pagetext.body';
 		$w->editkey = $this->pagetextids[$tag];
 		$r = $w->Display($type,'{0}',$this->pagetextcache[$tag]);
-		$realwidget = InputWidget::Get(array_shift(explode('.',$type,2)));
+		$exploded = explode('.',$type,2);
+		$realwidget = InputWidget::Get(array_shift($exploded));
 		if ($realwidget->SupportsFlavours() && (!is_numeric($this->pagetextcache[$tag])))
 		{
 			//This is a flavoured item, so $value should be numeric - since this isn't it needs to be converted.

@@ -200,6 +200,7 @@ class ZymurgySiteNav
 		// copy the structure into the nav items children attributes.
 		foreach ($structureparts as $key => $children)
 		{
+            if (!isset($this->items[$key])) $this->items[$key] = new stdClass();
 			$this->items[$key]->children = $children;
 			//Zymurgy::DbgAndDie($this->items[$key]);
 			foreach ($children as $childkey)
