@@ -145,7 +145,8 @@ if (!class_exists('Zymurgy'))
 					$routes = $this->gets;
 			}
 			$uri = $_SERVER['REQUEST_URI'];
-			$uirnq = array_shift(explode('?', $uri, 2));
+			$exploded = explode('?', $uri, 2);
+			$uirnq = array_shift($exploded);
 			foreach ($routes as $pattern=>$action)
 			{
 				if (preg_match($pattern, $uri) || preg_match($pattern, $uirnq))
