@@ -1986,7 +1986,7 @@ function DumpDataGridCSS()
 	}
 	else
 	{
-		echo "<style><!--\n$gridcss\n--></style>\n";
+		echo "<style><!--\n{$gridcss}\n--></style>\n";
 	}
 
 }

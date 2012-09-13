@@ -2086,13 +2086,13 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 		$date = trim($_POST[$postname]);
 		if (empty($date))
 		{
-			return '';
+			return null;
 		}
 		$pp = explode(" ",$date);
 
 		if(count($pp) <= 0)
 		{
-			return "";
+			return null;
 		}
 		else
 		{
@@ -2116,7 +2116,6 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 					$tp[0] = 0;
 			}
 			*/
-
 			return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 		}
 	}
