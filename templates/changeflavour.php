@@ -20,7 +20,13 @@ if (!array_key_exists('HTTP_REFERER', $_SERVER))
 	exit;
 }
 $referer = $_SERVER['HTTP_REFERER'];
-$rp = explode('/',$referer);
+$qp = explode('?', $referer);
+if (count($qp) == 2)
+{
+    $queryString = $qp[1];
+    $referer = $qp[0];
+}
+$rp = explode('/', $referer);
 array_shift($rp); //Protocol - http:
 array_shift($rp); //Blank from // after http:
 array_shift($rp); //Host name - throw away
@@ -34,6 +40,10 @@ while ($rp)
 	$newpath[] = $newnav->items[$node]->linkurl;
 }
 $link = implode('/', $newpath);
+if (isset($queryString))
+{
+    $link .= '?' . $queryString;
+}
 //Zymurgy::DbgAndDie($link,$newpath,$newflavour,$link,$referer,$newnav,Zymurgy::$sitenav);
 header('Location: '.$link);
 ?>
