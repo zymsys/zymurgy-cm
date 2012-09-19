@@ -403,13 +403,13 @@ class DataSetRow
 
 				if ($this->DataSet->columns["$tname.$cname"]->quoted)
 				{
-					$vlist[$cname] = "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[$cname] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
+					$vlist[$cname] = is_null($val) ? 'null' : "'".Zymurgy::$db->escape_string($val)."'";
+					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`='".Zymurgy::$db->escape_string($val)."'";
 				}
 				else
 				{
-					$vlist[$cname] = $val;
-					$alist[$cname] = "`$cname`=$val";
+					$vlist[$cname] = is_null($val) ? 'null' : $val;
+					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`=$val";
 				}
 			}
 
@@ -459,7 +459,6 @@ class DataSetRow
 					implode(",",$vlist).")";
 			}
 
-			//echo $sql;
 			$ri = Zymurgy::$db->query($sql);
 
 			if ($ri === false)
@@ -1632,7 +1631,6 @@ class DataGrid
 						if (isset($this->OnAutoInsert))
 							$widget->OnAutoInsert = $this->OnAutoInsert;
 						$postvalue = $widget->PostValue($c->editor,$postname);
-						//echo "[$postname,{$c->editor},$postvalue]";
 						if (($c->editor == "attachment") || ($c->editortype == "image"))
 						{
 							$file = $_FILES[$postname];
