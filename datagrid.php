@@ -403,13 +403,13 @@ class DataSetRow
 
 				if ($this->DataSet->columns["$tname.$cname"]->quoted)
 				{
-					$vlist[$cname] = "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[$cname] = "`$cname`='".Zymurgy::$db->escape_string($val)."'";
+					$vlist[$cname] = is_null($val) ? 'null' : "'".Zymurgy::$db->escape_string($val)."'";
+					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`='".Zymurgy::$db->escape_string($val)."'";
 				}
 				else
 				{
-					$vlist[$cname] = $val;
-					$alist[$cname] = "`$cname`=$val";
+					$vlist[$cname] = is_null($val) ? 'null' : $val;
+					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`=$val";
 				}
 			}
 
@@ -459,7 +459,6 @@ class DataSetRow
 					implode(",",$vlist).")";
 			}
 
-			//echo $sql;
 			$ri = Zymurgy::$db->query($sql);
 
 			if ($ri === false)
@@ -732,9 +731,8 @@ class DataSet
 	var $fetchrows;
 
 	/**
-	 * Does not appear to be used.
+	 * Number used to sort for display purposes.  Can be changed by the user to change the order of items.
 	 *
-	 * @deprecated
 	 * @var unknown_type
 	 */
 	var $DisplayOrder;
@@ -1073,7 +1071,7 @@ class DataGrid
 			$datacolumn = $this->DataSet->tables[0].".$datacolumn";
 		//echo "ac[$headertxt,$datacolumn,$template]<br>";
 		$col = new DataGridColumn($headertxt,$datacolumn,$template);
-		$this->columns[] = &$col;
+		$this->columns[] = $col;
 		return $col;
 	}
 
@@ -1633,7 +1631,6 @@ class DataGrid
 						if (isset($this->OnAutoInsert))
 							$widget->OnAutoInsert = $this->OnAutoInsert;
 						$postvalue = $widget->PostValue($c->editor,$postname);
-						//echo "[$postname,{$c->editor},$postvalue]";
 						if (($c->editor == "attachment") || ($c->editortype == "image"))
 						{
 							$file = $_FILES[$postname];
@@ -1880,7 +1877,6 @@ class DataGrid
 		}
 		echo "</tr>\r\n";
 		$alternate = false;
-		$contexttriggers = array();
 		$widget = new InputWidget();
 		foreach ($this->DataSet->rows as $row)
 		{
@@ -1890,7 +1886,6 @@ class DataGrid
 				$trclass = "DataGridRow";
 			$alternate = !$alternate;
 			echo "<tr class=\"$trclass\">";
-			//$contexttriggers[] = $this->RenderContextMenu($row);
 			foreach ($this->columns as $c)
 			{
 				if($c->template == "member")
@@ -1963,12 +1958,6 @@ class DataGrid
 		echo "</table></td>";
 		echo "</tr>\r\n";
 		echo "</table>\r\n";
-		if ($contexttriggers)
-		{
-			echo "<script type=\"text/javascript\">
-			var oZCMDGCM$id = ZymurgyCreateDGCM(['".implode("', '",$contexttriggers)."'],'".$this->DataSet->tables[0]."');
-			</script>";
-		}
 	}
 }
 
@@ -1987,7 +1976,7 @@ function DumpDataGridCSS()
 	}
 	else
 	{
-		echo "<style><!--\n$gridcss\n--></style>\n";
+		echo "<style><!--\n{$gridcss}\n--></style>\n";
 	}
 
 }

@@ -1908,7 +1908,7 @@ class ZIW_UnixDate extends ZIW_DateBase
 		}
 		else
 		{
-			"";
+			return null;
 		}
 	}
 
@@ -2084,15 +2084,15 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 	function PostValue($ep,$postname)
 	{
 		$date = trim($_POST[$postname]);
-		if (empty($date))
+        if (empty($date))
 		{
-			return '';
+			return null;
 		}
 		$pp = explode(" ",$date);
 
 		if(count($pp) <= 0)
 		{
-			return "";
+			return null;
 		}
 		else
 		{
@@ -2116,7 +2116,6 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 					$tp[0] = 0;
 			}
 			*/
-
 			return mktime($tp[0],$tp[1],0,$dp[1],$dp[2],$dp[0]);
 		}
 	}
@@ -2152,9 +2151,9 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 		$tm = parent::PostValue($ep,$postname);
 //		die("Time: ".$tm.", ".strftime('%Y-%m-%d %H:%M:%S',$tm));
 
-		return strlen($tm) > 0
+		return is_null($tm) ? null : strlen($tm) > 0
 			? strftime('%Y-%m-%d %H:%M:%S',$tm)
-			: "";
+			: null;
 	}
 
 	function ToUnixTime($tm)
