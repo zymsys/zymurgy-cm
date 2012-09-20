@@ -3281,6 +3281,11 @@ class DataGridLookup
  */
 class ZIW_GMap extends ZIW_Base
 {
+    /**
+     * @var string Change this to the language you want your maps generated in by assigning to ZIW_GMap::$googleLanguage
+     */
+    public static $googleLanguage = 'en';
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -3310,7 +3315,9 @@ class ZIW_GMap extends ZIW_Base
 		if ($h == 0) $h = 350;
 		if ($z == 0) $z = 14;
 		$q = urlencode(str_replace(array("\r","\n"),' ',$display));
-		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
+		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=" .
+            self::$googleLanguage .
+            "&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
 		return "<iframe width=\"$w\" height=\"$h\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\"
 			src=\"$url\"></iframe><br /><small><a href=\"$url\" target=\"_blank\" style=\"color:#0000FF;text-align:left\">View Larger Map</a></small>";
 	}
