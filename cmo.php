@@ -2299,9 +2299,9 @@ if (!class_exists('Zymurgy'))
 		static function getAppRoot() 
 		{
 			$r = dirname(__FILE__);
-			$rp = explode('/', $r);
+			$rp = explode(DIRECTORY_SEPARATOR, $r);
 			array_pop($rp);
-			return implode('/', $rp);
+			return implode(DIRECTORY_SEPARATOR, $rp);
 		}
 		
 		static function longcache_write($key, $value)
