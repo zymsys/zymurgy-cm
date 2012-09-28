@@ -2344,7 +2344,9 @@ if (!class_exists('Zymurgy'))
     }
     else
     {
-        class_alias('ZymurgyBase', 'Zymurgy');
+        class Zymurgy extends ZymurgyBase
+        {
+        }
     }
 	Zymurgy::$build = 1987; //Historical; no longer used.
 	
