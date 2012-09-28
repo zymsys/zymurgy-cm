@@ -112,7 +112,7 @@ class ZymurgySiteNav
 	/**
 	 * The nav items by database ID.
 	 *
-	 * @var array of ZymurgySiteNavItem objects
+	 * @var ZymurgySiteNavItem[]
 	 */
 	public $items = array();
 
