@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Displays a Page in the assigned Template.
  *
@@ -71,7 +71,7 @@ class ZymurgyTemplate
 	{
 		$nav = Zymurgy::getsitenav();
 		$item = $nav->items[$parent];
-
+//Zymurgy::DbgAndDie($parent, $navpart, $item, $nav->items[0]);
 //		echo("Looking for ".$navpart." in ".print_r($item->childrenbynavname, true));
 
 		return array_key_exists(urlencode($navpart), $item->childrenbynavname) ?
@@ -126,10 +126,19 @@ class ZymurgyTemplate
 						$newpart = Zymurgy::$db->get("select linkurl from zcm_sitepage where id = {$redirect['sitepage']}");
 						if ($newpart)
 						{
-							$newpath[] = ZIW_Base::GetFlavouredValue($newpart);
-							$parent = $redirect['sitepage'];
-							$doredirect = true;
-							continue;
+                            $newparttext = ZIW_Base::GetFlavouredValue($newpart);
+                            if ($newparttext != $navpart)
+                            {
+                                $newpath[] = $newparttext;
+                                $parent = $redirect['sitepage'];
+                                $doredirect = true;
+                                continue;
+                            }
+                            else
+                            {
+                                $do404 = "No navpage, redirect to self.";
+                                break;
+                            }
 						}
 						else
 						{
@@ -155,7 +164,7 @@ class ZymurgyTemplate
 			}
 			if ($doredirect)
 			{
-				header("Location: /$hrefroot/".implode('/',$newpath));
+                header("Location: /$hrefroot/".implode('/',$newpath));
 				/*echo "Redirect: <pre>\r\n";
 				print_r($newpath);
 				echo "</pre>";*/

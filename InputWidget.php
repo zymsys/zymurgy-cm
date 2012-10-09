@@ -723,7 +723,8 @@ class ZIW_Lookup extends ZIW_Base
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
 			$name,
 			$value,
-			count($ep) >= 6 && $ep[5] == "checked");
+			count($ep) >= 6 && $ep[5] == "checked",
+            '0');
 	}
 	
 	function initCache($ep)
@@ -3252,14 +3253,15 @@ class DataGridLookup
 	function RenderDropList(
 		$name,
 		$selected,
-		$allowNulls = false)
+		$allowNulls = false,
+        $default = '')
 	{
 		$r = array();
 		$r[] = "<select id='$name' name='$name'>";
 
 		if($allowNulls)
 		{
-			$r[] = "<option value=\"\"".
+			$r[] = "<option value=\"$default\"".
 				($selected == "" ? " selected=\"selected\"" : "").
 				">&nbsp;</option>";
 		}
