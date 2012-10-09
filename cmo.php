@@ -574,16 +574,21 @@ if (!class_exists('Zymurgy'))
 		 * 
 		 * @param string $name
 		 */
-		public static function bookmark($name)
+		public static function bookmark($name, $forFlavour = null)
 		{
-			if (!array_key_exists($name, self::$bookmarks))
+            if (is_null($forFlavour))
+            {
+                $forFlavour = self::GetActiveFlavourCode();
+            }
+            if (!isset(self::$bookmarks[$forFlavour])) self::$bookmarks[$forFlavour] = array();
+            if (!isset(self::$bookmarks[$forFlavour][$name]))
 			{
-				self::$bookmarks[$name] = false;
+				self::$bookmarks[$forFlavour][$name] = false;
 				$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `bookmark`='".
 					Zymurgy::$db->escape_string($name)."'");
 				if ($page !== false)
 				{
-					$parts = array(ZIW_Base::GetFlavouredValue($page['linkurl']));
+					$parts = array(ZIW_Base::GetFlavouredValue($page['linkurl'], $forFlavour));
 					while ($page['parent'] > 0) 
 					{
 						$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `id`=".$page['parent']);
@@ -591,12 +596,12 @@ if (!class_exists('Zymurgy'))
 						{ //Orphaned bookmark!  Shouldn't happen.  Return false as if the bookmark doesn't exist.
 							return false;
 						}
-						array_unshift($parts, ZIW_Base::GetFlavouredValue($page['linkurl']));
+						array_unshift($parts, ZIW_Base::GetFlavouredValue($page['linkurl'], $forFlavour));
 					}
-					self::$bookmarks[$name] = '/'.Zymurgy::GetActiveFlavourCode().'/'.implode('/', $parts);
+					self::$bookmarks[$forFlavour][$name] = '/'. $forFlavour .'/'.implode('/', $parts);
 				}
 			}
-			return self::$bookmarks[$name];
+			return self::$bookmarks[$forFlavour][$name];
 		}
 
 		/**
@@ -1783,12 +1788,13 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * The navigation structure of the site
+		 * The navigation structure of the site; this is an array with flavour codes as indexes,
+         * so that more than once flavour's nav can be cached at the same time.
 		 *
-		 * @var ZymurgySiteNav
+		 * @var ZymurgySiteNav[]
 		 * @see getsitenav
 		 */
-		public static $sitenav = null;
+		public static $sitenav = array();
 
 		/**
 		 * Old function to render site navigation.
@@ -1827,15 +1833,19 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @return ZymurgySiteNav
 		 */
-		public static function getsitenav(){
+		public static function getsitenav($forFlavour = null){
 			require_once('sitenav.php');
 
-			if(is_null(Zymurgy::$sitenav))
+            if (is_null($forFlavour))
+            {
+                $forFlavour = Zymurgy::GetActiveFlavourCode();
+            }
+			if(!isset(Zymurgy::$sitenav[$forFlavour]))
 			{
-				Zymurgy::$sitenav = new ZymurgySiteNav();
+				Zymurgy::$sitenav[$forFlavour] = new ZymurgySiteNav($forFlavour);
 			}
 
-			return Zymurgy::$sitenav;
+			return Zymurgy::$sitenav[$forFlavour];
 		}
 
 		/**
@@ -2258,17 +2268,34 @@ if (!class_exists('Zymurgy'))
 		
 		static function flavourMyLink($link)
 		{
+            $lp = explode('?', $link);
+            if (count($lp) == 2)
+            {
+                $link = $lp[0];
+                $query = $lp[1];
+            }
 			$lp = explode('/',substr($link,1)); //Drop first char - should be / always
 			$flavour = array_shift($lp); //Get flavour to convert from
 			if ($flavour == Zymurgy::GetActiveFlavourCode()) return $link; //No conversion required
 			$l = array(Zymurgy::GetActiveFlavourCode());
+            $targetNav = Zymurgy::getsitenav();
+            $sourceNav = Zymurgy::getsitenav($flavour);
+            $sourceNode = $sourceNav->items[0];
 			while ($lp)
 			{
 				$linkpart = array_shift($lp);
 				//Change flavour here
-				$l[] = $linkpart;
+                $sourceNode = $sourceNav->items[$sourceNode->childrenbynavname[$linkpart]];
+                $targetNode = $targetNav->items[$sourceNode->id];
+                $linkpart = $targetNode->linktext;
+                $l[] = $linkpart;
 			}
-			return '/'.implode('/',$l);
+            $result = '/'.implode('/',$l);
+            if (isset($query))
+            {
+                $result .= '?' . $query;
+            }
+            return $result;
 		}
 
 		static function GetActiveFlavour()
