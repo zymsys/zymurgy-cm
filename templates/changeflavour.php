@@ -13,6 +13,7 @@ if (!class_exists('Zymurgy'))
 Zymurgy::headtags();
 $newflavour = Zymurgy::pagetext('New Flavour Name','inputf.60.255');
 $newnav = new ZymurgySiteNav($newflavour);
+$oldnav = Zymurgy::getsitenav();
 $link = Zymurgy::pagetext('Default URL','inputf.60.255');
 if (!array_key_exists('HTTP_REFERER', $_SERVER))
 {
@@ -36,7 +37,7 @@ $node = 0; //Start with root node
 while ($rp)
 {
 	$pathpart = array_shift($rp);
-	$node = Zymurgy::$sitenav->items[$node]->childrenbynavname[$pathpart];
+	$node = $oldnav->items[$node]->childrenbynavname[$pathpart];
 	$newpath[] = $newnav->items[$node]->linkurl;
 }
 $link = implode('/', $newpath);
