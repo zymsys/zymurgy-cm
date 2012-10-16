@@ -1524,7 +1524,7 @@ class ZIW_Drop extends ZIW_RadioDrop
 class ZIW_Time extends ZIW_Base
 {
 	//Lifted from http://guru-forum.net/showthread.php?t=7, and lovingly improved
-	function mysqlToUnix ($datetime) {
+	static function mysqlToUnix ($datetime) {
 	    if ($datetime)
 	    {
 	    	$parts = explode(' ', $datetime);
