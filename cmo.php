@@ -2443,6 +2443,10 @@ if (!class_exists('Zymurgy'))
 	}
 	require_once(Zymurgy::$root."/zymurgy/db/".Zymurgy::$config['database'].".php");
 	Zymurgy::$db = new Zymurgy_DB();
+	if (isset(Zymurgy::$config['characterset']))
+	{
+		mysql_set_charset(Zymurgy::$config['characterset']);
+	}
 
 	Zymurgy::$userconfig = array();
 	$ri = Zymurgy::$db->query("select * from zcm_config order by disporder");
