@@ -1264,6 +1264,35 @@ if (!class_exists('Zymurgy'))
 
 		//@}
 
+		public function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
+		{
+		        $time=date("d M Y H:i:s");
+		        // Get the error type from the error number
+		        $errortype = array (1    => "Error",
+		                          2    => "Warning",
+		                          4    => "Parsing Error",
+               			          8    => "Notice",
+               	        		  16   => "Core Error",
+			                  32   => "Core Warning",
+               			          64   => "Compile Error",
+               	        		  128  => "Compile Warning",
+		                          256  => "User Error",
+		                          512  => "User Warning",
+                		          1024 => "User Notice",
+		                          2048 => "Run Time Notice",
+		                          4096 => "Catchable Fatal Error");
+		        $errlevel=$errortype[$errno];
+		        if (empty($errlevel)) $errlevel = $errno;
+
+		        echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\n";
+		}
+
+		public function enableErrorHandler()
+		{
+			set_error_handler(array('ZymurgyBase','userErrorHandler'));
+			error_reporting(0);
+		}
+
 		/**
 		 * Load the configuration for the specified plugin from the database.
 		 *
@@ -2026,7 +2055,7 @@ if (!class_exists('Zymurgy'))
 		 * @return string
 		 * @access private
 		 */
-		static function GetLocaleString($key)
+		public static function GetLocaleString($key)
 		{
 			// ZK: The locale is hard-coded to English for now, as it's the only
 			// language Zymurgy:CM currently supports on the back-end.
