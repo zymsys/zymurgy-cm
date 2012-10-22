@@ -4,9 +4,9 @@ require_once Zymurgy::$root."/zymurgy/model.php";
 Zymurgy::headtags(false);
 $result = new stdClass();
 $table = Zymurgy::$db->escape_string($_GET['table']);
-if (array_key_exists('id', $_GET))
+if (array_key_exists('id', $_REQUEST))
 {
-	$id = $_GET['id'];
+	$id = $_REQUEST['id'];
 }
 else 
 {
