@@ -287,7 +287,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 				$sql = "SELECT * FROM `".$chkparent['tname']."` WHERE `".
 					$chkparent['idfieldname']."` = '".Zymurgy::$db->escape_string($rowdata[$chkparent['tname']])."'";
 				$rowdata = Zymurgy::$db->get($sql);
-				if ($chkrow === false)
+				if ($rowdata === false)
 				{
 					throw new ZymurgyModelException("Can't validate orphaned row.", ZymurgyModelException::$ORPHAN);
 				}
