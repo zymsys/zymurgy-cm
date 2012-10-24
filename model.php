@@ -12,12 +12,12 @@ interface ZymurgyModelInterface
 	 * Read row data.  If the model is member data read only rows for that member.
 	 * If $rowid is supplied then only read the row with that primary key value.
 	 * 
-	 * @param string $rowid
+	 * @param string $rowId
 	 */
-	public function read($rowid = false);
+	public function read($rowId = false);
 	
 	/**
-	 * Read row data.  Access all data regardless of ownership, but subject to the global acl.
+	 * Read row data.  Access all data regardless of ownership, but subject to the acl.
 	 * If $rowid is supplied then only read the row with that primary key value.
 	 * 
 	 * @param string $rowid
@@ -33,12 +33,9 @@ interface ZymurgyModelInterface
 	public function write($rowdata);
 	
 	/**
-	 * Delete a row from the table behind the model.  $rowid is the primary key for the
-	 * row to be deleted.
-	 * 
-	 * @param string $rowid
+	 * Delete a row from the table behind the model.  Throws an exception if no filter has been applied.
 	 */
-	public function delete($rowid);
+	public function delete();
 	
 	/**
 	 * Get the name of the table behind this model.
@@ -76,6 +73,21 @@ interface ZymurgyModelInterface
 	 * @param string $permission
 	 */
 	public function getColumns($permission);
+
+    /**
+     * Add an SQL fragment to the query filter.  These are always ANDed with each other and
+     * with the member filter.
+     *
+     * @param $filter ZymurgyModelFilter|string
+     */
+    public function addFilter($filter);
+
+    /**
+     * Just like addFilter() but for OR queries.
+     *
+     * @param $filter ZymurgyModelFilter|string
+     */
+    public function addOrFilter($filter);
 }
 
 class ZymurgyModelException extends Exception
@@ -84,18 +96,32 @@ class ZymurgyModelException extends Exception
 	public static $MEMBER_MISMATCH = 2;
 	public static $MISSING_COLUMN = 3;
 	public static $ORPHAN = 4;
+    public static $MISSING_FILTER = 5;
 }
 
 class ZymurgyModel implements ZymurgyModelInterface
 {
 	protected $tabledata;
-	protected $filter;
-	protected $memberfilter;
+
+    /**
+     * @var ZymurgyModelFilter[]
+     */
+    protected $filter = array();
+
+    /**
+     * @var ZymurgyModelFilter[]
+     */
+    protected $orFilter = array();
+    protected $sort = array();
+    protected $rangeStart;
+    protected $rangeLimit;
+
+    protected $memberfilter;
 	protected $membertable;
 	protected $tablechain;
 	protected $columns;
-	
-	/**
+
+    /**
 	 * Take a table name and construct a ZymurgyModel for that table.
 	 * You can define your own models as TablenameCustomModel and the factory will generate those instead.
 	 * For example, if the table was 'foo' the custom model would be called FooCustomModel, and it would
@@ -136,7 +162,6 @@ class ZymurgyModel implements ZymurgyModelInterface
 				'Delete'=>array()
 			)
 		);
-		$this->filter = array();
 		$this->memberfilter = array();
 		$this->tabledata = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `tname`='".
 			Zymurgy::$db->escape_string($table)."'");
@@ -361,26 +386,23 @@ class ZymurgyModel implements ZymurgyModelInterface
 	 * and $oftype is any, acl or globalacl.
 	 * 
 	 * @param string $perm
-	 * @param string $oftype
+	 * @param string $ofType
 	 * @throws ZymurgyModelException
 	 */
-	public function checkacl($perm,$oftype = 'any',$dump = false)
+	public function checkacl($perm,$ofType = 'any',$dump = false)
 	{
 		$table = $this->tabledata['tname'];
-if ($dump) Zymurgy::Dbg($table);		
 		$allowedcols = array();
-		if ($this->membertable && (($oftype == 'any') || ($oftype == 'acl')))
+		if ($this->membertable && (($ofType == 'any') || ($ofType == 'acl')))
 		{
-if ($dump) Zymurgy::Dbg('member and any or acl');		
 			if (array_key_exists('acl',$this->columns) && array_key_exists($perm, $this->columns['acl']))
 			{ //This table is member data, and the member ACL allows the requested priv.
 				$allowedcols = $this->columns['acl'][$perm];
 			}
 		}
 		if (array_key_exists('globalacl',$this->columns) && array_key_exists($perm, $this->columns['globalacl']) 
-			&& (($oftype == 'any') || ($oftype == 'globalacl')))
+			&& (($ofType == 'any') || ($ofType == 'globalacl')))
 		{ //The global ACL allows the requested priv.
-if ($dump) Zymurgy::Dbg('global');		
 			$allowedcols = array_merge($allowedcols, $this->columns['globalacl'][$perm]);
 		}
 		if (!$allowedcols)
@@ -388,20 +410,19 @@ if ($dump) Zymurgy::Dbg('global');
 			throw new ZymurgyModelException("No $perm permission for $table, check the access control list for this table and its columns.", 
 				ZymurgyModelException::$NO_ACL);
 		}
-if ($dump) Zymurgy::Dbg($allowedcols);		
 		return $allowedcols;
 	}
 	
-	public function readcore($aclname, $rowid = false)
+	public function readcore($aclName, $rowid = false)
 	{
-		$aclcols = $this->checkacl('Read','acl');
+		$aclcols = $this->checkacl('Read',$aclName);
 		$table = $this->tabledata['tname'];
 		$sqlcols = array();
 		foreach ($aclcols as $cname=>$permission) 
 		{
 			$sqlcols[] = "`$cname`";
 		}
-		if ($aclname == 'acl')
+		if ($aclName == 'acl')
 		{
 			$filter = array_merge($this->filter,$this->memberfilter);
 		}
@@ -417,12 +438,20 @@ if ($dump) Zymurgy::Dbg($allowedcols);
 		}
 		if ($filter)
 		{
-			$sql .= ' WHERE ('.implode(') AND (', $filter).')';
+			$sql .= ' WHERE ' . $this->buildFilterFragment();
 		}
-		if ($this->tabledata['hasdisporder'])
+		if ((count($this->sort) == 0) && $this->tabledata['hasdisporder'])
 		{
 			$sql .= " ORDER BY `disporder`";
 		}
+        if ($this->sort)
+        {
+            $sql .= " ORDER BY " . implode(', ', $this->sort);
+        }
+        if (isset($this->rangeStart) && isset($this->rangeLimit))
+        {
+            $sql .= " LIMIT " . $this->rangeStart . ", " . $this->rangeLimit;
+        }
 		$rows = array();
 		$ri = Zymurgy::$db->run($sql);
 		while (($r = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
@@ -433,9 +462,9 @@ if ($dump) Zymurgy::Dbg($allowedcols);
 		return $rows;
 	}
 	
-	public function read($rowid = false)
+	public function read($rowId = false)
 	{
-		return $this->readcore('acl',$rowid);
+		return $this->readcore('any',$rowId);
 	}
 	
 	public function readall($rowid = false)
@@ -501,17 +530,16 @@ if ($dump) Zymurgy::Dbg($allowedcols);
 	}
 	
 	//curl -X DELETE --cookie "ZymurgyAuth=bobotea" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar&id=3
-	public function delete($rowid)
+	public function delete($rowId = false)
 	{
+        if ($rowId) $this->addIdentityFilter($rowId);
+        if (empty($this->filter))
+        {
+            throw new ZymurgyModelException("Can't delete without first setting a filter", ZymurgyModelException::$MISSING_FILTER);
+        }
 		$this->checkacl('Delete');
 		$table = $this->tabledata['tname'];
-		$sql = "DELETE FROM `$table` WHERE (`".
-			Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
-			Zymurgy::$db->escape_string($rowid)."')";
-		if ($this->memberfilter)
-		{
-			$sql .= ' AND ('.implode(') AND (', $this->memberfilter).')';
-		}
+		$sql = "DELETE FROM `$table` WHERE " . $this->buildFilterFragment();
 		return Zymurgy::$db->run($sql);
 	}
 	
@@ -544,8 +572,123 @@ if ($dump) Zymurgy::Dbg($allowedcols);
 	}
 	
 	public function addFilter($filter)
+    {
+        $sqlFragment = $this->filterToSQLFragment($filter);
+        if (!empty($sqlFragment))
+        {
+            $this->filter[] = $sqlFragment;
+        }
+    }
+
+	public function addOrFilter($filter)
+    {
+        $sqlFragment = $this->filterToSQLFragment($filter);
+        if (!empty($sqlFragment))
+        {
+            $this->orFilter[] = $sqlFragment;
+        }
+    }
+
+	protected function filterToSQLFragment($filter)
 	{
-		$this->filter[] = $filter;
+        if (is_object($filter) && is_a($filter, 'ZymurgyModelFilter'))
+        {
+            $filter = str_replace('?', $filter->getValue(), $filter->getFilter());
+        }
+        return $filter;
 	}
+
+    protected function buildFilterFragment()
+    {
+        $fragment = '';
+        if ($this->filter)
+        {
+            $fragment .= '(' . implode(') AND (', $this->filter) . ')';
+        }
+        if ($this->orFilter)
+        {
+            if ($this->filter) $fragment .= " AND ";
+            $fragment .= '(' . implode(') OR (', $this->orFilter) . ')';
+        }
+        if ($this->memberfilter)
+        {
+            $fragment = "($fragment) AND (" . implode(') AND (', $this->memberfilter) . ')';
+        }
+        return $fragment;
+    }
+
+    public function addIdentityFilter($rowId)
+    {
+        $this->addFilter('`' . $this->tabledata['idfieldname'] . "` = '" . Zymurgy::$db->escape_string($rowId) . "'");
+    }
+
+    public function addSort($column, $order)
+    {
+        $this->sort[] = "`$column` $order";
+    }
+
+    public function setRange($start, $limit)
+    {
+        $this->rangeStart = $start;
+        $this->rangeLimit = $limit;
+    }
 }
-?>
+
+class ZymurgyModelFilter
+{
+    private $_operator;
+    private $_isOr;
+    private $_column;
+    private $_value;
+
+    function __construct($operator, $isOr, $column, $value)
+    {
+        $this->_operator = $operator;
+        $this->_isOr = $isOr;
+        $this->_column = $column;
+        $this->_value = $value;
+    }
+
+    function getFilter()
+    {
+        if (is_null($this->_operator))
+        {
+            return $this->_value;
+        }
+        else
+        {
+            $column = str_replace('_','`.`',$this->_column);
+            if (is_null($this->_value))
+            {
+                return "`$column` " . (($this->_operator == '=') ? 'IS' : 'IS NOT') . " NULL";
+            }
+            else
+            {
+                if ($this->_operator == 'N')
+                {
+                    return ($this->_value) ? "`$column` IS NOT NULL" : null;
+                }
+                return "`$column` {$this->_operator} ?";
+            }
+        }
+    }
+
+    function isOr()
+    {
+        return $this->_isOr;
+    }
+
+    function getValue()
+    {
+        if ($this->_operator === 'like')
+        {
+            return "%".$this->_value."%";
+        }
+        return $this->_value;
+    }
+
+    function getColumn()
+    {
+        return $this->_column;
+    }
+}
