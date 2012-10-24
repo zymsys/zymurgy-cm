@@ -723,7 +723,8 @@ class ZIW_Lookup extends ZIW_Base
 		echo $this->extra['lookups'][$ep[1]]->RenderDropList(
 			$name,
 			$value,
-			count($ep) >= 6 && $ep[5] == "checked");
+			count($ep) >= 6 && $ep[5] == "checked",
+            '0');
 	}
 	
 	function initCache($ep)
@@ -1523,7 +1524,7 @@ class ZIW_Drop extends ZIW_RadioDrop
 class ZIW_Time extends ZIW_Base
 {
 	//Lifted from http://guru-forum.net/showthread.php?t=7, and lovingly improved
-	function mysqlToUnix ($datetime) {
+	static function mysqlToUnix ($datetime) {
 	    if ($datetime)
 	    {
 	    	$parts = explode(' ', $datetime);
@@ -1908,7 +1909,7 @@ class ZIW_UnixDate extends ZIW_DateBase
 		}
 		else
 		{
-			"";
+			return null;
 		}
 	}
 
@@ -2084,7 +2085,7 @@ abstract class ZIW_DateTimeBase extends ZIW_DateBase
 	function PostValue($ep,$postname)
 	{
 		$date = trim($_POST[$postname]);
-		if (empty($date))
+        if (empty($date))
 		{
 			return null;
 		}
@@ -2151,9 +2152,9 @@ class ZIW_DateTime extends ZIW_DateTimeBase
 		$tm = parent::PostValue($ep,$postname);
 //		die("Time: ".$tm.", ".strftime('%Y-%m-%d %H:%M:%S',$tm));
 
-		return strlen($tm) > 0
+		return is_null($tm) ? null : strlen($tm) > 0
 			? strftime('%Y-%m-%d %H:%M:%S',$tm)
-			: "";
+			: null;
 	}
 
 	function ToUnixTime($tm)
@@ -3252,14 +3253,15 @@ class DataGridLookup
 	function RenderDropList(
 		$name,
 		$selected,
-		$allowNulls = false)
+		$allowNulls = false,
+        $default = '')
 	{
 		$r = array();
 		$r[] = "<select id='$name' name='$name'>";
 
 		if($allowNulls)
 		{
-			$r[] = "<option value=\"\"".
+			$r[] = "<option value=\"$default\"".
 				($selected == "" ? " selected=\"selected\"" : "").
 				">&nbsp;</option>";
 		}
@@ -3281,6 +3283,11 @@ class DataGridLookup
  */
 class ZIW_GMap extends ZIW_Base
 {
+    /**
+     * @var string Change this to the language you want your maps generated in by assigning to ZIW_GMap::$googleLanguage
+     */
+    public static $googleLanguage = 'en';
+
 	/**
 	 * Render the actual input interface to the user.
 	 *
@@ -3310,7 +3317,9 @@ class ZIW_GMap extends ZIW_Base
 		if ($h == 0) $h = 350;
 		if ($z == 0) $z = 14;
 		$q = urlencode(str_replace(array("\r","\n"),' ',$display));
-		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
+		$url = "http://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=" .
+            self::$googleLanguage .
+            "&amp;geocode=&amp;q=$q&amp;ie=UTF8&amp;z=$z&amp;output=embed";
 		return "<iframe width=\"$w\" height=\"$h\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\"
 			src=\"$url\"></iframe><br /><small><a href=\"$url\" target=\"_blank\" style=\"color:#0000FF;text-align:left\">View Larger Map</a></small>";
 	}

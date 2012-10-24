@@ -112,7 +112,7 @@ class ZymurgySiteNav
 	/**
 	 * The nav items by database ID.
 	 *
-	 * @var array of ZymurgySiteNavItem objects
+	 * @var ZymurgySiteNavItem[]
 	 */
 	public $items = array();
 
@@ -146,7 +146,11 @@ class ZymurgySiteNav
 			}
 		}
 
-		$ri = Zymurgy::$db->run("select id,linktext,linkurl,parent,unix_timestamp(golive) as golive,unix_timestamp(softlaunch) as softlaunch,unix_timestamp(retire) as retire, acl, template from zcm_sitepage order by disporder");
+		$ri = Zymurgy::$db->run("SELECT `id`, `linktext`, `linkurl`, `parent` ,
+		    UNIX_TIMESTAMP(`golive`) as `golive`,
+		    UNIX_TIMESTAMP(`softlaunch`) as `softlaunch`,
+		    UNIX_TIMESTAMP(`retire`) as `retire`,
+		    `acl`, `template` FROM `zcm_sitepage` ORDER BY `disporder`");
 		while (($row = Zymurgy::$db->fetch_array($ri))!==false)
 		{
 			if (!is_null($row['golive']) || !is_null($row['softlaunch']) || !is_null($row['retire']))

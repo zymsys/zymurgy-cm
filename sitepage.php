@@ -257,7 +257,7 @@ function launchstatus($column, $values, $display)
     {
 //		echo("<pre>".print_r($values, true)."</pre>");
 
-        $today = mktime();
+        $today = time();
         $softlaunch_time = strtotime($values['zcm_sitepage.softlaunch']);
         $golive_time = strtotime($values['zcm_sitepage.golive']);
         $retired_time = strtotime($values['zcm_sitepage.retire']);

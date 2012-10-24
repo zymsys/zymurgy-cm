@@ -12,9 +12,9 @@
 // PHP Version check.
 // ==========
 
-if (version_compare('5.0.0',PHP_VERSION) > 0)
+if (version_compare('5.3.0',PHP_VERSION) > 0)
 {
-	die("Zymurgy:CM requires PHP 5 or better.  Your server is running PHP ".
+	die("Zymurgy:CM requires PHP 5.3.0 or better.  Your server is running PHP ".
 		PHP_VERSION.
 		" which is not compatible.  Please upgrade your PHP software, or ".
 		"upgrade your hosting.");
@@ -164,12 +164,12 @@ if (!class_exists('Zymurgy'))
  	 * Example: To display Simple Content on your otherwise static PHP page,
  	 * use the following line:
  	 *
- 	 * Zymurgy::sitetext("Content Name", "input.50.200");
+ 	 * ZymurgyBase::sitetext("Content Name", "input.50.200");
 	 *
 	 * @package Zymurgy
 	 * @subpackage base
 	 */
-	class Zymurgy
+	class ZymurgyBase
 	{
 		/**
 		 * Physical path to the site's root directory on the server.
@@ -298,23 +298,23 @@ if (!class_exists('Zymurgy'))
 		/**
 		 * Array of loaded YUI Javascript & CSS files.
 		 *
-		 * Used by the Zymurgy::YUI method to ensure that multiple copies of
+		 * Used by the ZymurgyBase::YUI method to ensure that multiple copies of
 		 * the YUI components are not loaded more than once on a page.
 		 *
 		 * @var array
-		 * @link Zymurgy::YUI
+		 * @link ZymurgyBase::YUI
 		 */
 		private static $yuiloaded = array();
 
 		/**
 		 * Array of loaded non-YUI Javascript & CSS files.
 		 *
-		 * Used by the Zymurgy::RequireOnceCore method to ensure that multiple
+		 * Used by the ZymurgyBase::RequireOnceCore method to ensure that multiple
 		 * copies of the requested component(s) are not loaded more than once
 		 * on a page.
 		 *
 		 * @var array
-		 * @link Zymurgy::RequireOnceCore
+		 * @link ZymurgyBase::RequireOnceCore
 		 */
 		private static $otherloaded = array();
 
@@ -322,13 +322,13 @@ if (!class_exists('Zymurgy'))
 		 * Instance of the ZymurgyMember class that functions as the member
 		 * provider for the site.
 		 *
-		 * This variable is set in the Zymurgy::initializemembership() method,
+		 * This variable is set in the ZymurgyBase::initializemembership() method,
 		 * and the specific class loaded depends on the value of the
 		 * "MemberProvider" key in the {@link config/config.php} file.
 		 *
 		 * @var ZymurgyMember
 		 * @link config/config.php
-		 * @link Zymurgy::initializemembership
+		 * @link ZymurgyBase::initializemembership
 		 */
 		private static $MemberProvider = null;
 
@@ -342,37 +342,30 @@ if (!class_exists('Zymurgy'))
 		/**
 		 * ID of the page in the zcm_meta table.
 		 *
-		 * Member made public to allow Zymurgy::sitetext() to be called without
-		 * calling Zymurgy::headtags() first. This allows pages based on
+		 * Member made public to allow ZymurgyBase::sitetext() to be called without
+		 * calling ZymurgyBase::headtags() first. This allows pages based on
 		 * AJAX calls (that contain incomplete HTML) to work properly.
 		 *
 		 * @var int
-		 * @link Zymurgy::sitetext
-		 * @link Zymurgy::headtags
+		 * @link ZymurgyBase::sitetext
+		 * @link ZymurgyBase::headtags
 		 */
 		public static $pageid;
 
-		/**
-		 * Title of the page in the zcm_meta table.
-		 *
-		 * @var string
-		 */
-		private static $title;
-		
 		/**
 		 * Allows controllers to poke values into sitetext() and pagetext()
 		 * by calling settext()
 		 * 
 		 * @var array
 		 */
-		private static $controllertext = array();
+		protected static $controllertext = array();
 		
 		/**
 		 * Allows controllers to add fake gadget output
 		 * 
 		 * @var array
 		 */
-		private static $gadgettext = array('left'=>array(), 'center'=>array(), 'right'=>array());
+		protected static $gadgettext = array('left'=>array(), 'center'=>array(), 'right'=>array());
 
 		/**
 		 * List of user friendly names for the various color indices in the
@@ -421,33 +414,51 @@ if (!class_exists('Zymurgy'))
 		 */
 		private static $remotelookupcache = array();
 
-		/**
+        /**
+         * Array of available flavours
+         * @var array
+         */
+        private static $m_flavours = array();
+
+        /**
+         * Same as m_flavours but indexed by code for easy lookup
+         * @var array
+         */
+        private static $m_flavoursbycode = array();
+
+        /**
+         * The currently active flavour code
+         * @var string
+         */
+        private static $m_activeFlavour;
+
+        /**
 		 * Common functionality used by the RequireOnce() and YUI() methods
 		 * to include a file no more than once into the HTML source.
 		 *
-		 * @param boolean $isYUI True, if called by Zymurgy::YUI. Otherwise,
+		 * @param boolean $isYUI True, if called by ZymurgyBase::YUI. Otherwise,
 		 * false.
 		 * @param string $src The location of the file to include.
 		 * @return string The complete <script> or <link> tag required to
 		 * include the file into the HTML source.
 		 */
-		private static function RequireOnceCore($isYUI,$src)
+		protected static function RequireOnceCore($isYUI,$src)
 		{
 			if ($isYUI)
-				$included = (array_key_exists($src,Zymurgy::$yuiloaded));
+				$included = (array_key_exists($src,self::$yuiloaded));
 			else
-				$included = (array_key_exists($src,Zymurgy::$otherloaded));
+				$included = (array_key_exists($src,self::$otherloaded));
 			if ($included)
 				return '';
 				//return "<!-- $src is already loaded. -->"; //Already loaded
 			if ($isYUI)
 			{
-				Zymurgy::$yuiloaded[$src]='';
+				self::$yuiloaded[$src]='';
 				$baseurl = Zymurgy::YUIBaseURL();
 			}
 			else
 			{
-				Zymurgy::$otherloaded[$src]='';
+				self::$otherloaded[$src]='';
 				$baseurl = '';
 			}
 			$sp = explode('.',$src);
@@ -563,16 +574,21 @@ if (!class_exists('Zymurgy'))
 		 * 
 		 * @param string $name
 		 */
-		public static function bookmark($name)
+		public static function bookmark($name, $forFlavour = null)
 		{
-			if (!array_key_exists($name, Zymurgy::$bookmarks))
+            if (is_null($forFlavour))
+            {
+                $forFlavour = self::GetActiveFlavourCode();
+            }
+            if (!isset(self::$bookmarks[$forFlavour])) self::$bookmarks[$forFlavour] = array();
+            if (!isset(self::$bookmarks[$forFlavour][$name]))
 			{
-				Zymurgy::$bookmarks[$name] = false;
+				self::$bookmarks[$forFlavour][$name] = false;
 				$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `bookmark`='".
 					Zymurgy::$db->escape_string($name)."'");
 				if ($page !== false)
 				{
-					$parts = array(ZIW_Base::GetFlavouredValue($page['linkurl']));
+					$parts = array(ZIW_Base::GetFlavouredValue($page['linkurl'], $forFlavour));
 					while ($page['parent'] > 0) 
 					{
 						$page = Zymurgy::$db->get("SELECT * FROM `zcm_sitepage` WHERE `id`=".$page['parent']);
@@ -580,12 +596,12 @@ if (!class_exists('Zymurgy'))
 						{ //Orphaned bookmark!  Shouldn't happen.  Return false as if the bookmark doesn't exist.
 							return false;
 						}
-						array_unshift($parts, ZIW_Base::GetFlavouredValue($page['linkurl']));
+						array_unshift($parts, ZIW_Base::GetFlavouredValue($page['linkurl'], $forFlavour));
 					}
-					Zymurgy::$bookmarks[$name] = '/'.Zymurgy::GetActiveFlavourCode().'/'.implode('/', $parts);
+					self::$bookmarks[$forFlavour][$name] = '/'. $forFlavour .'/'.implode('/', $parts);
 				}
 			}
-			return Zymurgy::$bookmarks[$name];
+			return self::$bookmarks[$forFlavour][$name];
 		}
 
 		/**
@@ -618,7 +634,7 @@ if (!class_exists('Zymurgy'))
 		 * @param string $value
 		 * @return string
 		 */
-		private static function XMLvalue($value)
+		protected static function XMLvalue($value)
 		{
 			$sc = htmlspecialchars($value);
 			if ($sc == $value)
@@ -641,7 +657,7 @@ if (!class_exists('Zymurgy'))
 		 * @param int $level The number of times to indent the returned XML
 		 * content.
 		 */
-		private static function buildEasyXML(
+		protected static function buildEasyXML(
 			$tableName,
 			$detailTable = '',
 			$parentID = 0,
@@ -727,7 +743,7 @@ if (!class_exists('Zymurgy'))
 		 * @param string $permission (Read, Write or Delete)
 		 * @param boolean $default
 		 */
-		private static function checkaclby($bywhat, $acl, $permission, $default = null)
+		protected static function checkaclby($bywhat, $acl, $permission, $default = null)
 		{
 			if ($default === null)
 			{ //Set default default for permission type
@@ -744,9 +760,9 @@ if (!class_exists('Zymurgy'))
 			{ //An ACL was specified but the user is not logged in.  Always return false.
 				return false;
 			}
-			if (!isset(Zymurgy::$acl))
+			if (!isset(self::$acl))
 			{ //Build ACL cache for this user
-				Zymurgy::$acl = array(
+				self::$acl = array(
 					'byname' => array(),
 					'byid' => array()
 				);
@@ -754,19 +770,19 @@ if (!class_exists('Zymurgy'))
 					implode(',', array_keys(Zymurgy::$member['groups'])).")");
 				while (($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 				{
-					if (!array_key_exists($row['aclid'], Zymurgy::$acl['byid']))
+					if (!array_key_exists($row['aclid'], self::$acl['byid']))
 					{
-						Zymurgy::$acl['byname'][$row['name']] = array();
-						Zymurgy::$acl['byid'][$row['aclid']] = array();
+						self::$acl['byname'][$row['name']] = array();
+						self::$acl['byid'][$row['aclid']] = array();
 					}
-					Zymurgy::$acl['byname'][$row['name']][$row['permission']] = true;
-					Zymurgy::$acl['byid'][$row['aclid']][$row['permission']] = true;
+					self::$acl['byname'][$row['name']][$row['permission']] = true;
+					self::$acl['byid'][$row['aclid']][$row['permission']] = true;
 				}
 				Zymurgy::$db->free_result($ri);
 			}
-			if (array_key_exists($acl, Zymurgy::$acl["by$bywhat"]))
+			if (array_key_exists($acl, self::$acl["by$bywhat"]))
 			{ //We have an entry for this ACL
-				if (array_key_exists($permission, Zymurgy::$acl["by$bywhat"][$acl]))
+				if (array_key_exists($permission, self::$acl["by$bywhat"][$acl]))
 					return true; //We have the requested permission
 			}
 			return $default;
@@ -902,9 +918,9 @@ if (!class_exists('Zymurgy'))
 			$type='html.600.400',
 			$adminui = true)
 		{
-			if (array_key_exists($tag, Zymurgy::$controllertext))
+			if (array_key_exists($tag, self::$controllertext))
 			{
-				return Zymurgy::$controllertext[$tag];
+				return self::$controllertext[$tag];
 			}
 			
 			if (strlen($tag)>35)
@@ -1100,8 +1116,6 @@ if (!class_exists('Zymurgy'))
 					$row = Zymurgy::$db->fetch_array($ri);
 				}
 			}
-//Zymurgy::DbgAndDie($row,Zymurgy::$template);
-			Zymurgy::$title = $row['title'];
 			Zymurgy::$pageid = $row['id'];
 			$r = array();
 			if ($row['title'] != '')
@@ -1249,6 +1263,35 @@ if (!class_exists('Zymurgy'))
 		}
 
 		//@}
+
+		public function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
+		{
+		        $time=date("d M Y H:i:s");
+		        // Get the error type from the error number
+		        $errortype = array (1    => "Error",
+		                          2    => "Warning",
+		                          4    => "Parsing Error",
+               			          8    => "Notice",
+               	        		  16   => "Core Error",
+			                  32   => "Core Warning",
+               			          64   => "Compile Error",
+               	        		  128  => "Compile Warning",
+		                          256  => "User Error",
+		                          512  => "User Warning",
+                		          1024 => "User Notice",
+		                          2048 => "Run Time Notice",
+		                          4096 => "Catchable Fatal Error");
+		        $errlevel=$errortype[$errno];
+		        if (empty($errlevel)) $errlevel = $errno;
+
+		        echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\n";
+		}
+
+		public function enableErrorHandler()
+		{
+			set_error_handler(array('ZymurgyBase','userErrorHandler'));
+			error_reporting(0);
+		}
 
 		/**
 		 * Load the configuration for the specified plugin from the database.
@@ -1428,22 +1471,22 @@ if (!class_exists('Zymurgy'))
 		 */
 		static public function initializemembership()
 		{
-			if (Zymurgy::$MemberProvider == null)
+			if (self::$MemberProvider == null)
 			{
 				//Initialize membership provider
 				require_once 'member.php';
 				if (empty(Zymurgy::$config['MemberProvider']) || Zymurgy::$config["MemberProvider"] == "(none)")
 				{
-					Zymurgy::$MemberProvider = new ZymurgyMember();
+					self::$MemberProvider = new ZymurgyMember();
 				}
 				else
 				{
 					require_once(Zymurgy::$root."/zymurgy/memberp/".Zymurgy::$config['MemberProvider'].".php");
-					Zymurgy::$MemberProvider = new Zymurgy::$config['MemberProvider'];
+					self::$MemberProvider = new Zymurgy::$config['MemberProvider'];
 				}
 			}
 
-			return Zymurgy::$MemberProvider;
+			return self::$MemberProvider;
 		}
 
 		/**
@@ -1454,7 +1497,7 @@ if (!class_exists('Zymurgy'))
 		static function memberauthenticate()
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberauthenticate();
+			return self::$MemberProvider->memberauthenticate();
 		}
 
 		/**
@@ -1466,7 +1509,7 @@ if (!class_exists('Zymurgy'))
 		static function memberauthorize($groupname)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberauthorize($groupname);
+			return self::$MemberProvider->memberauthorize($groupname);
 		}
 		
 		/**
@@ -1480,7 +1523,7 @@ if (!class_exists('Zymurgy'))
 		public static function memberrequirezcmauth($level)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberrequirezcmauth($level);
+			return self::$MemberProvider->memberrequirezcmauth($level);
 		}		
 
 		/**
@@ -1496,7 +1539,7 @@ if (!class_exists('Zymurgy'))
 		public static function memberzcmauth($level = false)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberzcmauth($level);
+			return self::$MemberProvider->memberzcmauth($level);
 		}
 				
 		/**
@@ -1507,7 +1550,7 @@ if (!class_exists('Zymurgy'))
 		static function memberaudit($activity)
 		{
 			Zymurgy::initializemembership();
-			Zymurgy::$MemberProvider->memberaudit($activity);
+			self::$MemberProvider->memberaudit($activity);
 		}
 
 		/**
@@ -1520,7 +1563,7 @@ if (!class_exists('Zymurgy'))
 		static function memberpage($groupname='Registered User')
 		{
 			Zymurgy::initializemembership();
-			Zymurgy::$MemberProvider->memberpage($groupname);
+			self::$MemberProvider->memberpage($groupname);
 		}
 
 		/**
@@ -1534,7 +1577,7 @@ if (!class_exists('Zymurgy'))
 		static function memberdologin($userid, $password, $writeCookie = true)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberdologin(
+			return self::$MemberProvider->memberdologin(
 				$userid,
 				$password,
 				$writeCookie);
@@ -1548,7 +1591,7 @@ if (!class_exists('Zymurgy'))
 		static function memberlogout($logoutpage)
 		{
 			Zymurgy::initializemembership();
-			Zymurgy::$MemberProvider->memberlogout($logoutpage);
+			self::$MemberProvider->memberlogout($logoutpage);
 		}
 
 		/**
@@ -1568,7 +1611,7 @@ if (!class_exists('Zymurgy'))
 
 			// die("membersignup: ".gettype(Zymurgy::$MemberProvider));
 
-			return Zymurgy::$MemberProvider->membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
+			return self::$MemberProvider->membersignup($formname,$useridfield,$passwordfield,$confirmfield,$redirect);
 		}
 
 		/**
@@ -1587,7 +1630,7 @@ if (!class_exists('Zymurgy'))
 			// die(var_dump(debug_backtrace()));
 
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberlogin();
+			return self::$MemberProvider->memberlogin();
 		}
 
 		/**
@@ -1600,7 +1643,7 @@ if (!class_exists('Zymurgy'))
 		static function memberform($navname, $exitpage)
 		{
 			Zymurgy::initializemembership();
-			return Zymurgy::$MemberProvider->memberform($navname,$exitpage);
+			return self::$MemberProvider->memberform($navname,$exitpage);
 		}
 
 		/**
@@ -1621,8 +1664,8 @@ if (!class_exists('Zymurgy'))
 		static function memberremotelookup($table,$field,$value,$exact=false)
 		{
 			Zymurgy::initializemembership();
-			if (method_exists(Zymurgy::$MemberProvider,'remotelookup'))
-				return Zymurgy::$MemberProvider->remotelookup($table,$field,$value,$exact);
+			if (method_exists(self::$MemberProvider,'remotelookup'))
+				return self::$MemberProvider->remotelookup($table,$field,$value,$exact);
 			else
 				return array();
 		}
@@ -1640,30 +1683,30 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function memberremotelookupbyid($table,$field,$value)
 		{
-			if (array_key_exists($table,Zymurgy::$remotelookupcache))
+			if (array_key_exists($table,self::$remotelookupcache))
 			{
-				if (array_key_exists($field,Zymurgy::$remotelookupcache[$table]))
+				if (array_key_exists($field,self::$remotelookupcache[$table]))
 				{
-					if (array_key_exists($value,Zymurgy::$remotelookupcache[$table][$field]))
+					if (array_key_exists($value,self::$remotelookupcache[$table][$field]))
 					{
-						return Zymurgy::$remotelookupcache[$table][$field][$value];
+						return self::$remotelookupcache[$table][$field][$value];
 					}
 				}
 				else
 				{
-					Zymurgy::$remotelookupcache[$table][$field] = array();
+					self::$remotelookupcache[$table][$field] = array();
 				}
 			}
 			else
 			{
-				Zymurgy::$remotelookupcache[$table] = array($field=>array());
+				self::$remotelookupcache[$table] = array($field=>array());
 			}
 			Zymurgy::initializemembership();
-			if (method_exists(Zymurgy::$MemberProvider,'remotelookupbyid'))
-				$r = Zymurgy::$MemberProvider->remotelookupbyid($table,$field,$value);
+			if (method_exists(self::$MemberProvider,'remotelookupbyid'))
+				$r = self::$MemberProvider->remotelookupbyid($table,$field,$value);
 			else
 				$r = false;
-			Zymurgy::$remotelookupcache[$table][$field][$value] = $r;
+			self::$remotelookupcache[$table][$field][$value] = $r;
 			return $r;
 		}
 		
@@ -1774,12 +1817,13 @@ if (!class_exists('Zymurgy'))
 		}
 
 		/**
-		 * The navigation structure of the site
+		 * The navigation structure of the site; this is an array with flavour codes as indexes,
+         * so that more than once flavour's nav can be cached at the same time.
 		 *
-		 * @var ZymurgySiteNav
+		 * @var ZymurgySiteNav[]
 		 * @see getsitenav
 		 */
-		public static $sitenav = null;
+		public static $sitenav = array();
 
 		/**
 		 * Old function to render site navigation.
@@ -1818,15 +1862,19 @@ if (!class_exists('Zymurgy'))
 		 *
 		 * @return ZymurgySiteNav
 		 */
-		public static function getsitenav(){
+		public static function getsitenav($forFlavour = null){
 			require_once('sitenav.php');
 
-			if(is_null(Zymurgy::$sitenav))
+            if (is_null($forFlavour))
+            {
+                $forFlavour = Zymurgy::GetActiveFlavourCode();
+            }
+			if(!isset(Zymurgy::$sitenav[$forFlavour]))
 			{
-				Zymurgy::$sitenav = new ZymurgySiteNav();
+				Zymurgy::$sitenav[$forFlavour] = new ZymurgySiteNav($forFlavour);
 			}
 
-			return Zymurgy::$sitenav;
+			return Zymurgy::$sitenav[$forFlavour];
 		}
 
 		/**
@@ -1838,7 +1886,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function settext($tag,$value)
 		{
-			Zymurgy::$controllertext[$tag] = $value;
+			self::$controllertext[$tag] = $value;
 		}
 		
 		/**
@@ -1850,9 +1898,9 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function pagetext($tag,$type='html.600.400')
 		{
-			if (array_key_exists($tag, Zymurgy::$controllertext))
+			if (array_key_exists($tag, self::$controllertext))
 			{
-				return Zymurgy::$controllertext[$tag];
+				return self::$controllertext[$tag];
 			}
 			if (isset(Zymurgy::$template))
 			{
@@ -1914,7 +1962,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function addgadgettext($align,$text)
 		{
-			Zymurgy::$gadgettext[$align][] = $text;
+			self::$gadgettext[$align][] = $text;
 		}
 
 		/**
@@ -1927,7 +1975,7 @@ if (!class_exists('Zymurgy'))
 		public static function pagegadgets(
 			$alignFilter = "")
 		{
-			foreach (Zymurgy::$gadgettext as $align=>$values)
+			foreach (self::$gadgettext as $align=>$values)
 			{
 				if (($alignFilter == '') || ($alignFilter === false) || ($alignFilter == $align))
 				{
@@ -2007,7 +2055,7 @@ if (!class_exists('Zymurgy'))
 		 * @return string
 		 * @access private
 		 */
-		function GetLocaleString($key)
+		public static function GetLocaleString($key)
 		{
 			// ZK: The locale is hard-coded to English for now, as it's the only
 			// language Zymurgy:CM currently supports on the back-end.
@@ -2104,9 +2152,6 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		private static $m_flavours = array();
-		private static $m_flavoursbycode = array();
-
 		/**
 		 * Get an array of associative arrays describing all configured flavours
 		 *
@@ -2115,7 +2160,7 @@ if (!class_exists('Zymurgy'))
 		static function GetAllFlavoursByCode()
 		{
 			Zymurgy::GetAllFlavours();
-			return Zymurgy::$m_flavoursbycode;
+			return self::$m_flavoursbycode;
 		}
 
 		/**
@@ -2125,7 +2170,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function GetAllFlavours()
 		{
-			if(count(Zymurgy::$m_flavours) <= 0)
+			if(count(self::$m_flavours) <= 0)
 			{
 				$providescontent = array();
 				$providestemplate = array();
@@ -2137,8 +2182,8 @@ if (!class_exists('Zymurgy'))
 				{
 					$row['providescontent'] = false;
 					$row['providestemplate'] = false;
-					Zymurgy::$m_flavours[$row['id']] = $row;
-					Zymurgy::$m_flavoursbycode[$row['code']] = $row;
+					self::$m_flavours[$row['id']] = $row;
+					self::$m_flavoursbycode[$row['code']] = $row;
 					if ($row['contentprovider']) $providescontent[$row['contentprovider']] = '';
 					if ($row['templateprovider']) $providestemplate[$row['templateprovider']] = '';
 				}
@@ -2147,17 +2192,17 @@ if (!class_exists('Zymurgy'))
 
 				foreach($providescontent as $key=>$throwaway)
 				{
-					Zymurgy::$m_flavours[$key]['providescontent'] = true;
-					Zymurgy::$m_flavoursbycode[Zymurgy::$m_flavours[$key]['code']]['providescontent'] = true;
+					self::$m_flavours[$key]['providescontent'] = true;
+					self::$m_flavoursbycode[self::$m_flavours[$key]['code']]['providescontent'] = true;
 				}
 				foreach($providestemplate as $key=>$throwaway)
 				{
-					Zymurgy::$m_flavours[$key]['providestemplate'] = true;
-					Zymurgy::$m_flavoursbycode[Zymurgy::$m_flavours[$key]['code']]['providestemplate'] = true;
+					self::$m_flavours[$key]['providestemplate'] = true;
+					self::$m_flavoursbycode[self::$m_flavours[$key]['code']]['providestemplate'] = true;
 				}
 			}
 
-			return Zymurgy::$m_flavours;
+			return self::$m_flavours;
 		}
 
 		/**
@@ -2169,13 +2214,13 @@ if (!class_exists('Zymurgy'))
 		static function MapTemplateToContentFlavours()
 		{
 			Zymurgy::GetAllFlavours();
-			foreach (Zymurgy::$m_flavours as $key=>$flavour)
+			foreach (self::$m_flavours as $key=>$flavour)
 			{
-				Zymurgy::$m_flavours[$key]['providescontent'] = Zymurgy::$m_flavours[$key]['providestemplate'];
+				self::$m_flavours[$key]['providescontent'] = self::$m_flavours[$key]['providestemplate'];
 			}
-			foreach (Zymurgy::$m_flavoursbycode as $key=>$flavour)
+			foreach (self::$m_flavoursbycode as $key=>$flavour)
 			{
-				Zymurgy::$m_flavoursbycode[$key]['providescontent'] = Zymurgy::$m_flavoursbycode[$key]['providestemplate'];
+				self::$m_flavoursbycode[$key]['providescontent'] = self::$m_flavoursbycode[$key]['providestemplate'];
 			}
 		}
 
@@ -2242,55 +2287,70 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
-		private static $m_activeFlavour;
-
 		static function GetActiveFlavourCode()
 		{
-			if (isset(Zymurgy::$m_activeFlavour))
-				return Zymurgy::$m_activeFlavour;
+			if (isset(self::$m_activeFlavour))
+				return self::$m_activeFlavour;
 			else 
 				return 'pages';
 		}
 		
 		static function flavourMyLink($link)
 		{
+            $lp = explode('?', $link);
+            if (count($lp) == 2)
+            {
+                $link = $lp[0];
+                $query = $lp[1];
+            }
 			$lp = explode('/',substr($link,1)); //Drop first char - should be / always
 			$flavour = array_shift($lp); //Get flavour to convert from
 			if ($flavour == Zymurgy::GetActiveFlavourCode()) return $link; //No conversion required
 			$l = array(Zymurgy::GetActiveFlavourCode());
+            $targetNav = Zymurgy::getsitenav();
+            $sourceNav = Zymurgy::getsitenav($flavour);
+            $sourceNode = $sourceNav->items[0];
 			while ($lp)
 			{
 				$linkpart = array_shift($lp);
 				//Change flavour here
-				$l[] = $linkpart;
+                $sourceNode = $sourceNav->items[$sourceNode->childrenbynavname[$linkpart]];
+                $targetNode = $targetNav->items[$sourceNode->id];
+                $linkpart = $targetNode->linktext;
+                $l[] = $linkpart;
 			}
-			return '/'.implode('/',$l);
+            $result = '/'.implode('/',$l);
+            if (isset($query))
+            {
+                $result .= '?' . $query;
+            }
+            return $result;
 		}
 
 		static function GetActiveFlavour()
 		{
 			Zymurgy::GetAllFlavours();
-			return array_key_exists(Zymurgy::$m_activeFlavour,Zymurgy::$m_flavoursbycode) ?
-				Zymurgy::$m_flavoursbycode[Zymurgy::$m_activeFlavour] : false;
+			return array_key_exists(self::$m_activeFlavour,self::$m_flavoursbycode) ?
+				self::$m_flavoursbycode[self::$m_activeFlavour] : false;
 		}
 
 		static function GetFlavourById($id)
 		{
-			return array_key_exists($id,Zymurgy::$m_flavours) ? Zymurgy::$m_flavours[$id] : false;
+			return array_key_exists($id,self::$m_flavours) ? self::$m_flavours[$id] : false;
 		}
 
 		static function GetFlavourByCode($code)
 		{
 			Zymurgy::GetAllFlavours();
-			return array_key_exists($code,Zymurgy::$m_flavoursbycode) ? Zymurgy::$m_flavoursbycode[$code] : false;
+			return array_key_exists($code,self::$m_flavoursbycode) ? self::$m_flavoursbycode[$code] : false;
 		}
 
 		static function SetActiveFlavour($flavour)
 		{
 			Zymurgy::GetAllFlavours();
-			if (array_key_exists($flavour,Zymurgy::$m_flavoursbycode))
+			if (array_key_exists($flavour,self::$m_flavoursbycode))
 			{
-				Zymurgy::$m_activeFlavour = $flavour;
+				self::$m_activeFlavour = $flavour;
 				return true;
 			}
 			return false;
@@ -2299,9 +2359,9 @@ if (!class_exists('Zymurgy'))
 		static function getAppRoot() 
 		{
 			$r = dirname(__FILE__);
-			$rp = explode('/', $r);
+			$rp = explode(DIRECTORY_SEPARATOR, $r);
 			array_pop($rp);
-			return implode('/', $rp);
+			return implode(DIRECTORY_SEPARATOR, $rp);
 		}
 		
 		static function longcache_write($key, $value)
@@ -2327,12 +2387,23 @@ if (!class_exists('Zymurgy'))
 			}
 			return $result;
 		}
-	} // End Zymurgy Class definition
+	} // End ZymurgyBase Class definition
 
 	//The following runs only the first time cmo.php is included...
 
 	
-	Zymurgy::$root = Zymurgy::getAppRoot();
+	ZymurgyBase::$root = ZymurgyBase::getAppRoot();
+    $customCMO = ZymurgyBase::$root . "/zymurgy/custom/cmo.php";
+    if (file_exists($customCMO))
+    {
+        require_once $customCMO;
+    }
+    else
+    {
+        class Zymurgy extends ZymurgyBase
+        {
+        }
+    }
 	Zymurgy::$build = 1987; //Historical; no longer used.
 	
 	if (ini_get('date.timezone') == '') 
@@ -2372,6 +2443,10 @@ if (!class_exists('Zymurgy'))
 	}
 	require_once(Zymurgy::$root."/zymurgy/db/".Zymurgy::$config['database'].".php");
 	Zymurgy::$db = new Zymurgy_DB();
+	if (isset(Zymurgy::$config['characterset']))
+	{
+		mysql_set_charset(Zymurgy::$config['characterset']);
+	}
 
 	Zymurgy::$userconfig = array();
 	$ri = Zymurgy::$db->query("select * from zcm_config order by disporder");

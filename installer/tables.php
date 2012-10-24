@@ -58,7 +58,9 @@
 					DefineTableField("flavour", "BIGINT", "NOT NULL"),
 					DefineTableField("text", "LONGTEXT", "NOT NULL")
 				),
-				"indexes" => array(),
+				"indexes" => array(
+                    array("columns" => "zcm_flavourtext, flavour", "unique" => TRUE, "type" => ""),
+                ),
 				"primarykey" => "zcm_flavourtext, flavour",
 				"engine" => "MyISAM"
 			)

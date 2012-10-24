@@ -6,52 +6,23 @@
  * @subpackage backend-base
  */
 
-// ==========
-// ZK: 2009.10.20
-//
-// PHP Version check.
-// ==========
-
-if (version_compare('5.0.0',PHP_VERSION) > 0)
+function getAppRoot()
 {
-	die("Zymurgy:CM requires PHP 5 or better.  Your server is running PHP ".PHP_VERSION." which is not compatible.  Please upgrade your PHP software, or upgrade your hosting.");
+	$r = dirname(__FILE__);
+        $rp = explode(DIRECTORY_SEPARATOR, $r);
+        array_pop($rp);
+        return implode(DIRECTORY_SEPARATOR, $rp);
 }
 
-function userErrorHandler ($errno, $errmsg, $filename, $linenum,  $vars)
-{
-	$time=date("d M Y H:i:s");
-	// Get the error type from the error number
-	$errortype = array (1    => "Error",
-	                 2    => "Warning",
-	                 4    => "Parsing Error",
-	                 8    => "Notice",
-	                 16   => "Core Error",
-	                 32   => "Core Warning",
-	                 64   => "Compile Error",
-	                 128  => "Compile Warning",
-	                 256  => "User Error",
-	                 512  => "User Warning",
-	                 1024 => "User Notice",
-	                 2048 => "Run Time Notice",
-	                 4096 => "Catchable Fatal Error");
-	$errlevel=$errortype[$errno];
-	if (empty($errlevel)) $errlevel = $errno;
+$ZymurgyRoot = getAppRoot();
 
-	echo "<div>[$errlevel: $errmsg in $filename on line $linenum]</div>\n";
-}
+require_once("$ZymurgyRoot/zymurgy/cmo.php");
 
 if (array_key_exists('showerrors',$_GET))
 {
-	error_reporting(0);
-	$old_error_handler = set_error_handler("userErrorHandler");
+	Zymurgy::enableErrorHandler();
 }
 
-if (array_key_exists("APPL_PHYSICAL_PATH",$_SERVER))
-	$ZymurgyRoot = $_SERVER["APPL_PHYSICAL_PATH"];
-else
-	$ZymurgyRoot = $_SERVER['DOCUMENT_ROOT'];
-
-require_once("$ZymurgyRoot/zymurgy/cmo.php");
 $adminlevel = isset($adminlevel) ? $adminlevel : 1;
 Zymurgy::memberrequirezcmauth($adminlevel);
 
