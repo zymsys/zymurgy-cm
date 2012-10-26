@@ -471,7 +471,18 @@ class ZymurgyModel implements ZymurgyModelInterface
 	{
 		return $this->readcore('globalacl',$rowid);
 	}
-	
+
+    public function count()
+    {
+        $sql = "SELECT COUNT(*) FROM `" . $this->tabledata['tname'] . "`";
+        $filter = array_merge($this->filter,$this->memberfilter);
+        if ($filter)
+        {
+            $sql .= ' WHERE ' . $this->buildFilterFragment();
+        }
+        return intval(Zymurgy::$db->get($sql));
+    }
+
 	// curl --cookie "ZymurgyAuth=bobotea" -d "eggs=green&spam=vikings" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar
 	
 	public function write($rowdata)

@@ -67,6 +67,7 @@ class ZymurgyJSONDataController
         $this->applySort($requestVariables);
         $this->applyRange($requestVariables);
         $this->result->data = $this->model->read();
+        $this->result->count = $this->model->count();
         $this->result->success = is_array($this->result->data);
     }
 
