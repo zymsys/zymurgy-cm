@@ -69,6 +69,7 @@ class ZymurgyJSONDataController
         $this->result->data = $this->model->read();
         $this->result->count = $this->model->count();
         $this->result->success = is_array($this->result->data);
+        $this->result->sql = $this->model->getLastSQL();
     }
 
     protected function processDelete($requestVariables)
@@ -85,6 +86,11 @@ class ZymurgyJSONDataController
 
     private function addRequestFilter($requestVariables)
     {
+        if (isset($requestVariables['c']))
+        {
+            $requestedColumns = explode(',', $requestVariables['c']);
+            $this->model->requestColumns($requestedColumns);
+        }
         foreach($requestVariables as $key=>$value)
         {
             if (($key[0] == 'f') && (strlen($key) > 3))

@@ -120,6 +120,9 @@ class ZymurgyModel implements ZymurgyModelInterface
 	protected $membertable;
 	protected $tablechain;
 	protected $columns;
+    protected $requestedColumns = array();
+
+    private $_lastSQL;
 
     /**
 	 * Take a table name and construct a ZymurgyModel for that table.
@@ -412,15 +415,21 @@ class ZymurgyModel implements ZymurgyModelInterface
 		}
 		return $allowedcols;
 	}
+
+    public function requestColumns($columns)
+    {
+        $this->requestedColumns = $columns;
+    }
 	
 	public function readcore($aclName, $rowid = false)
 	{
-		$aclcols = $this->checkacl('Read',$aclName);
 		$table = $this->tabledata['tname'];
-		$sqlcols = array();
-		foreach ($aclcols as $cname=>$permission) 
+        $allowedColumns = array_keys($this->checkacl('Read',$aclName));
+        $columns = $this->requestedColumns ? array_intersect($allowedColumns, $this->requestedColumns) : $allowedColumns;
+        $sqlColumns = array();
+		foreach ($columns as $cname)
 		{
-			$sqlcols[] = "`$cname`";
+			$sqlColumns[] = "`$cname`";
 		}
 		if ($aclName == 'acl')
 		{
@@ -430,7 +439,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 		{
 			$filter = $this->filter;
 		}
-		$sql = "SELECT ".implode(',', $sqlcols)." FROM `$table`";
+		$sql = "SELECT ".implode(',', $sqlColumns)." FROM `$table`";
 		if ($rowid)
 		{
 			$filter[] = "`".Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
@@ -453,6 +462,7 @@ class ZymurgyModel implements ZymurgyModelInterface
             $sql .= " LIMIT " . $this->rangeStart . ", " . $this->rangeLimit;
         }
 		$rows = array();
+        $this->_lastSQL = $sql;
 		$ri = Zymurgy::$db->run($sql);
 		while (($r = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 		{
@@ -462,8 +472,13 @@ class ZymurgyModel implements ZymurgyModelInterface
 		Zymurgy::$db->free_result($ri);
 		return $rows;
 	}
-	
-	public function read($rowId = false)
+
+    public function getLastSQL()
+    {
+        return $this->_lastSQL;
+    }
+
+    public function read($rowId = false)
 	{
 		return $this->readcore('any',$rowId);
 	}
