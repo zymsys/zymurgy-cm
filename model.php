@@ -99,10 +99,11 @@ class ZymurgyModelException extends Exception
     public static $MISSING_FILTER = 5;
 }
 
-class ZymurgyModel implements ZymurgyModelInterface
+class ZymurgyBaseModel
 {
-	protected $tabledata;
-
+    protected $tableName;
+    protected $requestedColumns = array();
+    private $_lastSQL;
     /**
      * @var ZymurgyModelFilter[]
      */
@@ -115,14 +116,188 @@ class ZymurgyModel implements ZymurgyModelInterface
     protected $sort = array();
     protected $rangeStart;
     protected $rangeLimit;
-
     protected $memberfilter;
+
+    public function __construct($tableOrViewName)
+    {
+        $this->tableName = $tableOrViewName;
+    }
+
+    public function readcore($aclName, $rowid = false)
+    {
+        $table = $this->getTableOrViewName();
+        if ($aclName == 'acl')
+        {
+            $filter = array_merge($this->filter,$this->memberfilter);
+        }
+        else
+        {
+            $filter = $this->filter;
+        }
+        $sql = "SELECT ". $this->getColumnsFragment($aclName) ." FROM `$table`";
+        if ($rowid)
+        {
+            $filter[] = "`".Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
+                Zymurgy::$db->escape_string($rowid)."'";
+        }
+        if ($filter)
+        {
+            $sql .= ' WHERE ' . $this->buildFilterFragment();
+        }
+        if ($this->sort)
+        {
+            $sql .= " ORDER BY " . implode(', ', $this->sort);
+        }
+        if (isset($this->rangeStart) && isset($this->rangeLimit))
+        {
+            $sql .= " LIMIT " . $this->rangeStart . ", " . $this->rangeLimit;
+        }
+        $rows = array();
+        $this->_lastSQL = $sql;
+        $ri = Zymurgy::$db->run($sql);
+        while (($r = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
+        {
+            //$rows[$r[$this->tabledata['idfieldname']]] = $r;
+            $rows[] = $r;
+        }
+        Zymurgy::$db->free_result($ri);
+        return $rows;
+    }
+
+    public function getColumnsFragment($aclName)
+    {
+        $columns = $this->getColumnList($aclName);
+        $sqlColumns = array();
+        foreach ($columns as $columnName)
+        {
+            $columnName = Zymurgy::$db->escape_string($columnName);
+            $sqlColumns[] = "`$columnName`";
+        }
+        return implode(',', $sqlColumns);
+    }
+
+    protected function getColumnList()
+    {
+        if (isset(Zymurgy::$config['PublicData']) && isset(Zymurgy::$config['PublicData'][$this->getTableOrViewName()]))
+        {
+            if ($this->requestedColumns)
+            {
+                return array_intersect(Zymurgy::$config['PublicData'][$this->getTableOrViewName()],
+                    $this->requestedColumns);
+            }
+            else
+            {
+                return Zymurgy::$config['PublicData'][$this->getTableOrViewName()];
+            }
+        }
+        return array();
+    }
+
+    public function requestColumns($columns)
+    {
+        $this->requestedColumns = $columns;
+    }
+
+    protected function getTableOrViewName()
+    {
+        return $this->tableName;
+    }
+
+    public function getLastSQL()
+    {
+        return $this->_lastSQL;
+    }
+
+    public function read($rowId = false)
+    {
+        return $this->readcore('any',$rowId);
+    }
+
+    public function readall($rowid = false)
+    {
+        return $this->readcore('globalacl',$rowid);
+    }
+
+    public function count()
+    {
+        $sql = "SELECT COUNT(*) FROM `" . $this->getTableOrViewName() . "`";
+        $filterFragment = $this->buildFilterFragment();
+        if ($filterFragment)
+        {
+            $sql .= ' WHERE ' . $filterFragment;
+        }
+        return intval(Zymurgy::$db->get($sql));
+    }
+    public function addFilter($filter)
+    {
+        $sqlFragment = $this->filterToSQLFragment($filter);
+        if (!empty($sqlFragment))
+        {
+            $this->filter[] = $sqlFragment;
+        }
+    }
+
+    public function addOrFilter($filter)
+    {
+        $sqlFragment = $this->filterToSQLFragment($filter);
+        if (!empty($sqlFragment))
+        {
+            $this->orFilter[] = $sqlFragment;
+        }
+    }
+
+    protected function filterToSQLFragment($filter)
+    {
+        if (is_object($filter) && is_a($filter, 'ZymurgyModelFilter'))
+        {
+            $filter = str_replace('?', "'" . Zymurgy::$db->escape_string($filter->getValue()) . "'", $filter->getFilter());
+        }
+        return $filter;
+    }
+
+    protected function buildFilterFragment()
+    {
+        $fragment = '';
+        if ($this->filter)
+        {
+            $fragment .= '(' . implode(') AND (', $this->filter) . ')';
+        }
+        if ($this->orFilter)
+        {
+            if ($this->filter) $fragment .= " AND ";
+            $fragment .= '(' . implode(') OR (', $this->orFilter) . ')';
+        }
+        if ($this->memberfilter)
+        {
+            $fragment = "($fragment) AND (" . implode(') AND (', $this->memberfilter) . ')';
+        }
+        return $fragment;
+    }
+
+    public function addIdentityFilter($rowId)
+    {
+        $this->addFilter('`' . $this->tabledata['idfieldname'] . "` = '" . Zymurgy::$db->escape_string($rowId) . "'");
+    }
+
+    public function addSort($column, $order = 'ASC')
+    {
+        $this->sort[] = "`$column` $order";
+    }
+
+    public function setRange($start, $limit)
+    {
+        $this->rangeStart = $start;
+        $this->rangeLimit = $limit;
+    }
+}
+
+class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
+{
+	protected $tabledata;
+
 	protected $membertable;
 	protected $tablechain;
 	protected $columns;
-    protected $requestedColumns = array();
-
-    private $_lastSQL;
 
     /**
 	 * Take a table name and construct a ZymurgyModel for that table.
@@ -302,9 +477,18 @@ class ZymurgyModel implements ZymurgyModelInterface
 		{
 			throw new ZymurgyModelException("This table has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
 		}
-	}
-	
-	public function getownership($rowdata)
+        if ($this->tabledata['hasdisporder'])
+        {
+            $this->addSort('disporder');
+        }
+    }
+
+    protected function getTableOrViewName()
+    {
+        return $this->tabledata['tname'];
+    }
+
+    public function getownership($rowdata)
 	{
 		if ($this->tablechain)
 		{
@@ -416,89 +600,6 @@ class ZymurgyModel implements ZymurgyModelInterface
 		return $allowedcols;
 	}
 
-    public function requestColumns($columns)
-    {
-        $this->requestedColumns = $columns;
-    }
-	
-	public function readcore($aclName, $rowid = false)
-	{
-		$table = $this->tabledata['tname'];
-        $allowedColumns = array_keys($this->checkacl('Read',$aclName));
-        $columns = $this->requestedColumns ? array_intersect($allowedColumns, $this->requestedColumns) : $allowedColumns;
-        $sqlColumns = array();
-		foreach ($columns as $cname)
-		{
-			$sqlColumns[] = "`$cname`";
-		}
-		if ($aclName == 'acl')
-		{
-			$filter = array_merge($this->filter,$this->memberfilter);
-		}
-		else 
-		{
-			$filter = $this->filter;
-		}
-		$sql = "SELECT ".implode(',', $sqlColumns)." FROM `$table`";
-		if ($rowid)
-		{
-			$filter[] = "`".Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
-				Zymurgy::$db->escape_string($rowid)."'";
-		}
-		if ($filter)
-		{
-			$sql .= ' WHERE ' . $this->buildFilterFragment();
-		}
-		if ((count($this->sort) == 0) && $this->tabledata['hasdisporder'])
-		{
-			$sql .= " ORDER BY `disporder`";
-		}
-        if ($this->sort)
-        {
-            $sql .= " ORDER BY " . implode(', ', $this->sort);
-        }
-        if (isset($this->rangeStart) && isset($this->rangeLimit))
-        {
-            $sql .= " LIMIT " . $this->rangeStart . ", " . $this->rangeLimit;
-        }
-		$rows = array();
-        $this->_lastSQL = $sql;
-		$ri = Zymurgy::$db->run($sql);
-		while (($r = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
-		{
-			//$rows[$r[$this->tabledata['idfieldname']]] = $r;
-			$rows[] = $r;
-		}
-		Zymurgy::$db->free_result($ri);
-		return $rows;
-	}
-
-    public function getLastSQL()
-    {
-        return $this->_lastSQL;
-    }
-
-    public function read($rowId = false)
-	{
-		return $this->readcore('any',$rowId);
-	}
-	
-	public function readall($rowid = false)
-	{
-		return $this->readcore('globalacl',$rowid);
-	}
-
-    public function count()
-    {
-        $sql = "SELECT COUNT(*) FROM `" . $this->tabledata['tname'] . "`";
-        $filter = array_merge($this->filter,$this->memberfilter);
-        if ($filter)
-        {
-            $sql .= ' WHERE ' . $this->buildFilterFragment();
-        }
-        return intval(Zymurgy::$db->get($sql));
-    }
-
 	// curl --cookie "ZymurgyAuth=bobotea" -d "eggs=green&spam=vikings" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar
 	
 	public function write($rowdata)
@@ -597,68 +698,14 @@ class ZymurgyModel implements ZymurgyModelInterface
 		else
 			return false;
 	}
-	
-	public function addFilter($filter)
+
+    protected function getColumnList($aclName)
     {
-        $sqlFragment = $this->filterToSQLFragment($filter);
-        if (!empty($sqlFragment))
-        {
-            $this->filter[] = $sqlFragment;
-        }
+        $allowedColumns = array_keys($this->checkacl('Read',$aclName));
+        $columns = $this->requestedColumns ? array_intersect($allowedColumns, $this->requestedColumns) : $allowedColumns;
+        return $columns;
     }
 
-	public function addOrFilter($filter)
-    {
-        $sqlFragment = $this->filterToSQLFragment($filter);
-        if (!empty($sqlFragment))
-        {
-            $this->orFilter[] = $sqlFragment;
-        }
-    }
-
-	protected function filterToSQLFragment($filter)
-	{
-        if (is_object($filter) && is_a($filter, 'ZymurgyModelFilter'))
-        {
-            $filter = str_replace('?', "'" . Zymurgy::$db->escape_string($filter->getValue()) . "'", $filter->getFilter());
-        }
-        return $filter;
-	}
-
-    protected function buildFilterFragment()
-    {
-        $fragment = '';
-        if ($this->filter)
-        {
-            $fragment .= '(' . implode(') AND (', $this->filter) . ')';
-        }
-        if ($this->orFilter)
-        {
-            if ($this->filter) $fragment .= " AND ";
-            $fragment .= '(' . implode(') OR (', $this->orFilter) . ')';
-        }
-        if ($this->memberfilter)
-        {
-            $fragment = "($fragment) AND (" . implode(') AND (', $this->memberfilter) . ')';
-        }
-        return $fragment;
-    }
-
-    public function addIdentityFilter($rowId)
-    {
-        $this->addFilter('`' . $this->tabledata['idfieldname'] . "` = '" . Zymurgy::$db->escape_string($rowId) . "'");
-    }
-
-    public function addSort($column, $order)
-    {
-        $this->sort[] = "`$column` $order";
-    }
-
-    public function setRange($start, $limit)
-    {
-        $this->rangeStart = $start;
-        $this->rangeLimit = $limit;
-    }
 }
 
 class ZymurgyModelFilter
