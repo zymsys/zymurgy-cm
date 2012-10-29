@@ -102,14 +102,13 @@ class ZymurgyJSONDataController
                     default: unset($operator);
                 }
                 if (!isset($operator)) continue;
-                $this->model->addFilter(new Application_Model_Filter($operator, $key[2] == 'o', substr($key,3), $value));
+                $this->model->addFilter(new ZymurgyModelFilter($operator, $key[2] == 'o', substr($key,3), $value));
             }
         }
     }
 
     private function applySort($requestVariables)
     {
-        $sort = array();
         if (array_key_exists('s',$_GET))
         {
             $parts = explode(',',$_GET['s']);
@@ -117,14 +116,9 @@ class ZymurgyJSONDataController
             {
                 list($col,$order) = explode('-',$part,2);
                 if (!$order) $order = 'asc';
-                $sort[$col] = $order;
+                $this->model->addSort($col, $order);
             }
         }
-        if ($sort)
-        {
-            $this->model->applySort($sort);
-        }
-        return $sort;
     }
 
     private function applyRange($requestVariables)

@@ -456,7 +456,8 @@ class ZymurgyModel implements ZymurgyModelInterface
 		$ri = Zymurgy::$db->run($sql);
 		while (($r = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 		{
-			$rows[$r[$this->tabledata['idfieldname']]] = $r;
+			//$rows[$r[$this->tabledata['idfieldname']]] = $r;
+			$rows[] = $r;
 		}
 		Zymurgy::$db->free_result($ri);
 		return $rows;
@@ -604,7 +605,7 @@ class ZymurgyModel implements ZymurgyModelInterface
 	{
         if (is_object($filter) && is_a($filter, 'ZymurgyModelFilter'))
         {
-            $filter = str_replace('?', $filter->getValue(), $filter->getFilter());
+            $filter = str_replace('?', "'" . Zymurgy::$db->escape_string($filter->getValue()) . "'", $filter->getFilter());
         }
         return $filter;
 	}
