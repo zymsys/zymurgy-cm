@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once 'cmo.php';
 
 if ((!array_key_exists('MembershipLoginForm',Zymurgy::$config))

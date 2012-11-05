@@ -73,15 +73,15 @@ class vtigerMember extends ZymurgyMember
 	 * Try to log in with the provided user ID and password using vtiger's portal authentication soap service.
 	 * If log in is successful then emulate vtiger's session variables for compatibility with the portal.
 	 *
-	 * @param string $userid
+	 * @param string $userId
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password)
+	public function memberdologin($userId, $password)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/nusoap.php");
 		$client = new soapclient2(Zymurgy::$config['vtiger Server Path']."/vtigerservice.php?service=customerportal");
-		$r = $client->call('authenticate_user', array('user_name' => "$userid",'user_password'=>"$password"),
+		$r = $client->call('authenticate_user', array('user_name' => "$userId",'user_password'=>"$password"),
 			Zymurgy::$config['vtiger Server Path'], Zymurgy::$config['vtiger Server Path']);
 		$member = $r[0];
 		if (is_array($member))
@@ -110,7 +110,7 @@ class vtigerMember extends ZymurgyMember
 		}
 		else
 		{
-			$this->memberaudit("Failed login attempt for [$userid]: $member");
+			$this->memberaudit("Failed login attempt for [$userId]: $member");
 			return false;
 		}
 	}

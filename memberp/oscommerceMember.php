@@ -128,11 +128,11 @@
 		/**
 		 * Try to log in with the provided user ID and password using the osCommerce database.
 		 *
-		 * @param string $userid
+		 * @param string $userId
 		 * @param string $password
 		 * @return boolean
 		 */
-		public function memberdologin($userid, $password)
+		public function memberdologin($userId, $password)
 		{
 			// die(var_dump(debug_backtrace()));
 
@@ -141,7 +141,7 @@
 			$client = new soapclient2(Zymurgy::$config['oscommerce Server Path']."/soap.php");
 			$r = $client->call(
 				'authenticate_user',
-				array('user_name' => "$userid",'user_password'=>"$password"),
+				array('user_name' => "$userId",'user_password'=>"$password"),
 				Zymurgy::$config['oscommerce Server Path'],
 				Zymurgy::$config['oscommerce Server Path']);
 
@@ -173,7 +173,7 @@
 			}
 			else
 			{
-				$this->memberaudit("Failed login attempt for [$userid]: $member");
+				$this->memberaudit("Failed login attempt for [$userId]: $member");
 				return false;
 			}
 		}

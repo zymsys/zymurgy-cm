@@ -173,11 +173,11 @@ class infusionsoftMember extends ZymurgyMember
 	 * Try to log in with the provided user ID and password using vtiger's portal authentication soap service.
 	 * If log in is successful then emulate vtiger's session variables for compatibility with the portal.
 	 *
-	 * @param string $userid
+	 * @param string $userId
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password)
+	public function memberdologin($userId, $password)
 	{
 		require_once(Zymurgy::$root."/zymurgy/include/infusionsoft.php");
 		$infusion = new ZymurgyInfusionsoftWrapper();
@@ -188,7 +188,7 @@ class infusionsoftMember extends ZymurgyMember
 			1,
 			0,
 			array(
-				'Email'=>$userid,
+				'Email'=>$userId,
 				'Password'=>$password),
 			array(
 				'Id',
@@ -241,7 +241,7 @@ class infusionsoftMember extends ZymurgyMember
 		}
 		else
 		{
-			Zymurgy::memberaudit("Failed login attempt for [$userid]: $r");
+			Zymurgy::memberaudit("Failed login attempt for [$userId]: $r");
 			return false;
 		}
 	}

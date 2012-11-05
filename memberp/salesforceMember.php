@@ -89,11 +89,11 @@ class salesforceMember extends ZymurgyMember
 	 * Try to log in with the provided user ID and password using vtiger's portal authentication soap service.
 	 * If log in is successful then emulate vtiger's session variables for compatibility with the portal.
 	 *
-	 * @param string $userid
+	 * @param string $userId
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password)
+	public function memberdologin($userId, $password)
 	{
 		require_once(Zymurgy::$root.Zymurgy::$config['WSDL Path']."/SforceEnterpriseClient.php");
 		try {
@@ -104,7 +104,7 @@ class salesforceMember extends ZymurgyMember
 			Zymurgy::Dbg($e);
 		}
 		try {
-			$query = "SELECT Id, FirstName, LastName, Email, Pref_Lang_Contact__c from Contact where Email='".addslashes($userid)."'";
+			$query = "SELECT Id, FirstName, LastName, Email, Pref_Lang_Contact__c from Contact where Email='".addslashes($userId)."'";
 			$result = $connection->query($query);
 			if (!isset($result->records) || count($result->records < 1))
 			{
@@ -113,7 +113,7 @@ class salesforceMember extends ZymurgyMember
 			}
 			$sfcontact = $result->records[0]; //TODO: More than one contact with this email?  Too bad.
 			$zcmmember = Zymurgy::$db->get("SELECT * FROM `zcm_member` WHERE `email`='".
-				Zymurgy::$db->escape_string($userid)."'");
+				Zymurgy::$db->escape_string($userId)."'");
 			if ($zcmmember === false)
 			{
 				//SF contact exists, but Z:CM member doesn't exist.  Create it and ask for email confirmation.

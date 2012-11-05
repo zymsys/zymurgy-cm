@@ -87,16 +87,16 @@ class httpMember extends ZymurgyMember
 	 * Try to log in with the provided user ID and password using vtiger's portal authentication soap service.
 	 * If log in is successful then emulate vtiger's session variables for compatibility with the portal.
 	 *
-	 * @param string $userid
+	 * @param string $userId
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password)
+	public function memberdologin($userId, $password)
 	{
 		$ch = curl_init();
 		$timeout = 5;
 		curl_setopt($ch, CURLOPT_URL, Zymurgy::$config['Membership Auth URL']);
-		curl_setopt($ch, CURLOPT_USERPWD,"$userid:$password"); 
+		curl_setopt($ch, CURLOPT_USERPWD,"$userId:$password");
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 		curl_setopt($ch, CURLOPT_NOBODY, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -113,18 +113,17 @@ class httpMember extends ZymurgyMember
 			{
 				session_start();
 			}
-			$_SESSION['AuthName'] = $userid;
+			$_SESSION['AuthName'] = $userId;
 			if (!$this->findmemberfromsession())
 			{
 				//Member isn't yet known to Z:CM, add it.
-				$email = strtolower(substr($userid, -1).".".substr($userid, 0, -1))."@healthforceontario.ca";
 				Zymurgy::$db->run("insert into zcm_member (email,username,password,fullname,regtime,lastauth,mpkey) values ('".
 					Zymurgy::$db->escape_string($email)."','".
-					Zymurgy::$db->escape_string($userid)."','n/a','".
-					Zymurgy::$db->escape_string(substr($userid, -1))." ".
-					Zymurgy::$db->escape_string(substr($userid, 0, -1)).
+					Zymurgy::$db->escape_string($userId)."','n/a','".
+					Zymurgy::$db->escape_string(substr($userId, -1))." ".
+					Zymurgy::$db->escape_string(substr($userId, 0, -1)).
 					"', now(),now(),'".
-					Zymurgy::$db->escape_string($userid)."')");
+					Zymurgy::$db->escape_string($userId)."')");
 				$this->findmemberfromsession();
 			}
 		}

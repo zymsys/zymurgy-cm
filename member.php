@@ -233,15 +233,15 @@ class ZymurgyMember
 	 * Attempt to log into the membership system with the provided user ID and password.  Returns true
 	 * if the login was successful or false if it was not.
 	 *
-	 * @param string $userid
+	 * @param string $userId
 	 * @param string $password
 	 * @return boolean
 	 */
-	public function memberdologin($userid, $password, $writeCookie = true)
+	public function memberdologin($userId, $password, $writeCookie = true)
 	{
 		$authed = false;
 		$sql = "SELECT `id`,`password` FROM `zcm_member` WHERE ( `username` = '".
-			Zymurgy::$db->escape_string($userid).
+			Zymurgy::$db->escape_string($userId).
 			"' )";
 		$ri = Zymurgy::$db->query($sql) or die("Unable to login ($sql): ".Zymurgy::$db->error());
 
@@ -267,7 +267,7 @@ class ZymurgyMember
 		}
 		else
 		{
-			$this->memberaudit("Failed login attempt for [$userid]");
+			$this->memberaudit("Failed login attempt for [$userId]");
 		}
 		return $authed;
 	}
