@@ -7,13 +7,16 @@
  * HTTP Method alias support so that a client which can't PUT or DELETE can mimic the behaviour with POST
  * Testing with ko.ajax
  */
+ob_start();
 require_once 'cmo.php';
 require_once Zymurgy::$root."/zymurgy/model.php";
+ob_clean();
 
 class ZymurgyJSONDataController
 {
     protected $result;
     protected $model;
+    protected $isIdentity = false;
     
     function __construct($tableName)
     {
@@ -25,6 +28,7 @@ class ZymurgyJSONDataController
 
     public function addIdentityFilter($identity)
     {
+        $this->isIdentity = true;
         $this->model->addIdentityFilter($identity);
     }
 
@@ -67,6 +71,10 @@ class ZymurgyJSONDataController
         $this->applySort($requestVariables);
         $this->applyRange($requestVariables);
         $this->result->data = $this->model->read();
+        if ($this->isIdentity && $this->result->data)
+        {
+            $this->result->data = $this->result->data[0];
+        }
         $this->result->count = $this->model->count();
         $this->result->success = is_array($this->result->data);
         $this->result->sql = $this->model->getLastSQL();

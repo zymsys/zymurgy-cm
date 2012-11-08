@@ -75,9 +75,9 @@ class ldapMember extends ZymurgyMember
         if (parent::memberauthenticate())
         {
             //Parent think's we're logged in, but are we still logged into the MP?
-            if (array_key_exists('customer_name',$_SESSION))
+            if (array_key_exists('AuthName',$_SESSION))
             {
-                if ($_SESSION['customer_name'] == Zymurgy::$member['email'])
+                if ($_SESSION['AuthName'] == Zymurgy::$member['username'])
                 {
                     return true;
                 }
