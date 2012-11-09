@@ -2,6 +2,7 @@
 /*
 This file is based on Kim Jensen's ColorMatch 5K (colormatch.js) with permission from the auther.
 Thanks Kim!
+*/
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>

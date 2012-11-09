@@ -13,9 +13,9 @@ $t = 0 + $_GET['t'];
 $parentrow = array_key_exists('d',$_GET) ? 0 + $_GET['d'] : 0;
 $selfref = array_key_exists('s',$_GET) ? 0 + $_GET['s'] : 0;
 
-$tbl = gettable($t);
+$tbl = Zymurgy::customTableTool()->gettable($t);
 $detailfor = 0 + $tbl['detailfor'];
-$detailtbl = ($detailfor > 0) ? gettable($detailfor) : array();
+$detailtbl = ($detailfor > 0) ? Zymurgy::customTableTool()->gettable($detailfor) : array();
 $wheredidicomefrom = array();
 
 /**
@@ -132,7 +132,7 @@ function getdkey($parent,$myd)
 		$detailForField = $parent["detailforfield"];
 		if(strlen($detailForField) <= 0) 
 		{
-			$grandparent = gettable($parent['detailfor']);
+			$grandparent = Zymurgy::customTableTool()->gettable($parent['detailfor']);
 			$detailForField = $grandparent["tname"];
 		}
 
@@ -204,22 +204,6 @@ if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_
 
 include 'header.php';
 include 'datagrid.php';
-
-/**
- * Get the information on the Custom Table from the database.
- *
- * @param $t int The ID of the table, as assigned in the zcm_customtable table
- * @return mixed The table information
- */
-function gettable($t)
-{
-	$sql = "select * from zcm_customtable where id=$t";
-	$ri = Zymurgy::$db->query($sql) or die("Can't get table ($sql): ".Zymurgy::$db->error());
-	$tbl = Zymurgy::$db->fetch_array($ri);
-	if (!is_array($tbl))
-		die("No such table ($t)");
-	return $tbl;
-}
 
 $sql = "select * from zcm_customfield where tableid=$t order by disporder";
 $ri = Zymurgy::$db->query($sql) or die("Unable to get table fields ($sql): ".Zymurgy::$db->error());

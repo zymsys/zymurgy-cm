@@ -13,7 +13,6 @@ ob_start();
 
 require_once('cmo.php');
 include 'datagrid.php';
-include 'customlib.php';
 
 $detailfor = array_key_exists('d',$_GET) ? (0 + $_GET['d']) : 0;
 $crumbs = array("customtable.php"=>"Custom Tables");
@@ -22,7 +21,7 @@ $wikiArticleName = "Custom_Tables";
 
 if ($detailfor > 0)
 {
-	tablecrumbs($detailfor);
+    Zymurgy::customTableTool()->tablecrumbs($detailfor);
 }
 
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
@@ -82,7 +81,7 @@ function OnDelete($values)
  */
 function OnBeforeUpdate($values)
 {
-	$okname = okname($values['zcm_customtable.tname']);
+	$okname = Zymurgy::customTableTool()->okname($values['zcm_customtable.tname']);
 	if ($okname!==true)
 	{
 		return $okname;
@@ -220,7 +219,7 @@ function OnBeforeInsert($values)
 {
 	global $detailfor;
 
-	$okname = okname($values['zcm_customtable.tname']);
+	$okname = Zymurgy::customTableTool()->okname($values['zcm_customtable.tname']);
 	if ($okname!==true)
 	{
 		return $okname;
@@ -235,10 +234,7 @@ function OnBeforeInsert($values)
 	$sql = "create table `{$values['zcm_customtable.tname']}` ($idfieldname bigint not null auto_increment primary key";
 	if ($detailfor>0)
 	{
-//		$tbl = gettable($detailfor);
-//		$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
-
-		$tbl = gettable($detailfor);
+		$tbl = Zymurgy::customTableTool()->gettable($detailfor);
 		$detailForField = $values["zcm_customtable.detailforfield"];
 		if(strlen($detailForField) <= 0)
 		{
@@ -318,7 +314,7 @@ $dg->AddInput("idfieldname", "Primary Key:", 30, 30, "id");
 
 if($detailfor > 0)
 {
-	$tbl = gettable($detailfor);
+	$tbl = Zymurgy::customTableTool()->gettable($detailfor);
 	$dg->AddInput("detailforfield", "Foreign Key Field Name:", 30, 30, $tbl["tname"]);
 }
 

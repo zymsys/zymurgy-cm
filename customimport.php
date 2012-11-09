@@ -12,7 +12,6 @@ ob_start();
 require_once('cmo.php');
 require_once('datagrid.php');
 require_once('InputWidget.php');
-require_once("customlib.php");
 
 $t = 0 + $_GET['t'];
 $parentrow = array_key_exists('d',$_GET) ? 0 + $_GET['d'] : 0;
@@ -107,11 +106,11 @@ function importData($rawdata)
 	global $parentrow;
 
 	$widgets = getWidgets();
-	$table = gettable($t);
+	$table = Zymurgy::customTableTool()->gettable($t);
 	//Zymurgy::DbgAndDie($table);
 	if ($table['detailfor'])
 	{
-		$parent = gettable($table['detailfor']);
+		$parent = Zymurgy::customTableTool()->gettable($table['detailfor']);
 		$startvalues = array($parent['tname'] => $parentrow);
 	}
 	else

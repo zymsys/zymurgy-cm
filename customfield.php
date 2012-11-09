@@ -15,10 +15,9 @@ $t = 0 + $_GET['t'];
 
 require_once('cmo.php');
 include 'datagrid.php';
-include 'customlib.php';
 
 $crumbs = array("customtable.php"=>"Custom Tables");
-tablecrumbs($t);
+Zymurgy::customTableTool()->tablecrumbs($t);
 $crumbs["customfield.php?t=$t"] = 'Fields';
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
@@ -41,7 +40,7 @@ echo Zymurgy::YUI('connection/connection-min.js');
 function OnDelete($values)
 {
 	global $t;
-	$tbl = gettable($t);
+	$tbl = Zymurgy::customTableTool()->gettable($t);
 	$sql = "alter table `{$tbl['tname']}` drop `{$values['zcm_customfield.cname']}`";
 	mysql_query($sql) or die("Unabel to remove column ($sql): ".mysql_error());
 	return true; //Return false to override delete.
@@ -56,14 +55,14 @@ function OnDelete($values)
  */
 function OnBeforeUpdate($values)
 {
-	$okname = okname($values['zcm_customfield.cname']);
+	$okname = Zymurgy::customTableTool()->okname($values['zcm_customfield.cname']);
 	if ($okname!==true)
 	{
 		return $okname;
 	}
 	global $t;
-	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
+	$tbl = Zymurgy::customTableTool()->gettable($t);
+	$sqltype = Zymurgy::inputspec2sqltype($values['zcm_customfield.inputspec']);
 	$sql = "select * from zcm_customfield where id={$values['zcm_customfield.id']}";
 	$ri = mysql_query($sql) or die("Unable to get old field info ($sql): ".mysql_error());
 	$old = mysql_fetch_array($ri) or die ("No such field ($sql)");
@@ -114,14 +113,14 @@ function OnBeforeUpdate($values)
  */
 function OnBeforeInsert($values)
 {
-	$okname = okname($values['zcm_customfield.cname']);
+	$okname = Zymurgy::customTableTool()->okname($values['zcm_customfield.cname']);
 	if ($okname!==true)
 	{
 		return $okname;
 	}
 	global $t;
-	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
+	$tbl = Zymurgy::customTableTool()->gettable($t);
+	$sqltype = Zymurgy::inputspec2sqltype($values['zcm_customfield.inputspec']);
 	$sql = "alter table `{$tbl['tname']}` add `{$values['zcm_customfield.cname']}` $sqltype";
 	mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
 	if ($values['zcm_customfield.indexed']=='Y')

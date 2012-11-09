@@ -338,6 +338,13 @@ if (!class_exists('Zymurgy'))
 		 * @var array
 		 */
 		private static $acl;
+
+        /**
+         * Instance of the custom table tool for handling custom tables
+         *
+         * @var CustomTableTool
+         */
+        private static $_customTableTool;
 		
 		/**
 		 * ID of the page in the zcm_meta table.
@@ -715,6 +722,21 @@ if (!class_exists('Zymurgy'))
 				echo "{$mytabs}</$tableName>\r\n";
 			}
 		}
+
+        /**
+         * Get an instance of the CustomTableTool for working with custom tables
+         * @static
+         * @return CustomTableTool
+         */
+        public static function customTableTool()
+        {
+            require_once self::$root . "/zymurgy/customlib.php";
+            if (!isset(self::$_customTableTool))
+            {
+                self::$_customTableTool = new CustomTableTool();
+            }
+            return self::$_customTableTool;
+        }
 
 		/**
 		 * Properly strip the slashes from the provided text. Some PHP
@@ -2286,6 +2308,17 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::$db->run("DELETE FROM zcm_flavourtext WHERE `id`=$fid");
 			}
 		}
+
+        /**
+         * Returns the SQL type for the given inputspec
+         *
+         * @param string $inputspec
+         * @return string
+         */
+        public static function inputspec2sqltype($inputspec)
+        {
+            return InputWidget::inputspec2sqltype($inputspec);
+        }
 
 		static function GetActiveFlavourCode()
 		{
