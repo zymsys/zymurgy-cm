@@ -106,11 +106,11 @@ function importData($rawdata)
 	global $parentrow;
 
 	$widgets = getWidgets();
-	$table = Zymurgy::customTableTool()->gettable($t);
+	$table = Zymurgy::customTableTool()->getTable($t);
 	//Zymurgy::DbgAndDie($table);
 	if ($table['detailfor'])
 	{
-		$parent = Zymurgy::customTableTool()->gettable($table['detailfor']);
+		$parent = Zymurgy::customTableTool()->getTable($table['detailfor']);
 		$startvalues = array($parent['tname'] => $parentrow);
 	}
 	else

@@ -354,7 +354,8 @@ class DataSetRow
 				$newvalues = call_user_func($this->DataSet->OnBeforeInsert,$this->values);
 		}
 		if ($newvalues===false)
-			return false; //Allow before events to abort the insert or update
+			return true; //Allow before events to abort the insert or update; true to indicate success - the success
+                         //is the event handler's success.
 		if (is_array($newvalues)) //Allow updates to content of data before edit/insert
 			$this->values = $newvalues;
 		else

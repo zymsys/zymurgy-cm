@@ -234,7 +234,7 @@ function OnBeforeInsert($values)
 	$sql = "create table `{$values['zcm_customtable.tname']}` ($idfieldname bigint not null auto_increment primary key";
 	if ($detailfor>0)
 	{
-		$tbl = Zymurgy::customTableTool()->gettable($detailfor);
+		$tbl = Zymurgy::customTableTool()->getTable($detailfor);
 		$detailForField = $values["zcm_customtable.detailforfield"];
 		if(strlen($detailForField) <= 0)
 		{
@@ -314,7 +314,7 @@ $dg->AddInput("idfieldname", "Primary Key:", 30, 30, "id");
 
 if($detailfor > 0)
 {
-	$tbl = Zymurgy::customTableTool()->gettable($detailfor);
+	$tbl = Zymurgy::customTableTool()->getTable($detailfor);
 	$dg->AddInput("detailforfield", "Foreign Key Field Name:", 30, 30, $tbl["tname"]);
 }
 

@@ -13,9 +13,9 @@ $t = 0 + $_GET['t'];
 $parentrow = array_key_exists('d',$_GET) ? 0 + $_GET['d'] : 0;
 $selfref = array_key_exists('s',$_GET) ? 0 + $_GET['s'] : 0;
 
-$tbl = Zymurgy::customTableTool()->gettable($t);
+$tbl = Zymurgy::customTableTool()->getTable($t);
 $detailfor = 0 + $tbl['detailfor'];
-$detailtbl = ($detailfor > 0) ? Zymurgy::customTableTool()->gettable($detailfor) : array();
+$detailtbl = ($detailfor > 0) ? Zymurgy::customTableTool()->getTable($detailfor) : array();
 $wheredidicomefrom = array();
 
 /**
@@ -132,7 +132,7 @@ function getdkey($parent,$myd)
 		$detailForField = $parent["detailforfield"];
 		if(strlen($detailForField) <= 0) 
 		{
-			$grandparent = Zymurgy::customTableTool()->gettable($parent['detailfor']);
+			$grandparent = Zymurgy::customTableTool()->getTable($parent['detailfor']);
 			$detailForField = $grandparent["tname"];
 		}
 

@@ -582,7 +582,7 @@
 		$sql = "create table `{$tableName}` (id bigint not null auto_increment primary key";
 		if ($detailfor>0)
 		{
-			$tbl = Zymurgy::customTableTool()->gettable($detailfor);
+			$tbl = Zymurgy::customTableTool()->getTable($detailfor);
 			$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
 		}
 		if ($hasdisporder == 1)
@@ -661,7 +661,7 @@
 		{
 			return $okname;
 		}
-		$tbl = Zymurgy::customTableTool()->gettable($tableID);
+		$tbl = Zymurgy::customTableTool()->getTable($tableID);
 		$sqltype = Zymurgy::inputspec2sqltype($inputspec);
 		$sql = "alter table `{$tbl['tname']}` add `{$fieldName}` $sqltype";
 		mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());

@@ -373,5 +373,34 @@ class Zymurgy_DB
 		Zymurgy_DB::free_result($ri);
 		return $tables;
 	}
+
+    /**
+     * Assemble an update statement from components, and run it.
+     *
+     * @param $table string Table name
+     * @param $where string Where clause
+     * @param $data array Key value pairs with column names and contents
+     * @param bool $escape Escape names and values? (defaults to true)
+     */
+    public function update($table, $where, $data, $escape = true)
+    {
+        if ($escape)
+        {
+            $table = $this->escape_string($table);
+        }
+        $sql = "UPDATE `$table` SET ";
+        $updates = array();
+        foreach ($data as $columnName => $value)
+        {
+            if ($escape)
+            {
+                $columnName = $this->escape_string($columnName);
+                $value = $this->escape_string($value);
+            }
+            $updates[] = "`$columnName`='$value'";
+        }
+        $sql .= implode(", ", $updates) . " WHERE " . $where;
+        $this->run($sql);
+    }
 }
 ?>

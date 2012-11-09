@@ -92,13 +92,85 @@ class CustomTableTool
      * @param int $t The ID of the detail table, as defined in the zcm_customtable table
      * @return array
      */
-    public function gettable($t)
+    public function getTable($t)
     {
         $sql = "select * from zcm_customtable where id=$t";
         $ri = mysql_query($sql) or die("Can't get table ($sql): ".mysql_error());
         $tbl = mysql_fetch_array($ri);
         if (!is_array($tbl))
-            die("No such table ($t)");
+            throw new Exception("No such table ($t)");
         return $tbl;
+    }
+
+    /**
+     * @param $id int Field ID
+     * @return array
+     */
+    public function getColumn($id)
+    {
+        $id = intval($id);
+        $field = Zymurgy::$db->get("SELECT * FROM `zcm_customfield` WHERE `id`=$id");
+        if (!$field) throw new Exception("No such column ($id)");
+        return $field;
+    }
+
+    /**
+     * @param $id int Field ID
+     */
+    public function dropColumn($id)
+    {
+        $id = intval($id);
+        $field = $this->getColumn($id);
+        $table = $this->getTable($field['tableid']);
+        $tableName = Zymurgy::$db->escape_string($table['tname']);
+        $columnName = Zymurgy::$db->escape_string($field['cname']);
+        Zymurgy::$db->run("ALTER TABLE `{$tableName}` DROP `{$columnName}`");
+        Zymurgy::$db->run("DELETE FROM `zcm_customfield` WHERE `id`=$id");
+    }
+
+    /**
+     * @param $columnId int Column ID to update
+     * @param $newColumnData array Key values pairs for column names and new values
+     */
+    public function updateField($columnId, $newColumnData)
+    {
+        $data = array();
+        foreach ($newColumnData as $key=>$value)
+        {
+            $data[Zymurgy::$db->escape_string($key)] = Zymurgy::$db->escape_string($value);
+        }
+        $originalFieldData = Zymurgy::customTableTool()->getColumn($columnId);
+        $tableData = Zymurgy::customTableTool()->getTable($originalFieldData['tableid']);
+        $tableName = Zymurgy::$db->escape_string($tableData['tname']);
+        $originalColumnName = Zymurgy::$db->escape_string($originalFieldData['cname']);
+        $columnName = isset($data['cname']) ? $data['cname'] : $originalColumnName;
+        $inputSpec = isset($data['inputspec']) ? $data['inputspec'] : $originalFieldData['inputspec'];
+        $indexed = isset($data['indexed']) ? $data['indexed'] : $originalFieldData['indexed'];
+        if (($originalFieldData['cname'] != $columnName) || ($originalFieldData['inputspec'] != $inputSpec)) {
+            $originalInputWidget = InputWidget::GetFromInputSpec($originalFieldData['inputspec']);
+            $newInputWidget = InputWidget::GetFromInputSpec($inputSpec);
+            if ($originalInputWidget->SupportsFlavours() && !$newInputWidget->SupportsFlavours()) {
+                //Moving from flavoured to vanilla
+                Zymurgy::ConvertFlavouredToVanilla($tableData['tname'], $originalFieldData['cname'], $inputSpec);
+            } elseif (!$originalInputWidget->SupportsFlavours() && $newInputWidget->SupportsFlavours()) {
+                //Moving from vanilla to flavoured
+                Zymurgy::ConvertVanillaToFlavoured($tableData['tname'], $originalFieldData['cname']);
+            }
+            //Do this even if we converted to/from flavoured to support column rename
+            //Column name or type has changed, update the db.
+            $sqlType = Zymurgy::inputspec2sqltype($inputSpec);
+            $sql = "alter table `{$tableName}` change `{$originalColumnName}` `{$columnName}` $sqlType";
+            mysql_query($sql) or die("Unable to change field ($sql): " . mysql_error());
+        }
+        if ($originalFieldData['indexed'] != $indexed) {
+            //Add or remove an index
+            if ($indexed == 'Y') {
+                $sql = "alter table `{$tableName}` add index(`{$columnName}`)";
+            } else {
+                $sql = "alter table `{$tableName}` drop index `{$columnName}`";
+            }
+            mysql_query($sql) or die("Can't change index ($sql): " . mysql_error());
+        }
+        Zymurgy::$db->update('zcm_customfield', "`id`=$columnId", $data, false);
     }
 }
