@@ -402,5 +402,38 @@ class Zymurgy_DB
         $sql .= implode(", ", $updates) . " WHERE " . $where;
         $this->run($sql);
     }
+
+    public function insert($table, $data, $escape = true)
+    {
+        if ($escape)
+        {
+            $table = $this->escape_string($table);
+        }
+        $sql = "INSERT INTO `$table` (`";
+        if ($escape)
+        {
+            $escaped = array();
+            foreach ($data as $columnName => $value)
+            {
+                if ($escape)
+                {
+                    $columnName = $this->escape_string($columnName);
+                    $value = $this->escape_string($value);
+                }
+                $escaped[$columnName] = $value;
+            }
+            $data = $escaped;
+        }
+        $sql .= implode("`, `", array_keys($data));
+        $sql .= "`) VALUES ('";
+        $sql .= implode("', '", array_values($data));
+        $sql .= "')";
+        $this->run($sql);
+    }
+
+    public function setDispOrder($table)
+    {
+        $this->run("UPDATE `$table` SET `disporder`=`id` WHERE `disporder` IS NULL");
+    }
 }
 ?>

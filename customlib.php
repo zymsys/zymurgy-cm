@@ -173,4 +173,22 @@ class CustomTableTool
         }
         Zymurgy::$db->update('zcm_customfield', "`id`=$columnId", $data, false);
     }
+
+    /**
+     * @param $tableId int Table ID to add the field
+     * @param $data array Key value pairs with column / values for zcm_customfield
+     */
+    public function addField($tableId, $data)
+    {
+        $tableData = Zymurgy::customTableTool()->getTable($tableId);
+        $sqltype = Zymurgy::inputspec2sqltype($data['inputspec']);
+        Zymurgy::$db->run("alter table `{$tableData['tname']}` add `{$data['cname']}` $sqltype");
+        if ($data['indexed']=='Y')
+        {
+            Zymurgy::$db->run("alter table `{$tableData['tname']}` add index(`{$data['cname']}`)");
+        }
+        $data['tableid'] = intval($tableId);
+        Zymurgy::$db->insert('zcm_customfield', $data, false);
+        Zymurgy::$db->setDispOrder('zcm_customfield');
+    }
 }

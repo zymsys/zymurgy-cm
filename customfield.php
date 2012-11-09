@@ -87,16 +87,19 @@ function OnBeforeInsert($values)
 	{
 		return $okname;
 	}
-	global $t;
-	$tbl = Zymurgy::customTableTool()->getTable($t);
-	$sqltype = Zymurgy::inputspec2sqltype($values['zcm_customfield.inputspec']);
-	$sql = "alter table `{$tbl['tname']}` add `{$values['zcm_customfield.cname']}` $sqltype";
-	mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
-	if ($values['zcm_customfield.indexed']=='Y')
-	{
-		$sql = "alter table `{$tbl['tname']}` add index(`{$values['zcm_customfield.cname']}`)";
-	}
-	return $values; // Change values you want to alter before the insert occurs.
+    global $t;
+    Zymurgy::customTableTool()->addField(intval($t),
+        array(
+            'cname'=>$values['zcm_customfield.cname'],
+            'inputspec'=>$values['zcm_customfield.inputspec'],
+            'indexed'=>$values['zcm_customfield.indexed'],
+            'caption'=>$values['zcm_customfield.caption'],
+            'gridheader'=>$values['zcm_customfield.gridheader'],
+            'globalacl'=>$values['zcm_customfield.globalacl'],
+            'acl'=>$values['zcm_customfield.acl'],
+        )
+    );
+    return false; //Allow customTableTool to insert the row, not the datagrid
 }
 
 $ds = new DataSet('zcm_customfield','id');
