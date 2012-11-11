@@ -107,8 +107,9 @@ class CustomTableTool
      */
     private function getTableBySQL($sql, $t)
     {
-        $ri = mysql_query($sql) or die("Can't get table ($sql): " . mysql_error());
-        $tbl = mysql_fetch_array($ri);
+        $ri = Zymurgy::$db->query($sql) or die("Can't get table ($sql): " .
+            Zymurgy::$db->error());
+        $tbl = Zymurgy::$db->fetch_assoc($ri);
         if (!is_array($tbl))
             throw new Exception("No such table ($t)");
         return $tbl;
@@ -134,7 +135,8 @@ class CustomTableTool
     public function getColumn($id)
     {
         $id = intval($id);
-        $field = Zymurgy::$db->get("SELECT * FROM `zcm_customfield` WHERE `id`=$id");
+        $ri = Zymurgy::$db->run("SELECT * FROM `zcm_customfield` WHERE `id`=$id");
+        $field = Zymurgy::$db->fetch_assoc($ri);
         if (!$field) throw new Exception("No such column ($id)");
         return $field;
     }
@@ -399,6 +401,7 @@ class CustomTableTool
     {
         $tableId = intval($tableId);
         $columnName = Zymurgy::$db->escape_string($columnName);
-        return Zymurgy::$db->get("SELECT * FROM `zcm_customfield` WHERE `tableid`=$tableId AND `cname`='$columnName'");
+        $ri = Zymurgy::$db->run("SELECT * FROM `zcm_customfield` WHERE `tableid`=$tableId AND `cname`='$columnName'");
+        return Zymurgy::$db->fetch_assoc($ri);
     }
 }
