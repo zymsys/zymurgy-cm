@@ -191,4 +191,182 @@ class CustomTableTool
         Zymurgy::$db->insert('zcm_customfield', $data, false);
         Zymurgy::$db->setDispOrder('zcm_customfield');
     }
+
+    /**
+     * Drop the custom table, and remove it from the list. Also drop any Detail
+     * Tables associated with this table.
+     *
+     * @param $tid int The ID of the table to DROP, as defined in the
+     * zcm_customtable table.
+     */
+    public function dropTable($tid)
+    {
+        $tid = intval($tid);
+        $tableData = $this->getTable($tid);
+        $table = $tableData['tname'];
+        Zymurgy::$db->run("DROP TABLE `$table`");
+        Zymurgy::$db->run("DELETE FROM `zcm_customtable` WHERE `id`=$tid");
+        Zymurgy::$db->run("DELETE FROM `zcm_customfield` WHERE `tableid`=$tid");
+        $parents = array();
+        $ri = Zymurgy::$db->run("SELECT `id`, `tname` FROM `zcm_customtable` WHERE `detailfor`=$tid");
+        while (($row=Zymurgy::$db->fetch_array($ri))!==false)
+        {
+            $parents[$row['id']] = $row['tname'];
+        }
+        foreach($parents as $ptid=>$pname)
+        {
+            $this->dropTable($ptid);
+        }
+    }
+
+    /**
+     * Update a custom table
+     *
+     * @param $data array Key value pairs representing column names and values for zcm_customtable
+     */
+    public function updateTable($data)
+    {
+        $tableData = Zymurgy::customTableTool()->getTable($data['id']);
+        if ($tableData['tname'] != $data['tname']) {
+            //Table name has changed
+            $oldname = $tableData['tname'];
+            $newname = $data['tname'];
+            $needchange = array();
+            $changed = array();
+            $errmsg = '';
+            //Find relationships and rename those
+            $sql = "select * from zcm_customtable where detailfor={$tableData['id']}";
+            $ri = mysql_query($sql) or die("Unable to get relationships ($sql): " . mysql_error());
+            while (($drow = mysql_fetch_array($ri)) !== false) {
+                $needchange[] = $drow['tname'];
+            }
+            mysql_free_result($ri);
+            foreach ($needchange as $tname) {
+                $sql = "alter table $tname change $oldname $newname bigint";
+                $ri = mysql_query($sql);
+                if ($ri !== false) {
+                    $changed[] = $tname;
+                } else {
+                    $errmsg = "Couldn't rename the $oldname column to $newname in the table $tname ($sql): " . mysql_error();
+                    break; //Don't bother changing any more, we're going to try to undo the damage and get out.
+                }
+            }
+            if (empty($errmsg)) {
+                //All required relationships have been successfully updated.
+                $sql = "rename table `{$tableData['tname']}` to `{$data['tname']}`";
+                $ri = mysql_query($sql);
+                if (!$ri) {
+                    $e = mysql_errno();
+                    switch ($e) {
+                        default:
+                            $errmsg = "SQL error $e trying to rename table {$tableData['tname']} to {$data['tname']} ($sql): " . mysql_error();
+                    }
+                }
+            }
+            if (!empty($errmsg)) {
+                //Something went wrong.  Back out.
+                foreach ($changed as $tname) {
+                    $sql = "update $tname change $newname $oldname bigint";
+                    $ri = mysql_query($sql);
+                    if ($ri === false) {
+                        //Uh oh, can't even back out!  Best we can do is alert the developer of the snafu.
+                        $errmsg .= "<br />Additionally we couldn't back out one of the table changes already made.  We tried ($sql) but received the error: " . mysql_error();
+                    }
+                }
+                return $errmsg;
+            }
+        }
+        if ($tableData['hasdisporder'] != $data['hasdisporder']) {
+            //display order flag has changed
+            if ($data['hasdisporder'] == 0) {
+                //Remove display order column
+                $sql = "alter table `{$data['tname']}` drop disporder";
+                $ri = mysql_query($sql) or die ("Unable to remove display order ($sql): " . mysql_error());
+            } else {
+                //Add display order column
+                $sql = "alter table `{$data['tname']}` add disporder bigint";
+                mysql_query($sql) or die("Unable to add display order ($sql): " . mysql_error());
+                $sql = "alter table `{$data['tname']}` add index(disporder)";
+                mysql_query($sql) or die("Unable to add display order index ($sql): " . mysql_error());
+                $sql = "update `{$data['tname']}` set disporder=id";
+                mysql_query($sql) or die("Unable to set default display order ($sql): " . mysql_error());
+            }
+        }
+        if ((0 + $tableData['ismember']) != (0 + $data['ismember'])) {
+            //ismember flag has changed
+            if ($data['ismember'] == 0) {
+                //Remove member column
+                $sql = "alter table `{$data['tname']}` drop member";
+                $ri = mysql_query($sql) or die ("Unable to remove member ($sql): " . mysql_error());
+            } else {
+                //Add member column
+                $sql = "alter table `{$data['tname']}` add member bigint";
+                mysql_query($sql) or die("Unable to add member ($sql): " . mysql_error());
+                $sql = "alter table `{$data['tname']}` add index(member)";
+                mysql_query($sql) or die("Unable to add member index ($sql): " . mysql_error());
+            }
+        }
+        if ($tableData['selfref'] != $data['selfref']) {
+            //Self reference has changed
+            if (empty($data['selfref'])) {
+                //Remove self ref column
+                Zymurgy::$db->run("alter table `{$data['tname']}` drop selfref");
+            } else {
+                //Add self ref column
+                Zymurgy::$db->run("alter table `{$data['tname']}` add selfref bigint default 0");
+                Zymurgy::$db->run("alter table `{$data['tname']}` add index(selfref)");
+            }
+        }
+        Zymurgy::$db->update('zcm_customtable', "`id`={$data['id']}", $data);
+        return true;
+    }
+
+    /**
+     * Add a custom table
+     *
+     * @param $data array Key value pairs representing column names and values for zcm_customtable
+     */
+    function addTable($data)
+    {
+        $detailFor = $data['detailfor'];
+        $idFieldName = $data["idfieldname"];
+        if (strlen($idFieldName) <= 0) {
+            $idFieldName = "id";
+        }
+        $sql = "create table `{$data['tname']}` ($idFieldName bigint not null auto_increment primary key";
+        if ($detailFor > 0) {
+            $tbl = Zymurgy::customTableTool()->getTable($detailFor);
+            $detailForField = $data["detailforfield"];
+            if (strlen($detailForField) <= 0) {
+                $detailForField = $tbl["tname"];
+            }
+
+            $sql .= ", `$detailForField` BIGINT, KEY `{$tbl['tname']}` (`$detailForField`)";
+        }
+        if ($data['hasdisporder'] == 1) {
+            $sql .= ", disporder bigint, key disporder (disporder)";
+        }
+        if ($data['ismember'] == 1) {
+            $sql .= ", member bigint, key member (member)";
+        }
+        $sql .= ")";
+        $ri = mysql_query($sql) or die("Unable to create table ($sql): " . mysql_error());
+        if (!$ri) {
+            $e = mysql_errno();
+            switch ($e) {
+                case 1050:
+                    return "The table {$data['tname']} already exists.  Please select a different name.";
+                default:
+                    return "<p>SQL error $e trying to create table: " . mysql_error() . "</p>";
+            }
+            return false;
+        }
+        if (!empty($data['selfref'])) {
+            Zymurgy::$db->run("alter table `{$data['tname']}` add selfref bigint default 0");
+            Zymurgy::$db->run("alter table `{$data['tname']}` add index(selfref)");
+        }
+        Zymurgy::$db->insert('zcm_customtable', $data);
+        Zymurgy::$db->setDispOrder('zcm_customtable');
+        return true;
+    }
 }

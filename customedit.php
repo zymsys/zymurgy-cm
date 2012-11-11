@@ -14,8 +14,8 @@ $parentrow = array_key_exists('d',$_GET) ? 0 + $_GET['d'] : 0;
 $selfref = array_key_exists('s',$_GET) ? 0 + $_GET['s'] : 0;
 
 $tbl = Zymurgy::customTableTool()->getTable($t);
-$detailfor = 0 + $tbl['detailfor'];
-$detailtbl = ($detailfor > 0) ? Zymurgy::customTableTool()->getTable($detailfor) : array();
+$detailFor = 0 + $tbl['detailfor'];
+$detailtbl = ($detailFor > 0) ? Zymurgy::customTableTool()->getTable($detailFor) : array();
 $wheredidicomefrom = array();
 
 /**
@@ -346,7 +346,7 @@ $dg->AddDeleteColumn();
 
 if (Zymurgy::memberzcmauth()>=2)
 {
-	$dg->insertlabel = "Insert a new Item</font></a> <font color=\"white\">|</font> <a href=\"customimport.php?t=$t&d=$detailfor&s=$selfref&p=$parentrow\"><font color=\"white\">Bulk Import";
+	$dg->insertlabel = "Insert a new Item</font></a> <font color=\"white\">|</font> <a href=\"customimport.php?t=$t&d=$detailFor&s=$selfref&p=$parentrow\"><font color=\"white\">Bulk Import";
 }
 $dg->Render();
 ?>
