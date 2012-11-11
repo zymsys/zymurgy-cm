@@ -87,19 +87,44 @@ class CustomTableTool
     }
 
     /**
-     * Returns the information on a custom table.
+     * Returns the information on a custom table from it's ID.
      *
      * @param int $t The ID of the detail table, as defined in the zcm_customtable table
      * @return array
      */
     public function getTable($t)
     {
-        $sql = "select * from zcm_customtable where id=$t";
-        $ri = mysql_query($sql) or die("Can't get table ($sql): ".mysql_error());
+        $t = intval($t);
+        $sql = "SELECT * FROM `zcm_customtable` where `id`=$t";
+        return $this->getTableBySQL($sql, $t);
+    }
+
+    /**
+     * @param $sql string SQL Statement to fetch a zcm_customtable row
+     * @param $t int|string Table identifier; either name or ID
+     * @return array Row from zcm_customtable
+     * @throws Exception when there is no such table
+     */
+    private function getTableBySQL($sql, $t)
+    {
+        $ri = mysql_query($sql) or die("Can't get table ($sql): " . mysql_error());
         $tbl = mysql_fetch_array($ri);
         if (!is_array($tbl))
             throw new Exception("No such table ($t)");
         return $tbl;
+    }
+
+    /**
+     * Returns the information on a custom table from it's name.
+     *
+     * @param $tableName string Name of a table in zcm_customtable
+     * @return array
+     */
+    public function getTableByName($tableName)
+    {
+        $escapedTableName = Zymurgy::$db->escape_string($tableName);
+        $sql = "SELECT * FROM `zcm_customtable` WHERE `tname`='$escapedTableName'";
+        return $this->getTableBySQL($sql, $tableName);
     }
 
     /**
@@ -368,5 +393,12 @@ class CustomTableTool
         Zymurgy::$db->insert('zcm_customtable', $data);
         Zymurgy::$db->setDispOrder('zcm_customtable');
         return true;
+    }
+
+    public function getColumnByName($tableId, $columnName)
+    {
+        $tableId = intval($tableId);
+        $columnName = Zymurgy::$db->escape_string($columnName);
+        return Zymurgy::$db->get("SELECT * FROM `zcm_customfield` WHERE `tableid`=$tableId AND `cname`='$columnName'");
     }
 }
