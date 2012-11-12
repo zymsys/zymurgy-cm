@@ -562,7 +562,10 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 			}
 			if (!$this->memberOwnsRow($chkrow))
 			{
-				throw new ZymurgyModelException("Can't insert for row owned by member #".$chkrow['member'], ZymurgyModelException::$MEMBER_MISMATCH);
+                if (count($this->columns['globalacl']['Write']) == 0)
+                {
+    				throw new ZymurgyModelException("Can't insert for row owned by member #".$chkrow['member'], ZymurgyModelException::$MEMBER_MISMATCH);
+                }
 			}
 		}
 		return $rowdata;
