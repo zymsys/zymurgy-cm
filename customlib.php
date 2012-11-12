@@ -142,6 +142,29 @@ class CustomTableTool
     }
 
     /**
+     * Get an associative array of all of a table's columns with column names for keys.  Takes a table's ID
+     * or name.  If you pass an ID it must be of type int.
+     *
+     * @param $table int|string
+     * @return array
+     */
+    public function getColumnsForTable($table)
+    {
+        if (!is_int($table))
+        {
+            $table = Zymurgy::$db->getParam("SELECT `id` FROM `zcm_customtable` WHERE `tname`={0}", array($table));
+        }
+        $ri = Zymurgy::$db->runParam("SELECT * FROM `zcm_customfield` WHERE `tableid`={0}", array($table));
+        $columns = array();
+        while (($row = Zymurgy::$db->fetch_assoc($ri))!==false)
+        {
+            $columns[$row['cname']] = $row;
+        }
+        Zymurgy::$db->free_result($ri);
+        return $columns;
+    }
+
+    /**
      * @param $id int Field ID
      */
     public function dropColumn($id)

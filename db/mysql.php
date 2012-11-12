@@ -435,5 +435,27 @@ class Zymurgy_DB
     {
         $this->run("UPDATE `$table` SET `disporder`=`id` WHERE `disporder` IS NULL");
     }
+
+    public function runParam($sql, $params)
+    {
+        $sql = $this->param($params, $sql);
+        return $this->run($sql);
+    }
+
+    public function param($params, $sql)
+    {
+        $replace = array();
+        foreach ($params as $key => $value) {
+            $replace['{' . $key . '}'] = "'" . $this->escape_string($value) . "'";
+        }
+        $sql = str_replace(array_keys($replace), array_values($replace), $sql);
+        return $sql;
+    }
+
+    public function getParam($sql, $params)
+    {
+        $sql = $this->param($params, $sql);
+        return $this->get($sql);
+    }
 }
 ?>
