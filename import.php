@@ -14,7 +14,6 @@
 
 	include_once("header.php");
 	include_once("InputWidget.php");
-	include_once("customlib.php");
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
@@ -574,7 +573,7 @@
 
 		$newTableID = -1;
 
-		$okname = okname($tableName);
+		$okname = Zymurgy::customTableTool()->okname($tableName);
 		if ($okname!==true)
 		{
 			return $okname;
@@ -583,7 +582,7 @@
 		$sql = "create table `{$tableName}` (id bigint not null auto_increment primary key";
 		if ($detailfor>0)
 		{
-			$tbl = gettable($detailfor);
+			$tbl = Zymurgy::customTableTool()->getTable($detailfor);
 			$sql .= ", `{$tbl['tname']}` bigint, key `{$tbl['tname']}` (`{$tbl['tname']}`)";
 		}
 		if ($hasdisporder == 1)
@@ -657,13 +656,13 @@
 	{
 		echo("------ Creating<br>");
 
-		$okname = okname($fieldName);
+		$okname = Zymurgy::customTableTool()->okname($fieldName);
 		if ($okname!==true)
 		{
 			return $okname;
 		}
-		$tbl = gettable($tableID);
-		$sqltype = inputspec2sqltype($inputspec);
+		$tbl = Zymurgy::customTableTool()->getTable($tableID);
+		$sqltype = Zymurgy::inputspec2sqltype($inputspec);
 		$sql = "alter table `{$tbl['tname']}` add `{$fieldName}` $sqltype";
 		mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
 		if ($isIndexed == 1)

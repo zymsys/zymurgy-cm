@@ -338,6 +338,13 @@ if (!class_exists('Zymurgy'))
 		 * @var array
 		 */
 		private static $acl;
+
+        /**
+         * Instance of the custom table tool for handling custom tables
+         *
+         * @var CustomTableTool
+         */
+        private static $_customTableTool;
 		
 		/**
 		 * ID of the page in the zcm_meta table.
@@ -716,6 +723,21 @@ if (!class_exists('Zymurgy'))
 			}
 		}
 
+        /**
+         * Get an instance of the CustomTableTool for working with custom tables
+         * @static
+         * @return CustomTableTool
+         */
+        public static function customTableTool()
+        {
+            require_once self::$root . "/zymurgy/customlib.php";
+            if (!isset(self::$_customTableTool))
+            {
+                self::$_customTableTool = new CustomTableTool();
+            }
+            return self::$_customTableTool;
+        }
+
 		/**
 		 * Properly strip the slashes from the provided text. Some PHP
 		 * implementations implement stripslashes() differently, and this
@@ -900,7 +922,66 @@ if (!class_exists('Zymurgy'))
 		{
 			return Zymurgy::checkaclby('name', $aclname, $permission, $default);
 		}
-		
+
+        /**
+         * Get the ID for an ACL by name; 0 if no ACL found
+         *
+         * @static
+         * @param $aclname string
+         * @return int
+         */
+        public static function getaclbyname($aclname)
+        {
+            return intval(Zymurgy::$db->getParam("SELECT `id` FROM `zcm_acl` WHERE `name`={0}",array($aclname)));
+        }
+
+        /**
+         * Get the ID for a group by name; 0 of no group found
+         *
+         * @static
+         * @param $groupname
+         * @return int
+         */
+        public static function getgroupbyname($groupname)
+        {
+            return intval(Zymurgy::$db->getParam("SELECT `id` FROM `zcm_groups` WHERE `name`={0}",array($groupname)));
+        }
+
+        /**
+         * Sets the
+         *
+         * @static
+         * @param $aclId int
+         * @param $groupId int
+         * @param $permissions array
+         */
+        public static function setaclperms($aclId, $groupId, $permissions)
+        {
+            Zymurgy::$db->runParam("DELETE FROM `zcm_aclitem` WHERE (`zcm_acl`={0}) AND (`group`={1})",
+                array($aclId, $groupId));
+            foreach ($permissions as $permission) {
+                Zymurgy::$db->insert('zcm_aclitem', array(
+                    'zcm_acl' => $aclId,
+                    'group' => $groupId,
+                    'permission' => $permission,
+                ));
+            }
+            Zymurgy::$db->setDispOrder('zcm_aclitem');
+        }
+
+        /**
+         * Create a new ACL and get its ID
+         *
+         * @static
+         * @param $aclName string
+         * @return int
+         */
+        public static function createacl($aclName)
+        {
+            Zymurgy::$db->insert('zcm_acl', array('name'=>$aclName));
+            return Zymurgy::$db->insert_id();
+        }
+
 		/**
 		 * Get general site content.  Create new tag if this one doesn't exist.
 		 *
@@ -2286,6 +2367,17 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::$db->run("DELETE FROM zcm_flavourtext WHERE `id`=$fid");
 			}
 		}
+
+        /**
+         * Returns the SQL type for the given inputspec
+         *
+         * @param string $inputspec
+         * @return string
+         */
+        public static function inputspec2sqltype($inputspec)
+        {
+            return InputWidget::inputspec2sqltype($inputspec);
+        }
 
 		static function GetActiveFlavourCode()
 		{

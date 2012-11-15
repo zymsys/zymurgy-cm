@@ -3581,7 +3581,9 @@ class InputWidget
 
 	function inputspec2sqltype($inputspec)
 	{
-		list($type,$params) = explode('.',$inputspec,2);
+        $typeAndParams = explode('.', $inputspec, 2);
+        if (count($typeAndParams) == 1) $typeAndParams[] = '';
+		list($type,$params) = $typeAndParams;
 		$pp = explode('.',$params);
 
 		if(

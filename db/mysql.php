@@ -373,5 +373,89 @@ class Zymurgy_DB
 		Zymurgy_DB::free_result($ri);
 		return $tables;
 	}
+
+    /**
+     * Assemble an update statement from components, and run it.
+     *
+     * @param $table string Table name
+     * @param $where string Where clause
+     * @param $data array Key value pairs with column names and contents
+     * @param bool $escape Escape names and values? (defaults to true)
+     */
+    public function update($table, $where, $data, $escape = true)
+    {
+        if ($escape)
+        {
+            $table = $this->escape_string($table);
+        }
+        $sql = "UPDATE `$table` SET ";
+        $updates = array();
+        foreach ($data as $columnName => $value)
+        {
+            if ($escape)
+            {
+                $columnName = $this->escape_string($columnName);
+                $value = $this->escape_string($value);
+            }
+            $updates[] = "`$columnName`='$value'";
+        }
+        $sql .= implode(", ", $updates) . " WHERE " . $where;
+        $this->run($sql);
+    }
+
+    public function insert($table, $data, $escape = true)
+    {
+        if ($escape)
+        {
+            $table = $this->escape_string($table);
+        }
+        $sql = "INSERT INTO `$table` (`";
+        if ($escape)
+        {
+            $escaped = array();
+            foreach ($data as $columnName => $value)
+            {
+                if ($escape)
+                {
+                    $columnName = $this->escape_string($columnName);
+                    $value = $this->escape_string($value);
+                }
+                $escaped[$columnName] = $value;
+            }
+            $data = $escaped;
+        }
+        $sql .= implode("`, `", array_keys($data));
+        $sql .= "`) VALUES ('";
+        $sql .= implode("', '", array_values($data));
+        $sql .= "')";
+        $this->run($sql);
+    }
+
+    public function setDispOrder($table)
+    {
+        $this->run("UPDATE `$table` SET `disporder`=`id` WHERE `disporder` IS NULL");
+    }
+
+    public function runParam($sql, $params)
+    {
+        $sql = $this->param($params, $sql);
+        return $this->run($sql);
+    }
+
+    public function param($params, $sql)
+    {
+        $replace = array();
+        foreach ($params as $key => $value) {
+            $replace['{' . $key . '}'] = "'" . $this->escape_string($value) . "'";
+        }
+        $sql = str_replace(array_keys($replace), array_values($replace), $sql);
+        return $sql;
+    }
+
+    public function getParam($sql, $params)
+    {
+        $sql = $this->param($params, $sql);
+        return $this->get($sql);
+    }
 }
 ?>

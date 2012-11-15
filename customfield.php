@@ -15,10 +15,9 @@ $t = 0 + $_GET['t'];
 
 require_once('cmo.php');
 include 'datagrid.php';
-include 'customlib.php';
 
 $crumbs = array("customtable.php"=>"Custom Tables");
-tablecrumbs($t);
+Zymurgy::customTableTool()->tablecrumbs($t);
 $crumbs["customfield.php?t=$t"] = 'Fields';
 if (array_key_exists('editkey',$_GET) | (array_key_exists('action', $_GET) && $_GET['action'] == 'insert'))
 {
@@ -33,18 +32,16 @@ echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 echo Zymurgy::YUI('connection/connection-min.js');
 
 /**
- * Delete Event Handler. Performs the actual DROP operation on the Custom Table.
+ * Delete Event Handler. Performs the actual ALTER/DROP operation on the Custom Table.
  *
  * @param $values mixed The values of the row to be deleted. Keys are in 
  * tablename.columname format.
  */
 function OnDelete($values)
 {
-	global $t;
-	$tbl = gettable($t);
-	$sql = "alter table `{$tbl['tname']}` drop `{$values['zcm_customfield.cname']}`";
-	mysql_query($sql) or die("Unabel to remove column ($sql): ".mysql_error());
-	return true; //Return false to override delete.
+    $fieldId = $values['zcm_customfield.id'];
+    Zymurgy::customTableTool()->dropColumn($fieldId);
+	return false; //Return false to override delete.
 }
 
 /**
@@ -56,53 +53,24 @@ function OnDelete($values)
  */
 function OnBeforeUpdate($values)
 {
-	$okname = okname($values['zcm_customfield.cname']);
-	if ($okname!==true)
+	$okName = Zymurgy::customTableTool()->okname($values['zcm_customfield.cname']);
+	if ($okName!==true)
 	{
-		return $okname;
+		return $okName;
 	}
-	global $t;
-	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
-	$sql = "select * from zcm_customfield where id={$values['zcm_customfield.id']}";
-	$ri = mysql_query($sql) or die("Unable to get old field info ($sql): ".mysql_error());
-	$old = mysql_fetch_array($ri) or die ("No such field ($sql)");
-	if (($old['cname']!=$values['zcm_customfield.cname']) || ($old['inputspec']!=$values['zcm_customfield.inputspec']))
-	{
-		$oldiw = InputWidget::GetFromInputSpec($old['inputspec']);
-		$newiw = InputWidget::GetFromInputSpec($values['zcm_customfield.inputspec']);
-		//echo "<div>[".$oldiw->SupportsFlavours().",".$newiw->SupportsFlavours()."]</div>"; exit;
-		if ($oldiw->SupportsFlavours() && !$newiw->SupportsFlavours())
-		{
-			//Moving from flavoured to vanilla
-			Zymurgy::ConvertFlavouredToVanilla($tbl['tname'],$old['cname'],$values['zcm_customfield.inputspec']);
-		}
-		elseif (!$oldiw->SupportsFlavours() && $newiw->SupportsFlavours())
-		{
-			//Moving from vanilla to flavoured
-			//echo "<div>v2f: {$tbl['tname']} - {$old['cname']}</div>"; exit;
-			Zymurgy::ConvertVanillaToFlavoured($tbl['tname'],$old['cname']);
-		}
-		//Do this even if we converted to/from flavoured to support column rename
-		//Column name or type has changed, update the db.
-		$renamecolumn = false; //Done right here
-		$sql = "alter table `{$tbl['tname']}` change `{$old['cname']}` `{$values['zcm_customfield.cname']}` $sqltype";
-		mysql_query($sql) or die("Unable to change field ($sql): ".mysql_error());
-	}
-	if ($old['indexed']!=$values['zcm_customfield.indexed'])
-	{
-		//Add or remove an index
-		if ($values['zcm_customfield.indexed']=='Y')
-		{
-			$sql = "alter table `{$tbl['tname']}` add index(`{$values['zcm_customfield.cname']}`)";
-		}
-		else
-		{
-			$sql = "alter table `{$tbl['tname']}` drop index(`{$values['zcm_customfield.cname']}`)";
-		}
-		mysql_query($sql) or die("Can't change index ($sql): ".mysql_error());
-	}
-	return $values; // Change values you want to alter before the update occurs.
+    Zymurgy::customTableTool()->updateField(
+        $values['zcm_customfield.id'],
+        array(
+            'cname'=>$values['zcm_customfield.cname'],
+            'inputspec'=>$values['zcm_customfield.inputspec'],
+            'indexed'=>$values['zcm_customfield.indexed'],
+            'caption'=>$values['zcm_customfield.caption'],
+            'gridheader'=>$values['zcm_customfield.gridheader'],
+            'globalacl'=>$values['zcm_customfield.globalacl'],
+            'acl'=>$values['zcm_customfield.acl'],
+        )
+    );
+    return false; //Allow customTableTool to update the row, not the datagrid
 }
 
 /**
@@ -114,21 +82,24 @@ function OnBeforeUpdate($values)
  */
 function OnBeforeInsert($values)
 {
-	$okname = okname($values['zcm_customfield.cname']);
+	$okname = Zymurgy::customTableTool()->okname($values['zcm_customfield.cname']);
 	if ($okname!==true)
 	{
 		return $okname;
 	}
-	global $t;
-	$tbl = gettable($t);
-	$sqltype = inputspec2sqltype($values['zcm_customfield.inputspec']);
-	$sql = "alter table `{$tbl['tname']}` add `{$values['zcm_customfield.cname']}` $sqltype";
-	mysql_query($sql) or die("Unable to add column ($sql): ".mysql_error());
-	if ($values['zcm_customfield.indexed']=='Y')
-	{
-		$sql = "alter table `{$tbl['tname']}` add index(`{$values['zcm_customfield.cname']}`)";
-	}
-	return $values; // Change values you want to alter before the insert occurs.
+    global $t;
+    Zymurgy::customTableTool()->addField(intval($t),
+        array(
+            'cname'=>$values['zcm_customfield.cname'],
+            'inputspec'=>$values['zcm_customfield.inputspec'],
+            'indexed'=>$values['zcm_customfield.indexed'],
+            'caption'=>$values['zcm_customfield.caption'],
+            'gridheader'=>$values['zcm_customfield.gridheader'],
+            'globalacl'=>$values['zcm_customfield.globalacl'],
+            'acl'=>$values['zcm_customfield.acl'],
+        )
+    );
+    return false; //Allow customTableTool to insert the row, not the datagrid
 }
 
 $ds = new DataSet('zcm_customfield','id');
