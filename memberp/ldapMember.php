@@ -94,7 +94,7 @@ class ldapMember extends ZymurgyMember
      * @param string $password
      * @return boolean
      */
-    public function memberdologin($userId, $password)
+    public function memberdologin($userId, $password, $writeCookie = true)
     {
         $ldapServer = Zymurgy::$config[self::MEMBERSHIP_LDAP_SERVER_ADDRESS];
         $link = ldap_connect($ldapServer);

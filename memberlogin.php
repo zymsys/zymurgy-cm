@@ -5,7 +5,8 @@ require_once 'cmo.php';
 if ((!array_key_exists('MembershipLoginForm',Zymurgy::$config))
 	|| empty(Zymurgy::$config['MembershipLoginForm']))
 {
-	$myurl = strtolower(array_shift(explode('/',$_SERVER['SERVER_PROTOCOL'],2)));
+    $urlParts = explode('/', $_SERVER['SERVER_PROTOCOL'], 2);
+    $myurl = strtolower(array_shift($urlParts));
 	$myurl .= '://'.$_SERVER['SERVER_NAME'].'/'.$_SERVER['REQUEST_URI'];
 	Zymurgy::$config['MembershipLoginForm'] = <<<HEREDOC
 <form class="MemberLogin" method="post" action="$myurl">
