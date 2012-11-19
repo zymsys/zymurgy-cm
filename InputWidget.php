@@ -626,6 +626,7 @@ class ZIW_Money extends ZIW_Base
 		$m = $value;
 		if ($this->extra['UsePennies'])
 			$m = $m / 100;
+        $m = doubleval($m);
 		$m = '$'.number_format($m,2,'.',',');
 		echo "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$m\" />";
 	}
