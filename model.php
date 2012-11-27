@@ -644,7 +644,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 					$vals[] = $this->setValue($rowdata[$cname]);
 				}
 			}
-            if (isset($this->tablechain[0]))
+            if (isset($this->tablechain[2]))
             {
                 $cname = $this->tablechain[0]['tname'];
                 $cols[] = "`" . $cname . "`"; //Allow parent relationship in insert
