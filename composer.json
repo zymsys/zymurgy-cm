@@ -14,6 +14,13 @@
                 "url": "http://download.cksource.com/CKEditor/CKEditor/CKEditor%203.2/ckeditor_3.2.tar.gz",
                 "type": "zip"
             }
+        },
+	{
+            "name": "minmb/phpmailer",
+            "dist": {
+                "url": "https://github.com/minmb/phpmailer.git",
+                "type": "vcs"
+            }
         }
     ],
     "require": {
