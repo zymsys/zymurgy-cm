@@ -14,6 +14,6 @@
         }
     ],
     "require": {
-        "minmb/phpmailer": "*"
+        "minmb/phpmailer": "dev-master"
     }
 }
