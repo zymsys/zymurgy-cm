@@ -15,7 +15,7 @@
                 "type": "zip"
             }
         }
-    ]
+    ],
     "require": {
         "minmb/phpmailer": "dev-master",
         "ckeditor/ckeditor": "3.2"
