@@ -2,3 +2,5 @@ custom
 config
 ckeditor
 phpmailer
+composer.lock
+vendor

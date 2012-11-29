@@ -7,25 +7,13 @@
         "type": "vcs"
     },
     "repositories": [
-        {
-            "type": "package",
-            "name": "ckeditor/ckeditor",
-            "version": "3.2",
-            "dist": {
-                "url": "http://download.cksource.com/CKEditor/CKEditor/CKEditor%203.2/ckeditor_3.2.tar.gz",
-                "type": "zip"
-            }
-        },
 	{
             "name": "minmb/phpmailer",
-            "dist": {
-                "url": "https://github.com/minmb/phpmailer.git",
-                "type": "vcs"
-            }
+            "type": "vcs",
+            "url": "https://github.com/minmb/phpmailer.git"
         }
     ],
     "require": {
-        "minmb/phpmailer": "dev-master",
-        "ckeditor/ckeditor": "3.2"
+        "minmb/phpmailer": "*"
     }
 }
