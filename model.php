@@ -617,7 +617,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 			{
 				if (array_key_exists($cname, $rowdata))
 				{
-					$sets[] = "`$cname`='".Zymurgy::$db->escape_string($rowdata[$cname])."'";
+					$sets[] = "`$cname`=" . $this->setValue($rowdata[$cname]);
 				}
 			}
 			if (!$sets) 
@@ -641,9 +641,15 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 				if (array_key_exists($cname, $rowdata))
 				{
 					$cols[] = "`$cname`";
-					$vals[] = "'".Zymurgy::$db->escape_string($rowdata[$cname])."'";
+					$vals[] = $this->setValue($rowdata[$cname]);
 				}
 			}
+            if (isset($this->tablechain[2]))
+            {
+                $cname = $this->tablechain[0]['tname'];
+                $cols[] = "`" . $cname . "`"; //Allow parent relationship in insert
+                $vals[] = $this->setValue($rowdata[$cname]);
+            }
 			if (!$cols) 
 			{
 				throw new ZymurgyModelException("Insert failed: no row data for any allowed/known columns", ZymurgyModelException::$MISSING_COLUMN);
@@ -707,6 +713,12 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
         $allowedColumns = array_keys($this->checkacl('Read',$aclName));
         $columns = $this->requestedColumns ? array_intersect($allowedColumns, $this->requestedColumns) : $allowedColumns;
         return $columns;
+    }
+
+    private function setValue($str)
+    {
+        if ($str === null) return 'null';
+        return "'" . Zymurgy::$db->escape_string($str) . "'";
     }
 
 }
