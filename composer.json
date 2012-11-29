@@ -1,6 +1,7 @@
 {
     "name": "zymsys/zymurgy-cm",
     "version": "1.1.0",
+    "minimum-stability": "dev",
     "dist": {
         "url": "http://github.com/zymsys/zymurgy-cm",
         "type": "vcs"
