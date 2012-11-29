@@ -4,5 +4,18 @@
     "dist": {
         "url": "http://github.com/zymsys/zymurgy-cm",
         "type": "vcs"
+    },
+    "repositories": [
+        "type": "package",
+        "name": "ckeditor/ckeditor",
+        "version": "3.2",
+        "dist": {
+           "url": "http://download.cksource.com/CKEditor/CKEditor/CKEditor%203.2/ckeditor_3.2.tar.gz",
+           "type": "zip"
+        }
+    ]
+    "require": {
+        "minmb/phpmailer": "dev-master",
+        "ckeditor/ckeditor": "3.2"
     }
 }
