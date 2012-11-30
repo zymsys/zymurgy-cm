@@ -162,7 +162,7 @@
 				null);
 			$locales["en"] = $defaultLocale;
 
-			$di = opendir(Zymurgy::$root."/zymurgy/include/");
+			$di = opendir(Zymurgy::getFilePath("~include/"));
 			while (($entry = readdir($di)) !== false)
 			{
 				if(preg_match("/locale.[A-z][A-z].xml/", $entry))

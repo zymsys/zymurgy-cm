@@ -180,6 +180,15 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static $root;
 
+        /**
+         * Path from the document root of the site to the Zymurgy:CM installation directory.
+         *
+         * This is automatically initialized when this file is included.
+         *
+         * @var string
+         */
+        public static $home;
+
 		/**
 		 * A connection instance for database access.
 		 *
@@ -573,7 +582,36 @@ if (!class_exists('Zymurgy'))
 				Zymurgy::RequireOnceCore(false, "http://ajax.googleapis.com/ajax/libs/jqueryui/$version/themes/base/jquery-ui.css"). 
 				Zymurgy::RequireOnceCore(false,"http://ajax.googleapis.com/ajax/libs/jqueryui/$version/jquery-ui.min.js");
 		}
-		
+
+        public static function getFilePath($path)
+        {
+            if ($path[0] == '~')
+            {
+                $path = __DIR__ . DIRECTORY_SEPARATOR . substr($path, 1);
+            }
+            return $path;
+        }
+
+        public static function getUrlPath($path)
+        {
+            if ($path[0] == '~')
+            {
+                if (!isset(Zymurgy::$home))
+                {
+                    $docRoot = explode(DIRECTORY_SEPARATOR, $_SERVER['DOCUMENT_ROOT']);
+                    $myPath = explode(DIRECTORY_SEPARATOR, __DIR__);
+                    while ($docRoot && $myPath && ($docRoot[0] == $myPath[0]))
+                    {
+                        array_shift($docRoot);
+                        array_shift($myPath);
+                    }
+                    Zymurgy::$home = '/' . implode('/', $myPath) . '/';
+                }
+                $path = Zymurgy::$home . substr($path, 1);
+            }
+            return $path;
+        }
+
 		/**
 		 * Look up a bookmark and return the URI to it.  Bookmarks are so that if your users change the names of
 		 * links (and the URI with them) you're app can still get the current valid URI for that page.  Because
@@ -2502,9 +2540,12 @@ if (!class_exists('Zymurgy'))
 	{
 		date_default_timezone_set('America/New_York');
 	}
-	include(Zymurgy::$root."/zymurgy/config/config.php");
-	Zymurgy::$config = $ZymurgyConfig;
-	unset($ZymurgyConfig);
+    Zymurgy::$config = include(Zymurgy::getFilePath("~config/config.php"));
+    if (!Zymurgy::$config)
+    { //Legacy config file support
+    	Zymurgy::$config = $ZymurgyConfig;
+        unset($ZymurgyConfig);
+    }
 	if (array_key_exists('Default Timezone', Zymurgy::$config))
 	{
 		date_default_timezone_set(Zymurgy::$config['Default Timezone']);
@@ -2533,7 +2574,7 @@ if (!class_exists('Zymurgy'))
 	{
 		Zymurgy::$config['database'] = 'mysql';
 	}
-	require_once(Zymurgy::$root."/zymurgy/db/".Zymurgy::$config['database'].".php");
+	require_once(Zymurgy::getFilePath("~db/".Zymurgy::$config['database'].".php"));
 	Zymurgy::$db = new Zymurgy_DB();
 	if (isset(Zymurgy::$config['characterset']))
 	{
@@ -2557,11 +2598,11 @@ if (!class_exists('Zymurgy'))
 	switch (array_key_exists('ConvertToolset',Zymurgy::$config) ? Zymurgy::$config['ConvertToolset'] : 'ImageMagick')
 	{
 		case 'GD':
-			require_once(Zymurgy::$root."/zymurgy/include/ImageHandlerGD.php");
+			require_once(Zymurgy::getFilePath("~include/ImageHandlerGD.php"));
 			Zymurgy::$imagehandler = new ZymurgyImageHandlerGD();
 			break;
 		default:
-			require_once(Zymurgy::$root."/zymurgy/include/ImageHandlerIM.php");
+			require_once(Zymurgy::getFilePath("~include/ImageHandlerIM.php"));
 			Zymurgy::$imagehandler = new ZymurgyImageHandlerImageMagick();
 			break;
 	}

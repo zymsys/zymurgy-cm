@@ -3648,8 +3648,8 @@ InputWidget::Register('gmap',new ZIW_GMap());
 InputWidget::Register("page", new ZIW_Page());
 InputWidget::Register("databasetable", new ZIW_DatabaseTable());
 
-include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
-include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
+include_once(Zymurgy::getFilePath("~PluginBase.php"));
+include_once(Zymurgy::getFilePath("~plugins/TagCloud.php"));
 
 if(class_exists("PIW_CloudTagInput"))
 {
@@ -3659,6 +3659,6 @@ if(class_exists("PIW_CloudTagInput"))
 
 //InputWidget::Register('',new ZIW_);
 
-if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
-	require_once(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php');
+if (file_exists(Zymurgy::getFilePath('~custom/CustomWidgets.php')))
+	require_once(Zymurgy::getFilePath('~custom/CustomWidgets.php'));
 ?>
