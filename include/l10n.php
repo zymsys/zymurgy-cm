@@ -157,8 +157,8 @@
 
 			$defaultLocale = new ZymurgyLocale(
 				"en",
-				Zymurgy::$root."/zymurgy/include/locale.en.xml",
-				Zymurgy::$root."/zymurgy/custom/locale.en.xml",
+				Zymurgy::getFilePath("~include/locale.en.xml"),
+				Zymurgy::getFilePath("~custom/locale.en.xml"),
 				null);
 			$locales["en"] = $defaultLocale;
 
@@ -173,8 +173,8 @@
 					{
 						$locale = new ZymurgyLocale(
 							$languageCode,
-							Zymurgy::$root."/zymurgy/include/".$entry,
-							Zymurgy::$root."/zymurgy/custom/".$entry,
+							Zymurgy::getFilePath("~include/".$entry),
+							Zymurgy::getFilePath("~custom/".$entry),
 							$defaultLocale);
 
 						$locales[$languageCode] = $locale;

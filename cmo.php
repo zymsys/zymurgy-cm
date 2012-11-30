@@ -1713,6 +1713,14 @@ if (!class_exists('Zymurgy'))
 			self::$MemberProvider->memberlogout($logoutpage);
 		}
 
+        static public function memberCheckPassword($userName, $password)
+        {
+            Zymurgy::initializemembership();
+            $stored = Zymurgy::$db->getParam("SELECT `password` FROM `zcm_member` WHERE `username`={0}",
+                array($userName));
+            return self::$MemberProvider->checkPassword($password, $stored);
+        }
+
 		/**
 		 * Handle new signups.  Takes a form (from the Form plugin), the field names for the user ID, password and password confirmation,
 		 * and the link to send users to after registration.  Returns UI HTML.

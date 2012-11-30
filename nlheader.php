@@ -12,7 +12,7 @@ include("cmo.php");
 <head>
 <title><?= Zymurgy::GetLocaleString("Common.ProductName") ?> Content Management Login</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
+    <base href="http://<?php echo $_SERVER['HTTP_HOST'] . Zymurgy::getUrlPath('~') ?>">
 <style type="text/css">
 <!--
 body {

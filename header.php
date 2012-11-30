@@ -16,7 +16,7 @@ function getAppRoot()
 
 $ZymurgyRoot = getAppRoot();
 
-require_once("$ZymurgyRoot/zymurgy/cmo.php");
+require_once('cmo.php');
 
 if (array_key_exists('showerrors',$_GET))
 {
