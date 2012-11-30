@@ -59,13 +59,13 @@
  */
 
 	// Include the model
-	require_once(Zymurgy::$root."/zymurgy/include/media.model.php");
+	require_once(Zymurgy::getFilePath("~include/media.model.php"));
 
 	class MediaFileInstaller
 	{
 		static function Upgrade()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+			require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 			$tableDefinitions = array();
 

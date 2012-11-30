@@ -12,7 +12,7 @@ class Calendar extends PluginBase
 
 	function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+		require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 		$tableDefinitions = array(
 			array(

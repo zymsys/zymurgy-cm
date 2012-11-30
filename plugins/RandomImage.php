@@ -123,7 +123,7 @@ BLOCK;
 
 	private function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+		require_once(Zymurgy::getFilePath('~installer/upgradelib.php'));
 
 		$tableDefinitions = array(
 			array(
@@ -161,7 +161,8 @@ BLOCK;
 			"' ORDER BY rand() LIMIT 0, 1";
 		$image = Zymurgy::$db->get($sql);
 
-		return "<img src=\"/zymurgy/file.php?dataset=zcm_galleryimage&amp;datacolumn=image&amp;id=".
+		return "<img src=\"" . Zymurgy::getUrlPath("/zymurgy/file.php") .
+            "?dataset=zcm_galleryimage&amp;datacolumn=image&amp;id=".
 			$image["id"].
 			"&amp;mime=".
 			$image["image"].
