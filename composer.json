@@ -1,10 +1,18 @@
 {
-    "name": "zymsys/zymurgy-cm",
+    "name": "zymurgy/zymurgy-cm",
+    "type": "library",
     "description": "Zymurgy:CM Content Management",
     "license":"MIT",
-    "version": "1.1.0",
-    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Vic Metcalfe",
+            "email": "vic@acm.org",
+            "homepage": "http://vicmetcalfe.com",
+            "role": "Developer"
+        }
+    ],
     "require": {
+        "php": ">=5.3.0",
         "minmb/phpmailer": "dev-master"
     }
 }
