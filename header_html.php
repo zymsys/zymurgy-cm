@@ -26,6 +26,9 @@ echo Zymurgy::YUI("container/container-min.js");
 echo Zymurgy::YUI("menu/menu-min.js");
 ?>
 <script type="text/javascript">
+window.zymurgy = {
+    home: '<?php echo Zymurgy::$home; ?>'
+};
 YAHOO.util.Event.onContentReady("zcmnavContent", function () {
 	var oMenu = new YAHOO.widget.Menu("zcmnavContent", {
 											position: "static",

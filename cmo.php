@@ -193,7 +193,7 @@ if (!class_exists('Zymurgy'))
 		 * A connection instance for database access.
 		 *
 		 * This is automatically initialized when this file is included. The
-		 * individual database provider classes are in the /zymurgy/db folder.
+		 * individual database provider classes are in the ~db folder.
 		 * The class loaded is set in the "database" parameter in
 		 * {@link config/config.php}.
 		 *
@@ -488,7 +488,8 @@ if (!class_exists('Zymurgy'))
 				case 'css':
 					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
 				case 'less':
-					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/zymurgy/lesscss.php?src=".urlencode($baseurl.$src)."\" />\r\n";
+					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"" .
+                        Zymurgy::getUrlPath("~lesscss.php?src=") . urlencode($baseurl.$src)."\" />\r\n";
 				default:
 					return "    <!-- Request for non supported resource: $src -->\r\n";
 			}
@@ -768,7 +769,7 @@ if (!class_exists('Zymurgy'))
          */
         public static function customTableTool()
         {
-            require_once self::$root . "/zymurgy/customlib.php";
+            require_once self::getFilePath("~customlib.php");
             if (!isset(self::$_customTableTool))
             {
                 self::$_customTableTool = new CustomTableTool();
@@ -859,15 +860,15 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function table_read($table,$rowid = false)
 		{
-			require_once Zymurgy::$root."/zymurgy/model.php";
+			require_once Zymurgy::getFilePath("~model.php");
 			$m = ZymurgyModel::factory($table);
 			return $m->read($rowid);
 		}
 		
 		public static function table_read_filtered($table,$filter)
 		{
-			require_once Zymurgy::$root."/zymurgy/model.php";
-			$m = ZymurgyModel::factory($table);
+            require_once Zymurgy::getFilePath("~model.php");
+            $m = ZymurgyModel::factory($table);
 			$m->addFilter($filter);
 			return $m->read(false);
 		}
@@ -882,8 +883,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function table_write($table,$rowdata)
 		{
-			require_once Zymurgy::$root."/zymurgy/model.php";
-			$m = ZymurgyModel::factory($table);
+            require_once Zymurgy::getFilePath("~model.php");
+            $m = ZymurgyModel::factory($table);
 			return $m->write($rowdata);
 		}
 		
@@ -897,8 +898,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function table_delete($table,$rowid)
 		{
-			require_once Zymurgy::$root."/zymurgy/model.php";
-			$m = ZymurgyModel::factory($table);
+            require_once Zymurgy::getFilePath("~model.php");
+            $m = ZymurgyModel::factory($table);
 			return $m->delete($rowid);
 		}
 
@@ -912,9 +913,9 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function table_view($table,$rowid = 0,$returnURL,$submitValue='Save')
 		{
-			require_once Zymurgy::$root."/zymurgy/view.php";
-			require_once Zymurgy::$root."/zymurgy/model.php";
-			$m = ZymurgyModel::factory($table);
+            require_once Zymurgy::getFilePath("~view.php");
+            require_once Zymurgy::getFilePath("~model.php");
+            $m = ZymurgyModel::factory($table);
 			$v = ZymurgyView::factory($m);
 			$params = array('table'=>$table,'rurl'=>$returnURL);
 			if ($rowid)
@@ -930,7 +931,7 @@ if (!class_exists('Zymurgy'))
 			{
 				$data = array();
 			}
-			$v->showform('/zymurgy/data.php',$params,$submitValue,$data);
+			$v->showform(Zymurgy::getUrlPath('~data.php'),$params,$submitValue,$data);
 		}
 		
 		/**
@@ -1107,7 +1108,7 @@ if (!class_exists('Zymurgy'))
 						}
 						//Make sure we have the requested thumb.
 						$requestedSize = str_replace('.','x',$requestedSize);
-						require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+						require_once(Zymurgy::getFilePath("~include/Thumb.php"));
 						$ext = Thumb::mime2ext($row['body']);
 						$thumbName = Zymurgy::$root."/UserFiles/DataGrid/zcm_sitetext.body/{$row['id']}thumb$requestedSize.$ext";
 						if (!file_exists($thumbName))
@@ -1140,7 +1141,7 @@ if (!class_exists('Zymurgy'))
 						$jstag = str_replace('"','\"',$tag);
 						$urltag = urlencode($jstag);
 						$tag = htmlspecialchars($tag);
-						$link = "/zymurgy/sitetextdlg.php?&st=$urltag&extra=".urlencode($extra);
+						$link = Zymurgy::getUrlPath("~sitetextdlg.php?&st=$urltag&extra=".urlencode($extra));
 						$t = "<span id=\"ST$tag\">$t</span><script>
 			YAHOO.Zymurgy.container.tt$Zymurgy_tooltipcount = new YAHOO.widget.Tooltip(\"tt$Zymurgy_tooltipcount\",
 													{ context:\"ST$jstag\",
@@ -1183,10 +1184,8 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function headtags($ispage = true)
 		{
-			if (file_exists(Zymurgy::$root."/zymurgy/custom/render.php"))
-				include_once(Zymurgy::$root."/zymurgy/custom/render.php");
-			if (file_exists(Zymurgy::$root."/caseo/custom/render.php"))
-				include_once(Zymurgy::$root."/caseo/custom/render.php");
+			if (file_exists(Zymurgy::getFilePath("~custom/render.php")))
+				include_once(Zymurgy::getFilePath("~custom/render.php"));
 			$s = Zymurgy::$db->escape_string($_SERVER['PHP_SELF']);
 			if (($s=='') || ($s=='/'))
 				$s = '/index.php';
@@ -1245,7 +1244,7 @@ if (!class_exists('Zymurgy'))
 				$r[] = "\t<meta name=\"keywords\" content=\"".htmlspecialchars($row['keywords'])."\" />";
 			if (array_key_exists('zymurgy',$_COOKIE))
 				$r[] = Zymurgy::adminhead();
-			$r[] = trim(Zymurgy::RequireOnce('/zymurgy/include/cmo.js'));
+			$r[] = trim(Zymurgy::RequireOnce(Zymurgy::getUrlPath('~include/cmo.js')));
 			if (array_key_exists('tracking',Zymurgy::$config) && (Zymurgy::$config['tracking']))
 			{
 				//Log the pageview
@@ -1330,7 +1329,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function sitemap()
 		{
-			include_once(Zymurgy::$root."/zymurgy/sitemapsclass.php");
+			include_once(Zymurgy::getFilePath("~sitemapsclass.php"));
 
 			$sm = new Zymurgy_SiteMap(Zymurgy::$config['sitehome']);
 
@@ -1459,11 +1458,11 @@ if (!class_exists('Zymurgy'))
 		 */
 		public static function mkplugin($plugin,$instance,$extra='',$private=0)
 		{
-			require_once(Zymurgy::$root."/zymurgy/PluginBase.php");
-			$pluginsrc_core=Zymurgy::$root."/zymurgy/plugins/$plugin.php";
+			require_once(Zymurgy::getFilePath("~PluginBase.php"));
+			$pluginsrc_core=Zymurgy::getFilePath("~plugins/$plugin.php");
 			if (!file_exists($pluginsrc_core))
 			{
-				$pluginsrc_custom = Zymurgy::$root."/zymurgy/custom/plugins/$plugin.php";
+				$pluginsrc_custom = Zymurgy::getFilePath("~custom/plugins/$plugin.php");
 				if (!file_exists($pluginsrc_custom))
 					die("No such plugin: $pluginsrc_core or $pluginsrc_custom");
 				$pluginsrc = $pluginsrc_custom;
@@ -1600,7 +1599,7 @@ if (!class_exists('Zymurgy'))
 				}
 				else
 				{
-					require_once(Zymurgy::$root."/zymurgy/memberp/".Zymurgy::$config['MemberProvider'].".php");
+					require_once(Zymurgy::getFilePath("~memberp/".Zymurgy::$config['MemberProvider'].".php"));
 					self::$MemberProvider = new Zymurgy::$config['MemberProvider'];
 				}
 			}
@@ -1635,7 +1634,7 @@ if (!class_exists('Zymurgy'))
 		 * Authenticate for Z:CM features as Zymurgy:CM - User (1), Zymurgy:CM - Administrator (2) or
 		 * Zymurgy:CM - Webmaster (3).  Corresponding authlevels in parenthesis.
 		 * 
-		 * If the user doesn't have the required priveledge then redirect to /zymurgy/login.php
+		 * If the user doesn't have the required priveledge then redirect to ~login.php
 		 * 
 		 * @param int $level
 		 */
@@ -1857,7 +1856,7 @@ if (!class_exists('Zymurgy'))
 		 */
 		static function GetPHPMailer()
 		{
-			require_once(Zymurgy::$root."/zymurgy/phpmailer/class.phpmailer.php");
+			require_once(Zymurgy::getFilePath("~phpmailer/class.phpmailer.php"));
 			$mail = new PHPMailer();
 			$mail->Mailer = array_key_exists('Mailer Type',Zymurgy::$config) ? Zymurgy::$config['Mailer Type'] : 'mail';
 			if ($mail->Mailer == 'smtp')
@@ -1884,7 +1883,7 @@ if (!class_exists('Zymurgy'))
 			$uploadpath = '',
 			$ext = 'jpg')
 		{
-			require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+			require_once(Zymurgy::getFilePath("~include/Thumb.php"));
 			Thumb::MakeThumbs($datacolumn,$id,$targets,$uploadpath,$ext);
 		}
 
@@ -2531,7 +2530,7 @@ if (!class_exists('Zymurgy'))
 
 	
 	ZymurgyBase::$root = ZymurgyBase::getAppRoot();
-    $customCMO = ZymurgyBase::$root . "/zymurgy/custom/cmo.php";
+    $customCMO = ZymurgyBase::getFilePath("~custom/cmo.php");
     if (file_exists($customCMO))
     {
         require_once $customCMO;

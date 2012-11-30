@@ -2,6 +2,8 @@ var autosaveform; //Global...  What form are we auto-saving values from?
 var lastdraft = new LastDraft(); //Global...  Used to skip writing drafts when nothing has changed.
 var fckeditorcount; //Global... How many fckeditors are we expecting to render?
 var fckeditorsrendered = 0; //Global...  How many fckeditors have already rendered?
+var autoSaveService = window.zymurgy ? 'http://' + window.location.hostname + window.zymurgy.home : '';
+autoSaveService += 'include/autosave.php';
 
 var loader = new YAHOO.util.YUILoader({
     require: ["json","connection"],
@@ -19,7 +21,7 @@ function Form2JSON(form) {
 	this.names = new Array();
 	this.keys = new Array();
 	var me = this;
-	var walk = function(parent) {
+	var walk = this.walk = function(parent) {
 		var el = parent.firstChild;
 		while (el !== null) {
 			//Ignore OPTION elements.  Keep SELECT elements instead.
@@ -137,7 +139,7 @@ function SetSavedDraftHtml(html) {
 }
 
 function SaveDraft(formname,onSuccess) {
-	var json = Form2JSON(formname);
+	var json = new Form2JSON(formname);
 	var jsonstr = json.getJSON();
 	if (lastdraft.isLastDraft(jsonstr)) {
 		//Do nothing because nothing has changed in the draft data.
@@ -152,7 +154,7 @@ function SaveDraft(formname,onSuccess) {
 	var h = d.getHours();
 	var m = d.getMinutes();
 	var time = (h > 12 ? h - 12 : h)+':'+(m < 10 ? "0" : "")+m+" "+(h > 12 ? 'pm' : 'am');
-	YAHOO.util.Connect.asyncRequest('POST', 'http://'+window.location.hostname+'/zymurgy/include/autosave.php', 
+	YAHOO.util.Connect.asyncRequest('POST', autoSaveService,
 		{
 			success: function(o) {
 				if (onSuccess==null) {
@@ -174,7 +176,7 @@ function LoadDraft() {
 	if (ddl.value == 0) return; //Ignore "Select to load" option
 	SaveDraft(autosaveform,function () {
 		SetSavedDraftHtml('Loading draft...');
-		YAHOO.util.Connect.asyncRequest('GET', 'http://'+window.location.hostname+'/zymurgy/include/autosave.php?fetchdraft='+draft,
+		YAHOO.util.Connect.asyncRequest('GET', autoSaveService + '?fetchdraft='+draft,
 		{
 			success: function(o) {
 				lastdraft.setLastDraft(o.responseText); //Don't save extra copies if we're jumping around between drafts.
@@ -189,7 +191,7 @@ function LoadDraft() {
 }
 
 function RefreshDraftList(msg) {
-	YAHOO.util.Connect.asyncRequest('GET', 'http://'+window.location.hostname+'/zymurgy/include/autosave.php?listdrafts='+autosaveform,
+	YAHOO.util.Connect.asyncRequest('GET', autoSaveService + '?listdrafts=' + autosaveform,
 	{
 		success: function(o) {
 			var drafts = YAHOO.lang.JSON.parse(o.responseText);
