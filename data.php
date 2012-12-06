@@ -9,7 +9,7 @@
  */
 ob_start();
 require_once 'cmo.php';
-require_once Zymurgy::$root."/zymurgy/model.php";
+require_once Zymurgy::getFilePath("~model.php");
 ob_clean();
 
 class ZymurgyJSONDataController

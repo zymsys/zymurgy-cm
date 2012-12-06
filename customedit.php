@@ -262,7 +262,7 @@ if (!empty($tbl['selfref']))
 	$ds->AddDataFilter('selfref',$selfref);
 }
 
-$customfn = Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php";
+$customfn = Zymurgy::getFilePath("~custom/datagrid/".$tbl['tname'].".php");
 if(file_exists($customfn))
 {
 	include_once($customfn);
