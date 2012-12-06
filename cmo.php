@@ -2510,13 +2510,13 @@ if (!class_exists('Zymurgy'))
 		date_default_timezone_set(Zymurgy::$config['Default Timezone']);
 	}
 	
-	if (!array_key_exists('DefaultTimeZone',Zymurgy::$config))
+	if (!array_key_exists('Default Timezone',Zymurgy::$config))
 	{ //See http://ca.php.net/manual/en/timezones.php for supported values
-		Zymurgy::$config['DefaultTimeZone'] = 'America/New_York';
+		Zymurgy::$config['Default Timezone'] = 'America/New_York';
 	}
-	if (date_default_timezone_set(Zymurgy::$config['DefaultTimeZone']) === false)
+	if (date_default_timezone_set(Zymurgy::$config['Default Timezone']) === false)
 	{
-		die("Invalid default time zone: ".Zymurgy::$config['DefaultTimeZone']);
+		die("Invalid default time zone: ".Zymurgy::$config['Default Timezone']);
 	}
         
 	Zymurgy::$catalogue['vendors'] = array();
