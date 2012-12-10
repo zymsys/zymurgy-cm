@@ -6,6 +6,8 @@
  * @subpackage backend-base
  */
 
+ob_start();
+
 function getAppRoot()
 {
 	$r = dirname(__FILE__);
@@ -25,8 +27,6 @@ if (array_key_exists('showerrors',$_GET))
 
 $adminlevel = isset($adminlevel) ? $adminlevel : 1;
 Zymurgy::memberrequirezcmauth($adminlevel);
-
-ob_start();
 
 $includeNav = true;
 include("header_html.php");

@@ -5,7 +5,6 @@
  * @package Zymurgy
  * @subpackage backend-modules
  */
-ini_set("display_errors", 1);
 require_once('cmo.php');
 Zymurgy::$yuitest = true;
 

@@ -269,7 +269,7 @@ class ZymurgyMember
         {
             $authed = true;
         }
-        else if ($stored == $supplied)
+        else if ($stored === $supplied)
         { //Maybe this password is plaintext?  If so fix it for next time.
             $authed = true;
             if ($forId)

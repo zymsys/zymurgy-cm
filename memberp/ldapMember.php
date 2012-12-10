@@ -114,8 +114,12 @@ class ldapMember extends ZymurgyMember
 
         $baseDN = Zymurgy::$config[self::MEMBERSHIP_LDAP_BASE_DN];
         list($bareAccountName, $domain) = explode('@', $userId, 2);
-        $search = ldap_search($link, $baseDN,
+        $search = @ldap_search($link, $baseDN,
             "(&(objectCategory=person)(objectClass=user)(samaccountname={$bareAccountName}))");
+        if ($search === false)
+        {
+            return false;
+        }
         $entries = ldap_get_entries($link, $search);
         $groups = array();
         if ($entries && ($entries['count'] > 0))
