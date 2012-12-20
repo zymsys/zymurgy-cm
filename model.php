@@ -176,7 +176,7 @@ class ZymurgyBaseModel
         return implode(',', $sqlColumns);
     }
 
-    protected function getColumnList()
+    protected function getColumnList($aclName)
     {
         if (isset(Zymurgy::$config['PublicData']) && isset(Zymurgy::$config['PublicData'][$this->getTableOrViewName()]))
         {
