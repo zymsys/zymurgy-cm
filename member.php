@@ -827,7 +827,8 @@ class ZymurgyMember
 			}
 			if (count($e)==0)
 			{
-				if ($this->memberdologin($_POST['email'],$_POST['pass']))
+				$loggedIn = $this->memberdologin($_POST['email'],$_POST['pass']);
+				if ($loggedIn)
 				{
 					//Redirect to source page or root page if none provided.
 					if (array_key_exists('rurl',$_GET))
