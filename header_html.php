@@ -11,7 +11,7 @@
 <head>
 <title><?= Zymurgy::GetLocaleString("Common.ProductName") ?> - Content Management</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<base href="http://<?=$_SERVER['HTTP_HOST']?>/zymurgy/">
+<base href="http://<?php echo $_SERVER['HTTP_HOST'] . Zymurgy::getUrlPath('~') ?>">
 <?php
 if (isset($includeNav) && $includeNav)
 {
@@ -26,6 +26,9 @@ echo Zymurgy::YUI("container/container-min.js");
 echo Zymurgy::YUI("menu/menu-min.js");
 ?>
 <script type="text/javascript">
+window.zymurgy = {
+    home: '<?php echo Zymurgy::$home; ?>'
+};
 YAHOO.util.Event.onContentReady("zcmnavContent", function () {
 	var oMenu = new YAHOO.widget.Menu("zcmnavContent", {
 											position: "static",
@@ -136,7 +139,7 @@ div.ZymurgyBreadcrumbs
 }
 
 .yui-toolbar-mediafile span.yui-toolbar-icon, .yui-toolbar-zcmimage span.yui-toolbar-icon {
-	background-image: url(/zymurgy/images/zcmLibrary.gif) !important;
+	background-image: url(<?php Zymurgy::getUrlPath('~images/zcmLibrary.gif'); ?>) !important;
 	background-position: 2px 1px !important;
 	left: 5px !important;
 }
@@ -158,7 +161,7 @@ div.ZymurgyBreadcrumbs
 }
 -->
 </style>
-<style type"text/css" media="print">
+<style type="text/css" media="print">
 <!--
 .ZymurgyHeader, .ZymurgyNavigation, .DoNotPrint {
 	display: none;

@@ -5,11 +5,7 @@
  * @package Zymurgy
  * @subpackage frontend
  */
-
-if (isset($ZymurgyRoot))
-	require_once("$ZymurgyRoot/zymurgy/InputWidget.php");
-else
-	require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+require_once(Zymurgy::getFilePath("~InputWidget.php"));
 
 /**
  * Defines the methods that have to be implemented by classes that extend

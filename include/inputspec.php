@@ -7,7 +7,7 @@
 	 */
 
 	echo Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
-	echo Zymurgy::RequireOnce("/zymurgy/include/inputspec.js");
+	echo Zymurgy::RequireOnce(Zymurgy::getUrlPath("~include/inputspec.js"));
 
 	echo("<script type=\"text/javascript\">\n");
 ?>

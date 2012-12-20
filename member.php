@@ -106,7 +106,7 @@ class ZymurgyMember
 	 * Authenticate for Z:CM features as Zymurgy:CM - User (1), Zymurgy:CM - Administrator (2) or
 	 * Zymurgy:CM - Webmaster (3).  Corresponding authlevels in parenthesis.
 	 * 
-	 * If the user doesn't have the required priveledge then redirect to /zymurgy/login.php
+	 * If the user doesn't have the required priveledge then redirect to ~login.php
 	 * 
 	 * @param int $level
 	 */
@@ -114,7 +114,7 @@ class ZymurgyMember
 	{
 		if (!Zymurgy::memberzcmauth($level))
 		{
-			Zymurgy::JSRedirect('/zymurgy/login.php');
+			Zymurgy::JSRedirect(Zymurgy::getUrlPath('~login.php'));
 		}
 	}
 	
@@ -187,7 +187,7 @@ class ZymurgyMember
 		else
 		{
 			$rurl = urlencode($_SERVER['REQUEST_URI']);
-			Zymurgy::JSRedirect(Zymurgy::$config['MemberLoginPage']."?rurl=$rurl");
+			Zymurgy::JSRedirect(Zymurgy::getUrlPath(Zymurgy::$config['MemberLoginPage']."?rurl=$rurl"));
 		}
 	}
 
@@ -247,19 +247,7 @@ class ZymurgyMember
 
 		if (($row = Zymurgy::$db->fetch_array($ri)) !== false)
 		{
-			$salt = substr($row['password'],0,13);
-			$hash = substr($row['password'],13);
-			if (md5($salt.$password) == $hash)
-			{
-				$authed = true;
-			}
-			else if ($row['password'] == $password)
-			{ //Maybe this password is plaintext?  If so fix it for next time.
-				$authed = true;
-				$salt = uniqid();
-				Zymurgy::$db->run("UPDATE `zcm_member` SET `password`='".
-					Zymurgy::$db->escape_string($salt.md5($salt.$password))."' WHERE `id`=".$row['id']);
-			}
+            $authed = $this->checkPassword($password, $row['password'], $row['id']);
 		}
 		if ($authed)
 		{
@@ -271,6 +259,29 @@ class ZymurgyMember
 		}
 		return $authed;
 	}
+
+    public function checkPassword($supplied, $stored, $forId = false)
+    {
+        $authed = false;
+        $salt = substr($stored,0,13);
+        $hash = substr($stored,13);
+        if (md5($salt.$supplied) == $hash)
+        {
+            $authed = true;
+        }
+        else if ($stored === $supplied)
+        { //Maybe this password is plaintext?  If so fix it for next time.
+            $authed = true;
+            if ($forId)
+            {
+                $salt = uniqid();
+                Zymurgy::$db->update('zcm_member',"`id`='" . Zymurgy::$db->escape_string($forId) . "'", array(
+                    'password'=>$salt.md5($salt.$supplied),
+                ));
+            }
+        }
+        return $authed;
+    }
 
 	/**
 	 * Clear existing credentials and go to the supplied URL.
@@ -708,7 +719,7 @@ class ZymurgyMember
 										Zymurgy::JSRedirect($rurl);
 									}
 									else
-										Zymurgy::JSRedirect(Zymurgy::$config['MemberLoginPage']."?reg=extra&rurl=$rurl");
+										Zymurgy::JSRedirect(Zymurgy::getUrlPath(Zymurgy::$config['MemberLoginPage']."?reg=extra"));
 								}
 							}
 						}
@@ -869,6 +880,7 @@ class ZymurgyMember
 					memberpage();
 					$pi = mkplugin('Form',Zymurgy::$config['MembershipInfoForm']);
 					$pi->LoadInputData();
+                    $zcm_member = Zymurgy::$member;
 					if ($zcm_member['formdata'])
 					{
 						$sql = "select formvalues from zcm_form_capture where id=".Zymurgy::$member['formdata'];
@@ -895,7 +907,7 @@ class ZymurgyMember
 						array_unshift($pi->InputRows,array(
 							"fid"=>"email",
 							"header"=>"email",
-							"defaultvalue"=>$member['email'],
+							"defaultvalue"=>$zcm_member['email'],
 							"caption"=>"E-mail:",
 							"specifier"=>"input.20.80"));
 					}

@@ -5,7 +5,6 @@
  * @package Zymurgy
  * @subpackage backend-modules
  */
-ini_set("display_errors", 1);
 require_once('cmo.php');
 Zymurgy::$yuitest = true;
 
@@ -262,7 +261,7 @@ if (!empty($tbl['selfref']))
 	$ds->AddDataFilter('selfref',$selfref);
 }
 
-$customfn = Zymurgy::$root."/zymurgy/custom/datagrid/".$tbl['tname'].".php";
+$customfn = Zymurgy::getFilePath("~custom/datagrid/".$tbl['tname'].".php");
 if(file_exists($customfn))
 {
 	include_once($customfn);

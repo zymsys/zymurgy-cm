@@ -445,7 +445,7 @@ UpdateStatus("Upgrade complete. Please wait while we forward you to the home pag
 if(!isset($_GET["debug"]))
 {
 	echo("\n\n<script type=\"text/javascript\">\n");
-	echo("window.location.href = '/zymurgy/sitepage.php';\n");
+	echo("window.location.href = '" . Zymurgy::getUrlPath('~sitepage.php') . "';\n");
 	echo("</script>");
 	// header('Location: ../index.php');
 }

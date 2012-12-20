@@ -1,5 +1,5 @@
 <?
-require_once(Zymurgy::$root."/zymurgy/include/ImageHandler.php");
+require_once(Zymurgy::getFilePath("~include/ImageHandler.php"));
 /**
  * $cmd = "{Zymurgy::$config['ConvertPath']}convert -resize {$swidth}x{$sheight} -crop {$dw}x{$dh}+{$sxs}+{$sys} $srcfile $destfile";
  * $cmd = "{Zymurgy::$config['ConvertPath']}convert -geometry $w x $h $srcfile $destfile";

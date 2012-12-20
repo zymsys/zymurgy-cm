@@ -13,24 +13,30 @@ ob_start();
 $onload = 'onload="document.login.userid.focus();"';
 include_once("cmo.php");
 
+$memberCount = intval(Zymurgy::$db->get("SELECT COUNT(*) FROM `zcm_member`"));
+if ($memberCount == 0)
+{
+    Zymurgy::$db->insert('zcm_member',array(
+        'username'=>'admin',
+        'password'=>'',
+    ));
+    $id = Zymurgy::$db->insert_id();
+    Zymurgy::$db->insert('zcm_membergroup', array(
+        'memberid'=>$id,
+        'groupid'=>3,
+    ));
+}
+
+if (Zymurgy::memberCheckPassword('admin',''))
+{
+    $error = "Log in as 'admin' with no password for initial setup.  Set admin's password or remove the account to remove this message.";
+}
+
 if (isset($_POST['userid']))
 {
 	$userid = $_POST['userid'];
 	$passwd = $_POST['passwd'];
 
-	/*$sql = "SELECT `zcm_member`.`id` AS `id`, `email`, `password`, `fullname` ".
-		"FROM `zcm_member` ".
-		"INNER JOIN `zcm_membergroup` ON `zcm_membergroup`.`memberid` = `zcm_member`.`id` ".
-		"INNER JOIN `zcm_groups` ON `zcm_groups`.`id` = `zcm_membergroup`.`groupid` ".
-		"AND `zcm_groups`.`name` = 'Zymurgy:CM - User' ".
-		"WHERE ( `username` = '".
-		Zymurgy::$db->escape_string($userid).
-		"' ) AND `password` = '".
-		Zymurgy::$db->escape_string($passwd).
-		"'";
-
-	$ri = Zymurgy::$db->query($sql);
-	if (Zymurgy::$db->num_rows($ri)>0)*/
 	if (Zymurgy::memberdologin($userid,$passwd))
 	{
 		Zymurgy::memberrequirezcmauth(1);
