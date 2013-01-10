@@ -449,6 +449,30 @@ if (!class_exists('Zymurgy'))
         private static $m_activeFlavour;
 
         /**
+         * Executes the supplied command with the USE_PATH environment variable as the path for execution.
+         * Returns the output and other results as an associative array with keys command, output, return and result.
+         *
+         * @param $command
+         * @return array
+         */
+        public static function exec($command)
+        {
+            if (getenv('USE_PATH'))
+            {
+                $command = 'PATH=' . getenv('USE_PATH') . ' ' . $command;
+            }
+            $out = array();
+            $return = 0;
+            $result = exec($command, $out, $return);
+            return array(
+                'command'=>$command,
+                'output'=>$out,
+                'return'=>$return,
+                'result'=>$result,
+            );
+        }
+
+        /**
 		 * Common functionality used by the RequireOnce() and YUI() methods
 		 * to include a file no more than once into the HTML source.
 		 *
@@ -485,6 +509,21 @@ if (!class_exists('Zymurgy'))
 					if ($isYUI && Zymurgy::$yuitest)
 						$src = str_replace('-min.js','-debug.js',$src); //Scrub -min for testing YUI
 					return "    <script src=\"".$baseurl."$src\"></script>\r\n";
+                case 'ts':
+                    $destPath = implode(DIRECTORY_SEPARATOR, array(Zymurgy::$root, 'UserFiles', 'js',
+                        substr($src, 0, -2))) . "js";
+                    $srcPath = implode(DIRECTORY_SEPARATOR, array(Zymurgy::$root, $src));
+                    if (!file_exists($destPath) || (filemtime($destPath) < filemtime($srcPath)))
+                    {
+                        if (file_exists($destPath))
+                        {
+                            unlink($destPath);
+                        }
+                        @mkdir(dirname($destPath),0777,true);
+                        $command = "/usr/local/bin/tsc -c --out {$destPath} {$srcPath}";
+                        Zymurgy::exec($command);
+                    }
+                    return "\t<script src=\"/UserFiles/js/" . substr($src, 0, -2) . "js\"></script>\r\n";
 				case 'css':
 					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
 				case 'less':
@@ -2528,7 +2567,6 @@ if (!class_exists('Zymurgy'))
 
 	//The following runs only the first time cmo.php is included...
 
-	
 	ZymurgyBase::$root = ZymurgyBase::getAppRoot();
     $customCMO = ZymurgyBase::getFilePath("~custom/cmo.php");
     if (file_exists($customCMO))
@@ -2542,8 +2580,8 @@ if (!class_exists('Zymurgy'))
         }
     }
 	Zymurgy::$build = 1987; //Historical; no longer used.
-	
-	if (ini_get('date.timezone') == '') 
+
+    if (ini_get('date.timezone') == '')
 	{
 		date_default_timezone_set('America/New_York');
 	}
@@ -2566,8 +2604,8 @@ if (!class_exists('Zymurgy'))
 	{
 		die("Invalid default time zone: ".Zymurgy::$config['Default Timezone']);
 	}
-        
-	Zymurgy::$catalogue['vendors'] = array();
+
+    Zymurgy::$catalogue['vendors'] = array();
 	Zymurgy::$catalogue['implementation'] = array();
 
 	if ((array_key_exists('FixSlashes',Zymurgy::$config)) && (Zymurgy::$config['FixSlashes']) && (get_magic_quotes_gpc())) {
