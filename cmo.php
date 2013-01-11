@@ -752,14 +752,14 @@ if (!class_exists('Zymurgy'))
 			$sql = "select id,hasdisporder from zcm_customtable where tname='".
 				Zymurgy::$db->escape_string($tableName)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table info ($sql): ".Zymurgy::$db->error());
-			$row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC) or die("Table $tableName doesn't exist.");
+			$row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC) or die("Table $tableName doesn't exist.");
 			$tid = $row['id'];
 			$hasdisporder = ($row['hasdisporder'] == 1);
 			Zymurgy::$db->free_result($ri);
 			$sql = "select * from zcm_customtable where detailfor=$tid";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table detail info ($sql): ".Zymurgy::$db->error());
 			$details = array();
-			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)
+			while(($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 			{
 				$details[$row['id']] = $row['tname'];
 			}
@@ -776,7 +776,7 @@ if (!class_exists('Zymurgy'))
 				$sql .= " order by disporder";
 			}
 			$ri = Zymurgy::$db->query($sql) or die("Can't get XML data ($sql): ".Zymurgy::$db->error());
-			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)
+			while(($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 			{
 				$myrows[] = $row;
 			}
