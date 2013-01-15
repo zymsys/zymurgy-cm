@@ -166,6 +166,7 @@ abstract class Zymurgy_Base_Db
         {
             $table = $this->escape_string($table);
         }
+        $data = $this->escape($data, $escape);
         if ($this->changeTracker)
         {
             $keys = $this->getTableKeys($table);
@@ -186,12 +187,7 @@ abstract class Zymurgy_Base_Db
         $updates = array();
         foreach ($data as $columnName => $value)
         {
-            if ($escape)
-            {
-                $columnName = $this->escape_string($columnName);
-                $value = $this->escape_string($value);
-            }
-            $updates[] = "`$columnName`='$value'";
+            $updates[] = "`$columnName`=$value";
         }
         $sql .= implode(", ", $updates) . " WHERE " . $where;
         $this->run($sql);
@@ -230,41 +226,52 @@ abstract class Zymurgy_Base_Db
             $table = $this->escape_string($table);
         }
         $sql = "INSERT INTO `$table` (`";
-        if ($escape)
-        {
-            $escaped = array();
-            foreach ($data as $columnName => $value)
-            {
-                if ($escape)
-                {
-                    $columnName = $this->escape_string($columnName);
-                    $value = $this->escape_string($value);
-                }
-                $escaped[$columnName] = $value;
-            }
-            $data = $escaped;
-        }
+        $data = $this->escape($data, $escape);
         $sql .= implode("`, `", array_keys($data));
-        $sql .= "`) VALUES ('";
-        $sql .= implode("', '", array_values($data));
-        $sql .= "')";
+        $sql .= "`) VALUES (";
+        $sql .= implode(", ", array_values($data));
+        $sql .= ")";
         $this->run($sql);
         $insertId = $this->insert_id();
         if ($this->changeTracker)
         {
             $changeTracker = $this->changeTracker;
             $id = array();
+            $where = array();
             $keys = $this->getTableKeys($table);
             foreach ($keys as $key) {
-                $id[] = isset($data[$key]) ? $data[$key] : $insertId;
+                $value = isset($data[$key]) ? $data[$key] : $insertId;
+                $id[] = $value;
+                $where[] = "`$key`='" . $this->escape_string($value) . "'";
             }
 
+            $row = $this->get("SELECT * FROM `$table` WHERE " . implode(' AND ', $where));
             foreach ($data as $key => $value) {
-                $changeTracker('insert', $table, implode(',',$id), $key, $value);
+                $changeTracker('insert', $table, implode(',',$id), $key, $row[$key]);
             }
 
         }
         return $insertId;
+    }
+
+    /**
+     * @param $data
+     * @param $escape
+     * @return array
+     */
+    private function escape($data, $escape = true)
+    {
+        $nulled = array();
+        foreach ($data as $columnName => $value) {
+            if (is_null($value)) {
+                $nulled[$columnName] = 'NULL';
+            } else {
+                if ($escape) $value = $this->escape_string($value);
+                $nulled[$columnName] = "'$value'";
+            }
+        }
+        $data = $nulled;
+        return $data;
     }
 
     public function delete($table, $where, $escape = true)
@@ -287,7 +294,7 @@ abstract class Zymurgy_Base_Db
                 $oldRows[] = implode(',', $row);
             }
         }
-        $this->run("DELETE FROM `$table` WHERE $where");
+        $ri = $this->query("DELETE FROM `$table` WHERE $where");
         if ($oldRows)
         {
             $changeTracker = $this->changeTracker;
@@ -295,6 +302,7 @@ abstract class Zymurgy_Base_Db
                 $changeTracker('delete', $table, $key, '', '');
             }
         }
+        return $ri;
     }
 
     public function setDispOrder($table)

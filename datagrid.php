@@ -324,8 +324,7 @@ class DataSetRow
 		list($tables,$tablekeys) = $this->GetMyTables();
 		foreach ($tables as $tname=>$values)
 		{
-			$sql = "delete from $tname where {$tablekeys[$tname]}=$deletekey";
-			$ri = Zymurgy::$db->query($sql);
+            $ri = Zymurgy::$db->delete($tname, "{$tablekeys[$tname]}=$deletekey");
 		}
 		return $ri;
 	}
@@ -369,18 +368,16 @@ class DataSetRow
 		//Now create seperate update/inserts for each table
 		foreach ($tables as $tname=>$values)
 		{
-			$clist = array();
 			$vlist = array();
 			$alist = array();
 
 			foreach ($values as $cname=>$val)
 			{
-				$clist[] = "`$cname`";
 
 				// If the user clicked on the Clear button for an attachment,
 				// delete the attachment from the filesystem and clear
 				// the field in the table.
-				if(key_exists("clear{$tname}_{$cname}", $_POST) && $_POST["clear{$tname}_{$cname}"] == "1")
+				if(isset($_POST["clear{$tname}_{$cname}"]) && $_POST["clear{$tname}_{$cname}"] == "1")
 				{
 					// delete files using the "attachment" inputspec
 					$uploadfolder = Zymurgy::getFilePath("~uploads/");
@@ -403,16 +400,7 @@ class DataSetRow
 				if (!key_exists("$tname.$cname",$this->DataSet->columns))
 					$this->DataSet->AddColumn($cname,true); //Auto create missing columns
 
-				if ($this->DataSet->columns["$tname.$cname"]->quoted)
-				{
-					$vlist[$cname] = is_null($val) ? 'null' : "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`='".Zymurgy::$db->escape_string($val)."'";
-				}
-				else
-				{
-					$vlist[$cname] = is_null($val) ? 'null' : $val;
-					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`=$val";
-				}
+                $vlist[$cname] = $val;
 			}
 
 			// -----
@@ -438,11 +426,10 @@ class DataSetRow
 			// If the member is empty (due to inserting into a member table
 			// directly through Zymurgy:CM), assign the record to the user
 			// currently logged in.
-			if(array_key_exists("member", $alist) && $alist["member"] = "`member` = ")
+			if(array_key_exists("member", $vlist) && empty($vlist["member"]))
 			{
-//				die("empty member");
 				Zymurgy::memberauthenticate();
-				$alist["member"] = "`member` = ".Zymurgy::$member["id"];
+				$vlist["member"] = Zymurgy::$member["id"];
 			}
 
 			if ($this->edittype == 'UPDATE')
@@ -451,27 +438,13 @@ class DataSetRow
 					$keyval = "'".Zymurgy::$db->escape_string($this->values["$tname.{$tablekeys[$tname]}"])."'";
 				else
 					$keyval = $this->values["$tname.{$tablekeys[$tname]}"];
-				$sql = "update $tname set ".implode(',',$alist)." where {$tablekeys[$tname]}=$keyval";
+                Zymurgy::$db->update($tname, "{$tablekeys[$tname]}=$keyval", $vlist);
 				if ($rid==0)
 					$rid = $this->values["$tname.{$tablekeys[$tname]}"];
 			}
 			else
 			{
-				$sql = "insert into $tname (".implode(",",$clist).") values (".
-					implode(",",$vlist).")";
-			}
-
-			$ri = Zymurgy::$db->query($sql);
-
-			if ($ri === false)
-			{
-				echo "Error updating record: ".Zymurgy::$db->error()." [$sql]";
-				exit;
-			}
-
-			if ($rid==0)
-			{
-				$rid = Zymurgy::$db->insert_id();
+                $rid = Zymurgy::$db->insert($tname, $vlist);
 			}
 
 			$this->values[$this->DataSet->masterkey] = $rid;

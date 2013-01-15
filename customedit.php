@@ -6,6 +6,7 @@
  * @subpackage backend-modules
  */
 require_once('cmo.php');
+Zymurgy::headtags(false);
 Zymurgy::$yuitest = true;
 
 $t = 0 + $_GET['t'];
