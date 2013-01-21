@@ -6,10 +6,6 @@
  * @package
  */
 
-define('ZYMURGY_FETCH_ASSOC',MYSQL_ASSOC);
-define('ZYMURGY_FETCH_BOTH',MYSQL_BOTH);
-define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
-
 require_once(Zymurgy::getFilePath("~db/base.php"));
 
 /**

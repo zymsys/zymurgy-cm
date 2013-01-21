@@ -1,4 +1,10 @@
 <?php
+
+define('ZYMURGY_DB_DEFAULT_ERROR', 'Unable to run query');
+define('ZYMURGY_FETCH_ASSOC', MYSQL_ASSOC);
+define('ZYMURGY_FETCH_BOTH', MYSQL_BOTH);
+define('ZYMURGY_FETCH_NUM', MYSQL_NUM);
+
 abstract class Zymurgy_Base_Db
 {
     public $trace = false;
@@ -139,7 +145,7 @@ abstract class Zymurgy_Base_Db
      * @param string $errormsg
      * @return mixed
      */
-    public function get($sql, $errormsg = 'Unable to run query')
+    public function get($sql, $errormsg = ZYMURGY_DB_DEFAULT_ERROR)
     {
         $ri = $this->run($sql,$errormsg);
         $row = $this->fetch_array($ri);
@@ -326,9 +332,9 @@ abstract class Zymurgy_Base_Db
         return $sql;
     }
 
-    public function getParam($sql, $params)
+    public function getParam($sql, $params, $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
     {
         $sql = $this->param($params, $sql);
-        return $this->get($sql);
+        return $this->get($sql, $errorMessage);
     }
 }
