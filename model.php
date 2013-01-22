@@ -343,6 +343,10 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 		$this->memberfilter = array();
 		$this->tabledata = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `tname`='".
 			Zymurgy::$db->escape_string($table)."'");
+        if ($this->tabledata === false)
+        {
+            throw new ZymurgyModelException("Table [$table] does not exist.");
+        }
 		$this->membertable = $this->tabledata;
 		$this->tablechain = array();
 		$datamember = false; //If $table is member data, or belongs to a member data limit data funtions to the member's rows
