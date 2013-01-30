@@ -2495,10 +2495,15 @@ if (!class_exists('Zymurgy'))
 		
 		static function getAppRoot() 
 		{
+            return $_SERVER['DOCUMENT_ROOT'];
+            //The following used to work when z:cm was always in the /zymurgy folder, but with composer support
+            //that is no longer true.  Hopefully other web servers set similar environment variables.
+            /*
 			$r = dirname(__FILE__);
 			$rp = explode(DIRECTORY_SEPARATOR, $r);
 			array_pop($rp);
 			return implode(DIRECTORY_SEPARATOR, $rp);
+            */
 		}
 		
 		static function longcache_write($key, $value)
