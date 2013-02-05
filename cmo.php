@@ -449,6 +449,30 @@ if (!class_exists('Zymurgy'))
         private static $m_activeFlavour;
 
         /**
+         * Executes the supplied command with the USE_PATH environment variable as the path for execution.
+         * Returns the output and other results as an associative array with keys command, output, return and result.
+         *
+         * @param $command
+         * @return array
+         */
+        public static function exec($command)
+        {
+            if (getenv('USE_PATH'))
+            {
+                $command = 'PATH=' . getenv('USE_PATH') . ' ' . $command;
+            }
+            $out = array();
+            $return = 0;
+            $result = exec($command, $out, $return);
+            return array(
+                'command'=>$command,
+                'output'=>$out,
+                'return'=>$return,
+                'result'=>$result,
+            );
+        }
+
+        /**
 		 * Common functionality used by the RequireOnce() and YUI() methods
 		 * to include a file no more than once into the HTML source.
 		 *
@@ -485,6 +509,21 @@ if (!class_exists('Zymurgy'))
 					if ($isYUI && Zymurgy::$yuitest)
 						$src = str_replace('-min.js','-debug.js',$src); //Scrub -min for testing YUI
 					return "    <script src=\"".$baseurl."$src\"></script>\r\n";
+                case 'ts':
+                    $destPath = implode(DIRECTORY_SEPARATOR, array(Zymurgy::$root, 'UserFiles', 'js',
+                        substr($src, 0, -2))) . "js";
+                    $srcPath = implode(DIRECTORY_SEPARATOR, array(Zymurgy::$root, $src));
+                    if (!file_exists($destPath) || (filemtime($destPath) < filemtime($srcPath)))
+                    {
+                        if (file_exists($destPath))
+                        {
+                            unlink($destPath);
+                        }
+                        @mkdir(dirname($destPath),0777,true);
+                        $command = "/usr/local/bin/tsc -c --out {$destPath} {$srcPath}";
+                        Zymurgy::exec($command);
+                    }
+                    return "\t<script src=\"/UserFiles/js/" . substr($src, 0, -2) . "js\"></script>\r\n";
 				case 'css':
 					return "    <link rel=\"stylesheet\" type=\"text/css\" href=\"".$baseurl."$src\" />\r\n";
 				case 'less':
@@ -713,14 +752,14 @@ if (!class_exists('Zymurgy'))
 			$sql = "select id,hasdisporder from zcm_customtable where tname='".
 				Zymurgy::$db->escape_string($tableName)."'";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table info ($sql): ".Zymurgy::$db->error());
-			$row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC) or die("Table $tableName doesn't exist.");
+			$row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC) or die("Table $tableName doesn't exist.");
 			$tid = $row['id'];
 			$hasdisporder = ($row['hasdisporder'] == 1);
 			Zymurgy::$db->free_result($ri);
 			$sql = "select * from zcm_customtable where detailfor=$tid";
 			$ri = Zymurgy::$db->query($sql) or die("Can't get table detail info ($sql): ".Zymurgy::$db->error());
 			$details = array();
-			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)
+			while(($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 			{
 				$details[$row['id']] = $row['tname'];
 			}
@@ -737,7 +776,7 @@ if (!class_exists('Zymurgy'))
 				$sql .= " order by disporder";
 			}
 			$ri = Zymurgy::$db->query($sql) or die("Can't get XML data ($sql): ".Zymurgy::$db->error());
-			while(($row = Zymurgy::$db->fetch_array($ri,MYSQL_ASSOC))!==false)
+			while(($row = Zymurgy::$db->fetch_array($ri,ZYMURGY_FETCH_ASSOC))!==false)
 			{
 				$myrows[] = $row;
 			}
@@ -2533,7 +2572,6 @@ if (!class_exists('Zymurgy'))
 
 	//The following runs only the first time cmo.php is included...
 
-	
 	ZymurgyBase::$root = ZymurgyBase::getAppRoot();
     $customCMO = ZymurgyBase::getFilePath("~custom/cmo.php");
     if (file_exists($customCMO))
@@ -2547,8 +2585,8 @@ if (!class_exists('Zymurgy'))
         }
     }
 	Zymurgy::$build = 1987; //Historical; no longer used.
-	
-	if (ini_get('date.timezone') == '') 
+
+    if (ini_get('date.timezone') == '')
 	{
 		date_default_timezone_set('America/New_York');
 	}
@@ -2571,8 +2609,8 @@ if (!class_exists('Zymurgy'))
 	{
 		die("Invalid default time zone: ".Zymurgy::$config['Default Timezone']);
 	}
-        
-	Zymurgy::$catalogue['vendors'] = array();
+
+    Zymurgy::$catalogue['vendors'] = array();
 	Zymurgy::$catalogue['implementation'] = array();
 
 	if ((array_key_exists('FixSlashes',Zymurgy::$config)) && (Zymurgy::$config['FixSlashes']) && (get_magic_quotes_gpc())) {
