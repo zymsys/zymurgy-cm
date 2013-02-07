@@ -267,17 +267,18 @@ abstract class Zymurgy_Base_Db
      */
     private function escape($data, $escape = true)
     {
-        $nulled = array();
+        $escaped = array();
         foreach ($data as $columnName => $value) {
             if (is_null($value)) {
-                $nulled[$columnName] = 'NULL';
+                $escaped[$columnName] = 'NULL';
+            } else if ($value instanceof DateTime) {
+                $escaped[$columnName] = "'" . $value->format('Y-m-d H:i:s') . "'";
             } else {
                 if ($escape) $value = $this->escape_string($value);
-                $nulled[$columnName] = "'$value'";
+                $escaped[$columnName] = "'$value'";
             }
         }
-        $data = $nulled;
-        return $data;
+        return $escaped;
     }
 
     public function delete($table, $where, $escape = true)

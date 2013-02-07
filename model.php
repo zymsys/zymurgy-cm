@@ -479,7 +479,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 		}
 		else 
 		{
-			throw new ZymurgyModelException("This table has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
+			throw new ZymurgyModelException("This table [$table] has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
 		}
         if ($this->tabledata['hasdisporder'])
         {

@@ -157,14 +157,23 @@ class ldapMember extends ZymurgyMember
                 if ($memberId)
                 {
                     $sql = Zymurgy::$db->param(array($userId, $memberId), "UPDATE `zcm_member` SET `mpkey`={0} WHERE `id`={1}");
+                    Zymurgy::$db->run($sql);
                 }
                 else
                 {
-                    $sql = Zymurgy::$db->param(array($email, $userId, $fullName, $userId),
-                        "INSERT INTO `zcm_member` (`email`,`username`,`password`,`fullname`,`regtime`,`lastauth`,`mpkey`)
-                        values ({0},{1},{2}, NOW(), NOW(), {3})");
+                    Zymurgy::$db->insert('zcm_member', array(
+                        'email' => $email,
+                        'username' => $userId,
+                        'password' => null,
+                        'fullname' => $fullName,
+                        'regtime' => new DateTime(),
+                        'lastauth' => new DateTime(),
+                        'mpkey' => $userId,
+                    ));
+//                    $sql = Zymurgy::$db->param(array($email, $userId, $fullName, $userId),
+//                        "INSERT INTO `zcm_member` (`email`,`username`,`password`,`fullname`,`regtime`,`lastauth`,`mpkey`)
+//                        values ({0},{1},{2}, NOW(), NOW(), {3})");
                 }
-                Zymurgy::$db->run($sql);
                 $this->findmemberfromsession();
             }
             $this->syncGroups($groups);
