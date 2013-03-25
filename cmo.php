@@ -1042,6 +1042,7 @@ if (!class_exists('Zymurgy'))
                     'zcm_acl' => $aclId,
                     'group' => $groupId,
                     'permission' => $permission,
+                    'disporder' => 0,
                 ));
             }
             Zymurgy::$db->setDispOrder('zcm_aclitem');

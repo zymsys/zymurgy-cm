@@ -75,7 +75,7 @@
 				"columns" => array(
 					DefineTableField("id", "INT(11)", "NOT NULL AUTO_INCREMENT"),
 					DefineTableField("name", "VARCHAR(40)", "NOT NULL DEFAULT ''"),
-					DefineTableField("value", "LONGTEXT", "NOT NULL DEFAULT ''"),
+					DefineTableField("value", "LONGTEXT", ""),
 					DefineTableField("disporder", "INT(11)", "NOT NULL DEFAULT '0'"),
 					DefineTableField("inputspec", "TEXT", "NOT NULL")
 				),
