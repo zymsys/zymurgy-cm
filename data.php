@@ -22,6 +22,7 @@ class ZymurgyJSONDataController
     {
         Zymurgy::headtags(false);
         $this->result = new stdClass();
+        $this->result->status = 'ok';
         $this->tableName = Zymurgy::$db->escape_string($tableName);
         $this->model = ZymurgyModel::factory($this->tableName);
     }
@@ -87,8 +88,7 @@ class ZymurgyJSONDataController
 
     protected function processPost($requestVariables)
     {
-        $this->result->success = $this->model->write($requestVariables);
-        $newId = Zymurgy::$db->insert_id();
+        $newId = $this->model->write($requestVariables);
         if ($newId) $this->result->newid = $newId;
     }
 

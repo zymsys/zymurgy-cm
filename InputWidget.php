@@ -3581,7 +3581,7 @@ class InputWidget
 		return $widget->IsValid($value);
 	}
 
-	function inputspec2sqltype($inputspec)
+	static function inputspec2sqltype($inputspec)
 	{
         $typeAndParams = explode('.', $inputspec, 2);
         if (count($typeAndParams) == 1) $typeAndParams[] = '';

@@ -611,6 +611,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 	
 	public function write($rowdata)
 	{
+        $insertId = null;
 		$aclcols = $this->checkacl('Write');
 		$table = $this->tabledata['tname'];
 		$rowdata = $this->validaterow($rowdata);
@@ -652,8 +653,9 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 			{//This is a member data table; set the member column.
                 $sets['member']= Zymurgy::$member['id'];
 			}
-            Zymurgy::$db->insert($table, $sets);
+            $insertId = Zymurgy::$db->insert($table, $sets);
 		}
+        return $insertId;
 	}
 	
 	//curl -X DELETE --cookie "ZymurgyAuth=bobotea" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar&id=3
