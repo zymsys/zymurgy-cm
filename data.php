@@ -72,9 +72,25 @@ class ZymurgyJSONDataController
         $this->applySort($requestVariables);
         $this->applyRange($requestVariables);
         $this->result->data = $this->model->read();
-        if ($this->isIdentity && $this->result->data)
-        {
+        if ($this->isIdentity && $this->result->data) {
             $this->result->data = $this->result->data[0];
+        } else if ($this->model->getMemberTableName() !== false) {
+            $members = array();
+            foreach ($this->result->data as $row) {
+                if (isset($row['member'])) {
+                    $members[$row['member']] = false;
+                }
+            }
+            $ri = Zymurgy::$db->runParam("SELECT * FROM zcm_member WHERE id IN ({0})",
+                array(implode(',',array_keys($members))));
+            Zymurgy::$db->each($ri, function ($row) use (&$members) {
+                unset($row['password']);
+                unset($row['mpkey']);
+                unset($row['authkey']);
+                unset($row['formdata']);
+                $members[$row['id']] = $row;
+            });
+            $this->result->members = $members;
         }
         $this->result->count = $this->model->count();
         $this->result->success = is_array($this->result->data);

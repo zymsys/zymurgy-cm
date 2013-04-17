@@ -338,4 +338,11 @@ abstract class Zymurgy_Base_Db
         $sql = $this->param($params, $sql);
         return $this->get($sql, $errorMessage);
     }
+
+    public function each($result, $callable)
+    {
+        while (($row = $this->fetch_assoc($result)) !== false) {
+            $callable($row);
+        }
+    }
 }
