@@ -289,6 +289,11 @@ class ZymurgyBaseModel
         $this->rangeStart = $start;
         $this->rangeLimit = $limit;
     }
+
+    public function getMemberTableName()
+    {
+        return false;
+    }
 }
 
 class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
