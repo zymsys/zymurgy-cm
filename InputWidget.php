@@ -3496,7 +3496,7 @@ class InputWidget
 	 * @param string $inputspec
 	 * @return ZIW_Base
 	 */
-	function GetFromInputSpec($inputspec)
+	static function GetFromInputSpec($inputspec)
 	{
 		$ep = explode('.',$inputspec);
 		$widget = InputWidget::Get($ep[0]);
