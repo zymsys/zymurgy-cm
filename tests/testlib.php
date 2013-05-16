@@ -3,13 +3,6 @@
  * To be included at the top of PHPUnit test files to get Z:CM going, etc.
  */
 
-if (!class_exists('PHPUnit_Framework_TestCase'))
-{//Allow tests to be run manually through debugger
-	class PHPUnit_Framework_TestCase {
-		
-	}
-}
-
 class TestHelper
 {
 	/**
