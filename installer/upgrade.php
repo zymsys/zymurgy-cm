@@ -106,6 +106,25 @@ if(mysql_affected_rows() > 0)
 UpdateStatus("-- Groups configured.");
 UpdateStatus("");
 
+UpdateStatus("-- Upgrading Z:CM accounts from passwd to members.");
+if (0 == Zymurgy::$db->get("select count(*) from zcm_member")) {
+    $ri = Zymurgy::$db->run("select * from zcm_passwd");
+    while (($row = Zymurgy::$db->fetch_assoc($ri)) !== false) {
+        Zymurgy::$db->insert('zcm_member', array(
+            'username' => $row['username'],
+            'email' => $row['email'],
+            'password' => $row['password'],
+            'fullname' => $row['fullname']
+        ));
+        Zymurgy::$db->insert('zcm_membergroup', array(
+            'memberid' => Zymurgy::$db->insert_id(),
+            'groupid' => $row['admin'] == 2 ? 3 : 2
+        ));
+    }
+}
+UpdateStatus("-- Done");
+
+
 // ----------
 
 UpdateStatus("Migrating members from e-mail to username-based logins");
