@@ -58,7 +58,7 @@ abstract class Zymurgy_Base_Db
      * @param string $errormsg The error message to show in case of error, or false to throw an exception.
      * @return resource db result set
      */
-    public function run($sql, $errormsg = 'Unable to run query')
+    public function run($sql, $errormsg = ZYMURGY_DB_DEFAULT_ERROR)
     {
         // should this throw an exception instead?
         $ri = $this->query($sql);
@@ -71,7 +71,10 @@ abstract class Zymurgy_Base_Db
             } while ($bt && (substr($bt['file'], -21) === Zymurgy::getUrlPath("~db/" . Zymurgy::$config['database'] . ".php")));
             if ($errormsg === false)
             {
-                throw new Exception($this->error()." in ".$bt['file']." on line ".$bt['line'], 0);
+                throw new Exception(
+                    $this->error()." in ".$bt['file']." on line ".$bt['line'],
+                    $this->errno()
+                );
             }
             else
             {
@@ -165,8 +168,9 @@ abstract class Zymurgy_Base_Db
      * @param $where string Where clause
      * @param $data array Key value pairs with column names and contents
      * @param bool $escape Escape names and values? (defaults to true)
+     * @param string $errorMessage
      */
-    public function update($table, $where, $data, $escape = true)
+    public function update($table, $where, $data, $escape = true, $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
     {
         if ($escape)
         {
@@ -196,7 +200,7 @@ abstract class Zymurgy_Base_Db
             $updates[] = "`$columnName`=$value";
         }
         $sql .= implode(", ", $updates) . " WHERE " . $where;
-        $this->run($sql);
+        $this->run($sql, $errorMessage);
         if ($this->changeTracker)
         {
             $changeTracker = $this->changeTracker;
@@ -225,7 +229,7 @@ abstract class Zymurgy_Base_Db
         }
     }
 
-    public function insert($table, $data, $escape = true)
+    public function insert($table, $data, $escape = true, $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
     {
         if ($escape)
         {
@@ -237,7 +241,7 @@ abstract class Zymurgy_Base_Db
         $sql .= "`) VALUES (";
         $sql .= implode(", ", array_values($data));
         $sql .= ")";
-        $this->run($sql);
+        $this->run($sql, $errorMessage);
         $insertId = $this->insert_id();
         if ($this->changeTracker)
         {
@@ -281,7 +285,7 @@ abstract class Zymurgy_Base_Db
         return $escaped;
     }
 
-    public function delete($table, $where, $escape = true)
+    public function delete($table, $where, $escape = true, $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
     {
         if ($escape)
         {
@@ -301,7 +305,7 @@ abstract class Zymurgy_Base_Db
                 $oldRows[] = implode(',', $row);
             }
         }
-        $ri = $this->query("DELETE FROM `$table` WHERE $where");
+        $ri = $this->run("DELETE FROM `$table` WHERE $where", $errorMessage);
         if ($oldRows)
         {
             $changeTracker = $this->changeTracker;
@@ -317,10 +321,10 @@ abstract class Zymurgy_Base_Db
         $this->run("UPDATE `$table` SET `disporder`=`id` WHERE `disporder` IS NULL");
     }
 
-    public function runParam($sql, $params)
+    public function runParam($sql, $params, $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
     {
         $sql = $this->param($params, $sql);
-        return $this->run($sql);
+        return $this->run($sql, $errorMessage);
     }
 
     public function param($params, $sql)
@@ -344,5 +348,17 @@ abstract class Zymurgy_Base_Db
         while (($row = $this->fetch_assoc($result)) !== false) {
             $callable($row);
         }
+    }
+
+    public function getAll($sql, $params = array(), $errorMessage=ZYMURGY_DB_DEFAULT_ERROR)
+    {
+        $sql = $this->param($params, $sql);
+        $ri = $this->runParam($sql, $params, $errorMessage);
+        $result = array();
+        while (($row = $this->fetch_assoc($ri)) !== false) {
+            $result[] = $row;
+        }
+        $this->free_result($ri);
+        return $result;
     }
 }

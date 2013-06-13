@@ -34,10 +34,11 @@ class Zymurgy_DB extends Zymurgy_Base_Db
 	{
 		$this->_link = mysql_connect(Zymurgy::$config['mysqlhost'],Zymurgy::$config['mysqluser'],Zymurgy::$config['mysqlpass']);
 		mysql_select_db(Zymurgy::$config['mysqldb'],$this->_link) or die ("Unable to select the database ".Zymurgy::$config['mysqldb'].".");
-	}
+        mysql_set_charset('utf8', $this->_link);
+    }
 
 	/**
-	 * Run an SQL query on the dtatbase and return the result.
+	 * Run an SQL query on the database and return the result.
 	 *
 	 * Returns false on error.
 	 *
