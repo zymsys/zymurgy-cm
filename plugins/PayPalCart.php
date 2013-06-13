@@ -7,7 +7,7 @@
  */
 
 // ini_set("display_errors", 1);
-require_once(Zymurgy::$root.'/zymurgy/include/payment.php');
+require_once(Zymurgy::getFilePath('~include/payment.php'));
 
 class PayPalCartItemOption
 {
@@ -121,7 +121,7 @@ BLOCK;
 
 	protected function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+		require_once(Zymurgy::getFilePath('~installer/upgradelib.php'));
 
 		$tableDefinitions = array(
 			array(
@@ -207,7 +207,11 @@ YAHOO.util.Event.addListener(window, "load", function () {
 	var LargeImageDialogShow = function(e) {
 		var el = document.getElementById('LargeImageView');
 		var iid = this.id.substr(14);
-		el.innerHTML = '<img src="http://www.bentleydistribution.com/zymurgy/file.php?mime=image/jpeg&dataset=zcm_paypalcartitem&datacolumn=photo&id=' + iid + '&w=600&h=650" width="600" height="650" />';
+        var basePath = <?php
+            echo Zymurgy::$config['sitehome'] .
+                Zymurgy::getUrlPath('~file.php?mime=image/jpeg&dataset=zcm_paypalcartitem&datacolumn=photo&id=');
+            ?>;
+		el.innerHTML = '<img src="http://' + basePath + iid + '&w=600&h=650" width="600" height="650" />';
 		dlg.show();
 	};
 		<?

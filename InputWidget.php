@@ -695,7 +695,7 @@ class ZIW_InputSpec extends ZIW_Base
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/include/inputspec.php");
+		require_once(Zymurgy::getFilePath("~include/inputspec.php"));
 		echo "<script>makeInputSpecifier('".
 			str_replace("'","\'",$name)."','".
 			str_replace("'","\'",$value)."', 'GetSupportedSpecifiers');</script>";
@@ -1033,8 +1033,8 @@ abstract class ZIW_AutoCompleteBase extends ZIW_Base
 		echo Zymurgy::YUI('json/json-min.js');
 		echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
 		echo Zymurgy::YUI('datasource/datasource-min.js');
-		echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
-		echo Zymurgy::RequireOnce('/zymurgy/include/cmo.js');
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath('~include/yui-stretch.js'));
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath('~include/cmo.js'));
 		echo "<div id=\"{$name}-autocomplete\"";
 		echo " style=\"display:inline-block\"";
 		echo "><nobr><input id=\"{$name}-input\" type=\"text\" ";
@@ -1115,14 +1115,13 @@ class ZIW_Plugin extends ZIW_AutoCompleteBase
 			Zymurgy.refreshHint('.$this->jsname.'_text);
 			'.$this->jsname.'_update();
 		});
-		var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/plugin.php?pg='.$d.'&");
+		var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("' . Zymurgy::getUrlPath('~include/plugin.php?pg=') . $d.'&");
 			'.$this->jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
 			'.$this->jsname.'_datasource.responseSchema = {fields : ["plugin"]};
 			var '.$this->jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$this->name.'-input","'.$this->name.'-container", '.$this->jsname.'_datasource);
 			'.$this->jsname.'_autocomp.textboxChangeEvent.subscribe('.$this->jsname.'_update);
 			'.$this->jsname.'_autocomp.generateRequest = function(sQuery) {
 				var elSel = document.getElementById("'.$this->name.'-plugin");
-				// return "/zymurgy/include/plugin.php?pg='.$d.'&pi=" + elSel.value + "&q=" + sQuery;
 				return "pi=" + elSel.value + "&q=" + sQuery;
 			};
 
@@ -1198,14 +1197,14 @@ class ZIW_RemoteLookup extends ZIW_AutoCompleteBase
 
 	function RenderJS()
 	{
-		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/acremote.php");
+		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("' . Zymurgy::getUrlPath('~include/acremote.php') . '");
 			'.$this->jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
 			'.$this->jsname.'_datasource.responseSchema = {
 				resultsList : "results",
 				fields : ["value"]};
 			var '.$this->jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$this->name.'-input","'.$this->name.'-container", '.$this->jsname.'_datasource);
 			'.$this->jsname.'_autocomp.generateRequest = function(sQuery) {
-				return "/zymurgy/include/acremote.php?t='.urlencode($this->table).'&c='.
+				return "' . Zymurgy::getUrlPath("~include/acremote.php") . '?t='.urlencode($this->table).'&c='.
 					urlencode($this->column).'&i='.urlencode($this->idcolumn).'&q=" + sQuery;
 			};
 			function '.$this->jsname.'_update() {
@@ -1294,14 +1293,14 @@ class ZIW_AutoComplete extends ZIW_AutoCompleteBase
 
 	function RenderJS()
 	{
-		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("/zymurgy/include/autocomplete.php");
+		echo 'var '.$this->jsname.'_datasource = new YAHOO.util.XHRDataSource("' . Zymurgy::getUrlPath('~include/autocomplete.php') . '");
 			'.$this->jsname.'_datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
 			'.$this->jsname.'_datasource.responseSchema = {
 				resultsList : "results",
 				fields : ["value"]};
 			var '.$this->jsname.'_autocomp = new YAHOO.widget.AutoComplete("'.$this->name.'-input","'.$this->name.'-container", '.$this->jsname.'_datasource);
 			'.$this->jsname.'_autocomp.generateRequest = function(sQuery) {
-				return "/zymurgy/include/autocomplete.php?t='.urlencode($this->table).'&c='.
+				return "' . Zymurgy::getUrlPath('~include/autocomplete.php') . '?t='.urlencode($this->table).'&c='.
 					urlencode($this->column).'&i='.urlencode($this->idcolumn).'&q=" + sQuery;
 			};
 			function '.$this->jsname.'_update() {
@@ -2200,10 +2199,10 @@ class ZIW_Image extends ZIW_Base
 			$targetsize = $this->targetsize;
 		else
 			$targetsize = "{$ep[1]}x{$ep[2]}";
-		require_once(Zymurgy::$root.'/zymurgy/include/Thumb.php');
+		require_once(Zymurgy::getFilePath('~include/Thumb.php'));
 		$ext = Thumb::mime2ext($display);
 		list($dataset,$datacolumn) = explode('.',$this->extra['datacolumn']);
-		$imgsrc = "/zymurgy/file.php?mime=$display&dataset=$dataset&datacolumn=$datacolumn&id={$this->extra['editkey']}&w={$ep[1]}&h={$ep[2]}";
+		$imgsrc = Zymurgy::getUrlPath("~file.php") . "?mime=$display&dataset=$dataset&datacolumn=$datacolumn&id={$this->extra['editkey']}&w={$ep[1]}&h={$ep[2]}";
 		//$imgsrc = "/UserFiles/DataGrid/{$this->datacolumn}/{$this->editkey}thumb$targetsize.$ext?".rand(0,99999);
 		return "<img id=\"sitetext.body.$targetsize\" src=\"$imgsrc\" /></a>";
 	}
@@ -2241,11 +2240,11 @@ class ZIW_Image extends ZIW_Base
 			$targetsize = str_replace('.','x',$targetsize);
 			if ($this->extra['editkey'] > 0)
 			{
-				require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+				require_once(Zymurgy::getFilePath("~include/Thumb.php"));
 				$ext = Thumb::mime2ext($value);
 				$imgsrc = "/UserFiles/DataGrid/".$this->extra['datacolumn']."/".$this->extra['editkey']."thumb$targetsize.$ext";
 				if (!file_exists(Zymurgy::$root.$imgsrc))
-					$imgsrc = "/zymurgy/file.php?dataset=&datacolumn=&id=&mime="; //Creates blank gif file.
+					$imgsrc = Zymurgy::getUrlPath("~file.php?dataset=&datacolumn=&id=&mime="); //Creates blank gif file.
 				$thumbs[] = "<a onclick=\"aspectcrop_popup('".$this->extra['datacolumn']."','$targetsize','".$this->extra['editkey']."','".$this->extra['datacolumn'].".$targetsize',true)\">".
 					"<img id=\"".$this->extra['datacolumn'].".$targetsize\" src=\"$imgsrc?".rand(0,99999)."\" style=\"cursor: pointer\" /></a> ";
 			}
@@ -2518,7 +2517,7 @@ class ZIW_YUIHtml extends ZIW_RichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
-		echo Zymurgy::RequireOnce('/zymurgy/include/yui-stretch.js');
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath('~include/yui-stretch.js'));
 		$dialogName = $this->extra['dialogName'];
 		$tabsetName = $this->extra['tabsetName'];
 		$tabName = $this->extra['tabName'];
@@ -2575,6 +2574,8 @@ JAVASCRIPT;
 
 			}
 
+            $mediaService = Zymurgy::getUrlPath('~media.php');
+
 echo <<<JAVASCRIPT
 		{$id}Editor.on("toolbarLoaded", function()
 		{
@@ -2630,7 +2631,7 @@ echo <<<JAVASCRIPT
 					{
 						var load{$id}Object = {
 							targetElement: "{$id}_dlgBody",
-							url: "/zymurgy/media.php?action=insert_image_into_yuihtml" +
+							url: "{$mediaService}?action=insert_image_into_yuihtml" +
 								"&editor_id={$id}Editor",
 							handleSuccess:function(o)
 							{
@@ -2735,9 +2736,9 @@ class ZIW_Html extends ZIW_RichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
+		require_once(Zymurgy::getFilePath("~fckeditor/fckeditor.php"));
 		$fck = new FCKeditor($name);
-		$fck->BasePath = "/zymurgy/fckeditor/";
+		$fck->BasePath = Zymurgy::getUrlPath("~fckeditor/");
 		$fck->ToolbarSet = 'Zymurgy';
 		$fck->Width = $ep[1];
 		$fck->Height = $ep[2];
@@ -2773,7 +2774,7 @@ class ZIW_CKHtml extends ZIW_RichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+		require_once(Zymurgy::getFilePath("~ckeditor/ckeditor.php"));
 
 		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
 
@@ -2785,7 +2786,7 @@ class ZIW_CKHtml extends ZIW_RichTextBase
 			: $sitecss;
 
 		$ck = new CKEditor();
-		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->basePath = Zymurgy::getUrlPath("~ckeditor/");
 		$ck->editor($name, $value, $config);
 	}
 
@@ -2822,7 +2823,7 @@ class ZIW_FlavouredHtml extends ZIW_FlavouredRichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/fckeditor/fckeditor.php");
+		require_once(Zymurgy::getFilePath("~fckeditor/fckeditor.php"));
 
 ?>
 		<input type="hidden" id="<?= $name ?>" name="<?= $name ?>" value="<?= $value ?>">
@@ -2832,7 +2833,7 @@ class ZIW_FlavouredHtml extends ZIW_FlavouredRichTextBase
 				<td>
 <?
 		$fck = new FCKeditor($name."_default");
-		$fck->BasePath = "/zymurgy/fckeditor/";
+		$fck->BasePath = Zymurgy::getUrlPath("~fckeditor/");
 		$fck->ToolbarSet = 'Zymurgy';
 		$fck->Width = $ep[1];
 		$fck->Height = $ep[2];
@@ -2856,7 +2857,7 @@ class ZIW_FlavouredHtml extends ZIW_FlavouredRichTextBase
 				<td>
 <?
 		$fck = new FCKeditor($name."_".$flavour['code']);
-		$fck->BasePath = "/zymurgy/fckeditor/";
+		$fck->BasePath = Zymurgy::getUrlPath("~fckeditor/");
 		$fck->ToolbarSet = 'Zymurgy';
 		$fck->Width = $ep[1];
 		$fck->Height = $ep[2];
@@ -2901,7 +2902,7 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 	 */
 	function oRender($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+		require_once(Zymurgy::getFilePath("~ckeditor/ckeditor.php"));
 
 		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
 
@@ -2913,7 +2914,7 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 			: $sitecss;
 
 		$ck = new CKEditor();
-		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->basePath = Zymurgy::getUrlPath("~ckeditor/");
 		$ck->editor($name, $value, $config);
 	}
 
@@ -2926,7 +2927,7 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 	 */
 	function Render($ep,$name,$value)
 	{
-		require_once(Zymurgy::$root."/zymurgy/ckeditor/ckeditor.php");
+		require_once(Zymurgy::getFilePath("~ckeditor/ckeditor.php"));
 
 		$sitecss = array_key_exists('sitecss',Zymurgy::$config) ? Zymurgy::$config['sitecss'] : '/site.css';
 		$config = array();
@@ -2943,7 +2944,7 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 				<td>
 <?
 		$ck = new CKEditor();
-		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->basePath = Zymurgy::getUrlPath("~ckeditor/");
 		$ck->editor($name.'_default', $this->GetFlavouredValue($value), $config);
 ?>
 				</td>
@@ -2959,7 +2960,7 @@ class ZIW_FlavouredCKHtml extends ZIW_FlavouredRichTextBase
 				<td>
 <?
 		$ck = new CKEditor();
-		$ck->basePath = "/zymurgy/ckeditor/";
+		$ck->basePath = Zymurgy::getUrlPath("~ckeditor/");
 		$ck->editor(
 			$name."_".$flavour['code'],
 			$this->GetFlavouredValue($value, $flavour['code']),
@@ -2989,7 +2990,7 @@ class ZIW_Color extends ZIW_Base
 	 */
 	function GetPretext($tp)
 	{
-		require_once(Zymurgy::$root.'/zymurgy/include/colorpicker.php');
+		require_once(Zymurgy::getFilePath('~include/colorpicker.php'));
 		$output  = Zymurgy::YUI("fonts/fonts-min.css");
 		$output .= Zymurgy::YUI("container/assets/skins/sam/container.css");
 		$output .= Zymurgy::YUI("colorpicker/assets/skins/sam/colorpicker.css");
@@ -3054,7 +3055,7 @@ class ZIW_Theme extends ZIW_Base
 	 */
 	function GetPretext($tp)
 	{
-		require_once(Zymurgy::$root.'/zymurgy/include/colorpicker.php');
+		require_once(Zymurgy::getFilePath('~include/colorpicker.php'));
 		$output  = Zymurgy::YUI("container/assets/container.css");
 		$output .= Zymurgy::YUI("yahoo-dom-event/yahoo-dom-event.js");
 		$output .= Zymurgy::YUI("animation/animation-min.js");
@@ -3495,7 +3496,7 @@ class InputWidget
 	 * @param string $inputspec
 	 * @return ZIW_Base
 	 */
-	function GetFromInputSpec($inputspec)
+	static function GetFromInputSpec($inputspec)
 	{
 		$ep = explode('.',$inputspec);
 		$widget = InputWidget::Get($ep[0]);
@@ -3580,7 +3581,7 @@ class InputWidget
 		return $widget->IsValid($value);
 	}
 
-	function inputspec2sqltype($inputspec)
+	static function inputspec2sqltype($inputspec)
 	{
         $typeAndParams = explode('.', $inputspec, 2);
         if (count($typeAndParams) == 1) $typeAndParams[] = '';
@@ -3648,8 +3649,8 @@ InputWidget::Register('gmap',new ZIW_GMap());
 InputWidget::Register("page", new ZIW_Page());
 InputWidget::Register("databasetable", new ZIW_DatabaseTable());
 
-include_once(Zymurgy::$root."/zymurgy/PluginBase.php");
-include_once(Zymurgy::$root."/zymurgy/plugins/TagCloud.php");
+include_once(Zymurgy::getFilePath("~PluginBase.php"));
+include_once(Zymurgy::getFilePath("~plugins/TagCloud.php"));
 
 if(class_exists("PIW_CloudTagInput"))
 {
@@ -3659,6 +3660,6 @@ if(class_exists("PIW_CloudTagInput"))
 
 //InputWidget::Register('',new ZIW_);
 
-if (file_exists(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php'))
-	require_once(Zymurgy::$root.'/zymurgy/custom/CustomWidgets.php');
+if (file_exists(Zymurgy::getFilePath('~custom/CustomWidgets.php')))
+	require_once(Zymurgy::getFilePath('~custom/CustomWidgets.php'));
 ?>

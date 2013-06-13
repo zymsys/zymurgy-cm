@@ -707,9 +707,10 @@ class ZymurgyTemplate
 }
 
 $do404 = false;
-if (file_exists(Zymurgy::$root."/zymurgy/custom/controller.php"))
+$controller = Zymurgy::getFilePath("~custom/controller.php");
+if (file_exists($controller))
 {
-	require_once Zymurgy::$root."/zymurgy/custom/controller.php";
+	require_once ($controller);
 }
 
 Zymurgy::$router->route();

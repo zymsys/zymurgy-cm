@@ -6,11 +6,7 @@
  * @package
  */
 
-define('ZYMURGY_FETCH_ASSOC',MYSQL_ASSOC);
-define('ZYMURGY_FETCH_BOTH',MYSQL_BOTH);
-define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
-
-//require_once('../cmo.php');
+require_once(Zymurgy::getFilePath("~db/base.php"));
 
 /**
  * Wrapper for MySQL DB interface.
@@ -22,10 +18,10 @@ define('ZYMURGY_FETCH_NUM',MYSQL_NUM);
  * @package Zymurgy
  * @subpackage base
  */
-class Zymurgy_DB
+class Zymurgy_DB extends Zymurgy_Base_Db
 {
-	var $link;
-	var $trace = false;
+	private $_link;
+    private $_tableKeys = array();
 
 	/**
 	 * Create a new connection.
@@ -36,12 +32,13 @@ class Zymurgy_DB
 	 */
 	public function __construct()
 	{
-		$this->link = mysql_connect(Zymurgy::$config['mysqlhost'],Zymurgy::$config['mysqluser'],Zymurgy::$config['mysqlpass']);
-		mysql_select_db(Zymurgy::$config['mysqldb'],$this->link) or die ("Unable to select the database ".Zymurgy::$config['mysqldb'].".");
-	}
+		$this->_link = mysql_connect(Zymurgy::$config['mysqlhost'],Zymurgy::$config['mysqluser'],Zymurgy::$config['mysqlpass']);
+		mysql_select_db(Zymurgy::$config['mysqldb'],$this->_link) or die ("Unable to select the database ".Zymurgy::$config['mysqldb'].".");
+        mysql_set_charset('utf8', $this->_link);
+    }
 
 	/**
-	 * Run an SQL query on the dtatbase and return the result.
+	 * Run an SQL query on the database and return the result.
 	 *
 	 * Returns false on error.
 	 *
@@ -56,13 +53,13 @@ class Zymurgy_DB
 			'sql'=>$sql,
 			'start'=>microtime()
 		);
-		$r = mysql_query($sql,$this->link);
+		$r = mysql_query($sql,$this->_link);
 		if (is_array($this->trace))
 		{
 			$trace['finish'] = microtime();
 			$trace['uticks'] = $trace['finish'] - $trace['start'];
 			$trace['result'] = $r;
-			$info = mysql_info($this->link);
+			$info = mysql_info($this->_link);
 			if (!empty($info))
 			{
 				$trace['info'] = $info;
@@ -70,118 +67,6 @@ class Zymurgy_DB
 			$this->trace[] = $trace;
 		}
 		return $r;
-	}
-
-	/**
-	 * Run query and give an error message if there's a problem.
-	 *
-	 * Returns a result identifier resource. Script ends on error.
-	 *
-	 * @todo should this use an exception instead of killing the script?
-	 *
-	 * @see query()
-	 *
-	 * @param string $sql The query to run
-	 * @param string $errormsg The error message to show in case of error, or false to throw an exception.
-	 * @return resource MySQL result set
-	 */
-	public function run($sql, $errormsg = 'Unable to run query')
-	{
-		// should this throw an exception instead?
-		$ri = $this->query($sql);
-		if (!$ri)
-		{
-			$backtrace = debug_backtrace();
-			do 
-			{
-				$bt = array_shift($backtrace);
-			} while ($bt && (substr($bt['file'], -21) == '/zymurgy/db/mysql.php'));
-			if ($errormsg === false)
-			{
-				throw new Exception($this->error()." in ".$bt['file']." on line ".$bt['line'], 0);
-			}
-			else 
-			{
-				echo "$errormsg ($sql): ".$this->error()." in ".$bt['file']." on line ".$bt['line']."<!--\n";
-				debug_print_backtrace();
-				echo "\n-->";
-				die;
-			}
-		}
-		return $ri;
-	}
-	
-	/**
-	 * Return value of request named $name, escaped for the character set of the current connection.
-	 * If $name isn't in the request then either throw an exception or return the escaped value of
-	 * $default if it was provided.
-	 * 
-	 * @param string $name
-	 * @param string $default
-	 * @return string
-	 * @throws Exception
-	 */
-	public function request($name, $default = false)
-	{
-		if (array_key_exists($name, $_REQUEST))
-		{
-			return $this->escape_string($_REQUEST[$name]);
-		}
-		else 
-		{
-			if ($default === false)
-			{
-				throw new Exception("Can't find $name in request.", 0);
-			}
-			else 
-			{
-				return $this->escape_string($default);
-			}
-		}
-	}
-	
-	/**
-	 * Take an SQL template and replace values from $_REQUEST; values are escaped according to the current 
-	 * connection's character set.  All values are quoted.
-	 * Example: example.php?id=5&name=Foo
-	 * sql_template: UPDATE `bar` SET `name`=[name] WHERE `id`=[id]
-	 * returns: UPDATE `bar` SET `name`='Foo' WHERE `id`='5'
-	 * 
-	 * @param string $sql_template
-	 * @return string
-	 */
-	public function requestsql($sql_template)
-	{
-		$replmap = array();
-		foreach(array_keys($_REQUEST) as $key)
-		{
-			$replmap["[$key]"] = "'".$this->escape_string($_REQUEST[$key])."'";
-		}
-		return str_replace(array_keys($replmap), array_values($replmap), $sql_template);
-	}
-
-	/**
-	 * Get a single row or value from a query.
-	 *
-	 * Run a query and throw an error if there's a problem.  Return the first row as an array or
-	 * the value if only one column is returned.  Returns false if no data is returned.
-	 *
-	 * @see query()
-	 *
-	 * @param string $sql
-	 * @param string $errormsg
-	 * @return mixed
-	 */
-	public function get($sql, $errormsg = 'Unable to run query')
-	{
-		$ri = $this->run($sql,$errormsg);
-		$row = $this->fetch_array($ri);
-		if ($this->num_fields($ri)==1)
-		{
-			return $row[0];
-		}
-		mysql_free_result($ri);
-		return $row;
 	}
 
 	/**
@@ -310,7 +195,7 @@ class Zymurgy_DB
 	 */
 	public function insert_id()
 	{
-		return mysql_insert_id($this->link);
+		return mysql_insert_id($this->_link);
 	}
 
 	/**
@@ -335,7 +220,7 @@ class Zymurgy_DB
 	 */
 	public function error()
 	{
-		return mysql_error($this->link);
+		return mysql_error($this->_link);
 	}
 
 	/**
@@ -347,7 +232,7 @@ class Zymurgy_DB
 	 */
 	public function errno()
 	{
-		return mysql_errno($this->link);
+		return mysql_errno($this->_link);
 	}
 
 	/**
@@ -359,10 +244,30 @@ class Zymurgy_DB
 	 */
 	public function affected_rows()
 	{
-		return mysql_affected_rows($this->link);
+		return mysql_affected_rows($this->_link);
 	}
 
-	public function enumeratetables()
+    /**
+     * @param $table
+     * @return array
+     */
+    public function getTableKeys($table)
+    {
+        if (isset($this->_tableKeys[$table])) return $this->_tableKeys[$table];
+        $keys = array();
+        $ri = $this->run("SHOW COLUMNS FROM `$table`");
+        while (($row = $this->fetch_assoc($ri)) !== false) {
+            if ($row['Key'] === 'PRI')
+            {
+                $keys[] = $row['Field'];
+            }
+        }
+        $this->free_result($ri);
+        $this->_tableKeys[$table] = $keys;
+        return $keys;
+    }
+
+    public function enumeratetables()
 	{
 		$tables = array();
 		$ri = Zymurgy_DB::run("show tables");
@@ -373,89 +278,4 @@ class Zymurgy_DB
 		Zymurgy_DB::free_result($ri);
 		return $tables;
 	}
-
-    /**
-     * Assemble an update statement from components, and run it.
-     *
-     * @param $table string Table name
-     * @param $where string Where clause
-     * @param $data array Key value pairs with column names and contents
-     * @param bool $escape Escape names and values? (defaults to true)
-     */
-    public function update($table, $where, $data, $escape = true)
-    {
-        if ($escape)
-        {
-            $table = $this->escape_string($table);
-        }
-        $sql = "UPDATE `$table` SET ";
-        $updates = array();
-        foreach ($data as $columnName => $value)
-        {
-            if ($escape)
-            {
-                $columnName = $this->escape_string($columnName);
-                $value = $this->escape_string($value);
-            }
-            $updates[] = "`$columnName`='$value'";
-        }
-        $sql .= implode(", ", $updates) . " WHERE " . $where;
-        $this->run($sql);
-    }
-
-    public function insert($table, $data, $escape = true)
-    {
-        if ($escape)
-        {
-            $table = $this->escape_string($table);
-        }
-        $sql = "INSERT INTO `$table` (`";
-        if ($escape)
-        {
-            $escaped = array();
-            foreach ($data as $columnName => $value)
-            {
-                if ($escape)
-                {
-                    $columnName = $this->escape_string($columnName);
-                    $value = $this->escape_string($value);
-                }
-                $escaped[$columnName] = $value;
-            }
-            $data = $escaped;
-        }
-        $sql .= implode("`, `", array_keys($data));
-        $sql .= "`) VALUES ('";
-        $sql .= implode("', '", array_values($data));
-        $sql .= "')";
-        $this->run($sql);
-    }
-
-    public function setDispOrder($table)
-    {
-        $this->run("UPDATE `$table` SET `disporder`=`id` WHERE `disporder` IS NULL");
-    }
-
-    public function runParam($sql, $params)
-    {
-        $sql = $this->param($params, $sql);
-        return $this->run($sql);
-    }
-
-    public function param($params, $sql)
-    {
-        $replace = array();
-        foreach ($params as $key => $value) {
-            $replace['{' . $key . '}'] = "'" . $this->escape_string($value) . "'";
-        }
-        $sql = str_replace(array_keys($replace), array_values($replace), $sql);
-        return $sql;
-    }
-
-    public function getParam($sql, $params)
-    {
-        $sql = $this->param($params, $sql);
-        return $this->get($sql);
-    }
 }
-?>

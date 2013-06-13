@@ -1071,7 +1071,7 @@
 					$filepath.".".$mediaFile->get_extension(),
 					$filepath."aspectcropNormal.jpg");
 
-				system("{$ZymurgyConfig['ConvertPath']}convert -modulate 75 ".
+				system(Zymurgy::$config['ConvertPath'] . "convert -modulate 75 ".
 					"{$filepath}aspectcropNormal.jpg {$filepath}aspectcropDark.jpg");
 
 				copy(
@@ -1090,7 +1090,7 @@
 		 */
 		public function MakeThumbnail($mediaFile, $thumbnail)
 		{
-			require_once('include/Thumb.php');
+			require_once(Zymurgy::getFilePath('~include/Thumb.php'));
 
 			$uploadfolder = Zymurgy::$config["Media File Local Path"];
 			$filepath = $uploadfolder.
@@ -1143,7 +1143,7 @@
 
 		static function GetTableDefinitions_zcm_media_file()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+			require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 			return array(
 				"name" => "zcm_media_file",
@@ -1984,7 +1984,7 @@
 
 		static function GetTableDefinitions_zcm_media_package()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+			require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 			return array(
 				"name" => "zcm_media_package",
@@ -2004,9 +2004,9 @@
 
 		static function GetTableDefinitions_zcm_media_file_package()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
-			return array(
+            return array(
 				"name" => "zcm_media_file_package",
 				"columns" => array(
 					DefineTableField("media_file_package_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
@@ -2748,7 +2748,7 @@
 
 		static function GetTableDefinitions_zcm_media_package_type()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 			return array(
 				"name" => "zcm_media_package_type",
@@ -2766,9 +2766,9 @@
 
 		static function GetTableDefinitions_zcm_media_package_type_allowed_relation()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
-			return array(
+            return array(
 				"name" => "zcm_media_package_type_allowed_relation",
 				"columns" => array(
 					DefineTableField("media_package_type_allowed_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
@@ -2857,9 +2857,9 @@
 
 		static function GetTableDefinitions_zcm_media_restriction()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
-			return array(
+            return array(
 				"name" => "zcm_media_restriction",
 				"columns" => array(
 					DefineTableField("media_restriction_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
@@ -3412,9 +3412,9 @@
 
 		static function GetTableDefinitions_zcm_media_relation()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
-			return array(
+            return array(
 				"name" => "zcm_media_relation",
 				"columns" => array(
 					DefineTableField("media_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),
@@ -3432,9 +3432,9 @@
 
 		static function GetTableDefinitions_zcm_media_file_relation()
 		{
-			require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+            require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
-			return array(
+            return array(
 				"name" => "zcm_media_file_relation",
 				"columns" => array(
 					DefineTableField("media_file_relation_id", "INTEGER", "UNSIGNED NOT NULL AUTO_INCREMENT"),

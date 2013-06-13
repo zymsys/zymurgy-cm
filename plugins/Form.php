@@ -50,7 +50,11 @@ BLOCK;
 
 	function GetUninstallSQL()
 	{
-		return 'drop table zcm_form_capture; drop table zcm_form_input; drop table zcm_form_inputtype';
+		return implode(';',array(
+            "drop table zcm_form_capture",
+            "drop table zcm_form_input",
+            "drop table zcm_form_inputtype",
+        ));
 	}
 
 	function RemoveInstance()
@@ -181,7 +185,7 @@ BLOCK;
 
 	protected function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+		require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 		$tableDefinitions = array(
 			array(
@@ -308,8 +312,7 @@ BLOCK;
 	{
 		$this->VerifyTableDefinitions();
 
-		$diemsg = "Unable to upgrade Form plugin: ";
-		require_once(Zymurgy::$root."/zymurgy/installer/upgradelib.php");
+		require_once(Zymurgy::getFilePath("~installer/upgradelib.php"));
 
 		// -----
 		// Convert the validators from straight regex to a foriegn key of
@@ -979,9 +982,9 @@ XML;
 		$extensions[] = new FormPrefillFromMemberCustomTable();
 		$extensions[] = new FormForward();
 
-		if(file_exists(Zymurgy::$root."/zymurgy/custom/plugins/Form.php"))
+		if(file_exists(Zymurgy::getFilePath("~custom/plugins/Form.php")))
 		{
-			include_once(Zymurgy::$root."/zymurgy/custom/plugins/Form.php");
+			include_once(Zymurgy::getFilePath("~custom/plugins/Form.php"));
 
 			$extensions = array_merge(
 				$extensions,
@@ -1094,7 +1097,7 @@ class FormEmailToWebmaster implements PluginExtension
 			if (!empty($firstcontact['tag']))
 				$body[] = "\tIncoming Link Tag: {$firstcontact['tag']}";
 
-			require_once Zymurgy::$root.'/zymurgy/include/referrer.php';
+			require_once Zymurgy::getFilePath('~include/referrer.php');
 
 			$r = new Referrer($firstcontact['referrer']);
 

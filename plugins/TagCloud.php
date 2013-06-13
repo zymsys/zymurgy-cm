@@ -28,6 +28,13 @@ class TagCloud extends PluginBase
 	 * @var array
 	 */
 	private $alltagsraw;
+
+    private $tagCloudServiceURL;
+
+    function __construct()
+    {
+        $this->tagCloudServiceURL = Zymurgy::getUrlPath('~plugins/TagCloud.php');
+    }
 	
 	function GetTitle()
 	{
@@ -79,7 +86,7 @@ BLOCK;
 
 	function VerifyTableDefinitions()
 	{
-		require_once(Zymurgy::$root.'/zymurgy/installer/upgradelib.php');
+		require_once(Zymurgy::getFilePath('~installer/upgradelib.php'));
 
 		$tableDefinitions = array(
 			array(
@@ -218,7 +225,7 @@ BLOCK;
 	
 	function RenderHTML()
 	{
-		require_once(Zymurgy::$root."/zymurgy/InputWidget.php");
+		require_once(Zymurgy::getFilePath("~InputWidget.php"));
 		$widget = new InputWidget();
 
 		$widget->Render(
@@ -381,13 +388,13 @@ class PIW_CloudTagInput extends ZIW_Base
 		echo Zymurgy::YUI('datasource/datasource-min.js');
 		echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
 
-		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloudwidget.js");
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath("~include/tagcloudwidget.js"));
 
 		$output = <<<BLOCK
 <input type="hidden" name="{$jsName}" id="{$jsName}" value="{$value}">
 <div id="tcw{$jsName}"></div>
 <script type="text/javascript">
-	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}', {0});
+	ZymurgyTagCloudWidget('{$jsName}','tcw{$jsName}','{$this->tagCloudServiceURL}?DataInstance={$ep[1]}', {0});
 </script>
 BLOCK;
 
@@ -457,7 +464,7 @@ class PIW_CloudTagCloud extends ZIW_Base
 		echo Zymurgy::YUI("datatable/datatable.js");
 		echo Zymurgy::YUI('autocomplete/autocomplete-min.js');
 
-		echo Zymurgy::RequireOnce("/zymurgy/include/tagcloud.js");
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath("~include/tagcloud.js"));
 
 		$startTagsParam = "";
 		if (!empty($value))
@@ -483,19 +490,12 @@ class PIW_CloudTagCloud extends ZIW_Base
 	YAHOO.util.Event.onDOMReady(function() {
 		tag{$jsName} = new ZymurgyTagCloud(
 			'tc{$jsName}',
-			'/zymurgy/plugins/TagCloud.php?DataInstance={$ep[1]}{$startTagsParam}',
+			'{$this->tagCloudServiceURL}?DataInstance={$ep[1]}{$startTagsParam}',
 			'{$jsName}');
 
-//		alert("Checking for results table.");
-
 		if(document.getElementById('tcr{$jsName}')) {
-//			alert("Found results table.");
-//			alert(datafor{$jsName});
 			datafor{$jsName}.startRequest("");
-//			alert("Request for results sent.");
 		}
-
-//		alert("onDOMReady fin");
 	});
 </script>
 BLOCK;

@@ -82,7 +82,7 @@
 			if (!Zymurgy::memberauthenticate())
 			{
 				$rurl = urlencode($_SERVER['REQUEST_URI']);
-				Zymurgy::JSRedirect(Zymurgy::$config['MemberLoginPage']."?rurl=$rurl");
+				Zymurgy::JSRedirect(Zymurgy::getUrlPath(Zymurgy::$config['MemberLoginPage']."?rurl=$rurl"));
 			}
 
 			// Design my Contract terms

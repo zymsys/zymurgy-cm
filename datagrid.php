@@ -44,7 +44,7 @@ if (isset($_GET['mime']))
 	}
 }
 
-require_once("$ZymurgyRoot/zymurgy/InputWidget.php");
+require_once(Zymurgy::getFilePath("~InputWidget.php"));
 
 if (!function_exists('getapplpath'))
 {
@@ -96,12 +96,13 @@ if(!isset($GLOBALS["suppressDatagridJavascript"]))
 		*/
 		function aspectcrop_popup(ds, d, id, imgid, fixedratio, gd)
 		{
-			var fixedar;
+			var fixedar,
+                cropService = '<?php echo Zymurgy::getUrlPath('~aspectcrop.php'); ?>';
 			if (fixedratio)
 				fixedar = '&fixedar=1';
 			else
 				fixedar = '';
-			window.open('/zymurgy/aspectcrop.php?ds='+ds+'&d='+d+'&gd='+gd+'&id='+id+'&imgid='+imgid+fixedar,'','scrollbars=no,width=780,height=500');
+			window.open(cropService + '?ds='+ds+'&d='+d+'&gd='+gd+'&id='+id+'&imgid='+imgid+fixedar,'','scrollbars=no,width=780,height=500');
 		}
 //-->
 </script>
@@ -323,8 +324,7 @@ class DataSetRow
 		list($tables,$tablekeys) = $this->GetMyTables();
 		foreach ($tables as $tname=>$values)
 		{
-			$sql = "delete from $tname where {$tablekeys[$tname]}=$deletekey";
-			$ri = Zymurgy::$db->query($sql);
+            $ri = Zymurgy::$db->delete($tname, "{$tablekeys[$tname]}=$deletekey");
 		}
 		return $ri;
 	}
@@ -368,21 +368,19 @@ class DataSetRow
 		//Now create seperate update/inserts for each table
 		foreach ($tables as $tname=>$values)
 		{
-			$clist = array();
 			$vlist = array();
 			$alist = array();
 
 			foreach ($values as $cname=>$val)
 			{
-				$clist[] = "`$cname`";
 
 				// If the user clicked on the Clear button for an attachment,
 				// delete the attachment from the filesystem and clear
 				// the field in the table.
-				if(key_exists("clear{$tname}_{$cname}", $_POST) && $_POST["clear{$tname}_{$cname}"] == "1")
+				if(isset($_POST["clear{$tname}_{$cname}"]) && $_POST["clear{$tname}_{$cname}"] == "1")
 				{
 					// delete files using the "attachment" inputspec
-					$uploadfolder = Zymurgy::$root."/zymurgy/uploads/";
+					$uploadfolder = Zymurgy::getFilePath("~uploads/");
 					$filepath = $uploadfolder."$tname.$cname.".$this->values["$tname.{$tablekeys[$tname]}"];
 					@unlink($filepath);
 
@@ -402,16 +400,7 @@ class DataSetRow
 				if (!key_exists("$tname.$cname",$this->DataSet->columns))
 					$this->DataSet->AddColumn($cname,true); //Auto create missing columns
 
-				if ($this->DataSet->columns["$tname.$cname"]->quoted)
-				{
-					$vlist[$cname] = is_null($val) ? 'null' : "'".Zymurgy::$db->escape_string($val)."'";
-					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`='".Zymurgy::$db->escape_string($val)."'";
-				}
-				else
-				{
-					$vlist[$cname] = is_null($val) ? 'null' : $val;
-					$alist[$cname] = is_null($val) ? "`$cname`=null" : "`$cname`=$val";
-				}
+                $vlist[$cname] = $val;
 			}
 
 			// -----
@@ -437,11 +426,10 @@ class DataSetRow
 			// If the member is empty (due to inserting into a member table
 			// directly through Zymurgy:CM), assign the record to the user
 			// currently logged in.
-			if(array_key_exists("member", $alist) && $alist["member"] = "`member` = ")
+			if(array_key_exists("member", $vlist) && empty($vlist["member"]))
 			{
-//				die("empty member");
 				Zymurgy::memberauthenticate();
-				$alist["member"] = "`member` = ".Zymurgy::$member["id"];
+				$vlist["member"] = Zymurgy::$member["id"];
 			}
 
 			if ($this->edittype == 'UPDATE')
@@ -450,27 +438,13 @@ class DataSetRow
 					$keyval = "'".Zymurgy::$db->escape_string($this->values["$tname.{$tablekeys[$tname]}"])."'";
 				else
 					$keyval = $this->values["$tname.{$tablekeys[$tname]}"];
-				$sql = "update $tname set ".implode(',',$alist)." where {$tablekeys[$tname]}=$keyval";
+                Zymurgy::$db->update($tname, "{$tablekeys[$tname]}=$keyval", $vlist);
 				if ($rid==0)
 					$rid = $this->values["$tname.{$tablekeys[$tname]}"];
 			}
 			else
 			{
-				$sql = "insert into $tname (".implode(",",$clist).") values (".
-					implode(",",$vlist).")";
-			}
-
-			$ri = Zymurgy::$db->query($sql);
-
-			if ($ri === false)
-			{
-				echo "Error updating record: ".Zymurgy::$db->error()." [$sql]";
-				exit;
-			}
-
-			if ($rid==0)
-			{
-				$rid = Zymurgy::$db->insert_id();
+                $rid = Zymurgy::$db->insert($tname, $vlist);
 			}
 
 			$this->values[$this->DataSet->masterkey] = $rid;
@@ -1126,7 +1100,7 @@ class DataGrid
 			$theight = $maxh;
 		}
 		list($ds,$dc) = explode('.',$datacolumn,2);
-		$imgsrc = "/zymurgy/file.php?mime=auto&dataset=".urlencode($ds)."&datacolumn=".
+		$imgsrc = Zymurgy::getUrlPath("~file.php") . "?mime=auto&dataset=".urlencode($ds)."&datacolumn=".
 			urlencode($dc)."&id={ID}&w=$twidth&h=$theight";
 		//$returnurl = urlencode($this->BuildSelfReference(array(),array('action','deletekey','editkey','movefrom','movedirection')));
 		if ($fixedratio)
@@ -1455,7 +1429,7 @@ class DataGrid
 					}
 					else
 					{
-						$path = "$ZymurgyRoot/zymurgy/uploads";
+						$path = Zymurgy::getFilePath("~uploads");
 						@unlink("$path/$datacolumn.$id");
 					}
 				}
@@ -1674,12 +1648,12 @@ class DataGrid
 				}
 				$id = $dsr->Update();
 				//print_r($_FILES); exit;
-				$uploadfolder = "$ZymurgyRoot/zymurgy/uploads";
+				$uploadfolder = Zymurgy::getFilePath("~uploads");
 				foreach ($uploads as $dc=>$upload)
 				{
 					if (array_key_exists($dc,$this->thumbs))
 					{
-						require_once(Zymurgy::$root."/zymurgy/include/Thumb.php");
+						require_once(Zymurgy::getFilePath("~include/Thumb.php"));
 						$ext = Thumb::mime2ext($file['type']);
 						$this->MakeThumbs($dc,$dsr->values[$this->DataSet->masterkey],$this->thumbs[$dc],$upload,Thumb::mime2ext($file['type']));
 					}
@@ -1760,7 +1734,7 @@ class DataGrid
 
 				echo Zymurgy::YUI("yuiloader/yuiloader-min.js");
 
-				echo "<script src=\"/zymurgy/include/autosave.js\"></script>\r\n";
+				echo "<script src=\"" . Zymurgy::getUrlPath("~include/autosave.js") . "\"></script>\r\n";
 				echo "<script>InitializeAutoSave('$formid',$fckcount);</script>\r\n";
 			}
 			echo "<form id=\"$formid\" name=\"datagridform\" method=\"post\" enctype=\"multipart/form-data\" action=\"{$_SERVER['REQUEST_URI']}\">\r\n";
@@ -1826,7 +1800,7 @@ class DataGrid
 		$id = $row->values[$this->DataSet->masterkey];
 		$elid = "zcmdgt$id";
 		echo "<td>";
-		echo "<img id=\"$elid\" src=\"/zymurgy/images/Context.gif\" alt=\"Context Menu\" width=\"12\" height=\"12\" />";
+		echo "<img id=\"$elid\" src=\"" . Zymurgy::getUrlPath("~images/Context.gif") . "\" alt=\"Context Menu\" width=\"12\" height=\"12\" />";
 		echo "</td>";
 		return $elid;
 	}
@@ -1842,7 +1816,7 @@ class DataGrid
 		echo Zymurgy::YUI('yahoo-dom-event/yahoo-dom-event.js');
 		echo Zymurgy::YUI('container/container_core-min.js');
 		echo Zymurgy::YUI('menu/menu-min.js');
-		echo Zymurgy::RequireOnce('/zymurgy/include/datagrid.js');
+		echo Zymurgy::RequireOnce(Zymurgy::getUrlPath('~include/datagrid.js'));
 		echo "<table cellspacing=\"0\" cellpadding=\"3\" rules=\"cols\" bordercolor=\"#999999\" border=\"1\" class=\"DataGrid\"";
 		if (isset($this->width)) echo " width=\"{$this->width}\"";
 		echo "><tr class=\"DataGridHeader\">\r\n";
@@ -1969,11 +1943,11 @@ function DumpDataGridCSS()
 	if (array_key_exists('gridcss',Zymurgy::$config))
 		$gridcss = Zymurgy::$config['gridcss'];
 	else
-		$gridcss = "/zymurgy/include/datagrid.css";
+		$gridcss = "~include/datagrid.css";
 
 	if(strpos($gridcss, "{") == FALSE)
 	{
-		echo '<link href="'.$gridcss.'" rel="stylesheet" type="text/css" />';
+		echo '<link href="' . Zymurgy::getUrlPath($gridcss) . '" rel="stylesheet" type="text/css" />';
 	}
 	else
 	{

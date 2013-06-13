@@ -114,8 +114,12 @@ class ldapMember extends ZymurgyMember
 
         $baseDN = Zymurgy::$config[self::MEMBERSHIP_LDAP_BASE_DN];
         list($bareAccountName, $domain) = explode('@', $userId, 2);
-        $search = ldap_search($link, $baseDN,
+        $search = @ldap_search($link, $baseDN,
             "(&(objectCategory=person)(objectClass=user)(samaccountname={$bareAccountName}))");
+        if ($search === false)
+        {
+            return false;
+        }
         $entries = ldap_get_entries($link, $search);
         $groups = array();
         if ($entries && ($entries['count'] > 0))
@@ -149,12 +153,27 @@ class ldapMember extends ZymurgyMember
                 {
                     $fullName = $user['cn'][0];
                 }
-                Zymurgy::$db->run("insert into zcm_member (email,username,password,fullname,regtime,lastauth,mpkey) values ('".
-                    Zymurgy::$db->escape_string($email)."','".
-                    Zymurgy::$db->escape_string($userId)."','n/a','".
-                    Zymurgy::$db->escape_string($fullName).
-                    "', now(),now(),'".
-                    Zymurgy::$db->escape_string($userId)."')");
+                $memberId = Zymurgy::$db->getParam("SELECT `id` FROM `zcm_member` WHERE `email`={0}", array($email));
+                if ($memberId)
+                {
+                    $sql = Zymurgy::$db->param(array($userId, $memberId), "UPDATE `zcm_member` SET `mpkey`={0} WHERE `id`={1}");
+                    Zymurgy::$db->run($sql);
+                }
+                else
+                {
+                    Zymurgy::$db->insert('zcm_member', array(
+                        'email' => $email,
+                        'username' => $userId,
+                        'password' => null,
+                        'fullname' => $fullName,
+                        'regtime' => new DateTime(),
+                        'lastauth' => new DateTime(),
+                        'mpkey' => $userId,
+                    ));
+//                    $sql = Zymurgy::$db->param(array($email, $userId, $fullName, $userId),
+//                        "INSERT INTO `zcm_member` (`email`,`username`,`password`,`fullname`,`regtime`,`lastauth`,`mpkey`)
+//                        values ({0},{1},{2}, NOW(), NOW(), {3})");
+                }
                 $this->findmemberfromsession();
             }
             $this->syncGroups($groups);

@@ -19,7 +19,7 @@ else
 
 include("{$ZymurgyRoot}/zymurgy/cmo.php");
 $build = Zymurgy::$build;
-$ZymurgyDB = Zymurgy::$db->link;
+$ZymurgyDB = Zymurgy::$db->_link;
 $CONFIG = Zymurgy::$userconfig;
 $ZymurgyConfig = Zymurgy::$config;
 

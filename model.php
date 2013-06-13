@@ -176,7 +176,7 @@ class ZymurgyBaseModel
         return implode(',', $sqlColumns);
     }
 
-    protected function getColumnList()
+    protected function getColumnList($aclName)
     {
         if (isset(Zymurgy::$config['PublicData']) && isset(Zymurgy::$config['PublicData'][$this->getTableOrViewName()]))
         {
@@ -289,6 +289,11 @@ class ZymurgyBaseModel
         $this->rangeStart = $start;
         $this->rangeLimit = $limit;
     }
+
+    public function getMemberTableName()
+    {
+        return false;
+    }
 }
 
 class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
@@ -343,6 +348,10 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 		$this->memberfilter = array();
 		$this->tabledata = Zymurgy::$db->get("SELECT * FROM `zcm_customtable` WHERE `tname`='".
 			Zymurgy::$db->escape_string($table)."'");
+        if ($this->tabledata === false)
+        {
+            throw new ZymurgyModelException("Table [$table] does not exist.");
+        }
 		$this->membertable = $this->tabledata;
 		$this->tablechain = array();
 		$datamember = false; //If $table is member data, or belongs to a member data limit data funtions to the member's rows
@@ -475,7 +484,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 		}
 		else 
 		{
-			throw new ZymurgyModelException("This table has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
+			throw new ZymurgyModelException("This table [$table] has no ACL, so data services are not available.", ZymurgyModelException::$NO_ACL);
 		}
         if ($this->tabledata['hasdisporder'])
         {
@@ -607,63 +616,51 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
 	
 	public function write($rowdata)
 	{
+        $insertId = null;
 		$aclcols = $this->checkacl('Write');
 		$table = $this->tabledata['tname'];
 		$rowdata = $this->validaterow($rowdata);
+        $sets = array();
+        foreach ($aclcols as $cname=>$permission)
+        {
+            if (array_key_exists($cname, $rowdata))
+            {
+                $sets[$cname] = $rowdata[$cname];
+            }
+        }
 		if (array_key_exists($this->tabledata['idfieldname'], $rowdata))
 		{//Update
-			$sets = array();
-			foreach ($aclcols as $cname=>$permission)
-			{
-				if (array_key_exists($cname, $rowdata))
-				{
-					$sets[] = "`$cname`=" . $this->setValue($rowdata[$cname]);
-				}
-			}
-			if (!$sets) 
+			if (!$sets)
 			{
 				throw new ZymurgyModelException("Update failed: no row data for any allowed/known columns", ZymurgyModelException::$MISSING_COLUMN);
 			}
-			$sql = "UPDATE `$table` SET ".implode(',', $sets)." WHERE `".
-				Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
+
+			$where = "`" . Zymurgy::$db->escape_string($this->tabledata['idfieldname'])."`='".
 				Zymurgy::$db->escape_string($rowdata[$this->tabledata['idfieldname']])."'";
 			if ($this->memberfilter)
 			{
-				$sql .= ' AND ('.implode(') AND (', $this->memberfilter).')';
+				$where .= ' AND ('.implode(') AND (', $this->memberfilter).')';
 			}
+            Zymurgy::$db->update($table, $where, $sets);
 		}
 		else 
 		{//Create
-			$cols = array();
-			$vals = array();
-			foreach ($aclcols as $cname=>$permission)
-			{
-				if (array_key_exists($cname, $rowdata))
-				{
-					$cols[] = "`$cname`";
-					$vals[] = $this->setValue($rowdata[$cname]);
-				}
-			}
             if (isset($this->tablechain[2]))
             {
                 $cname = $this->tablechain[0]['tname'];
-                $cols[] = "`" . $cname . "`"; //Allow parent relationship in insert
-                $vals[] = $this->setValue($rowdata[$cname]);
+                $sets[$cname] = $rowdata[$cname]; //Allow parent relationship in insert
             }
-			if (!$cols) 
+			if (!$sets)
 			{
 				throw new ZymurgyModelException("Insert failed: no row data for any allowed/known columns", ZymurgyModelException::$MISSING_COLUMN);
 			}
 			if ($this->tabledata['tname'] == $this->membertable['tname'])
 			{//This is a member data table; set the member column.
-				$cols[] = "`member`";
-				$vals[] = Zymurgy::$member['id'];
+                $sets['member']= Zymurgy::$member['id'];
 			}
-			$sql = "INSERT INTO `$table` (".
-				implode(',', $cols).") VALUES (".
-				implode(',', $vals).")";
+            $insertId = Zymurgy::$db->insert($table, $sets);
 		}
-		return Zymurgy::$db->run($sql);
+        return $insertId;
 	}
 	
 	//curl -X DELETE --cookie "ZymurgyAuth=bobotea" http://hfo.zymurgy2.com/zymurgy/data.php?table=bar&id=3
@@ -676,8 +673,7 @@ class ZymurgyModel extends ZymurgyBaseModel implements ZymurgyModelInterface
         }
 		$this->checkacl('Delete');
 		$table = $this->tabledata['tname'];
-		$sql = "DELETE FROM `$table` WHERE " . $this->buildFilterFragment();
-		return Zymurgy::$db->run($sql);
+        Zymurgy::$db->delete($table, $this->buildFilterFragment());
 	}
 	
 	public function getTableName()

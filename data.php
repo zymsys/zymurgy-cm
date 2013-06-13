@@ -9,7 +9,7 @@
  */
 ob_start();
 require_once 'cmo.php';
-require_once Zymurgy::$root."/zymurgy/model.php";
+require_once Zymurgy::getFilePath("~model.php");
 ob_clean();
 
 class ZymurgyJSONDataController
@@ -22,6 +22,7 @@ class ZymurgyJSONDataController
     {
         Zymurgy::headtags(false);
         $this->result = new stdClass();
+        $this->result->status = 'ok';
         $this->tableName = Zymurgy::$db->escape_string($tableName);
         $this->model = ZymurgyModel::factory($this->tableName);
     }
@@ -71,9 +72,25 @@ class ZymurgyJSONDataController
         $this->applySort($requestVariables);
         $this->applyRange($requestVariables);
         $this->result->data = $this->model->read();
-        if ($this->isIdentity && $this->result->data)
-        {
+        if ($this->isIdentity && $this->result->data) {
             $this->result->data = $this->result->data[0];
+        } else if ($this->model->getMemberTableName() !== false) {
+            $members = array();
+            foreach ($this->result->data as $row) {
+                if (isset($row['member'])) {
+                    $members[$row['member']] = false;
+                }
+            }
+            $ri = Zymurgy::$db->runParam("SELECT * FROM zcm_member WHERE id IN ({0})",
+                array(implode(',',array_keys($members))));
+            Zymurgy::$db->each($ri, function ($row) use (&$members) {
+                unset($row['password']);
+                unset($row['mpkey']);
+                unset($row['authkey']);
+                unset($row['formdata']);
+                $members[$row['id']] = $row;
+            });
+            $this->result->members = $members;
         }
         $this->result->count = $this->model->count();
         $this->result->success = is_array($this->result->data);
@@ -87,8 +104,7 @@ class ZymurgyJSONDataController
 
     protected function processPost($requestVariables)
     {
-        $this->result->success = $this->model->write($requestVariables);
-        $newId = Zymurgy::$db->insert_id();
+        $newId = $this->model->write($requestVariables);
         if ($newId) $this->result->newid = $newId;
     }
 
