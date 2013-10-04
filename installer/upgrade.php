@@ -108,8 +108,8 @@ UpdateStatus("");
 
 UpdateStatus("-- Upgrading Z:CM accounts from passwd to members.");
 if (0 == Zymurgy::$db->get("select count(*) from zcm_member")) {
-    $ri = Zymurgy::$db->run("select * from zcm_passwd");
-    while (($row = Zymurgy::$db->fetch_assoc($ri)) !== false) {
+    $ri = Zymurgy::$db->query("select * from zcm_passwd");
+    while ($ri && (($row = Zymurgy::$db->fetch_assoc($ri)) !== false)) {
         Zymurgy::$db->insert('zcm_member', array(
             'username' => $row['username'],
             'email' => $row['email'],
