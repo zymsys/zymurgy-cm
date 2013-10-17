@@ -7,7 +7,9 @@ if ((!array_key_exists('MembershipLoginForm',Zymurgy::$config))
 {
 	$myurlParts = explode('/',$_SERVER['SERVER_PROTOCOL'],2);
 	$myurl = strtolower(array_shift($myurlParts));
-	$myurl .= '://'.$_SERVER['SERVER_NAME'].'/'.$_SERVER['REQUEST_URI'];
+    $expectedPort = ($myurl == 'https') ?  443 : 80;
+    $myurl .= '://'.$_SERVER['HTTP_HOST'];
+    $myurl .= $_SERVER['REQUEST_URI'];
 	Zymurgy::$config['MembershipLoginForm'] = <<<HEREDOC
 <form class="MemberLogin" method="post" action="$myurl">
 	<table>
