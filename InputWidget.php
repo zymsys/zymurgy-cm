@@ -734,7 +734,11 @@ class ZIW_Lookup extends ZIW_Base
 		{
 			$this->extra['lookupsf'] = array();
 		}
-		if (!array_key_exists($ep[1],$this->extra['lookups']))
+        if (!array_key_exists('lookups',$this->extra))
+        {
+            $this->extra['lookups'] = array();
+        }
+        if (!array_key_exists($ep[1],$this->extra['lookups']))
 		{
 			include_once("datagrid.php");
 
