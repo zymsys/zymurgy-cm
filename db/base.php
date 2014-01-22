@@ -1,9 +1,9 @@
 <?php
 
 define('ZYMURGY_DB_DEFAULT_ERROR', 'Unable to run query');
-define('ZYMURGY_FETCH_ASSOC', MYSQL_ASSOC);
-define('ZYMURGY_FETCH_BOTH', MYSQL_BOTH);
-define('ZYMURGY_FETCH_NUM', MYSQL_NUM);
+define('ZYMURGY_FETCH_ASSOC', 1);
+define('ZYMURGY_FETCH_BOTH', 3);
+define('ZYMURGY_FETCH_NUM', 2);
 
 abstract class Zymurgy_Base_Db
 {
@@ -36,7 +36,6 @@ abstract class Zymurgy_Base_Db
     abstract public function fetch_object($result);
     abstract public function num_rows($result);
     abstract public function free_result($result);
-    abstract public function result($result, $row, $field = null);
     abstract public function insert_id();
     abstract public function escape_string($to_be_escaped);
     abstract public function error();
@@ -44,6 +43,9 @@ abstract class Zymurgy_Base_Db
     abstract public function affected_rows();
     abstract public function enumeratetables();
     abstract public function getTableKeys($table);
+
+    //Deprecated; this is evil.
+//    abstract public function result($result, $row, $field = null);
 
     /**
      * Run query and give an error message if there's a problem.

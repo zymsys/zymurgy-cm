@@ -210,7 +210,7 @@ class CustomTableTool
             //Column name or type has changed, update the db.
             $sqlType = Zymurgy::inputspec2sqltype($inputSpec);
             $sql = "alter table `{$tableName}` change `{$originalColumnName}` `{$columnName}` $sqlType";
-            mysql_query($sql) or die("Unable to change field ($sql): " . mysql_error());
+            Zymurgy::$db->query($sql) or die("Unable to change field ($sql): " . Zymurgy::$db->error());
         }
         if ($originalFieldData['indexed'] != $indexed) {
             //Add or remove an index
@@ -219,7 +219,7 @@ class CustomTableTool
             } else {
                 $sql = "alter table `{$tableName}` drop index `{$columnName}`";
             }
-            mysql_query($sql) or die("Can't change index ($sql): " . mysql_error());
+            Zymurgy::$db->query($sql) or die("Can't change index ($sql): " . Zymurgy::$db->error());
         }
         Zymurgy::$db->update('zcm_customfield', "`id`=$columnId", $data, false);
     }
@@ -286,30 +286,30 @@ class CustomTableTool
             $errmsg = '';
             //Find relationships and rename those
             $sql = "select * from zcm_customtable where detailfor={$tableData['id']}";
-            $ri = mysql_query($sql) or die("Unable to get relationships ($sql): " . mysql_error());
+            $ri = Zymurgy::$db->query($sql) or die("Unable to get relationships ($sql): " . Zymurgy::$db->error());
             while (($drow = mysql_fetch_array($ri)) !== false) {
                 $needchange[] = $drow['tname'];
             }
             mysql_free_result($ri);
             foreach ($needchange as $tname) {
                 $sql = "alter table $tname change $oldname $newname bigint";
-                $ri = mysql_query($sql);
+                $ri = Zymurgy::$db->query($sql);
                 if ($ri !== false) {
                     $changed[] = $tname;
                 } else {
-                    $errmsg = "Couldn't rename the $oldname column to $newname in the table $tname ($sql): " . mysql_error();
+                    $errmsg = "Couldn't rename the $oldname column to $newname in the table $tname ($sql): " . Zymurgy::$db->error();
                     break; //Don't bother changing any more, we're going to try to undo the damage and get out.
                 }
             }
             if (empty($errmsg)) {
                 //All required relationships have been successfully updated.
                 $sql = "rename table `{$tableData['tname']}` to `{$data['tname']}`";
-                $ri = mysql_query($sql);
+                $ri = Zymurgy::$db->query($sql);
                 if (!$ri) {
                     $e = mysql_errno();
                     switch ($e) {
                         default:
-                            $errmsg = "SQL error $e trying to rename table {$tableData['tname']} to {$data['tname']} ($sql): " . mysql_error();
+                            $errmsg = "SQL error $e trying to rename table {$tableData['tname']} to {$data['tname']} ($sql): " . Zymurgy::$db->error();
                     }
                 }
             }
@@ -317,10 +317,10 @@ class CustomTableTool
                 //Something went wrong.  Back out.
                 foreach ($changed as $tname) {
                     $sql = "update $tname change $newname $oldname bigint";
-                    $ri = mysql_query($sql);
+                    $ri = Zymurgy::$db->query($sql);
                     if ($ri === false) {
                         //Uh oh, can't even back out!  Best we can do is alert the developer of the snafu.
-                        $errmsg .= "<br />Additionally we couldn't back out one of the table changes already made.  We tried ($sql) but received the error: " . mysql_error();
+                        $errmsg .= "<br />Additionally we couldn't back out one of the table changes already made.  We tried ($sql) but received the error: " . Zymurgy::$db->error();
                     }
                 }
                 return $errmsg;
@@ -331,15 +331,15 @@ class CustomTableTool
             if ($data['hasdisporder'] == 0) {
                 //Remove display order column
                 $sql = "alter table `{$data['tname']}` drop disporder";
-                $ri = mysql_query($sql) or die ("Unable to remove display order ($sql): " . mysql_error());
+                $ri = Zymurgy::$db->query($sql) or die ("Unable to remove display order ($sql): " . Zymurgy::$db->error());
             } else {
                 //Add display order column
                 $sql = "alter table `{$data['tname']}` add disporder bigint";
-                mysql_query($sql) or die("Unable to add display order ($sql): " . mysql_error());
+                Zymurgy::$db->query($sql) or die("Unable to add display order ($sql): " . Zymurgy::$db->error());
                 $sql = "alter table `{$data['tname']}` add index(disporder)";
-                mysql_query($sql) or die("Unable to add display order index ($sql): " . mysql_error());
+                Zymurgy::$db->query($sql) or die("Unable to add display order index ($sql): " . Zymurgy::$db->error());
                 $sql = "update `{$data['tname']}` set disporder=id";
-                mysql_query($sql) or die("Unable to set default display order ($sql): " . mysql_error());
+                Zymurgy::$db->query($sql) or die("Unable to set default display order ($sql): " . Zymurgy::$db->error());
             }
         }
         if ((0 + $tableData['ismember']) != (0 + $data['ismember'])) {
@@ -347,13 +347,13 @@ class CustomTableTool
             if ($data['ismember'] == 0) {
                 //Remove member column
                 $sql = "alter table `{$data['tname']}` drop member";
-                $ri = mysql_query($sql) or die ("Unable to remove member ($sql): " . mysql_error());
+                $ri = Zymurgy::$db->query($sql) or die ("Unable to remove member ($sql): " . Zymurgy::$db->error());
             } else {
                 //Add member column
                 $sql = "alter table `{$data['tname']}` add member bigint";
-                mysql_query($sql) or die("Unable to add member ($sql): " . mysql_error());
+                Zymurgy::$db->query($sql) or die("Unable to add member ($sql): " . Zymurgy::$db->error());
                 $sql = "alter table `{$data['tname']}` add index(member)";
-                mysql_query($sql) or die("Unable to add member index ($sql): " . mysql_error());
+                Zymurgy::$db->query($sql) or die("Unable to add member index ($sql): " . Zymurgy::$db->error());
             }
         }
         if ($tableData['selfref'] != $data['selfref']) {
@@ -400,14 +400,14 @@ class CustomTableTool
             $sql .= ", member bigint, key member (member)";
         }
         $sql .= ")";
-        $ri = mysql_query($sql) or die("Unable to create table ($sql): " . mysql_error());
+        $ri = Zymurgy::$db->query($sql) or die("Unable to create table ($sql): " . Zymurgy::$db->error());
         if (!$ri) {
             $e = mysql_errno();
             switch ($e) {
                 case 1050:
                     return "The table {$data['tname']} already exists.  Please select a different name.";
                 default:
-                    return "<p>SQL error $e trying to create table: " . mysql_error() . "</p>";
+                    return "<p>SQL error $e trying to create table: " . Zymurgy::$db->error() . "</p>";
             }
             return false;
         }
