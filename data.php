@@ -168,6 +168,7 @@ class ZymurgyJSONDataController
 
 try
 {
+    ob_start();
     $controller = new ZymurgyJSONDataController($_GET['table']);
     if (array_key_exists('id', $_REQUEST))
     {
@@ -181,6 +182,7 @@ try
     }
     else
     {
+        ob_clean();
         $controller->emitJSONResult();
     }
 }
