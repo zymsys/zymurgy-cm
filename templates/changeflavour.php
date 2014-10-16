@@ -37,6 +37,14 @@ $node = 0; //Start with root node
 while ($rp)
 {
 	$pathpart = array_shift($rp);
+        if (!isset($oldnav->items[$node]->childrenbynavname[$pathpart])) {
+            $pathpart = urlencode($pathpart);
+            if (!isset($oldnav->items[$node]->childrenbynavname[$pathpart])) {
+                //Can't find path from referrer; can't find re-encoded path; give up and redirect to default path.
+                header('Location: '.$link);
+                exit;
+            }
+        }
 	$node = $oldnav->items[$node]->childrenbynavname[$pathpart];
 	$newpath[] = $newnav->items[$node]->linkurl;
 }
@@ -47,4 +55,3 @@ if (isset($queryString))
 }
 //Zymurgy::DbgAndDie($link,$newpath,$newflavour,$link,$referer,$newnav,Zymurgy::$sitenav);
 header('Location: '.$link);
-?>
