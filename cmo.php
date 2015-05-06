@@ -638,7 +638,9 @@ if (!class_exists('Zymurgy'))
             {
                 if (!isset(Zymurgy::$home))
                 {
-                    $docRoot = explode(DIRECTORY_SEPARATOR, $_SERVER['DOCUMENT_ROOT']);
+                    $rootPath = isset($_SERVER['APPL_PHYSICAL_PATH']) ?
+                        $_SERVER['APPL_PHYSICAL_PATH'] : $_SERVER['DOCUMENT_ROOT'];
+                    $docRoot = explode(DIRECTORY_SEPARATOR, $rootPath);
                     $myPath = explode(DIRECTORY_SEPARATOR, __DIR__);
                     while ($docRoot && $myPath && ($docRoot[0] == $myPath[0]))
                     {
