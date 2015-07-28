@@ -52,7 +52,7 @@ function renderZCMNav($parent)
 		$navs[] = $row;
 	}
 
-	mysql_free_result($ri);
+	Zymurgy::$db->free_result($ri);
 
 	if (count($navs)==0) return;
 
