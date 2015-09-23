@@ -909,14 +909,7 @@ class DataSet
 		{
 			$sql = "$sql {$this->ExtraSQL}";
 		}
-		$csql = "select count(*)".$sql;
-		$ri = Zymurgy::$db->query($csql);
-		if (!$ri)
-		{
-			echo "<hr>".Zymurgy::$db->error()."<p>$csql<hr>";
-			exit;
-		}
-		$count = Zymurgy::$db->result($ri,0,0);
+		$count = Zymurgy::$db->get("select count(*)".$sql);
 
 		$rsql = "select ".implode(",",$selectcols)."$sql $order";
 		if (($start!=0) || ($length!=0))
